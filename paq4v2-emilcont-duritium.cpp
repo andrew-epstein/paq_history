@@ -187,6 +187,11 @@ Also, give yourself credit in the help message.
 #include <vector>
 #include <algorithm>
 
+using std::vector;
+using std::string;
+using std::set_new_handler;
+using std::min;
+using std::max;
 
 const int PSCALE=2048; // Integer scale for representing probabilities
 const int MEM=8; // 6 = 88 MB, increase by 1 to double it
