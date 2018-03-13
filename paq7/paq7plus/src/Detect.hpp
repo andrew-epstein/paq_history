@@ -1,7 +1,5 @@
 // Detect.hpp - part of Word Replacing Transformation by P.Skibinski 
 
-#include <windows.h> 
-
 int langSum;
 
 inline void checkWord(unsigned char* s,int s_size)

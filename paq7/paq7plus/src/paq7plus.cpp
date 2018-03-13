@@ -390,8 +390,6 @@ which computes 8 elements at a time, is not any faster).
 #include <ctype.h>
 #define NDEBUG  // uncomment for debugging (turns on Array bound checks)
 #include <assert.h>
-namespace std {}
-using namespace std;
 
 // 8, 16, and 32 bit unsigned types (adjust as appropriate)
 typedef unsigned char  U8;
@@ -1278,7 +1276,7 @@ void picModel(Mixer& m) {
   cxt[2]=0x200+(r0&0x3f^r1&0x3ffe^r2<<2&0x7f00^r3<<5&0xf800);
 
   // predict
-  for (i=0; i<N; ++i)
+  for (int i=0; i<N; ++i)
     m.add(stretch(sm[i].p(t[cxt[i]])));
 }
 
@@ -1753,7 +1751,7 @@ int jpegModel(Mixer& m) {
       jassert(ns<=4 && nf<=4);
       mcusize=0;  // blocks per MCU
       int hmax=0;  // MCU horizontal dimension
-      for (i=0; i<ns; ++i) {
+      for (int i=0; i<ns; ++i) {
         for (int j=0; j<nf; ++j) {
           if (buf[sos+2*i+5]==buf[sof+3*j+10]) { // Cs == C ?
             int hv=buf[sof+3*j+11];  // packed dimensions H x V
@@ -2065,7 +2063,6 @@ void Predictor::upd() {
 #include <algorithm>
 #include <ctime>
 #include <cassert>
-#include <io.h>
 #define FILE_BIB 111261
 #define FILE_BOOK1 768771
 #define FILE_BOOK2 610856
@@ -2075,6 +2072,9 @@ void Predictor::upd() {
 #define FILE_NEWS 377109
 #define FILE_PAPER2 82199
 #define FILE_TRANS 93695
+
+using std::string;
+using std::vector;
 
 template <class T> inline T CLAMP(const T& X,const T& LoX,const T& HiX) { return (X >= LoX)?((X <= HiX)?(X):(HiX)):(LoX); }
 template <class T> inline int size(const T& t) {return t.size();}
@@ -2360,7 +2360,7 @@ int exe_preprocess(FILE* f, FILE* fw, int type) // 3=compress, 4=decompress
 	fseek(f, 0L, 0);
 
 	if ((st0=(char*)malloc(CONSTA+2*flen+256))==NULL) handler();
-	st=st0+256-((int)st0&255);	// 256-byte-alignment
+	st=st0+256-((long)st0&255);	// 256-byte-alignment
 	flen=fread(st+CONSTA-32768,1,flen,f);
 
 	if (flen) te8e9(st,type,flen,&data2write[0]);
