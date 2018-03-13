@@ -573,6 +573,9 @@ Also, give yourself credit in the help message.
 #include <map>
 #undef hash
 
+using std::string;
+using std::swap;
+using std::vector;
 
 const int PSCALE=4096;  // Integer scale for representing probabilities
 int MEM=3;        // Use about 6 MB * 2^MEM bytes of memory                      
@@ -582,7 +585,7 @@ template <class T> inline int size(const T& t) {return t.size();}
 // 8-32 bit unsigned types, adjust as appropriate
 typedef unsigned char U8;
 typedef unsigned short U16;
-typedef unsigned long U32;
+typedef unsigned int U32;
 
 #define Top_value U32(0XFFFFFFFF)	/* Largest code value */
 /* HALF AND QUARTER POINTS IN THE CODE VALUE RANGE. */
@@ -1133,7 +1136,7 @@ Hashtable<T>::Hashtable(U32 n): N(n>4?n-4:1), table(0), cxt(0) {
   char *p=(char*)calloc((16<<N)+64, 1);  //  char *p=(char*)calloc((16<<N)+64, 1);
   if (!p)
     handler();
-  p+=64-(((int)p)&63);  // Aligned  p+=64-(((int)p)&63);
+  p+=64-(((long)p)&63);  // Aligned  p+=64-(((int)p)&63);
   table=(HashElement*)p;
   Tcxt=&(table[0].c[-1]);
 

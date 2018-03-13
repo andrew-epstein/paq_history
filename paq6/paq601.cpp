@@ -583,7 +583,7 @@ template <class T> inline int size(const T& t) {return t.size();}
 // 8-32 bit unsigned types, adjust as appropriate
 typedef unsigned char U8;
 typedef unsigned short U16;
-typedef unsigned long U32;
+typedef unsigned int U32;
 
 // Fail if out of memory
 void handler() {
@@ -1120,7 +1120,7 @@ Hashtable<T>::Hashtable(U32 n): N(n>4?n-4:1), table(0), cxt(0) {
   char *p=(char*)calloc((16<<N)+64, 1);
   if (!p)
     handler();
-  p+=64-(((int)p)&63);  // Aligned
+  p+=64-(((long)p)&63);  // Aligned
   table=(HashElement*)p;
 }
 
