@@ -526,6 +526,10 @@ Still in development.
 #include <algorithm>
 #undef hash
 
+using std::string;
+using std::vector;
+using std::swap;
+using std::set_new_handler;
 
 const int PSCALE=2048;  // Integer scale for representing probabilities
 int MEM=5;        // Use about 6 MB * 2^MEM bytes of memory                      
@@ -984,7 +988,7 @@ Hashtable<T>::Hashtable(U32 n): N(n>4?n-4:1), table(0), cxt(0) {
   char *p=(char*)calloc((16<<N)+64, 1);
   if (!p)
     handler();
-  p+=64-(((int)p)&63);  // Aligned
+  p+=64-(((long)p)&63);  // Aligned
   table=(HashElement*)p;
 }
 

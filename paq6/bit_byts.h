@@ -2,7 +2,7 @@
  * modifed in December 2003 by David Scott for less expansion in compression
  * decompression programs same abount of data in bit file byte file could
  * change a max of one byte. Still a complete bijective transform but pseudo
- * random bijective transform. modified for matt 32bit max
+ * random bijective transform. rs() and ws()
  */
 
 /*
@@ -36,7 +36,17 @@ public:
     ir(frr);
     return r();
   }
-  int r(); /* get next bit */
+  int r();   /* get next bit */
+  int rs() { /* get next bit psuedo random */
+    if ((d1r = r()) < 0)
+      return d1r;
+    dr = (ax * dr) % bx;
+    if (d2r == 1)
+      dr = (ax * dr) % bx;
+    d1r = 1 & dr ^ d1r;
+    d2r = d1r;
+    return (d1r);
+  }
 
   int rc();          /* get next ASCII 1 or 0 */
   int iw(FILE *fw) { /* open file for bit write FOF
@@ -52,6 +62,82 @@ public:
   int w(int);  /* write next bit */
   int wc(int); /* write next ASCII 1 or 0 */
   int status() { return inuse; }
+
+  /* on read 0 if normal -1 if last bit -2 there after */
+  /* on write -1 if current is last -2 if call after last one */
+  /****  note a big error to issue -2 of no previous 1 ***/
+  int ws(int c) { /* write bit pusedo random */
+    if (c == 0) {
+      d3w++;
+      return 0;
+    }
+    if (c == 1) {
+      if (d1w == 0) {
+        d1w = 1;
+        d2w = d3w;
+        d3w = 0;
+        return 0;
+      }
+      for (; d2w > 0; d2w--) {
+        dw = (ax * dw) % bx;
+        if (dwr == 1)
+          dw = (ax * dw) % bx;
+        dwr = 0;
+        w(1 & dw);
+      }
+      d2w = d3w;
+      d3w = 0;
+      dw = (ax * dw) % bx;
+      if (dwr == 1)
+        dw = (ax * dw) % bx;
+      dwr = 1;
+      return w(1 ^ (1 & dw));
+    }
+    if (c == -2) {
+      if (d1w == 0)
+        return w(-1);
+      for (; d2w > 0; d2w--) {
+        dw = (ax * dw) % bx;
+        if (dwr == 1)
+          dw = (ax * dw) % bx;
+        dwr = 0;
+        w(1 & dw);
+      }
+      d1w = 0;
+      return w(-1);
+    }
+    if (d1w == 0) {
+      for (; d3w > 0; d3w--) {
+        dw = (ax * dw) % bx;
+        if (dwr == 1)
+          dw = (ax * dw) % bx;
+        dwr = 0;
+        w(1 & dw);
+      }
+      return w(-1);
+    }
+    for (; d2w > 0; d2w--) {
+      dw = (ax * dw) % bx;
+      if (dwr == 1)
+        dw = (ax * dw) % bx;
+      dwr = 0;
+      w(1 & dw);
+    }
+    dw = (ax * dw) % bx;
+    if (dwr == 1)
+      dw = (ax * dw) % bx;
+    dwr = 1;
+    w(1 ^ (1 & dw));
+    for (; d3w > 0; d3w--) {
+      dw = (ax * dw) % bx;
+      if (dwr == 1)
+        dw = (ax * dw) % bx;
+      dwr = 0;
+      w(1 & dw);
+    }
+    d1w = 0;
+    return w(-1);
+  }
 
   /* on read 0 if normal -1 if last bit -2 there after */
   /* on write -1 if current is last -2 if call after last one */
@@ -97,7 +183,28 @@ private:
     zerf = 0;
     onef = 0;
     zc = 0;
+
+    dw = 1;
+    d1w = 0;
+    d2w = 0;
+    d3w = 0;
+    dwr = 0;
+    d1r = 0;
+    d2r = 0;
+    dr = 1;
+    bx = 0x7fffffff;
+    ax = 16807;
   }
+  long long bx;
+  long long ax;
+  int dw;
+  int dr;
+  int d1r;
+  int d2r;
+  int d1w;
+  int d2w;
+  int d3w;
+  int dwr;
   int inuse;
   int zerf;
   int onef;

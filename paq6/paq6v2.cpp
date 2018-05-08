@@ -1118,7 +1118,7 @@ Hashtable<T>::Hashtable(U32 n): N(n>4?n-4:1), table(0), cxt(0) {
   char *p=(char*)calloc((16<<N)+64, 1);
   if (!p)
     handler();
-  p+=64-(((int)p)&63);  // Aligned
+  p+=64-(((long)p)&63);  // Aligned
   table=(HashElement*)p;
 }
 
