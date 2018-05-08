@@ -46,7 +46,10 @@ the NonstationaryPPM and WordModel models.
 #include <string>
 #include <vector>
 #include <algorithm>
-using namespace std;
+using std::set_new_handler;
+using std::string;
+using std::vector;
+using std::swap;
 
 const int MEM=6;  // 0-8 = 1M, 2M ... 256M memory model.  6 = 64M
 

@@ -481,7 +481,6 @@ dictionary preprocesor like PAQ8B/C/D/E.
 #include <ctype.h>
 #define NDEBUG  // remove for debugging (turns on Array bound checks)
 #include <assert.h>
-using namespace std;
 #ifndef DEFAULT_OPTION
 #define DEFAULT_OPTION 4
 #endif
@@ -1127,7 +1126,7 @@ public:
   }
 
   // predict next bit
-  int Mixer::p() {
+  int p() {
     while (nx&7) tx[nx++]=0;  // pad
     if (mp) {  // combine outputs
       mp->update();
@@ -3064,7 +3063,6 @@ int ExeFilter::decode() {
 #include <vector>
 
 Filter* WRTd_filter=NULL;
-#include <windows.h>
 #include "textfilter.hpp"
 WRT wrt;
 

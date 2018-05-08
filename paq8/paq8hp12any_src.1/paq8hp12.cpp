@@ -482,7 +482,10 @@ dictionary preprocesor like PAQ8B/C/D/E.
 #include <math.h>
 #include <ctype.h>
 #include <algorithm>
-using namespace std;
+using std::set_new_handler;
+using std::string;
+using std::vector;
+using std::swap;
 #define NDEBUG  // remove for debugging (turns on Array bound checks)
 #include <assert.h>
 
@@ -1144,7 +1147,7 @@ public:
   }
 
   // predict next bit
-  int Mixer::p() {
+  int p() {
     while (nx&7) tx[nx++]=0;  // pad
     if (mp) {  // combine outputs
       mp->update2();

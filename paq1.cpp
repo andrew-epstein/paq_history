@@ -296,7 +296,10 @@ with Borland but not g++.  Archive compatibility is not affected.
 #include <vector>
 #include <algorithm>
 #include <map>
-using namespace std;
+using std::set_new_handler;
+using std::string;
+using std::vector;
+using std::swap;
 
 // 8-32 bit unsigned types, adjust as appropriate
 typedef unsigned char U8;

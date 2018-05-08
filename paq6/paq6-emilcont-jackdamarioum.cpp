@@ -466,7 +466,10 @@ Also, give yourself credit in the help message.
 #include <string>
 #include <vector>
 #include <algorithm>
-using namespace std;  // mvm
+using std::set_new_handler;
+using std::string;
+using std::vector;
+using std::swap;  // mvm
 #undef hash
 
 const int PSCALE=2048;  // Integer scale for representing probabilities
