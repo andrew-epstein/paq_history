@@ -484,7 +484,6 @@ dictionary preprocesor like PAQ8B/C/D/E.
 #include <algorithm>
 using std::set_new_handler;
 using std::string;
-using std::vector;
 using std::swap;
 #define NDEBUG  // remove for debugging (turns on Array bound checks)
 #include <assert.h>
@@ -529,7 +528,7 @@ int equals(const char* a, const char* b) {
 typedef enum {DEFAULT, JPEG, EXE, BINTEXT, TEXT } Filetype; 
 
 int fsize, filetype=DEFAULT;  // Set by Filter
-#define preprocFlag 1220
+#define preprocFlag 1092
 long size;
 
 #define OPTION_UTF8							1

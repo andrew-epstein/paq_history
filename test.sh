@@ -101,7 +101,45 @@ function evaluate_one_file_all_commands() {
 	#done
 
 	for i in $(seq 0 8); do
-		evaluate_one_file_one_command "$1" "${1}${i}.paq8p" "./bin/paq8p -${i} ${1}${i} ${1}"
+		#evaluate_one_file_one_command "$1" "${1}${i}.paq8f" "./bin/paq8f -${i} ${1}${i} ${1}"
+		#evaluate_one_file_one_command "$1" "${1}${i}.paq8f" "./bin/paq8fthis -${i} ${1}${i} ${1}"
+		#evaluate_one_file_one_command "$1" "${1}${i}.paq8f" "./bin/paq8fthis2 -${i} ${1}${i} ${1}"
+		#evaluate_one_file_one_command "$1" "${1}${i}.paq8f" "./bin/paq8fthis3 -${i} ${1}${i} ${1}"
+		#evaluate_one_file_one_command "$1" "${1}${i}.paq8f" "./bin/paq8fthis4 -${i} ${1}${i} ${1}"
+		#evaluate_one_file_one_command "$1" "${1}${i}.paq8f" "./bin/paq8fthis_fast -${i} ${1}${i} ${1}"
+		#evaluate_one_file_one_command "$1" "${1}${i}.paq8g" "./bin/paq8g -${i} ${1}${i}.paq8g ${1}"
+		#evaluate_one_file_one_command "$1" "${1}${i}.paq8h" "./bin/paq8h -${i} ${1}${i}.paq8h ${1}"
+		#evaluate_one_file_one_command "$1" "${1}${i}.paq8hp2" "./bin/paq8hp2 -${i} ${1}${i}.paq8hp2 ${1}"
+		#evaluate_one_file_one_command "$1" "${1}${i}.paq8hp3" "./bin/paq8hp3 -${i} ${1}${i}.paq8hp3 ${1}"
+		#evaluate_one_file_one_command "$1" "${1}${i}.paq8hp4" "./bin/paq8hp4 -${i} ${1}${i}.paq8hp4 ${1}"
+		#evaluate_one_file_one_command "$1" "${1}${i}.paq8hp5" "./bin/paq8hp5 -${i} ${1}${i}.paq8hp5 ${1}"
+		#evaluate_one_file_one_command "$1" "${1}${i}.paq8hp6" "./bin/paq8hp6 -${i} ${1}${i}.paq8hp6 ${1}"
+		#evaluate_one_file_one_command "$1" "${1}${i}.paq8hp7" "./bin/paq8hp7 -${i} ${1}${i}.paq8hp7 ${1}"
+		# TODO: Strangely low compression ratio
+		#evaluate_one_file_one_command "$1" "${1}${i}.paq8hp8" "./bin/paq8hp8 -${i} ${1}${i}.paq8hp8 ${1}"
+		#evaluate_one_file_one_command "$1" "${1}${i}.paq8hp9" "./bin/paq8hp9 -${i} ${1}${i}.paq8hp9 ${1}"
+		# TODO: Segfault
+		#evaluate_one_file_one_command "$1" "${1}${i}.paq8hp10" "./bin/paq8hp10 -${i} ${1}${i}.paq8hp10 ${1}"
+		#evaluate_one_file_one_command "$1" "${1}${i}.paq8hp11" "./bin/paq8hp11 -${i} ${1}${i}.paq8hp11 ${1}"
+		evaluate_one_file_one_command "$1" "${1}${i}.paq8hp12" "./bin/paq8hp12 -${i} ${1}${i}.paq8hp12 ${1}"
+		#evaluate_one_file_one_command "$1" "${1}${i}.paq8i" "./bin/paq8i -${i} ${1}${i}.paq8i ${1}"
+		#evaluate_one_file_one_command "$1" "${1}${i}.paq8ja" "./bin/paq8ja -${i} ${1}${i} ${1}"
+		#evaluate_one_file_one_command "$1" "${1}${i}.paq8jb" "./bin/paq8jb -${i} ${1}${i} ${1}"
+		#evaluate_one_file_one_command "$1" "${1}${i}.paq8jc" "./bin/paq8jc -${i} ${1}${i} ${1}"
+		#evaluate_one_file_one_command "$1" "${1}${i}.paq8jd" "./bin/paq8jd -${i} ${1}${i} ${1}"
+		#evaluate_one_file_one_command "$1" "${1}${i}.paq8l" "./bin/paq8l -${i} ${1}${i} ${1}"
+		#evaluate_one_file_one_command "$1" "${1}${i}.paq8m" "./bin/paq8m -${i} ${1}${i} ${1}"
+		#evaluate_one_file_one_command "$1" "${1}${i}.paq8n" "./bin/paq8n -${i} ${1}${i} ${1}"
+		#evaluate_one_file_one_command "$1" "${1}${i}.paq8o" "./bin/paq8o -${i} ${1}${i} ${1}"
+		#evaluate_one_file_one_command "$1" "${1}${i}.paq8o3" "./bin/paq8o3 -${i} ${1}${i} ${1}"
+		#evaluate_one_file_one_command "$1" "${1}${i}.paq8o4" "./bin/paq8o4 -${i} ${1}${i} ${1}"
+		#evaluate_one_file_one_command "$1" "${1}${i}.paq8o5" "./bin/paq8o5 -${i} ${1}${i} ${1}"
+		#evaluate_one_file_one_command "$1" "${1}${i}.paq8o6" "./bin/paq8o6 -${i} ${1}${i} ${1}"
+		#evaluate_one_file_one_command "$1" "${1}${i}.paq8o7" "./bin/paq8o7 -${i} ${1}${i} ${1}"
+		#evaluate_one_file_one_command "$1" "${1}${i}.paq8o8" "./bin/paq8o8 -${i} ${1}${i} ${1}"
+		#evaluate_one_file_one_command "$1" "${1}${i}.paq8o9" "./bin/paq8o9 -${i} ${1}${i} ${1}"
+		#evaluate_one_file_one_command "$1" "${1}${i}.paq8o10t" "./bin/paq8o10t -${i} ${1}${i} ${1}"
+		#evaluate_one_file_one_command "$1" "${1}${i}.paq8p" "./bin/paq8p -${i} ${1}${i} ${1}"
 	done
 }
 

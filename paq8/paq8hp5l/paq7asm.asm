@@ -14,7 +14,7 @@
 ; use extended (Katmai/SSE) instructions.  It won't work
 ; in 64-bit mode.
 
-section .text use32 class=CODE
+section .text
 
 ; Reset after MMX
 global do_emms
