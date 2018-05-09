@@ -534,6 +534,9 @@ using std::set_new_handler;
 const int PSCALE=2048;  // Integer scale for representing probabilities
 int MEM=5;        // Use about 6 MB * 2^MEM bytes of memory                      
 
+#define min(a,b)	((a)<(b)?(a):(b))
+#define max(a,b)	((a)>(b)?(a):(b))
+
 template <class T> inline int size(const T& t) {return t.size();}
 
 // 8-32 bit unsigned types, adjust as appropriate

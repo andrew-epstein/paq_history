@@ -189,7 +189,9 @@ Also, give yourself credit in the help message.
 using std::set_new_handler;
 using std::string;
 using std::vector;
-using std::swap;
+
+#define min(a,b)	((a)<(b)?(a):(b))
+#define max(a,b)	((a)>(b)?(a):(b))
 
 const int PSCALE=2048;  // Integer scale for representing probabilities
 const int MEM=6;        // 6 = 88 MB, increase by 1 to double it
@@ -199,7 +201,7 @@ template <class T> inline int size(const T& t) {return t.size();}
 // 8-32 bit unsigned types, adjust as appropriate
 typedef unsigned char U8;
 typedef unsigned short U16;
-typedef unsigned long U32;
+typedef unsigned int U32;
 
 class U24 {  // 24-bit unsigned int
   U8 b0, b1, b2;  // Low, mid, high byte

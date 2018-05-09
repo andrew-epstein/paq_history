@@ -191,6 +191,9 @@ using std::string;
 using std::vector;
 using std::swap;
 
+#define min(a,b)	((a)<(b)?(a):(b))
+#define max(a,b)	((a)>(b)?(a):(b))
+
 const int PSCALE=2048;  // Integer scale for representing probabilities
 const int MEM=6;        // 6 = 88 MB, increase by 1 to double it
 

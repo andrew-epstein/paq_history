@@ -576,6 +576,8 @@ using std::set_new_handler;
 using std::string;
 using std::vector;
 using std::swap;
+using std::min;
+using std::max;
 
 const int PSCALE=4096;  // Integer scale for representing probabilities
 int MEM=3;        // Use about 6 MB * 2^MEM bytes of memory                      

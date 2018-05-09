@@ -457,6 +457,9 @@ using std::vector;
 using std::swap;
 #undef hash
 
+#define min(a,b)	((a)<(b)?(a):(b))
+#define max(a,b)	((a)>(b)?(a):(b))
+
 const int PSCALE=2048;  // Integer scale for representing probabilities
 const int MEM=8;        // Use about 0.6 MB * 2^MEM bytes of memory
 
@@ -465,7 +468,7 @@ template <class T> inline int size(const T& t) {return t.size();}
 // 8-32 bit unsigned types, adjust as appropriate
 typedef unsigned char U8;
 typedef unsigned short U16;
-typedef unsigned long U32;
+typedef unsigned int U32;
 
 // Fail if out of memory
 void handler() {

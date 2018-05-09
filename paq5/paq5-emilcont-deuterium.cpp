@@ -457,6 +457,9 @@ using std::vector;
 using std::swap;
 #undef hash
 
+#define min(a,b)	((a)<(b)?(a):(b))
+#define max(a,b)	((a)>(b)?(a):(b))
+
 const int PSCALE=2048;  // Integer scale for representing probabilities
 const int MEM=8;        // Use about 0.6 MB * 2^MEM bytes of memory				
 
