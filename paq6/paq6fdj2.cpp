@@ -590,7 +590,7 @@ template <class T> inline int size(const T& t) {return t.size();}
 // 8-32 bit unsigned types, adjust as appropriate
 typedef unsigned char U8;
 typedef unsigned short U16;
-typedef unsigned long U32;
+typedef unsigned int U32;
 typedef unsigned long long U64;
 
 #define Top_value U64(0XFFFFFFFFFFFFFFFFull)	/* Largest code value */
