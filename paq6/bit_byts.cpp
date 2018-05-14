@@ -78,7 +78,8 @@ int bit_byts::r() {
 
 int bit_byts::wc(int x) {
   /*
-   * like w() but writes ascii one or zero /* return 0 if ok
+   * like w() but writes ascii one or zero
+   * return 0 if ok
    */
   /* return -1 if sending last byte */
   /* return -2 if closed longer; */

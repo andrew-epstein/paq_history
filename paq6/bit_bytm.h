@@ -12,7 +12,7 @@
 struct bit_byts {
 public:
   bit_byts() { xx(); }
-  int ir(FILE *fr) { /* open file for bit read FOF assumed */
+  void ir(FILE *fr) { /* open file for bit read FOF assumed */
     CHK();
     inuse = 0x01;
     f = fr;
@@ -22,7 +22,7 @@ public:
       abort();
     }
   }
-  int irc(FILE *fr) { /* open file for 01 read FOF assumed */
+  void irc(FILE *fr) { /* open file for 01 read FOF assumed */
     CHK();
     inuse = 0x01;
     f = fr;
@@ -39,7 +39,7 @@ public:
   int r(); /* get next bit */
 
   int rc();          /* get next ASCII 1 or 0 */
-  int iw(FILE *fw) { /* open file for bit write FOF
+  void iw(FILE *fw) { /* open file for bit write FOF
                       * assumed */
     CHK();
     inuse = 0x02;
@@ -81,13 +81,13 @@ public:
   }
 
 private:
-  int CHK() {
+  void CHK() {
     if (inuse != 0x69) {
       fprintf(stderr, " all read in use bit_byts use error %x \n", inuse);
       abort();
     }
   }
-  int xx() {
+  void xx() {
     inuse = 0x69;
     M = 0x80;
     l = 0;
