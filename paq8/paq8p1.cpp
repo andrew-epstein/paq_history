@@ -1,4 +1,4 @@
-/* paq8o10t file compressor/archiver.  Release by Kaido, Jun. 11, 2008
+/* paq8p1 file compressor/archiver.  Release by Kaido, Aug. 28, 2008
 
     Copyright (C) 2008 Matt Mahoney, Serge Osnach, Alexander Ratushnyak,
     Bill Pettis, Przemyslaw Skibinski, Matthew Fite, wowtiger, Andrew Paterson,
@@ -19,38 +19,38 @@
 
 To install and use in Windows:
 
-- To install, put paq8o10t.exe or a shortcut to it on your desktop.
-- To compress a file or folder, drop it on the paq8o10t icon.
-- To decompress, drop a .paq8o10t file on the icon.
+- To install, put paq8p1.exe or a shortcut to it on your desktop.
+- To compress a file or folder, drop it on the paq8p1 icon.
+- To decompress, drop a .paq8p1 file on the icon.
 
-A .paq8o10t extension is added for compression, removed for decompression.
+A .paq8p1 extension is added for compression, removed for decompression.
 The output will go in the same folder as the input.
 
-While paq8o10t is working, a command window will appear and report
+While paq8p1 is working, a command window will appear and report
 progress.  When it is done you can close the window by pressing
 ENTER or clicking [X]. 
 
 
 COMMAND LINE INTERFACE
 
-- To install, put paq8o10t.exe somewhere in your PATH.
-- To compress:      paq8o10t [-N] file1 [file2...]
-- To decompress:    paq8o10t [-d] file1.paq8o10t [dir2]
-- To view contents: more < file1.paq8o10t
+- To install, put paq8p1.exe somewhere in your PATH.
+- To compress:      paq8p1 [-N] file1 [file2...]
+- To decompress:    paq8p1 [-d] file1.paq8p1 [dir2]
+- To view contents: more < file1.paq8p1
 
-The compressed output file is named by adding ".paq8o10t" extension to
-the first named file (file1.paq8o10t).  Each file that exists will be
+The compressed output file is named by adding ".paq8p1" extension to
+the first named file (file1.paq8p1).  Each file that exists will be
 added to the archive and its name will be stored without a path.
 The option -N specifies a compression level ranging from -0
 (fastest) to -9 (smallest).  The default is -5.  If there is
 no option and only one file, then the program will pause when
 finished until you press the ENTER key (to support drag and drop).
-If file1.paq8o10t exists then it is overwritten.
+If file1.paq8p1 exists then it is overwritten.
 
-If the first named file ends in ".paq8o10t" then it is assumed to be
+If the first named file ends in ".paq8p1" then it is assumed to be
 an archive and the files within are extracted to the same directory
 as the archive unless a different directory (dir2) is specified.
-The -d option forces extraction even if there is not a ".paq8o10t"
+The -d option forces extraction even if there is not a ".paq8p1"
 extension.  If any output file already exists, then it is compared
 with the archive content and the first byte that differs is reported.
 No files are overwritten or deleted.  If there is only one argument
@@ -63,11 +63,11 @@ structure, except that empty directories are not stored, and file
 attributes (timestamps, permissions, etc.) are not preserved.
 During extraction, directories are created as needed.  For example:
 
-  paq8o10t -4 c:\tmp\foo bar
+  paq8p1 -4 c:\tmp\foo bar
 
-compresses foo and bar (if they exist) to c:\tmp\foo.paq8o10t at level 4.
+compresses foo and bar (if they exist) to c:\tmp\foo.paq8p1 at level 4.
 
-  paq8o10t -d c:\tmp\foo.paq8o10t .
+  paq8p1 -d c:\tmp\foo.paq8p1 .
 
 extracts foo and compares bar in the current directory.  If foo and bar
 are directories then their contents are extracted/compared.
@@ -81,8 +81,8 @@ are OK).
 
 TO COMPILE
 
-There are 2 files: paq8o10t.cpp (C++) and paq7asm.asm (NASM/YASM).
-paq7asm.asm is the same as in paq7 and paq8x.  paq8o10t.cpp recognizes the
+There are 2 files: paq8p1.cpp (C++) and paq7asm.asm (NASM/YASM).
+paq7asm.asm is the same as in paq7 and paq8x.  paq8p1.cpp recognizes the
 following compiler options:
 
   -DWINDOWS           (to compile in Windows)
@@ -109,22 +109,22 @@ Recommended compiler commands and optimizations:
 
   MINGW g++:
     nasm paq7asm.asm -f win32 --prefix _
-    g++ paq8o10t.cpp -DWINDOWS -O2 -Os -s -march=pentiumpro -fomit-frame-pointer -o paq8o10t.exe paq7asm.obj
+    g++ paq8p1.cpp -DWINDOWS -O2 -Os -s -march=pentiumpro -fomit-frame-pointer -o paq8p1.exe paq7asm.obj
 
   Borland:
     nasm paq7asm.asm -f obj --prefix _
-    bcc32 -DWINDOWS -O -w-8027 paq8o10t.cpp paq7asm.obj
+    bcc32 -DWINDOWS -O -w-8027 paq8p1.cpp paq7asm.obj
 
   Mars:
     nasm paq7asm.asm -f obj --prefix _
-    dmc -DWINDOWS -Ae -O paq8o10t.cpp paq7asm.obj
+    dmc -DWINDOWS -Ae -O paq8p1.cpp paq7asm.obj
 
   UNIX/Linux (PC):
     nasm -f elf paq7asm.asm
-    g++ paq8o10t.cpp -DUNIX -O2 -Os -s -march=pentiumpro -fomit-frame-pointer -o paq8o10t paq7asm.o
+    g++ paq8p1.cpp -DUNIX -O2 -Os -s -march=pentiumpro -fomit-frame-pointer -o paq8p1 paq7asm.o
 
   Non PC (e.g. PowerPC under MacOS X)
-    g++ paq8o10t.cpp -O2 -DUNIX -DNOASM -s -o paq8o10t
+    g++ paq8p1.cpp -O2 -DUNIX -DNOASM -s -o paq8p1
 
 MinGW produces faster executables than Borland or Mars, but Intel 9
 is about 4% faster than MinGW).
@@ -136,7 +136,7 @@ An archive has the following format.  It is intended to be both
 human and machine readable.  The header ends with CTRL-Z (Windows EOF)
 so that the binary compressed data is not displayed on the screen.
 
-  paq8o10t -N CR LF
+  paq8p1 -N CR LF
   size TAB filename CR LF
   size TAB filename CR LF
   ...
@@ -153,24 +153,24 @@ directories are stored with path relative to the compressed directory
 
 Then
 
-  paq8o10t archive \dir1\file1.txt \dir2
+  paq8p1 archive \dir1\file1.txt \dir2
 
-will create archive.paq8o10t with the header:
+will create archive.paq8p1 with the header:
 
-  paq8o10t -5
+  paq8p1 -5
   123     file1.txt
   456     dir2/file2.txt
 
 The command:
 
-  paq8o10t archive.paq8o10t C:\dir3
+  paq8p1 archive.paq8p1 C:\dir3
 
 will create the files:
 
   C:\dir3\file1.txt
   C:\dir3\dir2\file2.txt
 
-Decompression will fail if the first 7 bytes are not "paq8o10t -".  Sizes
+Decompression will fail if the first 7 bytes are not "paq8p1 -".  Sizes
 are stored as decimal numbers.  CR, LF, TAB, CTRL-Z are ASCII codes
 13, 10, 9, 26 respectively.
 
@@ -192,7 +192,7 @@ on the ability to predict the next bit accurately.
 
 MODEL MIXING
 
-paq8o10t uses a neural network to combine a large number of models.  The
+paq8p1 uses a neural network to combine a large number of models.  The
 i'th model independently predicts
 p1_i = p(y_j = 1 | y_0..j-1), p0_i = 1 - p1_i.
 The network computes the next bit probabilty
@@ -350,7 +350,7 @@ modeled with both a run map and a nonstationary map unless indicated.
   pixels already seen.  Image width is assumed to be 1728 bits (as
   in calgary/pic).
 
-- Image.  For uncompressed 24-bit color BMP and TIFF images.  Contexts
+- Image.  For uncompressed 24-bit color BMP, TIFF, PPM images.  Contexts
   are the high order bits of the surrounding pixels and linear
   combinations of those pixels, including other color planes.  The
   image width is detected from the file header.  When an image is
@@ -402,6 +402,17 @@ modeled with both a run map and a nonstationary map unless indicated.
   DMC.  The second predictor is a bit history state mapped adaptively to
   a probability as as in a Nonstationary Map.
 
+- Image.  For 1-bit uncompressed BMP, PBM images.  Contexts are the surrounding
+  pixels already seen.  
+
+- Image.  For uncompressed 8-bit color BMP, RGB and PGM images.  Contexts
+  are the high order bits of the surrounding pixels and linear
+  combinations of those pixels, including other color planes.  The
+  image width is detected from the file header.  When an image is
+  detected, other models are turned off to improve speed.
+
+- Analog. For uncompressed WAV files.
+
 ARCHITECTURE
 
 The context models are mixed by several of several hundred neural networks
@@ -421,7 +432,7 @@ adjacent quantized values of stretch(p1).  There are 2 APM stages in series:
 
 PREPROCESSING
 
-paq8o10t uses preprocessing transforms on certain data types to improve
+paq8p1 uses preprocessing transforms on certain data types to improve
 compression.  To improve reliability, the decoding transform is
 tested during compression to ensure that the input file can be
 restored.  If the decoder output is not identical to the input file
@@ -593,9 +604,21 @@ added bmp 1 bit image support and compression based on pic model
 .wav file detection (no models for compression)
 text detection (utf-8 partial)
 Nestmodel form raq8g
+
+DIFFERENCES FROM PAQ8O10T
+28. aug 2008
+more detailed info about processed data
+fixed illegal compression option (9)
+wav model from paq8p
+modified bmp model from paq8p
+removed file segmenting by BLOCKS=MEM*64 (warning !!!)
+detect ppm image, uses model24bit model for compression
+fix check correct part len at current pos to end of file.
+detect pbm image, uses model1bit model for compression
+tryed add info to CONTEXTS about new models
 */
 
-#define PROGNAME "paq8o10t"  // Please change this if you change the program.
+#define PROGNAME "paq8p1"  // Please change this if you change the program.
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -2080,13 +2103,74 @@ void distanceModel(Mixer& m) {
   }
   cr.mix(m);
 }
+//////////////////////////// model24bit /////////////////////////////////
+
+// Model for 24 bit image data
+
+// Square buf(i)
+inline int sqrbuf(int i) {
+  assert(i>0);
+  return buf(i)*buf(i);
+}
+void model24bit(Mixer& m,int w=0) {
+  const int SC=0x20000;
+  static SmallStationaryContextMap scm1(SC), scm2(SC),
+    scm3(SC), scm4(SC), scm5(SC), scm6(SC), scm7(SC), scm8(SC),scm9(SC), scm10(SC*2),scm11(SC);
+  static ContextMap cm(MEM*4, 10);
+
+  // Select nearby pixels as context
+  if (!bpos) {
+    assert(w>3);
+    int color=pos%3;
+    int mean=buf(3)+buf(w-3)+buf(w)+buf(w+3);
+    const int var=sqrbuf(3)+sqrbuf(w-3)+sqrbuf(w)+sqrbuf(w+3)-mean*mean/4>>2;
+    mean>>=2;
+    const int logvar=ilog(var);
+    int i=0;
+    cm.set(hash(++i, buf(3)>>4, buf(w)>>4, color));
+    cm.set(hash(++i, buf(3), buf(1)>>3, color));
+    cm.set(hash(++i, buf(3), buf(2)>>3, color));
+    cm.set(hash(++i, buf(w), buf(1)>>3, color));
+    cm.set(hash(++i, buf(w), buf(2)>>3, color));
+//    cm.set(hash(++i, buf(3)+buf(w)>>1, color));
+    cm.set(hash(++i, buf(3)+buf(w)>>3, buf(1)>>5, buf(2)>>5, color));
+    cm.set(hash(++i, mean, logvar>>5, color));
+    cm.set(hash(++i, buf(1), buf(2), color));
+    cm.set(hash(++i, buf(3)+buf(1)-buf(4), color));
+    cm.set(hash(++i, buf(w)+buf(1)-buf(w+1), color));
+    scm1.set(buf(3)+buf(w)>>1);
+    scm2.set(buf(3)+buf(w)-buf(w+3));
+    scm3.set(buf(3)+buf(w-3)-buf(w));
+    scm4.set(buf(3)*2-buf(6));
+    scm5.set(buf(w)*2-buf(w*2));
+    scm6.set(buf(w+3)*2-buf(w*2+6));
+    scm7.set(buf(w-3)*2-buf(w*2-6));
+    scm8.set(buf(w-3)+buf(1)-buf(w-2));
+    scm9.set(buf(w)+buf(w-3)-buf(w*2-3));
+    scm10.set(mean>>1|logvar<<1&0x180);
+  }
+
+  // Predict next bit
+  scm1.mix(m);
+  scm2.mix(m);
+  scm3.mix(m);
+  scm4.mix(m);
+  scm5.mix(m);
+  scm6.mix(m);
+  scm7.mix(m);
+  scm8.mix(m);
+  scm9.mix(m);
+  scm10.mix(m);
+  scm11.mix(m);
+  cm.mix(m);
+}
 
 //////////////////////////// bmpModel /////////////////////////////////
 
 // Model a 24-bit color uncompressed .bmp or .tif file.  Return
 // width in pixels if an image file is detected, else 0.
-
 // 32-bit little endian number at buf(i)..buf(i-3)
+
 inline U32 i4(int i) {
   assert(i>3);
   return buf(i)+256*buf(i-1)+65536*buf(i-2)+16777216*buf(i-3);
@@ -2098,20 +2182,10 @@ inline int i2(int i) {
   return buf(i)+256*buf(i-1);
 }
 
-// Square buf(i)
-inline int sqrbuf(int i) {
-  assert(i>0);
-  return buf(i)*buf(i);
-}
-
 int bmpModel(Mixer& m) {
   static int w=0;  // width of image in bytes (pixels * 3)
   static int eoi=0;     // end of image
   static U32 tiff=0;  // offset of tif header
-  const int SC=0x20000;
-  static SmallStationaryContextMap scm1(SC), scm2(SC),
-    scm3(SC), scm4(SC), scm5(SC), scm6(SC), scm7(SC), scm8(SC), scm9(SC*2);
-  static ContextMap cm(MEM*4, 10);
 
   // Detect .bmp file header (24 bit color, not compressed)
   if (!bpos && buf(54)=='B' && buf(53)=='M'
@@ -2159,56 +2233,92 @@ int bmpModel(Mixer& m) {
     }
   }
   if (pos>eoi) return w=0;
-
-  // Select nearby pixels as context
-  if (!bpos) {
-    assert(w>3);
-    int color=pos%3;
-    int mean=buf(3)+buf(w-3)+buf(w)+buf(w+3);
-    const int var=sqrbuf(3)+sqrbuf(w-3)+sqrbuf(w)+sqrbuf(w+3)-mean*mean/4>>2;
-    mean>>=2;
-    const int logvar=ilog(var);
-    int i=0;
-    cm.set(hash(++i, buf(3)>>4, buf(w)>>4, color));
-    cm.set(hash(++i, buf(3), buf(1)>>3, color));
-    cm.set(hash(++i, buf(3), buf(2)>>3, color));
-    cm.set(hash(++i, buf(w), buf(1)>>3, color));
-    cm.set(hash(++i, buf(w), buf(2)>>3, color));
-//    cm.set(hash(++i, buf(3)+buf(w)>>1, color));
-    cm.set(hash(++i, buf(3)+buf(w)>>3, buf(1)>>5, buf(2)>>5, color));
-    cm.set(hash(++i, mean, logvar>>5, color));
-    cm.set(hash(++i, buf(1), buf(2), color));
-    cm.set(hash(++i, buf(3)+buf(1)-buf(4), color));
-    cm.set(hash(++i, buf(w)+buf(1)-buf(w+1), color));
-    scm1.set(buf(3)+buf(w)>>1);
-    scm2.set(buf(3)+buf(w)-buf(w+3));
-    scm3.set(buf(3)+buf(w-3)-buf(w));
-    scm4.set(buf(3)*2-buf(6));
-    scm5.set(buf(w)*2-buf(w*2));
-    scm6.set(buf(w+3)*2-buf(w*2+6));
-    scm7.set(buf(w-3)*2-buf(w*2-6));
-    scm8.set(buf(w-3)+buf(1)-buf(w-2));
-    scm9.set(mean>>1|logvar<<1&0x180);
-  }
-
-  // Predict next bit
-  scm1.mix(m);
-  scm2.mix(m);
-  scm3.mix(m);
-  scm4.mix(m);
-  scm5.mix(m);
-  scm6.mix(m);
-  scm7.mix(m);
-  scm8.mix(m);
-  scm9.mix(m);
-  cm.mix(m);
+  model24bit(m,w);
   return w;
 }
+// For ppmModel and pgmModel
+#define ISWHITESPACE(i) (buf(i) == ' ' || buf(i) == '\t' || buf(i) == '\n' || buf(i) == '\r')
+#define ISCRLF(i) (buf(i) == '\n' || buf(i) == '\r')
+
+//////////////////////////// ppmModel /////////////////////////////////
+
+// Model a 24-bit color uncompressed binary .ppm.
+// Return width in pixels if an image file is detected, else 0.
+
+int ppmModel(Mixer& m) {
+	static int h = 0;		// height of image in bytes (pixels)
+	static int w = 0;		// width of image in bytes (pixels)
+	static int eoi = 0;     // end of image
+	static int ppm  = 0;    // offset of pgm header
+	static int ppm_hdr[3];  // 0 - Width, 1 - Height, 2 - Max value
+	static int ppm_ptr;		// which record in header should be parsed next
+	int isws;				// is white space
+	char v_buf[32];			
+	int  v_ptr;
+	if (!bpos)
+	{
+		if(buf(3)=='P' && buf(2)=='6' && ISWHITESPACE(1)) // Detect PPM file
+		{
+			ppm = pos;
+			ppm_ptr = 0;
+			return w = 0; // PPM header just detected, not enough info to get header yet
+		}else 
+			if(ppm && ppm_ptr!=3) 		// PPM detected, let's parse header records
+			{ 
+				for (int i = ppm; i<pos-1 && ppm_ptr<3; i++)
+				{
+					// Skip white spaces
+					while ((isws = ISWHITESPACE(pos-i)) && i<pos-1) i++; 
+					if(isws) break; // buffer end is reached
+
+					// Skip comments
+					if(buf(pos-i)=='#')
+					{ 
+						do {
+							i++;
+						}while(!ISCRLF(pos-i) && i<pos-1);
+					}else
+					{ 
+						// Get header record as a string into v_buf
+						v_ptr = 0;
+						do {
+							v_buf[v_ptr++] = buf(pos-i);
+							i++;
+						}while(!(isws = ISWHITESPACE(pos-i)) && i<pos-1 && v_ptr<32);
+
+						if(isws)
+						{
+							ppm_hdr[ppm_ptr++] = atoi(v_buf);
+							ppm = i; // move pointer 
+						}
+					}
+				}
+				// Header is finished, next byte is first pixel
+				if(ppm_ptr==3)
+				{ 
+					if(ppm_hdr[2] == 255 && ppm_hdr[0]>0 && ppm_hdr[1]>0)
+					{
+						w = ppm_hdr[0];
+						h = ppm_hdr[1];
+						printf("PPM %dx%d",w,h);
+						w=w*3;
+						eoi = pos+w*h;
+					}
+				}
+			}
+	}
+	if (pos>eoi) return w=0;
+    model24bit(m,w);
+	return w;
+}
+//////////////////////////// model8bit /////////////////////////////////
+
+// Model for 8 bit image data
 
 void model8bit(Mixer& m, int w) {
 	const int SC=0x20000;
 	static SmallStationaryContextMap scm1(SC), scm2(SC),
-		scm3(SC), scm4(SC), scm5(SC), scm6(SC*2),scm7(SC);
+		scm3(SC), scm4(SC), scm5(SC), scm6(SC*2),scm7(SC),scm8(SC);
 	static ContextMap cm(MEM*4, 32+4);
 	
 	// Select nearby pixels as context
@@ -2270,7 +2380,7 @@ void model8bit(Mixer& m, int w) {
 		scm4.set(buf(w)*2-buf(w*2)>>1);
 		scm5.set(buf(1)+buf(w)-buf(w-1)>>1);
 		scm6.set(mean>>1|logvar<<1&0x180);
-	
+	    scm7.set(buf(w)+buf(w-1)-buf(w*2-1));
 		 
 	}
 
@@ -2281,19 +2391,15 @@ void model8bit(Mixer& m, int w) {
 	scm4.mix(m);
 	scm5.mix(m);
 	scm6.mix(m);
-	scm7.mix(m); // Amazingly but improves compression!	
+	scm7.mix(m); 
+	scm8.mix(m); // Amazingly but improves compression!	
 	cm.mix(m);
-	//return w;
 }
 
 //////////////////////////// pgmModel /////////////////////////////////
 
-// Model a 8-bit grayscale uncompressed binary .pgm and 8-bit color
-// uncompressed .bmp images.  Return width in pixels if an image file
-// is detected, else 0.
-
-#define ISWHITESPACE(i) (buf(i) == ' ' || buf(i) == '\t' || buf(i) == '\n' || buf(i) == '\r')
-#define ISCRLF(i) (buf(i) == '\n' || buf(i) == '\r')
+// Model a 8-bit grayscale uncompressed binary .pgm 
+// Return width in pixels if an image file is detected, else 0.
 
 int pgmModel(Mixer& m) {
 	static int h = 0;		// height of image in bytes (pixels)
@@ -2343,7 +2449,6 @@ int pgmModel(Mixer& m) {
 						}
 					}
 				}
-
 				// Header is finished, next byte is first pixel
 				if(pgm_ptr==3)
 				{ 
@@ -2367,6 +2472,11 @@ int pgmModel(Mixer& m) {
 	  m.set(c0, 256);
 	return w;
 }
+
+//////////////////////////// bmpModel8 /////////////////////////////////
+
+// Model a 8-bit color uncompressed .bmp images. 
+// Return width in pixels if an image file is detected, else 0.
 
 int bmpModel8(Mixer& m) {
 	static int h = 0;		// height of image in bytes (pixels)
@@ -2403,6 +2513,11 @@ int bmpModel8(Mixer& m) {
 	  return w;
 }
 
+//////////////////////////// rgbModel8 /////////////////////////////////
+
+// Model a 8-bit grayscale uncompressed binary .rgb 
+// Return width in pixels if an image file is detected, else 0.
+
 int rgbModel8(Mixer& m) {
 	int h = 0;		        // height of image in bytes (pixels)
 	static int w = 0;		// width of image in bytes (pixels)
@@ -2427,17 +2542,50 @@ int rgbModel8(Mixer& m) {
 	  m.set(c0, 256);
 	  return w;
 }
-void bmpModel1(Mixer& m) {
+
+//////////////////////////// model1bit /////////////////////////////////
+
+// Model for 1 bit image data
+
+void model1bit(Mixer& m, int brow) {
   static U32 r0, r1, r2, r3;  // last 4 rows, bit 8 is over current pixel
   static Array<U8> t(0x10200);  // model: cxt -> state
-  const int N=4+1;  // number of contexts
+  const int N=4+1+1;  // number of contexts
   static int cxt[N];  // contexts
   static StateMap sm[N];
+
+  // update the model 
+  int i;
+  for ( i=0; i<N; ++i)
+    t[cxt[i]]=nex(t[cxt[i]],y);
+
+  // update the contexts (pixels surrounding the predicted one)
+  r0+=r0+y;
+  r1+=r1+((buf(brow-1)>>(7-bpos))&1);
+  r2+=r2+((buf(brow+brow-1)>>(7-bpos))&1);
+  r3+=r3+((buf(brow+brow+brow-1)>>(7-bpos))&1);
+  cxt[0]=r0&0x7|r1>>4&0x38|r2>>3&0xc0;
+  cxt[1]=0x100+(r0&1|r1>>4&0x3e|r2>>2&0x40|r3>>1&0x80);
+  cxt[2]=0x200+(r0&0x3f^r1&0x3ffe^r2<<2&0x7f00^r3<<5&0xf800);
+  cxt[3]=0x400+(r0&0x3e^r1&0x0C0C^r2&0xc800);  //?
+  cxt[4]=0x800+(r1&0x30^r3&0x0c0c|r0&3);       //?
+  //cxt[5]=0x2000+(r0&1|r1>>4&0x1d|r2>>1&0x60|r3&0xC0);
+
+  // predict
+  for ( i=0; i<N; ++i)
+    m.add(stretch(sm[i].p(t[cxt[i]])));
+    return;
+}
+
+//////////////////////////// bmpModel1 /////////////////////////////////
+
+// Model a 1-bit color uncompressed .bmp images. 
+
+void bmpModel1(Mixer& m) {
 	static int h = 0;		// height of image in bytes (pixels)
 	static int w = 0;		// width of image in bytes (pixels)
 	static int eoi = 0;     // end of image
-	static int ibmp=0;
-	static int brow=0;
+	static int ibmp=0,brow=0;
 	 if (bpos==0) {
         //  1-bit .bmp images                data offset      windows bmp    compression   bpp
 		if (buf(54)=='B' && buf(53)=='M' && (i4(44)==0x3e) && i4(40)==40 && i4(24)==0 && buf(26)==1){
@@ -2458,26 +2606,79 @@ void bmpModel1(Mixer& m) {
 		}
 	 }
 	if (pos>eoi) return;
-  // update the model 
-  int i;
-  for ( i=0; i<N; ++i)
-    t[cxt[i]]=nex(t[cxt[i]],y);
-
-  // update the contexts (pixels surrounding the predicted one)
-  r0+=r0+y;
-  r1+=r1+((buf(brow-1)>>(7-bpos))&1);
-  r2+=r2+((buf(brow+brow-1)>>(7-bpos))&1);
-  r3+=r3+((buf(brow+brow+brow-1)>>(7-bpos))&1);
-  cxt[0]=r0&0x7|r1>>4&0x38|r2>>3&0xc0;
-  cxt[1]=0x100+(r0&1|r1>>4&0x3e|r2>>2&0x40|r3>>1&0x80);
-  cxt[2]=0x200+(r0&0x3f^r1&0x3ffe^r2<<2&0x7f00^r3<<5&0xf800);
-  cxt[3]=0x400+(r0&0x3e^r1&0x0C0C^r2&0xc800);  //?
-  cxt[4]=0x800+(r1&0x30^r3&0x0c0c|r0&3);       //?
-
-  // predict
-  for ( i=0; i<N; ++i)
-    m.add(stretch(sm[i].p(t[cxt[i]])));
+	model1bit(m,brow);
     return;
+}
+//////////////////////////// pbmModel /////////////////////////////////
+
+// Model a 1-bit color uncompressed .pbm images. 
+
+void pbmModel(Mixer& m) {
+	static int h = 0;		// height of image in bytes (pixels)
+	static int w = 0;		// width of image in bytes (pixels)
+	static int eoi = 0;     // end of image
+	static int pbm  = 0;    // offset of pgm header
+	static int pbm_hdr[2];  // 0 - Width, 1 - Height
+	static int pbm_ptr;		// which record in header should be parsed next
+	int isws;				// is white space
+	char v_buf[32];			
+	int  v_ptr;
+	if (!bpos)
+	{
+		if(buf(3)=='P' && buf(2)=='4' && ISWHITESPACE(1)) // Detect PBM file
+		{
+			pbm = pos;
+			pbm_ptr = 0;
+			return;// w = 0; // PBM header just detected, not enough info to get header yet
+		}else 
+			if(pbm && pbm_ptr!=2) 		// PBM detected, let's parse header records
+			{ 
+				for (int i = pbm; i<pos-1 && pbm_ptr<2; i++)
+				{
+					// Skip white spaces
+					while ((isws = ISWHITESPACE(pos-i)) && i<pos-1) i++; 
+					if(isws) break; // buffer end is reached
+
+					// Skip comments
+					if(buf(pos-i)=='#')
+					{ 
+						do {
+							i++;
+						}while(!ISCRLF(pos-i) && i<pos-1);
+					}else
+					{ 
+						// Get header record as a string into v_buf
+						v_ptr = 0;
+						do {
+							v_buf[v_ptr++] = buf(pos-i);
+							i++;
+						}while(!(isws = ISWHITESPACE(pos-i)) && i<pos-1 && v_ptr<32);
+
+						if(isws)
+						{
+							pbm_hdr[pbm_ptr++] = atoi(v_buf);
+							pbm = i; // move pointer 
+						}
+					}
+				}
+
+				// Header is finished, next byte is first pixel
+				if(pbm_ptr==2)
+				{ 
+					if(pbm_hdr[0]>0 && pbm_hdr[1]>0)
+					{
+						w = pbm_hdr[0];
+						h = pbm_hdr[1];
+						eoi = pos+w*h;
+						printf("PBM %dx%d",w,h);
+						w = (w+7)/8;
+					}
+				}
+			}
+	}
+	if (pos>eoi) return;
+    model1bit(m,w);
+	return;
 }
 
 //////////////////////////// jpegModel /////////////////////////
@@ -3024,7 +3225,174 @@ int jpegModel(Mixer& m) {
   return 2+(hc&255);
 }
 
+//////////////////////////// wavModel /////////////////////////////////
 
+// Model a 16/8-bit stereo/mono uncompressed .wav file.  Return
+// number of channels and bits per sample if a wav file is detected, else 0.
+// Based on 'An asymptotically Optimal Predictor for Stereo Lossless Audio Compression'
+// by Florin Ghido.
+
+  static int S,D;
+  static int wmode;
+
+inline U32 c(int b, int i1=0, int i2=0, int i3=0, int i4=0) {
+    int c;
+    c=buf(i1)>>(8-b);
+    if (i2) c=c<<b|buf(i2)>>(8-b);
+    if (i3) c=c<<b|buf(i3)>>(8-b);
+    if (i4) c=c<<b|buf(i4)>>(8-b);
+    return c;
+  }
+
+inline int s2(int i) {
+    return int(short(buf(i)+256*buf(i-1)));
+}
+
+inline int X(int i, int j) {
+  if (wmode==18) {
+     if (i<=S) return s2(i+j<<2); else return s2((i+j-S<<2)-2);
+  }
+     else if (wmode==17) return s2(i+j<<1);
+          else if (wmode==10) {
+                  if (i<=S) return buf(i+j<<1); else return buf((i+j-S<<1)-1);
+          }
+               else return buf(i+j);
+}
+
+int wavModel(Mixer& m) {
+  static int channels;  // number of channels
+  static int bits;  // bits per sample
+  static int bytes;  // bytes per sample
+  static int eof=0;     // end of wav
+  static int s=0;  // size in bytes
+  static int w,K=128>>(level-1);
+  static int pr[4][2], n[2], counter[2];
+  int chn,ch,msb,j,k,l,i=0;
+  double sum,a=0.996;  
+  double F[49][49][2],L[49][49];
+  const int SC=0x20000;
+  static SmallStationaryContextMap scm1(SC), scm2(SC), scm3(SC), scm4(SC), scm5(SC), scm6(SC), scm7(SC), scm8(SC);
+  static ContextMap cm(MEM*4, 10);
+
+  // Detect .wav file header
+  if (!bpos && buf(8)=='d' && buf(7)=='a' && buf(6)=='t' && buf(5)=='a') {
+    for (int i=32; i<=1000; i++) 
+      if (buf(i)=='f' && buf(i-1)=='m' && buf(i-2)=='t' && buf(i-3)==' ' && (i2(i-8)==1||i2(i-8)==65534)) {
+    bits=buf(i-22);
+    bytes=bits+7>>3;
+    channels=buf(i-10);
+    w=channels*bytes;
+    s=i4(4);
+    if ((channels==1 || channels==2) && (bits==8 || bits==16)) {
+      eof=pos+s;
+      for (int j=0; j<channels; j++) {
+          for (k=0; k<=S+D; k++) for (l=k; l<=S+D; l++) F[k][l][j]=0;
+          F[1][0][j]=1;
+          n[j]=counter[j]=0;
+      } 
+      wmode=channels+bits; 
+      printf("WAV %ibits/",bits);
+      if (channels==1) {printf("mono "); S=48; D=0;}
+         else {printf("stereo "); S=36; D=12;} 
+    }
+      else eof=pos;
+      }
+  }
+  if (pos>eof) return bits=channels=0;
+
+  // Select previous samples and predicted sample as context
+  if (!bpos) {
+    msb=(pos+s-eof)%bytes;
+    ch=(pos+s-eof)%w;
+    chn=ch/bytes;
+  if (!msb) {
+    for (l=0; l<=S+D; l++) if (l<counter[chn]||(l-S-1>=0&&l-S-1<counter[chn])) F[0][l][chn]=F[0][l][chn]*a+X(0,1)*X(l,1);
+    if (channels==2) {
+       for (l=S+1; l<=S+D; l++) if (l-S-1<counter[chn]) F[S+1][l][chn]=F[S+1][l][chn]*a+X(S+1,1)*X(l,1);
+       for (k=1; k<=S; k++) if (k<counter[chn]) F[k][S+1][chn]=F[k][S+1][chn]*a+X(k,1)*X(S+1,1);
+    }
+    if (++n[chn]==K) {        
+       if (channels==1) for (k=1; k<=S+D; k++) for (l=k; l<=S+D; l++) F[k][l][chn]=(F[k-1][l-1][chn]-X(k-1,1)*X(l-1,1))/a;
+          else for (k=1; k<=S+D; k++) if (k!=S+1) for (l=k; l<=S+D; l++) if (l!=S+1) F[k][l][chn]=(F[k-1][l-1][chn]-X(k-1,1)*X(l-1,1))/a;
+       for (i=1; i<=S+D; i++) {
+           sum=F[i][i][chn];
+           for (k=1; k<i; k++) sum-=L[i][k]*L[i][k];
+           if (sum>0) {
+              L[i][i]=sqrt(sum);
+              for (j=(i+1); j<=S+D; j++) {
+                  sum=F[i][j][chn];
+                  for (k=1; k<i; k++) sum-=L[j][k]*L[i][k];
+                  L[j][i]=sum/L[i][i];
+              }
+           }
+              else break;
+       }
+       if (i>S+D && counter[chn]>S+1) { 
+          for (k=1; k<=S+D; k++) {
+              F[k][0][chn]=F[0][k][chn];
+              for (j=1; j<k; j++) F[k][0][chn]-=L[k][j]*F[j][0][chn];
+              F[k][0][chn]/=L[k][k];
+          }
+          for (k=S+D; k>0; k--) {
+              for (j=k+1; j<=S+D; j++) F[k][0][chn]-=L[j][k]*F[j][0][chn];
+              F[k][0][chn]/=L[k][k];
+          }
+       }
+       n[chn]=0;
+    }
+    sum=0;
+    for (l=1; l<=S+D; l++) sum+=F[l][0][chn]*X(l,0);
+    pr[3][chn]=pr[2][chn];
+    pr[2][chn]=pr[1][chn];
+    pr[1][chn]=pr[0][chn];
+    pr[0][chn]=int(floor(sum));
+    counter[chn]++;
+    i=0;
+    cm.set(hash(++i, buf(1), ch));
+    cm.set(hash(++i, buf(1), buf(2), ch));
+    cm.set(hash(++i, buf(1), buf(2)>>3, buf(3), ch));
+    cm.set(hash(++i, s2(4)+s2(2)-s2(6)&0xff, ch));
+    cm.set(hash(++i, pr[0][chn]&0xff, ch));
+    cm.set(hash(++i, pr[0][chn]+s2(w)-pr[1][chn]&0xff ,ch));
+    cm.set(hash(++i, pr[0][chn]&0xff, (s2(w)-pr[1][chn]+s2(w*2)-pr[2][chn]>>1)&0xff, ch));
+    cm.set(hash(++i, pr[0][chn]+s2(w)*2-pr[1][chn]*2-s2(w*2)+pr[2][chn]&0xff, ch));
+    scm1.set(s2(w)&0x1ff);
+    scm2.set(s2(w)*2-s2(w*2)&0x1ff);
+    scm3.set(s2(w)*3-s2(w*2)*3+s2(w*3)&0x1ff);
+  } 
+    else {
+    cm.set(hash(++i, buf(1), ch));
+    cm.set(hash(++i, buf(1)>>7, buf(2), buf(3)>>7, ch));
+    cm.set(hash(++i, c(7, w,w*2,w*3,w*4), ch));
+    cm.set(hash(++i, c(5, w,w*2,w*3,w*4), c(5, w*5,w*6), ch));
+    cm.set(hash(++i, c(4, w,w*2,w*3,w*4), c(3, w*5,w*6,w*7,w*8), c(2, w*9,w*10,w*11,w*12), ch));
+    cm.set(hash(++i, c(2, w,w*2,w*3,w*4)<<8|c(2, w*5,w*6,w*7,w*8), c(2, w*9,w*10,w*11,w*12)<<8|c(2, w*13,w*14,w*15,w*16),  c(2, w*17,w*18,w*19,w*20)<<8|c(2, w*21,w*22,w*23,w*24), ch));
+    cm.set(hash(++i, pr[0][chn]>>8, ch));
+    cm.set(hash(++i, pr[0][chn]+s2(w+1)-pr[1][chn]>>8 ,ch));
+    cm.set(hash(++i, pr[0][chn]>>8, s2(w+1)-pr[1][chn]+s2(w*2+1)-pr[2][chn]>>9, ch));
+    cm.set(hash(++i, pr[0][chn]+s2(w+1)*2-pr[1][chn]*2-s2(w*2+1)+pr[2][chn]>>8, ch));
+    scm1.set(s2(5)+s2(3)-s2(7)-buf(1)+pr[0][chn]>>9);
+    scm2.set(s2(w+1)-buf(1)+pr[0][chn]>>9);
+    scm3.set(s2(w+1)*2-s2(w*2+1)-buf(1)+pr[0][chn]>>8);
+    scm4.set(s2(w+1)*3-s2(w*2+1)*3+s2(w*3+1)-buf(1)>>7);
+    scm5.set(s2(w-1)+s2(w+1)-buf(1)+pr[0][chn]*2>>10);
+    scm7.set(s2(w+1)*4-s2(w*2+1)*6+s2(w*3+1)*4-s2(w*4+1)-buf(1)>>7);
+    scm8.set(s2(w+1)*5-s2(w*2+1)*10+s2(w*3+1)*10-s2(w*4+1)*5+s2(w*5+1)-buf(1)+pr[0][chn]>>9);
+    }  
+  }
+
+  // Predict next bit
+  scm1.mix(m);
+  scm2.mix(m);
+  scm3.mix(m);
+  scm4.mix(m);
+  scm5.mix(m);
+  scm6.mix(m);
+  scm7.mix(m);
+  scm8.mix(m);
+  cm.mix(m);
+  return channels<<8|bits;
+}
 //////////////////////////// exeModel /////////////////////////
 
 // Model x86 code.  The contexts are sparse containing only those
@@ -3277,11 +3645,12 @@ void nestModel(Mixer& m)
 //static U32 WRT_mtt[16]= { 0, 0, 1, 2, 3, 4, 5, 5,  6, 6, 6, 6, 6, 7, 7, 7 };
 
 typedef enum {DEFAULT, JPEG, BMPFILE1, BMPFILE4, BMPFILE8, BMPFILE24, TIFFFILE,
-              PGMFILE, RGBFILE, EXE, TEXT, WAVFILE, MRBFILE, TXTUTF8} Filetype;
-static int typesize[14]={0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-static const char* typenames[14]={"", "jpeg ", "bmp1 ", "bmp4 ",
+              PGMFILE, RGBFILE, EXE, TEXT, WAVFILE, MRBFILE, TXTUTF8, PPMFILE, PBMFILE} Filetype;
+static int typesize[16]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+static int typecount[16]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+static const char* typenames[16]={"unkn", "jpeg ", "bmp1 ", "bmp4 ",
                                  "bmp8 ", "bmp24 ", "tiff ",
-                                 "pgm ", "rgb ", "exe ", "text ", "wav ", "mrb ","utf8 "};
+                                 "pgm ", "rgb ", "exe ", "text ", "wav ", "mrb ","utf8 ","ppm ","pbm "};
 // This combines all the context models with a Mixer.
 
 int contextModel2() {
@@ -3298,7 +3667,7 @@ int contextModel2() {
     if (size==-1) filetype=(Filetype)buf(1);
     if (size==-5) {
       size=buf(4)<<24|buf(3)<<16|buf(2)<<8|buf(1);
-      if (filetype<=14) /*printf("\n(%s%d)", typenames[filetype], size),*/ typesize[filetype]+=size;
+      if (filetype<=15) /*printf("\n(%s%d)", typenames[filetype], size),*/ typesize[filetype]+=size,++typecount[filetype];
       if (filetype==EXE) size+=8;
     }
   }
@@ -3308,6 +3677,7 @@ int contextModel2() {
 
   // Test for special file types
   int ismatch=ilog(matchModel(m));  // Length of longest matching context
+  
   switch (filetype)
 	{
     //case DEFAULT:	break;
@@ -3321,6 +3691,20 @@ int contextModel2() {
 			}
 			break;
 		}
+	case WAVFILE: {
+         int iswav=wavModel(m);  // number of channels and bits per sample if WAV is detected, else 0
+         if (iswav>0) {
+            int bits=iswav&0xff;
+            int tbits=(iswav>>8)*bits;
+            static int col=0;
+            if (++col>=tbits) col=0;
+            if (tbits!=bits) m.set(col, tbits);
+            m.set(col, bits);
+            m.set(c0, 256);
+            return m.p();
+         }
+         break;
+         }
 	case BMPFILE24:
 	case TIFFFILE:{ 
 			int isbmp=bmpModel(m); // Image width (bytes) if BMP or TIFF detected, or 0
@@ -3335,6 +3719,19 @@ int contextModel2() {
 			}
 			break;
 		}
+	case PPMFILE:{
+         int isppm=ppmModel(m); // Image width (bytes) if ppm detected, or 0
+			if (isppm>0) {
+				static int col=0;
+				if (++col>=24) col=0;
+				m.set(2, 8);
+				m.set(col, 24);
+				m.set(buf(isppm)+buf(3)>>4, 32);
+				m.set(c0, 256);
+				return m.p();
+			}
+			break;
+         }
 	case BMPFILE8:{ 
 			if (bmpModel8(m)>0) return m.p(); // Image width (bytes) if BMP8 detected, or 0 
 			break;
@@ -3349,6 +3746,10 @@ int contextModel2() {
 			break;
 		} // 
 
+    case PBMFILE:{
+			pbmModel(m);
+			break;
+		} // 
 	case RGBFILE:{ 
 			if (rgbModel8(m)>0) return m.p(); // Image width (bytes) if RGB8 detected, or 0 
 			break;
@@ -3401,11 +3802,12 @@ int contextModel2() {
 			exeModel(m);
 			break;
 		} 
-	case BMPFILE1: break;
+	case BMPFILE1:
+    case PBMFILE: break;
 	default: { 
 			sparseModel(m,ismatch,order);
 			distanceModel(m);
-			picModel(m);
+			//picModel(m);
 			recordModel(m);  
 			//wordModel(m);
 			indirectModel(m);
@@ -3669,8 +4071,8 @@ Filetype detect(FILE* in, int n, Filetype type) {
   int e8e9last=0;   // offset of most recent CALL or JMP
   // For BMP detection
   int bmp=0,bmp2=0,bmp0=0,bsize=0,imgbpp=0,bmpx=0,bmpy=0,bmpimgoff=0,imgcomp=-1;
-  // For PGM detection
-  int pgm=0,psize=0,pgmcomment=0,pgmw=0,pgmh=0,pgmsize=0,pgm_ptr=0,pgmc=0;
+  // For PGM detection                                                    PPM    PBM
+  int pgm=0,psize=0,pgmcomment=0,pgmw=0,pgmh=0,pgmsize=0,pgm_ptr=0,pgmc=0,pgm6=0,pbm=0;
   char pgm_buf[32];
   // For JPEG detection
   int soi=0, sof=0, sos=0, app=0;  // position where found
@@ -3731,10 +4133,11 @@ Filetype detect(FILE* in, int n, Filetype type) {
 			bmpy=bswap(buf0);                       //image y size
 			if (bmpy==0) bmp=imgbpp=bsize=0,imgcomp=-1;
 		}	
-		if ((i-bmp)==27) imgbpp=c;                  //image bpp
+		if ((i-bmp)==27) imgbpp=c;                  //image bpp // fixme needs check
 		if ((i-bmp)==31){
                          imgcomp=buf0;              //image compression 0=none, 1=RLE-8, 2=RLE-4		
                          if (imgcomp!=0) bmp=imgbpp=bsize=0,imgcomp=-1;}
+                         //test current file size agenst image size
 		if ((type==BMPFILE1 || type==BMPFILE4 || type==BMPFILE8 || type==BMPFILE24 ) && (imgbpp==1 || imgbpp==4 || imgbpp==8 || imgbpp==24) && imgcomp==0){
             int tbsize=0;
             if (imgbpp==1)
@@ -3793,37 +4196,54 @@ Filetype detect(FILE* in, int n, Filetype type) {
 		}
     }*/
 
-    // Detect .pgm image
-    if ((buf0&0xFFFFFF)==0x50350A) pgm=i;           //possible 'P5 '
+    // Detect .pgm  .ppm  .pbm image
+    
+    if ((buf0&0xFFFFFF)==0x50350A ) pgm=i;           //possible 'P5 ' 8 bit
+    if ((buf0&0xFFFFFF)==0x50360A) pgm=i,pgm6=1;     //possible 'P6 ' 24 bit
+    if ((buf0&0xFFFFFF)==0x50340A) pgm=i,pbm=1;      //possible 'P4 ' 1 bit
+
     if (pgm){
 		if ((i-pgm)==1 && c==0x23) pgmcomment=1; //pgm comment
 		//not tested without comment
 		if (!pgmcomment && c==0x20 && !pgmw && pgm_ptr) {
 			pgm_buf[pgm_ptr++]=0;
 			pgmw=atoi(pgm_buf);
-			if (pgmw==0) pgm=pgm_ptr=pgmw=pgmh=pgmc=pgmcomment=0;			
+			if (pgmw==0) pgm=pgm_ptr=pgmw=pgmh=pgmc=pgmcomment=pgm6=pbm=0;			
 			pgm_ptr=0;
 		}
 		if (!pgmcomment && c==0x0a && !pgmh && pgm_ptr){
 			pgm_buf[pgm_ptr++]=0;
 			pgmh=atoi(pgm_buf);
-			if (pgmh==0) pgm=pgm_ptr=pgmw=pgmh=pgmc=pgmcomment=0;
+			if (pgmh==0) pgm=pgm_ptr=pgmw=pgmh=pgmc=pgmcomment=pgm6=pbm=0;
 			pgm_ptr=0;
 		}
-		if (!pgmcomment && c==0x0a && !pgmc && pgm_ptr){
+		if (!pgmcomment && c==0x0a && !pgmc && pgm_ptr && !pbm){
 			pgm_buf[pgm_ptr++]=0;
 			pgmc=atoi(pgm_buf);
+			if (pgmc>255 || pgmc<=0) pgm=pgm_ptr=pgmw=pgmh=pgmc=pgmcomment=pgm6=pbm=0; // do not allow larger sample size
 			pgm_ptr=0;
 		}
 		if (!pgmcomment) pgm_buf[pgm_ptr++]=c;
-		if (pgm_ptr>=32) pgm=pgm_ptr=pgmw=pgmh=pgmc=pgmcomment=0;
+		if (pgm_ptr>=32) pgm=pgm_ptr=pgmw=pgmh=pgmc=pgmcomment=pgm6=pbm=0;
 		if (pgmcomment && c==0x0a) pgmcomment=0;
-		if (type==PGMFILE && pgmw && pgmh && pgmc){
-			pgmsize=pgmw *pgmh +pgm+i-1;
-			return fseek(in, start+pgmsize, SEEK_SET),DEFAULT;
+		if ((type==PGMFILE || type==PPMFILE)&& pgmw && pgmh && pgmc){
+			if (pgm6==1){
+                         pgmsize=(pgmw *pgmh*3) +pgm+i-1;
+                         return fseek(in, start+pgmsize, SEEK_SET),DEFAULT;
+                         }
+            pgmsize=pgmw *pgmh +pgm+i-1;
+			return fseek(in, start+pgmsize, SEEK_SET),DEFAULT;			
 		}
      	if (pgmw && pgmh && pgmc){
+                 if (pgm6==1) return fseek(in, start+pgm-2, SEEK_SET),PPMFILE;
 		     return fseek(in, start+pgm-2, SEEK_SET),PGMFILE;
+        }
+        if (type==PBMFILE && pgmw && pgmh && !pgmc && pbm){
+                         pgmsize=((pgmw+7)/8) *pgmh +pgm+i-1;
+                         return fseek(in, start+pgmsize, SEEK_SET),DEFAULT;			
+		}
+     	if (pgmw && pgmh && !pgmc && pbm){
+		     return fseek(in, start+pgm-2, SEEK_SET),PBMFILE;
         }
     }
     // Detect .rgb image
@@ -3949,7 +4369,7 @@ Filetype detect(FILE* in, int n, Filetype type) {
     //TIFF support needed
     // Detect .tiff file
     
-    
+    static int wavChannels=0;
     // Detect .wav file
 	if (buf0==0x52494646 ) wavi=i; //'RIFF'
     if (wavi){
@@ -3963,6 +4383,10 @@ Filetype detect(FILE* in, int n, Filetype type) {
 	    	wavchunkSize=bswap(buf0);
 			if (wavchunkSize==0) wavi=wavdatas=wavsize=0;}
     	if ((i-wavi)==18 && ((buf0&0xFFFF)!=0x100))  wavi=wavdatas=wavsize=0; // 1=if no comression
+    /*	if ((i-wavi)==20 && ((buf0&0xFFFF)==0x100 || (buf0&0xFFFF)==0x200 )){
+            wavChannels=(buf0&0xFFFF)>>8;
+            if (wavChannels!=1 || wavChannels!=2) wavi=wavdatas=wavsize=0;} // if not mono, stereo
+        } */
     	if ((i-wavi)==36 && !buf0=='data') wavi=wavdatas=wavsize=0;    //'data' 
 		if ((i-wavi)==40) {
 	    	wavdatas=bswap(buf0);
@@ -4120,6 +4544,14 @@ int decode_rgb(Encoder& en) {
   return en.decompress();
 }
 
+// WAV encode as self.
+void encode_wav(FILE* in, FILE* out, int len) {
+  while (len--) putc(getc(in), out);
+}
+
+int decode_wav(Encoder& en) {
+  return en.decompress();
+}
 // EXE transform: <encoded-size> <begin> <block>...
 // Encoded-size is 4 bytes, MSB first.
 // begin is the offset of the start of the input file, 4 bytes, MSB first.
@@ -4202,18 +4634,24 @@ int decode_exe(Encoder& en) {
 }
 
 
-
 // Split n bytes into blocks by type.  For each block, output
 // <type> <size> and call encode_X to convert to type X.
 void encode(FILE* in, FILE* out, int n) {
   Filetype type=DEFAULT;
+  int n1=n;
   long begin=ftell(in);
   while (n>0) {
     Filetype nextType=detect(in, n, type);
     long end=ftell(in);
     fseek(in, begin, SEEK_SET);
+    if (end>n1) // if some detection reports longer then actual size file is
+	{
+			end=begin+1; // for invalid detections  //or n1;  
+			type=DEFAULT;
+	}
     int len=int(end-begin);
     if (len>0) {
+            if (level==0)  typesize[type]+=len,++typecount[type];
       fprintf(out, "%c%c%c%c%c", type, len>>24, len>>16, len>>8, len);
       switch(type) {
         case JPEG: encode_jpeg(in, out, len); break;
@@ -4224,6 +4662,7 @@ void encode(FILE* in, FILE* out, int n) {
 			encode_bmp(in, out, len); break;
 		case PGMFILE: encode_pgm(in, out, len); break;
 		case RGBFILE: encode_rgb(in, out, len); break;
+		case WAVFILE: encode_wav(in, out, len); break;
         case EXE:  encode_exe(in, out, len, begin); break;
         default:   encode_default(in, out, len); break;
       }
@@ -4245,6 +4684,7 @@ int decode(Encoder& en) {
     len|=en.decompress()<<8;
     len|=en.decompress();
     if (len<0) len=1;
+     if (level==0 && (en.getMode()!=COMPRESS))  typesize[type]+=len,++typecount[type];
   }
   --len;
   switch (type) {
@@ -4256,6 +4696,7 @@ int decode(Encoder& en) {
 		return decode_bmp(en);
     case PGMFILE: return decode_pgm(en);
 	case RGBFILE: return decode_rgb(en);
+	case WAVFILE: return decode_wav(en);
     case EXE:  return decode_exe(en);
     default:   return decode_default(en);
   }
@@ -4279,14 +4720,14 @@ void compress(const char* filename, long filesize, Encoder& en) {
   printf("%s %ld -> ", filename, filesize);
 
   // Transform and test in blocks
-  const int BLOCK=MEM*64;
+ /* const int BLOCK=MEM*64;
   for (int i=0; filesize>0; i+=BLOCK) {
     int size=BLOCK;
-    if (size>filesize) size=filesize;
+    if (size>filesize) size=filesize;*/
     FILE* tmp=tmpfile();
     if (!tmp) perror("tmpfile"), quit();
     long savepos=ftell(f);
-    encode(f, tmp, size);
+    encode(f, tmp, filesize);
 
     // Test transform
     rewind(tmp);
@@ -4294,20 +4735,20 @@ void compress(const char* filename, long filesize, Encoder& en) {
     fseek(f, savepos, SEEK_SET);
     long j;
     int c1=0, c2=0;
-    for (j=0; j<size; ++j)
+    for (j=0; j<filesize; ++j)
       if ((c1=decode(en))!=(c2=getc(f))) break;
 
     // Test fails, compress without transform
-    if (j!=size || getc(tmp)!=EOF) {
-      printf("Transform fails at %ld, input=%d decoded=%d, skipping...\n", i+j, c2, c1);
+    if (j!=filesize || getc(tmp)!=EOF) {
+      printf("Transform fails at %ld, input=%d decoded=%d, skipping...\n", j, c2, c1);
       en.compress(0);
-      en.compress(size>>24);
-      en.compress(size>>16);
-      en.compress(size>>8);
-      en.compress(size);
+      en.compress(filesize>>24);
+      en.compress(filesize>>16);
+      en.compress(filesize>>8);
+      en.compress(filesize);
       fseek(f, savepos, SEEK_SET);
-      for (int j=0; j<size; ++j) {
-        printStatus(i+j);
+      for (int j=0; j<filesize; ++j) {
+        printStatus(j);
         en.compress(getc(f));
       }
     }
@@ -4318,13 +4759,13 @@ void compress(const char* filename, long filesize, Encoder& en) {
       int c;
       j=0;
       while ((c=getc(tmp))!=EOF) {
-        printStatus(i+j++);
+        printStatus(j++);
         en.compress(c);
       }
     }
-    filesize-=size;
+  //  filesize-=size;
     fclose(tmp);  // deletes
-  }
+ // }
   if (f) fclose(f);
   printf("%-12ld\n", en.size()-start);
 }
@@ -4532,21 +4973,21 @@ int expand(String& archive, String& s, const char* fname, int base) {
 #endif
 
 
-// To compress to file1.paq8o10t: paq8o10t [-n] file1 [file2...]
-// To decompress: paq8o10t file1.paq8o10t [output_dir]
+// To compress to file1.paq8p1: paq8p1 [-n] file1 [file2...]
+// To decompress: paq8p1 file1.paq8p1 [output_dir]
 int main(int argc, char** argv) {
   bool pause=argc<=2;  // Pause when done?
   try {
 
     // Get option
     bool doExtract=false;  // -d option
-    if (argc>1 && argv[1][0]=='-' && argv[1][1] && !argv[1][2]) {
-      if (argv[1][1]>='0' && argv[1][1]<='9')
+    if (argc>1 && argv[1][0]=='-' && argv[1][1]) {
+      if (argv[1][1]>='0' && argv[1][1]<'9' && argv[1][2]==0)
         level=argv[1][1]-'0';
-      else if (argv[1][1]=='d')
+      else if (argv[1][1]=='d' && argv[1][2]==0)
         doExtract=true;
       else
-        quit("Valid options are -0 through -9 or -d\n");
+        quit("Valid options are -0 through -8 or -d\n");
       --argc;
       ++argv;
       pause=false;
@@ -4718,13 +5159,13 @@ int main(int argc, char** argv) {
       printf("%ld -> %ld\n", total_size, en.size());
     }
 
-    // Decompress files to dir2: paq8o10t -d dir1/archive.paq8o10t dir2
+    // Decompress files to dir2: paq8p1 -d dir1/archive.paq8p1 dir2
     // If there is no dir2, then extract to dir1
     // If there is no dir1, then extract to .
     else {
       assert(argc>=2);
       String dir(argc>2?argv[2]:argv[1]);
-      if (argc==2) {  // chop "/archive.paq8o10t"
+      if (argc==2) {  // chop "/archive.paq8p1"
         int i;
         for (i=dir.size()-2; i>=0; --i) {
           if (dir[i]=='/' || dir[i]=='\\') {
@@ -4748,7 +5189,11 @@ int main(int argc, char** argv) {
     }
     fclose(archive);
     programChecker.print();
-     for (int j=0; j<15; ++j) {if (typesize[j]) printf("%s %d\n",typenames[j],typesize[j]);}
+    // Print out info about processed data
+    int ctotal=0;
+    printf("\nType \tSize \t\tParts\n");
+    for (int j=0; j<16; ++j) {if (typesize[j]) printf("%s \t%d \t\t%d\n",typenames[j],typesize[j],typecount[j]), ctotal+=typecount[j];}
+    printf("Total parts: %d, fragmentation cost %d bytes\n",ctotal,ctotal*5);
   }
   catch(const char* s) {
     if (s) printf("%s\n", s);

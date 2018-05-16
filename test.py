@@ -103,13 +103,27 @@ extensions = {
     'bin/paq8o9': '.paq8o9',
     'bin/paq8o10t': '.paq8o10t',
     'bin/paq8p': '.paq8p',
+    'bin/paq8p1': '.paq8p1',
+    'bin/paq8p2': '.paq8p2',
+    'bin/paq8kx_v1': '.paq8kx',
+    'bin/paq8kx_v2': '.paq8kx',
+    'bin/paq8kx_v3': '.paq8kx',
+    'bin/paq8p3_fix2': '.paq8p3',
+    'bin/paq8p3_fix3': '.paq8p3',
+    'bin/paq8p3x': '.paq8p3x',
+    'bin/paq8p3x2': '.paq8p3x2',
+    'bin/paq8p3x2_v3': '.paq8p3x2',
+    'bin/paq8p3x_v20': '.paq8p3x',
 }
 
 
 def evaluate_one_command_one_file(command, outfile, infile):
-    global best_so_far
     if command.split()[0] in extensions:
         extension = extensions[command.split()[0]]
+    elif 'paq8px' in command:
+        extension = '.paq8px'
+    elif 'paq8q' in command:
+        extension = '.paq8q'
     else:
         extension = ''
     original_size = get_size(infile)
@@ -153,7 +167,6 @@ for executable in executables:
         if min_level is None:
             outfile = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
             the_queue.put(('{} out/{} {}'.format(executable, outfile, testfile), 'out/{}'.format(outfile), testfile))
-            # print('added to queue')
         else:
             for level in range(min_level, max_level + 1):
                 outfile = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
