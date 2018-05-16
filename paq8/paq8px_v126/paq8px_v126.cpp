@@ -1,4 +1,4 @@
-﻿/* paq8px file compressor/archiver.  Released on December 26, 2017
+/* paq8px file compressor/archiver.  Released on December 26, 2017
 
     Copyright (C) 2008 Matt Mahoney, Serge Osnach, Alexander Ratushnyak,
     Bill Pettis, Przemyslaw Skibinski, Matthew Fite, wowtiger, Andrew Paterson,
