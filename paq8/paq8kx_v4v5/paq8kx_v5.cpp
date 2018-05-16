@@ -884,7 +884,7 @@ U32 c4=0; // Last 4 whole bytes, packed.  Last byte is bits 0-7.
 int bpos=0; // bits in c0 (0 to 7)
 Buf buf;  // Rotating input queue set by Predictor
 int blpos=0; // Relative position in block
-int isspecial=0, charts=0;
+int paq_isspecial=0, charts=0;
 
 ///////////////////////////// ilog //////////////////////////////
 
@@ -3378,14 +3378,14 @@ int contextModel2() {
   m.add(256);
 
   // Test for special file types
-  isspecial=1;
+  paq_isspecial=1;
   int ismatch=ilog(matchModel(m));  // Length of longest matching context
   if (filetype==IMAGE1) im1bitModel(m, info);
   if (filetype==IMAGE8) return im8bitModel(m, info), m.p();
   if (filetype==IMAGE24) return im24bitModel(m, info), m.p();
   if (filetype==AUDIO) return wavModel(m, info), m.p();
   if (filetype==JPEG) if (jpegModel(m)) return m.p();
-  isspecial=0;
+  paq_isspecial=0;
 
   // Normal model
   if (bpos==0) {
@@ -3504,7 +3504,7 @@ void Predictor::update() {
   // Filter the context model with APMs
   
   int pr0=contextModel2();
-  if(isspecial) pr=pr0;
+  if(paq_isspecial) pr=pr0;
   else{
     pr=a.p(pr0, c0,7);
     
