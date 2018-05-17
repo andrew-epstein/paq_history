@@ -1,11 +1,9 @@
-// TextFilter 2.1 for PAQ (based on WRT 4.5) by P.Skibinski, 15.02.2006, inikep@o2.pl
+// TextFilter 2.0 for PAQ (based on WRT 4.5) by P.Skibinski, 12.02.2006, inikep@o2.pl
 
-#pragma warning (disable : 4786)
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <windows.h> 
 #include <memory.h>
 #include <map>
 #include <string>
@@ -40,6 +38,7 @@
 #define OPTION_RECORD_INTERLEAVING			32768
 #define OPTION_DNA_QUARTER_BYTE				65536
 
+
 #define AUTO_SWITCH			8	// param for !OPTION_NORMAL_TEXT_FILTER
 #define WORD_MIN_SIZE		3
 #define FUNCTION_CHECK_ERRORS
@@ -71,8 +70,8 @@ class WRT
 {
 public:
 
-WRT() : WRT_verbose(false), preprocType(PAQ), dict(NULL), dictlen(NULL), dictmem(NULL), langCount(0) { };
-~WRT() { WRT_deinitialize(); freeNames(); }
+WRT() : WRT_verbose(false), preprocType(PAQ), dict(NULL), dictlen(NULL), dictmem(NULL) { };
+~WRT() { WRT_deinitialize(); }
 
 enum EPreprocessType { LZ77, BWT, PPM, PAQ };
 enum EWordType { LOWERWORD, FIRSTUPPER, UPPERWORD };
@@ -123,6 +122,7 @@ EPreprocessType preprocType;
 	putc(c,file); \
 }
 
+
 #define MAX_FREQ_ORDER1		2520
 #define ORDER1_STEP			4
 	
@@ -134,8 +134,6 @@ int mOne[MAX_FREQ_ORDER1];
 #define	DECODE_ORDER1(prev)			DecodeOrder1(prev)
 #define	INIT_ORDER1					InitOrder1(MAX_FREQ_ORDER1)
 
-
-// types definitions
 
 typedef unsigned int  uint;
 typedef unsigned char uc;
@@ -306,7 +304,6 @@ low = uint(low)<<8;                           \
 	
 };
 
-
 RangeCoder coder;
 
 inline void UpdateOrder1(int prev,int c, int step)
@@ -424,6 +421,7 @@ inline int ContextEncode(int leftChar,int c,int rightChar,int distance)
 inline int ContextDecode(int leftChar,int rightChar,int distance)
 {
 	unsigned int prev,result;
+
 
 	if (leftChar<'a' || leftChar>'z' || rightChar<'a' || rightChar>'z')
 		if ((leftChar!=',' && leftChar!='.' && leftChar!='\'') || rightChar<'a' || rightChar>'z')
@@ -587,11 +585,9 @@ inline EEOLType DecodeEOLformat()
 	return LF;
 }
 
-
 #define DICTNAME_EXT ".dic"
 #define DICTNAME "wrt-"
 #define SHORT_DICTNAME "wrt-short-"
-#define WRT_DICT_DIR "TextFilter/"
 
 #define HASH_DOUBLE_MULT	37
 #define HASH_MULT			23
@@ -807,6 +803,8 @@ inline void encodeAsText(unsigned char* s,int s_size,FILE* fileout)
 		{
 			if (IF_OPTION(OPTION_USE_NGRAMS))
 				ngram=ngram_hash[s[i]][s[i+1]];
+
+//			printf("IF_OPTION(OPTION_USE_NGRAMS)=%d s[i]=%c%c ngram=%d\n",IF_OPTION(OPTION_USE_NGRAMS),s[i],s[i+1],ngram);
 
 			if (ngram>0 && ngram<dict1size && preprocType!=LZ77)
 			{
@@ -1443,10 +1441,11 @@ void initializeCodeWords()
 		addSymbols[124]=1;
 		addSymbols[125]=1;
 		addSymbols[126]=1;
+		addSymbols[127]=1;
 	}
 
 	if (IF_OPTION(OPTION_ADD_SYMBOLS_0_5))
-		for (c=0; c<=5; c++)
+		for (c=0; c<=4; c++)
 			addSymbols[c]=1;
 
 	if (IF_OPTION(OPTION_ADD_SYMBOLS_14_31))
@@ -1579,6 +1578,8 @@ void initializeCodeWords()
 		dictlen=(unsigned char*)calloc(sizeof(unsigned char)*(dictionary+1),1);
 
 		PRINT_DICT(("usedSet=%d preprocType=%d %d %d %d %d charsUsed=%d sizeDict=%d\n",usedSet,preprocType,dict1size,dict2size,dict3size,dict4size,charsUsed,sizeDict));
+//		PRINT_DICT(("bound4=%d %d %d %d %d %d\n",bound4,bound3,dict123size,dict12size,dict1plus2,dict1plus2plus3));
+
 	}
 }
 
@@ -2003,12 +2004,13 @@ int WRT_detectFileType(FILE* file, int part_length, int parts, int& recordLen)
 	}
 
 	if (shortDict>=0)
-		PRINT_DICT(("choosen short %s %d/%d\n",langName[shortDict],lang[shortDict],part_length*parts/112));
+		PRINT_DICT(("choosen short %s %d\n",langName[shortDict],lang[shortDict]));
 
 	if (longDict>=0)
 		PRINT_DICT(("choosen long %s %d\n",langName[longDict],lang[longDict]));
 
-	if (shortDict>=0 && (lang[shortDict]<part_length*parts/112 || lang[shortDict]<10)) // =457, 461=trans
+
+	if (shortDict>=0 && lang[shortDict]<part_length*parts/112) // =457, 461=trans
 		shortDict=-1;
 
 	langSum=0;
@@ -2028,7 +2030,7 @@ int WRT_detectFileType(FILE* file, int part_length, int parts, int& recordLen)
 	else
 		shortDictLen=0;
 
-	if ((longDictLen<=0 && shortDictLen<=0) || 	langSum<part_length*parts/128) // ==400, 407=ok
+	if ((longDictLen<=0 && shortDictLen<=0) || 	langSum<part_length*parts/128) // == 400, 407=ok
 		TURN_OFF(OPTION_USE_DICTIONARY);
 
 	if (binCount>part_length*parts/13) // 3333
@@ -2045,19 +2047,15 @@ int WRT_detectFileType(FILE* file, int part_length, int parts, int& recordLen)
 		if (!forceWordSurroroundModeling)
 			TURN_OFF(OPTION_WORD_SURROROUNDING_MODELING);
 
-	if (EOLCount>0)
-	{
-		if (IF_OPTION(OPTION_EOL_CODING) && EOLCount>part_length*parts/158 && EOLCount<part_length*parts/10 && EOLCountBad/EOLCount<6 && spaceAfterLF>part_length*parts/53)
-			TURN_ON(OPTION_SPACE_AFTER_EOL)
-		else
-		if (EOLCount<part_length*parts/158 || EOLCount>part_length*parts/10 || EOLCountBad/EOLCount>3)
-		{
-			if (!forceEOLcoding)
-				TURN_OFF(OPTION_EOL_CODING);
-		}
-	}
+
+	if (IF_OPTION(OPTION_EOL_CODING) && EOLCount>part_length*parts/158 && EOLCount<part_length*parts/10 && EOLCountBad/EOLCount<6 && spaceAfterLF>part_length*parts/51)
+		TURN_ON(OPTION_SPACE_AFTER_EOL)
 	else
-		TURN_OFF(OPTION_EOL_CODING);
+	if (EOLCount<part_length*parts/158 || EOLCount>part_length*parts/10 || EOLCountBad/EOLCount>3)
+	{
+		if (!forceEOLcoding)
+			TURN_OFF(OPTION_EOL_CODING);
+	}
 
 	if (!IF_OPTION(OPTION_USE_DICTIONARY))
 	{
@@ -2065,12 +2063,10 @@ int WRT_detectFileType(FILE* file, int part_length, int parts, int& recordLen)
 		if (!forceWordSurroroundModeling)
 			TURN_OFF(OPTION_WORD_SURROROUNDING_MODELING);
 
-		if (preprocType==PAQ)
-		{
-			if (!IF_OPTION(OPTION_EOL_CODING))
-				RESET_OPTIONS;
-		}
+		if (!IF_OPTION(OPTION_EOL_CODING))
+			RESET_OPTIONS;
 	}
+
 
 	if (part_length*parts>quarterByte)
 		TURN_OFF(OPTION_DNA_QUARTER_BYTE)
@@ -2091,12 +2087,9 @@ int WRT_detectFileType(FILE* file, int part_length, int parts, int& recordLen)
 	}
 		
 
-	if (preprocType==PAQ)
-	{
-		if (!IF_OPTION(OPTION_USE_DICTIONARY) && !IF_OPTION(OPTION_NORMAL_TEXT_FILTER) 
-			&&  !IF_OPTION(OPTION_RECORD_INTERLEAVING) && !IF_OPTION(OPTION_DNA_QUARTER_BYTE))
-			RESET_OPTIONS;
-	}
+	if (!IF_OPTION(OPTION_USE_DICTIONARY) && !IF_OPTION(OPTION_NORMAL_TEXT_FILTER) 
+		&&  !IF_OPTION(OPTION_RECORD_INTERLEAVING) && !IF_OPTION(OPTION_DNA_QUARTER_BYTE))
+		RESET_OPTIONS;
 
 	PRINT_DICT(("EOL=%d+%d/%d(%d) bin=%d/%d(%d) punct=%d/%d(%d) lang=%d/%d(%d) cc=%d\n",EOLCount,EOLCountBad,part_length*parts/158,IF_OPTION(OPTION_EOL_CODING),binCount,part_length*parts/13,!IF_OPTION(OPTION_NORMAL_TEXT_FILTER),punctCount,punctCountBad,IF_OPTION(OPTION_WORD_SURROROUNDING_MODELING),langSum,part_length*parts/128,IF_OPTION(OPTION_USE_DICTIONARY),IF_OPTION(OPTION_CAPITAL_CONVERSION)));
 
@@ -2431,133 +2424,7 @@ inline bool addWord(std::string s,int& sizeFullDict)
 
 bool readDicts(char* pattern,char* dictPath,int dictPathLen)
 {
-	FILE* file;
-	WIN32_FIND_DATA FindFileData;
-	HANDLE hFind;
-	bool nonlatin;
-	int c,i,sizeDict,sizeFullDict=0;
-
-	memset(joinCharsets,0,sizeof(joinCharsets));
-
-	map.clear();
-
-	langSum=0;
-	langCount=0;
-	sizeDict=0;
-	dictPath[dictPathLen]=0;
-	strcat(dictPath,pattern);
-	hFind = FindFirstFile(dictPath, &FindFileData);
-
-
-	if (hFind != INVALID_HANDLE_VALUE) 
-	do
-	{
-		dictPath[dictPathLen]=0;
-		strcat(dictPath,FindFileData.cFileName);
-
-		file=fopen((const char*)dictPath,"rb");
-		if (file==NULL)
-			continue;
-		
-
-		i=strlen(FindFileData.cFileName);
-
-
-		toLower((unsigned char*)FindFileData.cFileName,i);
-		langName[langCount]=(unsigned char*)malloc(i+1);
-		memcpy(langName[langCount],(const char*)FindFileData.cFileName,i+1);
-
-		memset(lowerSet,0,sizeof(lowerSet));
-		memset(lowerSetRev,0,sizeof(lowerSetRev));
-
-		do c=getc(file); while (c>=32); if (c==13) c=getc(file); 
-
-		for (i=0; i<CHARSET_COUNT; i++)
-		{
-			do  c=getc(file); while (c>=32); if (c==13) c=getc(file); 
-			freeLower[i]=1;
-			loadCharset(file,freeLower[i],lowerSet[i],lowerSetRev[i],joinCharsets);
-		}
-
-
-		sizeFullDict=sizeDict;
-		std::string s;
-
-		while (!feof(file))
-		{
-			s.erase();
-			nonlatin=false;
-			while (true)
-			{
-				c=getc(file);
-				if (c<32)
-					break;
-				s.append(1,c);
-				if (lowerSet[0][c]>0)
-					nonlatin=true;
-			}
-			if (c==EOF)
-				break;
-
-			if (c==13)
-				c=getc(file); // skip CR+LF or LF
-
-			if (addWord(s,sizeFullDict))
-			{
-				sizeDict++;
-				if (sizeDict%SAMPLE_WORDS_COUNT==0)
-					break;
-			}
-			else
-				continue;
-
-
-			if (nonlatin)
-			{
-				std::string t;
-
-				for (i=1; i<CHARSET_COUNT-1; i++)
-				{
-					if (freeLower[i]>1)
-					{
-						t.erase();
-	
-						for (c=0; c<s.size(); c++)
-						{
-							unsigned char uc=s[c];
-							if (lowerSet[0][uc]>0)
-								t.append(1,lowerSetRev[i][lowerSet[0][uc]]);
-							else
-								t.append(1,uc);
-						}
-
-						if (addWord(t,sizeFullDict))
-						{
-							if (sizeDict%SAMPLE_WORDS_COUNT==0)
-								break; 
-						}
-						else
-							continue;
-					}
-				}
-			}
-
-			if (sizeDict%SAMPLE_WORDS_COUNT==0)
-				break;
-		}
-
-		if (sizeDict%SAMPLE_WORDS_COUNT_MAX!=0)
-			sizeDict=((sizeDict/SAMPLE_WORDS_COUNT_MAX)+1)*SAMPLE_WORDS_COUNT_MAX;
-
-		langCount++;
-
-		fclose(file);
-	}
-	while (FindNextFile(hFind,&FindFileData));
-
-	FindClose(hFind);
-
-	return true;
+	return false;
 }
 
 void freeNames()
@@ -2734,27 +2601,25 @@ void interleave(FILE* file,FILE* fileout,int record,int header)
 	for (i=0; i<j; i++)
 		putc(buffer[count*record+i],fileout);
 
-	free(buffer);
+	delete(buffer);
 	fflush(fileout);
 }
 
-int WRT_getFileType(FILE* file,int& recordLen)
+int WRT_getFileType(FILE* file)
 {
-	int dictPathLen;
+	int fileType,dictPathLen;
 	unsigned char dictPath[256];
 
-	if (map.size()==0)
-	{
-		dictPathLen=getSourcePath((char*)dictPath,sizeof(dictPath));
-		strcat((char*)dictPath,WRT_DICT_DIR);
-		dictPathLen=strlen((char*)dictPath);
+	dictPathLen=getSourcePath((char*)dictPath,sizeof(dictPath));
+	strcat((char*)dictPath,"TextFilter/");
+	dictPathLen=strlen((char*)dictPath);
 
-		readDicts(DICTNAME "*" DICTNAME_EXT,(char*)dictPath,dictPathLen);
-	}
+	readDicts(DICTNAME "*" DICTNAME_EXT,(char*)dictPath,dictPathLen);
+	fileType=WRT_detectFileType(file,10240,5,fileType);
+	WRT_deinitialize();
 
-	return WRT_detectFileType(file,10240,5,recordLen);
+	return fileType;
 }
-
 
 
 #define SWAP_CASE(c) \
@@ -3287,6 +3152,7 @@ void writeEOLstream(FILE* fileout)
 
 inline void WRT_decode(FILE* file)
 {
+
 		PRINT_CHARS(("c=%d (%c)\n",WRTd_c,WRTd_c));
 
 		if (preprocessing>0)
@@ -3358,7 +3224,7 @@ inline void WRT_decode(FILE* file)
 			PRINT_CHARS((" upperWord=%d\n",upperWord));
 
 
-			for (i=0; i<s_size; i++)
+			for (int i=0; i<s_size; i++)
 			{
 				ORIGINAL_CHARSET(WRTd_s[i]);
 				hook_putc(WRTd_s[i]);
@@ -3371,8 +3237,6 @@ inline void WRT_decode(FILE* file)
 
 		if (reservedSet[WRTd_c])
 		{
-			PRINT_CHARS(("reservedSet[%d] OPTION_SPACELESS_WORDS=%d\n",WRTd_c,IF_OPTION(OPTION_SPACELESS_WORDS)));
-
 			if (WRTd_c==CHAR_ESCAPE)
 			{
 				WRTd_upper=false;
@@ -3389,7 +3253,7 @@ inline void WRT_decode(FILE* file)
 				return;
 			}
 
-			if (WRTd_c==CHAR_PUNCTUATION && !IF_OPTION(OPTION_SPACELESS_WORDS))
+			if (WRTd_c==CHAR_PUNCTUATION)
 			{
 				if (bufferedChar==32)
 					bufferedChar=-1;
@@ -3399,8 +3263,6 @@ inline void WRT_decode(FILE* file)
 
 			if (WRTd_c==CHAR_NOSPACE && IF_OPTION(OPTION_SPACELESS_WORDS))
 			{
-				PRINT_CHARS(("c==CHAR_NOSPACE\n"));
-
 				if (upperWord==FORCE)
 					upperWord=UTRUE;
 
@@ -3490,7 +3352,7 @@ inline void WRT_decode(FILE* file)
 
 
 
-void WRT_start_encoding(FILE* file,FILE* fileout,unsigned int fileLen,bool type_detected)
+void WRT_start_encoding(FILE* file,FILE* fileout,unsigned int fileLen)
 {
 	int i,c,c2,recordLen=0,dictPathLen;
 	unsigned char s[256];
@@ -3509,13 +3371,13 @@ void WRT_start_encoding(FILE* file,FILE* fileout,unsigned int fileLen,bool type_
 #endif
 
 	dictPathLen=getSourcePath((char*)dictPath,sizeof(dictPath));
-	strcat((char*)dictPath,WRT_DICT_DIR);
+	strcat((char*)dictPath,"TextFilter/");
 	dictPathLen=strlen((char*)dictPath);
 
-	
-	if (!type_detected)
-		WRT_getFileType(file,recordLen);
 
+	readDicts(DICTNAME "*" DICTNAME_EXT,(char*)dictPath,dictPathLen);
+	WRT_detectFileType(file,1024*10,5,recordLen);
+	
 	if (IF_OPTION(OPTION_USE_DICTIONARY) && longDictLen>0)
 		memcpy(s,langName[longDict],strlen((const char*)langName[longDict])+1);
 	else
@@ -3526,6 +3388,7 @@ void WRT_start_encoding(FILE* file,FILE* fileout,unsigned int fileLen,bool type_
 	else
 		shortDictLen=0;
 	
+	WRT_deinitialize();
 
 
 	if (dictPathLen>0)
@@ -3542,9 +3405,6 @@ void WRT_start_encoding(FILE* file,FILE* fileout,unsigned int fileLen,bool type_
 	WRT_get_options(c,c2);
 	putc(c,fileout);
 	putc(c2,fileout);
-
-
-	WRT_deinitialize();
 
 	if (!initialize((longDictLen<=0)?NULL:s,(shortDictLen<=0)?NULL:t,true))
 		return;
@@ -3682,7 +3542,7 @@ void WRT_start_decoding(FILE* file,FILE* fileout,int header)
 	i+=2+header; // WRT4
 	
 	dictPathLen=getSourcePath((char*)dictPath,sizeof(dictPath));
-	strcat((char*)dictPath,WRT_DICT_DIR);
+	strcat((char*)dictPath,"TextFilter/");
 	dictPathLen=strlen((char*)dictPath);
 
 
@@ -3698,8 +3558,6 @@ void WRT_start_decoding(FILE* file,FILE* fileout,int header)
 		strcat((char*)dictPath,(char*)t);
 		strcpy((char*)t,(char*)dictPath);
 	}
-
-	WRT_deinitialize();
 
 	if (!initialize((longDictLen<=0)?NULL:s,(shortDictLen<=0)?NULL:t,false))
 		return;
@@ -3762,7 +3620,7 @@ void WRT_start_decoding(FILE* file,FILE* fileout,int header)
 				
 				
 				DECODE_GETC(WRTd_c,file);
-				PRINT_CHARS(("WRT_start_decoding WRTd_c=%d ftell=%d\n",WRTd_c,ftell(file)));
+				PRINT_CHARS(("c==CHAR_FIRSTUPPER WRTd_c=%d ftell=%d\n",WRTd_c,ftell(file)));
 		} 
 }
 

@@ -57,7 +57,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <windows.h> 
 #include <memory.h>
 
 #define HASH_TABLE_SIZE		(1<<21)
@@ -2441,128 +2440,7 @@ inline void addWord(unsigned char* mem,int& i,int& sizeFullDict)
 
 bool readDicts(char* pattern,char* dictPath,int dictPathLen)
 {
-	FILE* file;
-	WIN32_FIND_DATA FindFileData;
-	HANDLE hFind;
-	unsigned char* word;
-	unsigned char* mem;
-	bool nonlatin;
-	int c,i,len,sizeFullDict=0;
-
-	memset(joinCharsets,0,sizeof(joinCharsets));
-	memset(&word_hash[0],0,HASH_TABLE_SIZE*sizeof(word_hash[0]));
-	dict=(unsigned char**)calloc(sizeof(unsigned char*)*(SAMPLE_WORDS_COUNT_MAX*MAX_DICT_NUMBER),1);
-	dictlen=(unsigned char*)calloc(sizeof(unsigned char)*(SAMPLE_WORDS_COUNT_MAX*MAX_DICT_NUMBER),1);
-	dictmem=(unsigned char*)calloc(SAMPLE_WORDS_COUNT_MAX*10*MAX_DICT_NUMBER,1);
-
-	langSum=0;
-	langCount=0;
-	sizeDict=0;
-	mem=dictmem;
-	dictPath[dictPathLen]=0;
-	strcat(dictPath,pattern);
-	hFind = FindFirstFile(dictPath, &FindFileData);
-
-
-	if (hFind != INVALID_HANDLE_VALUE) 
-	do
-	{
-		dictPath[dictPathLen]=0;
-		strcat(dictPath,FindFileData.cFileName);
-
-		file=fopen((const char*)dictPath,"rb");
-		if (file==NULL)
-			continue;
-		
-		i=strlen(FindFileData.cFileName);
-
-
-		toLower((unsigned char*)FindFileData.cFileName,i);
-		langName[langCount]=(unsigned char*)malloc(i+1);
-		memcpy(langName[langCount],(const char*)FindFileData.cFileName,i+1);
-
-		memset(lowerSet,0,sizeof(lowerSet));
-		memset(lowerSetRev,0,sizeof(lowerSetRev));
-
-		do c=getc(file); while (c>=32); if (c==13) c=getc(file); 
-
-		for (i=0; i<CHARSET_COUNT; i++)
-		{
-			do  c=getc(file); while (c>=32); if (c==13) c=getc(file); 
-			freeLower[i]=1;
-			loadCharset(file,freeLower[i],lowerSet[i],lowerSetRev[i],joinCharsets);
-		}
-
-
-		sizeFullDict=sizeDict;
-
-		while (!feof(file))
-		{
-			word=mem;
-			nonlatin=false;
-			do
-			{
-				c=getc(file);
-				word[0]=c;
-				if (lowerSet[0][c]>0)
-					nonlatin=true;
-				word++;
-			}
-			while (c>32);
-			if (c==EOF)
-				break;
-
-			if (c==13)
-				c=getc(file); // skip CR+LF or LF
-
-			word[-1]=0;
-			len=word-mem-1;
-
-
-			addWord(mem,len,sizeFullDict);
-			word=mem+(len/4+1)*4;
-
-			if (nonlatin)
-			{
-				for (i=1; i<CHARSET_COUNT-1; i++)
-				{
-					if (freeLower[i]>1)
-					{
-						for (c=0; c<len; c++)
-						{
-							if (lowerSet[0][mem[c]]>0)
-								word[c]=lowerSetRev[i][lowerSet[0][mem[c]]];
-							else
-								word[c]=mem[c];
-						}
-
-						addWord(word,len,sizeFullDict);
-						word+=(len/4+1)*4;
-					}
-				}
-			}
-
-			mem=word;
-
-			sizeDict++;
-
-			if (sizeDict%SAMPLE_WORDS_COUNT==0)
-				break;
-		}
-
-		if (sizeDict%SAMPLE_WORDS_COUNT_MAX!=0)
-			sizeDict=((sizeDict/SAMPLE_WORDS_COUNT_MAX)+1)*SAMPLE_WORDS_COUNT_MAX;
-
-		langCount++;
-
-		fclose(file);
-	}
-	while (FindNextFile(hFind,&FindFileData));
-
-	FindClose(hFind);
-
-
-	return true;
+	return false;
 }
 
 void freeNames()
@@ -3355,7 +3233,7 @@ inline void WRT_decode(FILE* file)
 			PRINT_CHARS((" upperWord=%d\n",upperWord));
 
 
-			for (i=0; i<s_size; i++)
+			for (int i=0; i<s_size; i++)
 			{
 				ORIGINAL_CHARSET(WRTd_s[i]);
 				hook_putc(WRTd_s[i]);
