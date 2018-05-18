@@ -11,23 +11,10 @@
 #define PRINT_CONTAINERS(data) ;//printf data
 //#define PRINT_STATUS(data) printf data;
 
-#pragma warning(disable:4244) //  '=' : conversion from ... to ..., possible loss of data
-#pragma warning(disable:4786) // STL warnings
-#pragma warning(disable:4996) // '_getch' was declared deprecated
-#pragma warning(disable:4503) // STL
-#pragma warning(disable:4390) // empty controlled statement found; is this the intent?
-#pragma warning(disable:4018) // signed/unsigned mismatch
-#define _CRT_SECURE_NO_DEPRECATE // VC++ 2005 deprecate warnings
-
-
 #if defined WIN32 || defined WIN64
 	#define getch _getch
 #else
 	#define getch getchar
-#endif
-#ifndef WINDOWS
-inline int min(int a, int b) {return a<b?a:b;}
-inline int max(int a, int b) {return a<b?b:a;}
 #endif
 
 #define CHAR_FIRSTUPPER		1	// for encode lower word with first capital letter

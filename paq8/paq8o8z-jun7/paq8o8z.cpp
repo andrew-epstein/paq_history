@@ -608,7 +608,6 @@ extern "C" {                       // in NASM
 
 #define PROGNAME "paq8o8z"  // Please change this if you change the program.
                             // (but it won't unpack "paq8o8" due to this!!)
-#include <dos.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

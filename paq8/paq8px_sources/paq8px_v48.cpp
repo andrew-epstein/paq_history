@@ -4030,7 +4030,7 @@ int decode(Encoder& en, int it=MAX_ITER) {
     len[it]|=en.decompress()<<16;
     len[it]|=en.decompress()<<8;
     len[it]|=en.decompress();
-    if (len<0) len[it]=1;
+    if (len[it]<0) len[it]=1;
     if (type[it]==IMAGE1 || type[it]==IMAGE8 || type[it]==IMAGE24 || type[it]==AUDIO) for (int i=0;i<4;i++) en.decompress();
     size[it]=len[it];
   }

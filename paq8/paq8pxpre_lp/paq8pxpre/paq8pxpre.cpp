@@ -627,7 +627,6 @@ Improved TIFF image detection
 #include <math.h>
 #include <ctype.h>
 #define NDEBUG  // remove for debugging (turns on Array bound checks)
-#define WINDOWS
 
 #include <assert.h>
 #include "precomp.h"
