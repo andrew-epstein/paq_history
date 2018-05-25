@@ -575,7 +575,7 @@ Also, give yourself credit in the help message.
 #include <vector>
 #include <algorithm>
 #include <map>
-#include "bit_byts.h"
+#include "bit_byts.cpp"
 #undef hash
 using std::set_new_handler;
 using std::string;

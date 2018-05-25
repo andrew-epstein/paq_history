@@ -8,7 +8,7 @@ while IFS= read -r -d '' D; do
 	FILENAME=$(basename "$D")
 	echo $FILENAME
 	FILENAME="${FILENAME%.*}"
-	$CXX -Wall -Weverything $WARN -lz -fno-rtti -std=gnu++1z -O3 -m64 -march=native -funroll-loops -ftree-vectorize -DUNIX $D paq6/bit_byts.cpp asm/paq7asm.s -o bin/$FILENAME
+	$CXX -Wall -Weverything $WARN -lz -fno-rtti -std=gnu++1z -O3 -m64 -march=native -funroll-loops -ftree-vectorize -DUNIX $D asm/paq7asm.s -o bin/$FILENAME
 	if [ $? -ne 0 ]; then
 		echo $D >> bad.log
 	fi
