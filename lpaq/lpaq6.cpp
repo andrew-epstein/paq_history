@@ -729,7 +729,8 @@ HashTable<B>::HashTable(int n): NB(n-B) {
   assert(B>=2 && (B&B-1)==0);
   assert(n>=B*4 && (n&n-1)==0);
   alloc(t, n+512);
-  t=(U8*)(((long)t+511)&0xfffffe00)+1;	// align on cache line boundary
+  t = (U8 *)(((uintptr_t)t + 63) & ~(uintptr_t)63); // align on cache line boundary
+
 }
 
 inline U32 hash1(U32 i) {  i*=234567891; i=i<<21|i>>11; return (i*765432197); }

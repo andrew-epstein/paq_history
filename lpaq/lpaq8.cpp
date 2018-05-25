@@ -832,7 +832,7 @@ HashTable<B>::HashTable(int n): NB(n-B) {
   assert(B>=2 && (B&B-1)==0);
   assert(n>=B*4 && (n&n-1)==0);
   alloc(t, n+512+B*2);
-  t=(U8*)(((long)t+511)&0xfffffe00)+1;	// align on cache line boundary
+  t = (U8 *)(((uintptr_t)t + 63) & ~(uintptr_t)63); // align on cache line boundary
 }
 
 #define RORi(x,y) x<<(32-y)|x>>y
