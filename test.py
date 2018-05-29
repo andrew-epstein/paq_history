@@ -143,8 +143,8 @@ def evaluate_one_command_one_file(command, outfile, infile):
         os.remove(outfile + extension)
         cursor.execute(query.format(command, infile, original_hash, original_size, outfile, new_hash, new_size, start_time, end_time, duration, ratio, kb_per_sec, bits_per_byte))
     except Exception as e:
-        print(e)
         print(colorama.Fore.RED + command + colorama.Fore.RESET)
+        print(e)
 
 
 
@@ -164,13 +164,31 @@ for executable in executables:
     p = subprocess.run(executable, input='\n', stdout=subprocess.PIPE, universal_newlines=True)
     min_level, max_level = get_levels(p.stdout)
     for testfile in testfiles:
-        if min_level is None:
-            outfile = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
-            the_queue.put(('{} out/{} {}'.format(executable, outfile, testfile), 'out/{}'.format(outfile), testfile))
-        else:
+        if 'fpaq3d' in executable:
+            min_level, max_level = 0, 7
             for level in range(min_level, max_level + 1):
                 outfile = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
-                the_queue.put(('{} -{} out/{} {}'.format(executable, level, outfile, testfile), 'out/{}'.format(outfile), testfile))
+                the_queue.put(('{} c {} {} out/{}'.format(executable, level, testfile, outfile), 'out/{}'.format(outfile), testfile))
+        elif 'fpaq' in executable:
+            outfile = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+            the_queue.put(('{} c {} out/{}'.format(executable, testfile, outfile), 'out/{}'.format(outfile), testfile))
+        elif 'lpaq' in executable:
+            min_level, max_level = 0, 9
+            for level in range(min_level, max_level + 1):
+                if 'lpaq1b' in executable or 'lpaq1c' in executable:
+                    outfile = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+                    the_queue.put(('{} {} 12346wma {} out/{}'.format(executable, level, testfile, outfile), 'out/{}'.format(outfile), testfile))
+                else:
+                    outfile = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+                    the_queue.put(('{} {} {} out/{}'.format(executable, level, testfile, outfile), 'out/{}'.format(outfile), testfile))
+        else:
+            if min_level is None:
+                outfile = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+                the_queue.put(('{} out/{} {}'.format(executable, outfile, testfile), 'out/{}'.format(outfile), testfile))
+            else:
+                for level in range(min_level, max_level + 1):
+                    outfile = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+                    the_queue.put(('{} -{} out/{} {}'.format(executable, level, outfile, testfile), 'out/{}'.format(outfile), testfile))
 
 while not the_queue.empty():
     time.sleep(1)

@@ -574,7 +574,8 @@ DIFFERENCES FROM PAQ8PXD_V43
 
 #ifdef UNIX
 #include <sys/types.h>
-
+#include <cstring>
+#include <cctype>
 #include <dirent.h>
 #include <errno.h>
 #endif
