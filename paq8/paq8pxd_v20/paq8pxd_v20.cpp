@@ -561,7 +561,7 @@ X DEC Alpha transform (https://encode.ru/threads/456-zpaq-updates?p=32081&viewfu
 #endif
 #endif
 
-#ifdef unix
+#ifdef UNIX
 #ifdef MT 
 #define PTHREAD 1
 #endif
@@ -620,7 +620,7 @@ inline int max(int a, int b) {return a<b?b:a;}
 #define fseeko(a,b,c) _fseeki64(a,b,c)
 #define ftello(a) _ftelli64(a)
 #else
-#ifndef unix
+#ifndef UNIX
 #ifndef fseeko
 #define fseeko(a,b,c) fseeko64(a,b,c)
 #endif

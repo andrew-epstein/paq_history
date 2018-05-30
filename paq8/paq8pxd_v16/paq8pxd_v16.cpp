@@ -541,7 +541,7 @@ DIFFERENCES FROM PAQ8PXD_V15
 #endif
 #endif
 
-#ifdef unix
+#ifdef UNIX
 #ifdef MT 
 #define PTHREAD 1
 #endif
@@ -599,7 +599,7 @@ inline int max(int a, int b) {return a<b?b:a;}
 #define fseeko(a,b,c) _fseeki64(a,b,c)
 #define ftello(a) _ftelli64(a)
 #else
-#ifndef unix
+#ifndef UNIX
 #ifndef fseeko
 #define fseeko(a,b,c) fseeko64(a,b,c)
 #endif
@@ -1289,7 +1289,7 @@ Stretch::Stretch(): t(4096) {
 #endif /* __GNUC__ */
 
 #if defined(__AVX2__)
-#include <smmintrin.h>
+#include <immintrin.h>
 #define OPTIMIZE "AVX2-"
 #elif defined(__SSE4_1__)  || defined(__SSSE3__)
 #include<immintrin.h>
@@ -7550,8 +7550,8 @@ int main(int argc, char** argv) {
                     datasegmentpos=0;
                     datasegmentinfo=0;
                     datasegmentlen=0;
-                    if (predictord>0) delete predictord,predictord=0;
-                    if (defaultencoder>0) delete defaultencoder,defaultencoder=0;
+                    if (predictord!=0) delete predictord,predictord=0;
+                    if (defaultencoder!=0) delete defaultencoder,defaultencoder=0;
                     switch(i) {
                         case 0: {
       	                    printf("DeCompressing default stream.\n"); 

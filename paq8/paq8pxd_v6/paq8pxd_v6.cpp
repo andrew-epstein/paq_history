@@ -669,7 +669,7 @@ template<class T, int ALIGN> void Array<T, ALIGN>::create(int i) {
   programChecker.alloc(sz);
   ptr = (char*)calloc(sz, 1);
   if (!ptr) quit("Out of memory");
-  data = (ALIGN ? (T*)(ptr+ALIGN-(((sint32)ptr)&(ALIGN-1))) : (T*)ptr);
+  data = (ALIGN ? (T*)(ptr+ALIGN-(((intptr_t)ptr)&(ALIGN-1))) : (T*)ptr);
   assert((char*)data>=ptr && (char*)data<=ptr+ALIGN);
 }
 

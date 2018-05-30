@@ -826,7 +826,7 @@ public:
 #define fseeko(a,b,c) _fseeki64(a,b,c)
 #define ftello(a) _ftelli64(a)
 #else
-#ifndef unix
+#ifndef UNIX
 #ifndef fseeko
 #define fseeko(a,b,c) fseeko64(a,b,c)
 #endif
