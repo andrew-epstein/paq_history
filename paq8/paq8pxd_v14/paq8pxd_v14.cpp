@@ -7573,8 +7573,8 @@ int main(int argc, char** argv) {
                     datasegmentpos=0;
                     datasegmentinfo=0;
                     datasegmentlen=0;
-                    if (predictord>0) delete predictord,predictord=0;
-                    if (defaultencoder>0) delete defaultencoder,defaultencoder=0;
+                    if (predictord!=0) delete predictord,predictord=0;
+                    if (defaultencoder!=0) delete defaultencoder,defaultencoder=0;
                     switch(i) {
                         case 0: {
       	                    printf("DeCompressing default stream.\n"); 

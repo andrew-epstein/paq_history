@@ -5,8 +5,6 @@
 #include "Common.h"
 
 unsigned int CMemoryBuffer::memsize=0;
-inline int min(int a, int b) {return a<b?a:b;}
-inline int max(int a, int b) {return a<b?b:a;}
 
 CMemoryBuffer::CMemoryBuffer(std::string mname) 
 { 

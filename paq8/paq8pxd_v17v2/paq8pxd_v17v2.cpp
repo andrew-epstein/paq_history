@@ -5248,8 +5248,8 @@ char * pp ;
                     datasegmentpos=0;
                     datasegmentinfo=0;
                     datasegmentlen=0;
-                    if (predictord>0) delete predictord,predictord=0;
-                    if (defaultencoder>0) delete defaultencoder,defaultencoder=0;
+                    if (predictord!=0) delete predictord,predictord=0;
+                    if (defaultencoder!=0) delete defaultencoder,defaultencoder=0;
                 	//load config file from archive stream
                 	//read compressed file header and data
                 	int fsz=0;  

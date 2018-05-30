@@ -7095,7 +7095,7 @@ int main(int argc, char** argv) {
             int datasegmentinfo;
             
             Filetype datasegmenttype;
-            if (predictord>0) delete predictord,predictord=0;
+            if (predictord!=0) delete predictord,predictord=0;
             for (int i=0; i<10; ++i) {
                 datasegmentsize=ftello(filestreams[i]); //get segment data offset
                 filestreamsize[i]=datasegmentsize;
@@ -7105,8 +7105,8 @@ int main(int argc, char** argv) {
                     datasegmentpos=0;
                     datasegmentinfo=0;
                     datasegmentlen=0;
-                    if (predictord>0) delete predictord,predictord=0;
-                    if (defaultencoder>0) delete defaultencoder,defaultencoder=0;
+                    if (predictord!=0) delete predictord,predictord=0;
+                    if (defaultencoder!=0) delete defaultencoder,defaultencoder=0;
                     // datastreams
                     // DEFAULT HDR 0
                     // JPEG        1
@@ -7465,7 +7465,7 @@ int main(int argc, char** argv) {
             int datasegmentpos;
             int datasegmentinfo;
             Filetype datasegmenttype;
-            if (predictord>0) delete predictord,predictord=0;
+            if (predictord!=0) delete predictord,predictord=0;
             for (int i=0; i<10; ++i) {
                 datasegmentsize=(filestreamsize[i]); //get segment data offset
                 if (datasegmentsize>0){ //if segment contains data
@@ -7474,8 +7474,8 @@ int main(int argc, char** argv) {
                     datasegmentpos=0;
                     datasegmentinfo=0;
                     datasegmentlen=0;
-                    if (predictord>0) delete predictord,predictord=0;
-                    if (defaultencoder>0) delete defaultencoder,defaultencoder=0;
+                    if (predictord!=0) delete predictord,predictord=0;
+                    if (defaultencoder!=0) delete defaultencoder,defaultencoder=0;
                     if (i==0){
                         printf("DeCompressing default stream. \n"); 
                         predictord=new Predictor();

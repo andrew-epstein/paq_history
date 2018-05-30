@@ -25,10 +25,6 @@
 #else
 	#define getch getchar
 #endif
-#ifndef WINDOWS
-inline int min(int a, int b) {return a<b?a:b;}
-inline int max(int a, int b) {return a<b?b:a;}
-#endif
 
 #define CHAR_FIRSTUPPER		1	// for encode lower word with first capital letter
 #define CHAR_UPPERWORD		2	// for encode upper word
