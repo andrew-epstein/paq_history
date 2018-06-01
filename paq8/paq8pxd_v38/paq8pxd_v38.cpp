@@ -1384,7 +1384,7 @@ Stretch::Stretch(): t(4096) {
 #endif /* __GNUC__ */
 
 #if defined(__AVX2__)
-#include <smmintrin.h>
+#include <immintrin.h>
 #define OPTIMIZE "AVX2-"
 #elif defined(__SSE4_1__)  || defined(__SSSE3__)
 #include<immintrin.h>

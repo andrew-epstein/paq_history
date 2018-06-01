@@ -11,8 +11,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
-#include <io.h>
-#ifndef unix
+//#include <io.h>
+#ifndef UNIX
 #ifndef WINDOWS
 #define WINDOWS // assume windows 
 #endif
@@ -386,7 +386,7 @@ void VM::next(){
         if (tk == id[Hash] && !memcmp((char *)id[Name], pp, p - pp)) { tk = id[Tk]; return; }
         id = id + Idsz;
       }
-      id[Name] = (int)pp;
+      id[Name] = (intptr_t)pp;
       id[Hash] = tk;
       tk = id[Tk] = Id;
       return;
@@ -433,7 +433,7 @@ void VM::next(){
         if (tk == '"') *data++ = ival;
       }
       ++p;
-      if (tk == '"') ival = (int)pp; else tk = Num;
+      if (tk == '"') ival = (intptr_t)pp; else tk = Num;
       return;
     }
     else if (tk == '=') { if (*p == '=') { ++p; tk = Eq; } else tk = Assign; return; }
@@ -462,7 +462,7 @@ void VM::expr(int lev){
   else if (tk == '"') {
     *++e = IMM; *++e = ival; next();
     while (tk == '"') next();
-    data = (char *)(((int)data + sizeof(int)) & -sizeof(int)); ty = PTR;
+    data = (char *)(((intptr_t)data + sizeof(intptr_t)) & -sizeof(intptr_t)); ty = PTR;
   }
   else if (tk == Sizeof) {
     next(); if (tk == '(') next(); else { kprintf("%d: open paren expected in sizeof\n", line); exit(-1); }
@@ -587,12 +587,12 @@ void VM::expr(int lev){
       *++e = BZ; d = ++e;
       expr(Assign);
       if (tk == ':') next(); else { kprintf("%d: conditional missing colon\n", line); exit(-1); }
-      *d = (int)(e + 3); *++e = JMP; d = ++e;
+      *d = (intptr_t)(e + 3); *++e = JMP; d = ++e;
       expr(Cond);
-      *d = (int)(e + 1);
+      *d = (intptr_t)(e + 1);
     }
-    else if (tk == Lor) { next(); *++e = BNZ; d = ++e; expr(Lan); *d = (int)(e + 1); ty = iINT; }
-    else if (tk == Lan) { next(); *++e = BZ;  d = ++e; expr(Or);  *d = (int)(e + 1); ty = iINT; }
+    else if (tk == Lor) { next(); *++e = BNZ; d = ++e; expr(Lan); *d = (intptr_t)(e + 1); ty = iINT; }
+    else if (tk == Lan) { next(); *++e = BZ;  d = ++e; expr(Or);  *d = (intptr_t)(e + 1); ty = iINT; }
     else if (tk == Or)  { next(); *++e = PSH; expr(Xor); *++e = OR;  ty = iINT; }
     else if (tk == Xor) { next(); *++e = PSH; expr(And); *++e = XOR; ty = iINT; }
     else if (tk == And) { next(); *++e = PSH; expr(Eq);  *++e = AND; ty = iINT; }
@@ -653,11 +653,11 @@ void VM::stmt() {
         *++e = BZ; b = ++e;
         stmt();
         if (tk == Else) {
-            *b = (int)(e + 3); *++e = JMP; b = ++e;
+            *b = (intptr_t)(e + 3); *++e = JMP; b = ++e;
             next();
             stmt();
         }
-        *b = (int)(e + 1);
+        *b = (intptr_t)(e + 1);
         break;
     case While:
         next();
@@ -667,8 +667,8 @@ void VM::stmt() {
         if (tk == ')') next(); else { kprintf("%d: close paren expected\n", line); exit(-1); }
         *++e = BZ; b = ++e;
         stmt();
-        *++e = JMP; *++e = (int)a;
-        *b = (int)(e + 1);
+        *++e = JMP; *++e = (intptr_t)a;
+        *b = (intptr_t)(e + 1);
         break;
     case For:
         next();
@@ -683,14 +683,14 @@ void VM::stmt() {
             *++e = JMP; c=e+1;*++e = (int)0; //j1
             d=e+1;
             expr(Comma); //3
-            *++e = JMP;  ;*++e = (int)a;//j2
-            *c = (int)(e + 1); //patch j1
+            *++e = JMP;  ;*++e = (intptr_t)a;//j2
+            *c = (intptr_t)(e + 1); //patch j1
             a=d; //replace jmp to //3
         }
         if (tk == ')') next(); else { kprintf("%d: close paren expected\n", line); exit(-1); }
         stmt();
-        *++e = JMP; *++e = (int)a;
-        *b = (int)(e + 1);
+        *++e = JMP; *++e = (intptr_t)a;
+        *b = (intptr_t)(e + 1);
         break; 
     case Return:
         next();
@@ -833,7 +833,7 @@ int VM::dojit(){
         if (i < JMP) printf(" 0x%x\n", *(pc + 1)); 
         else if (i <= ADJ) printf(" 0x%x\n", (int *)*(pc + 1)-text); else printf("\n");*/
     //}
-    *pc++ = ((int)je << 8) | i; // for later relocation of JMP/JSR/BZ/BNZ
+    *pc++ = ((intptr_t)je << 8) | i; // for later relocation of JMP/JSR/BZ/BNZ
  
     if (i == LEA) {
       i = 4 * *pc++; if (i < -128 || i > 127) { kprintf("jit: LEA out of bounds\n"); return -1; }
@@ -890,20 +890,20 @@ int VM::dojit(){
     /*  if      (i == OPEN) { tmp = (int)open; dprintf("\topen\n"); }  else if (i == READ) { tmp = (int)read;dprintf("\tread\n"); }
       else if (i == CLOS) { tmp = (int)close;dprintf("\tclose\n"); }  else 
 */ 
-    if (i == PRTF) { tmp = (int)printf;  }
-    else if (i == MALC) { tmp = (int)vmmalloc;  } //else if (i == MSET) { tmp = (int)memset;  }
-    else if (i == SMP) { tmp = (int)smp;  } else if (i == SMN) { tmp = (int)smn;  }
-    else if (i == MCMP) { tmp = (int)memcmp;  } else if (i == MCPY) { tmp = (int)memcpy;  }
-    else if (i == EXIT) { tmp = (int)exit;  }else if (i == APM) { tmp = (int)ap;  }
-    else if (i == VMS) { tmp = (int)components;  }else if (i == VMI) { tmp = (int)initcomponent;  }
-    else if (i == VMX) { tmp = (int)setcomponent;  }else if (i == MXP) { tmp = (int)mxp;  }
-    else if (i == STRE) { tmp = (int)stre;  }else if (i == SQUA) { tmp = (int)squa;  }
-    else if (i == BUF) { tmp = (int)bf;  }else if (i == BUFR) { tmp = (int)bfr;  }
-    else if (i == ILOG) { tmp = (int)il;  }else if (i == MXC) { tmp = (int)mxc;  }
-    else if (i == MXA) { tmp = (int)mxa;  }else if (i == MXS) { tmp = (int)mxs;  }
-    else if (i == GCR) { tmp = (int)gcr;  }else if (i == ABS) { tmp = (int)absolute;  }
-    else if (i == H2) { tmp = (int)h2;  }else if (i == H3) { tmp = (int)h3;  }else if (i == H4) { tmp = (int)h4;  }
-    else if (i == H5) { tmp = (int)h5;  }
+    if (i == PRTF) { tmp = (intptr_t)printf;  }
+    else if (i == MALC) { tmp = (intptr_t)vmmalloc;  } //else if (i == MSET) { tmp = (int)memset;  }
+    else if (i == SMP) { tmp = (intptr_t)smp;  } else if (i == SMN) { tmp = (intptr_t)smn;  }
+    else if (i == MCMP) { tmp = (intptr_t)memcmp;  } else if (i == MCPY) { tmp = (intptr_t)memcpy;  }
+    else if (i == EXIT) { tmp = (intptr_t)exit;  }else if (i == APM) { tmp = (intptr_t)ap;  }
+    else if (i == VMS) { tmp = (intptr_t)components;  }else if (i == VMI) { tmp = (intptr_t)initcomponent;  }
+    else if (i == VMX) { tmp = (intptr_t)setcomponent;  }else if (i == MXP) { tmp = (intptr_t)mxp;  }
+    else if (i == STRE) { tmp = (intptr_t)stre;  }else if (i == SQUA) { tmp = (intptr_t)squa;  }
+    else if (i == BUF) { tmp = (intptr_t)bf;  }else if (i == BUFR) { tmp = (intptr_t)bfr;  }
+    else if (i == ILOG) { tmp = (intptr_t)il;  }else if (i == MXC) { tmp = (intptr_t)mxc;  }
+    else if (i == MXA) { tmp = (intptr_t)mxa;  }else if (i == MXS) { tmp = (intptr_t)mxs;  }
+    else if (i == GCR) { tmp = (intptr_t)gcr;  }else if (i == ABS) { tmp = (intptr_t)absolute;  }
+    else if (i == H2) { tmp = (intptr_t)h2;  }else if (i == H3) { tmp = (intptr_t)h3;  }else if (i == H4) { tmp = (intptr_t)h4;  }
+    else if (i == H5) { tmp = (intptr_t)h5;  }
     u=i;
       if (*pc++ == ADJ) { i = *pc++; } else { kprintf("no ADJ after native proc!\n"); exit(2); }
       *je++ = 0xb9; *(int*)je = i << 2; je += 4; dprintf("\tmov ecx, %x\n", i << 2 );  // movl $(4 * n), %ecx;
@@ -931,7 +931,7 @@ int VM::dojit(){
 	  else if (u == H2) {  dprintf("h1\n");  } else if (u == H3) {  dprintf("h2\n");  }
 	   else if (u == H4) {  dprintf("h3\n");  }  else if (u == ABS) {  dprintf("abs\n");  }  
 	   else if (u == H5) {  dprintf("h3\n");  }
-       *(int*)je = tmp - (int)(je + 4); je = je + 4; // <*tmp offset>;
+       *(int*)je = tmp - (intptr_t)(je + 4); je = je + 4; // <*tmp offset>;
       *(int*)je = 0xf487; je += 2;     // xchg %esi, %esp  -- ADJ, back to old stack without arguments
       dprintf("\txchg esp,esi\n");
     }
@@ -941,11 +941,11 @@ int VM::dojit(){
   pc = text + 1;
   while (pc <= e) {
     i = *pc & 0xff;
-    je = (char*)(((unsigned)*pc++ >> 8) | ((unsigned)jitmem & 0xff000000)); // MSB is restored from jitmem
+    je = (char*)(((intptr_t)*pc++ >> 8) | ((intptr_t)jitmem & 0xff000000)); // MSB is restored from jitmem
     if (i == JSR || i == JMP || i == BZ || i == BNZ) {
-        tmp = (*(unsigned*)(*pc++) >> 8) | ((unsigned)jitmem & 0xff000000); // extract address
-        if      (i == JSR || i == JMP) { je += 1; *(int*)je = tmp - (int)(je + 4); }
-        else if (i == BZ  || i == BNZ) { je += 4; *(int*)je = tmp - (int)(je + 4); }
+        tmp = (*(intptr_t*)(*pc++) >> 8) | ((intptr_t)jitmem & 0xff000000); // extract address
+        if      (i == JSR || i == JMP) { je += 1; *(intptr_t*)je = tmp - (intptr_t)(je + 4); }
+        else if (i == BZ  || i == BNZ) { je += 4; *(intptr_t*)je = tmp - (intptr_t)(je + 4); }
     }
     else if (i < LEV) { ++pc; }
   } /*
@@ -965,7 +965,7 @@ fclose(in); */
 int  VM::block(int info1,int info2){
 #ifdef VMJIT
   int (*jitmain)(int,int); // c4 vm pushes first argument first, unlike cdecl
-  jitmain = reinterpret_cast< int(*)( int,int) >(*(unsigned*)( idp[Val]) >> 8 | ((unsigned)jitmem & 0xff000000));
+  jitmain = reinterpret_cast< int(*)( int,int) >(*(intptr_t*)( idp[Val]) >> 8 | ((intptr_t)jitmem & 0xff000000));
   return  jitmain(info2,info1);
 #else
   // setup stack
@@ -985,7 +985,7 @@ int  VM::doupdate(int y,int c0, int bpos,U32 c4,int pos){
 if (mx>0 && totalc>0)	for (int i=0;i< mx;i++) mxC[i]->update(); //update all mixers
 #ifdef VMJIT
   int (*jitmain)(int,U32,int,int,int); // c4 vm pushes first argument first, unlike cdecl
-  jitmain = reinterpret_cast< int(*)(int,U32,int,int,int) >(*(unsigned*)( idupdate[Val]) >> 8 | ((unsigned)jitmem & 0xff000000));
+  jitmain = reinterpret_cast< int(*)(int,U32,int,int,int) >(*(unsigned*)( idupdate[Val]) >> 8 | ((intptr_t)jitmem & 0xff000000));
   return  jitmain(pos,c4,bpos,c0,y);
 #else
   // setup stack
@@ -1068,7 +1068,7 @@ p=mod; //contains model
       id[Type] = ty;
       if (tk == '(') { // function
         id[Class] = Fun;
-        id[Val] = (int)(e + 1);
+        id[Val] = (intptr_t)(e + 1);
         next(); i = 0;
         while (tk != ')') {
           ty = iINT;
@@ -1119,7 +1119,7 @@ p=mod; //contains model
       }
       else {
         id[Class] = Glo;
-        id[Val] = (int)data;
+        id[Val] = (intptr_t)data;
         data = data + sizeof(int);
       }
       if (tk == Comma) next();
@@ -1130,7 +1130,7 @@ p=mod; //contains model
 if (dojit()!=0) return -1;
  // run jitted code
   int (*jitmain)(); // c4 vm pushes first argument first, unlike cdecl
-  jitmain = reinterpret_cast< int(*)() >(*(unsigned*)(idmain[Val]) >> 8 | ((unsigned)jitmem & 0xff000000));
+  jitmain = reinterpret_cast< int(*)() >(*(unsigned*)(idmain[Val]) >> 8 | ((intptr_t)jitmem & 0xff000000));
   return jitmain();
 
 #else

@@ -478,7 +478,6 @@ Replaced 'inline' by 'static' so that the compiler can inline code where possibl
 #include <math.h>
 #include <ctype.h>
 #include <algorithm>
-using namespace std;
 #define NDEBUG  // remove for debugging (turns on Array bound checks)
 #include <assert.h>
 
@@ -504,6 +503,7 @@ typedef unsigned int uint32; ///<       unsigned 32 bits integer
 #if !defined(MAX)
 # define MAX(x,y) (((x) < (y)) ? (y) : (x))
 #endif
+using std::max;
 
 #if defined(__GNUC__)
 static void quit(const sint8*) __attribute__ ((noreturn));
