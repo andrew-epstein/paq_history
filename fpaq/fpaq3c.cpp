@@ -10,7 +10,7 @@
 namespace std {}  // for MARS compiler
 using namespace std;
 
-typedef unsigned long U32;  // 32 bit type
+typedef unsigned int U32;  // 32 bit type
 
 unsigned long filesize,pos,control,maxsize,scanned;
 unsigned long rc[2],cc[2];  // Context: last 0-8 bits with a leading 1

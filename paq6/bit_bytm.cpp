@@ -103,6 +103,7 @@ int bit_byts::wc(int x) {
     xx();
     return x;
   }
+  return 0;
 }
 
 int bit_byts::w(int x) {

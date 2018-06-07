@@ -548,7 +548,7 @@ template <class T> inline int size(const T& t) {return t.size();}
 // 8-32 bit unsigned types, adjust as appropriate
 typedef unsigned char U8;
 typedef unsigned short U16;
-typedef unsigned long U32;
+typedef unsigned int U32;
 
 #define Top_value U32(0XFFFFFFFF)	/* Largest code value */
 /* HALF AND QUARTER POINTS IN THE CODE VALUE RANGE. */
@@ -776,7 +776,7 @@ Hashtable(U32 n):N(n){
 U8 *p=(U8*)calloc((17<<N)+64,1);
 if(!p)
 handler();
-p+=64-((int)p&63);
+p+=64-((long)p&63);
 table=(HashElement*)p;
 Tcxt=&(table[0].c[-1]);
 }
@@ -869,7 +869,7 @@ for(int j=0;j<64;j++)
 wt[i][j]=(j>3&&j<12)?8:12;
 ssep=16;
 int oldp=33;
-for(i=4095;i>=0;i--){
+for(int i=4095;i>=0;i--){
 int p=(ssemap(i)+16)/32;
 int m=1+4096*4096/((i+1)*(4096-i));
 if(m>254)m=254;
@@ -1248,7 +1248,7 @@ h=hash[1]>>11;
 for(int i=0;i<4;i++)
 if(end[i]&&ch(1)==ch[end[i]])
 ++end[i];
-for(i=0;i<4;i++){
+for(int i=0;i<4;i++){
 if(!end[i]){
 int j;
 for(j=0;j<4;j++)
@@ -2140,7 +2140,7 @@ int main(int argc, char** argv) {
 			fseek(f, 0L, 0);
 
 		if ((st0=(char*)malloc(CONSTA+2*flen+256))==NULL) handler();
-		st=st0+256-((int)st0&255);	// 256-byte-alignment
+		st=st0+256-((long)st0&255);	// 256-byte-alignment
 		flen=fread(st+CONSTA-32768,1,flen,f);
 			fclose(f);
 			f=fopen(filename[i].c_str(), "wb");
@@ -2238,7 +2238,7 @@ int main(int argc, char** argv) {
 			fseek(f, 0L, 0);
 
 		if ((st0=(char*)malloc(CONSTA+2*flen+256))==NULL) handler();
-		st=st0+256-((int)st0&255);	// 256-byte-alignment
+		st=st0+256-((long)st0&255);	// 256-byte-alignment
 		flen=fread(st+CONSTA-32768,1,flen,f);
 
 		if (flen) te8e9(st,3,flen,&data2write[0]);

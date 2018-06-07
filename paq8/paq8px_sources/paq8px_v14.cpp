@@ -2804,7 +2804,7 @@ inline int X(int i, int j) {
   else return buf(i+j);
 }
 
-int wavModel(Mixer& m, int info) {
+void wavModel(Mixer& m, int info) {
   static int pr[3][2], n[2], counter[2];
   static double F[49][49][2],L[49][49];
   int j,k,l,i=0;

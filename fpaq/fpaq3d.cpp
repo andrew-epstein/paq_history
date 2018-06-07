@@ -9,7 +9,7 @@
 #include <cassert>
 namespace std {}  // for MARS compiler
 using namespace std;
-typedef unsigned long U32;  // 32 bit type
+typedef unsigned int U32;  // 32 bit type
 unsigned long filesize,pos,control,maxsize,scanned,memo;
 unsigned long rc[2],cc[2],r2,r1,conta,sce;  // Context: last 0-8 bits with a leading 1
 unsigned char epix,mbit;  // 0 and 1 state count in context

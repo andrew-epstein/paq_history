@@ -542,7 +542,7 @@ template <class T> inline int size(const T& t) {return t.size();}
 // 8-32 bit unsigned types, adjust as appropriate
 typedef unsigned char U8;
 typedef unsigned short U16;
-typedef unsigned long U32;
+typedef unsigned int U32;
 
 #define Top_value U32(0XFFFFFFFF)	/* Largest code value */
 /* HALF AND QUARTER POINTS IN THE CODE VALUE RANGE. */
@@ -1873,9 +1873,6 @@ public:
 
 #define CONSTA 292*1024+512
 int exe=1;
-extern "C" {
-void te8e9(char*, int, int, int*);
-}
 
 //////////////////////////// main ////////////////////////////
 
@@ -2043,7 +2040,6 @@ int main(int argc, char** argv) {
 			fclose(f);
 			f=fopen(filename[i].c_str(), "wb");
 
-		if (flen) te8e9(st,4,flen,&data2write[0]);
 		if (data2write[0])
 		  fwrite((char *)data2write[1],1,data2write[0],f);
 
@@ -2134,7 +2130,6 @@ int main(int argc, char** argv) {
 		st=st0+256-((long)st0&255);	// 256-byte-alignment
 		flen=fread(st+CONSTA-32768,1,flen,f);
 
-		if (flen) te8e9(st,3,flen,&data2write[0]);
  		size=0;
 		if (data2write[0])
 		  size+=data2write[0],

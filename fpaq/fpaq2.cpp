@@ -13,7 +13,7 @@ namespace std {}  // for MARS compiler
 using namespace std;
 
 typedef unsigned char U8;
-typedef unsigned long U32;  // 32 bit type
+typedef unsigned int U32;  // 32 bit type
 
 #define Top_value U32(0XFFFFFFFF)    /* Largest code value */
 /* HALF AND QUARTER POINTS IN THE CODE VALUE RANGE. */

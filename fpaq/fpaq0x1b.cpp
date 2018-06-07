@@ -11,7 +11,7 @@
 namespace std {}  // for MARS compiler
 using namespace std;
 
-typedef unsigned long U32;  // 32 bit type
+typedef unsigned int U32;  // 32 bit type
 U32 rc,r1,r2,r3,rc1,rc2,rc3,buf[16843009],cont,limi,ruc,c;
 unsigned char cbuf[512000];
 int cxt;  // Context: last 0-8 bits with a leading 1
@@ -25,7 +25,7 @@ unsigned short ct[512000][512][2];  // 0 and 1 counts in context cxt
 */
 
 
-    int counter()  {
+    void counter()  {
     for ( ; ; )
       {
       cont++;
@@ -69,7 +69,7 @@ unsigned short ct[512000][512][2];  // 0 and 1 counts in context cxt
   }
 
   /// change frequency ////
-int change(int c)  {
+void change(int c)  {
       r3=r2;
       r2=r1;
       r1=c;

@@ -482,7 +482,6 @@ dictionary preprocesor like PAQ8B/C/D/E.
 #include <math.h>
 #include <ctype.h>
 #include <algorithm>
-using namespace std;
 #define NDEBUG  // remove for debugging (turns on Array bound checks)
 #include <assert.h>
 

@@ -13,7 +13,7 @@ namespace std {}  // for MARS compiler
 using namespace std;
 
 typedef unsigned char U8;
-typedef unsigned long U32;
+typedef unsigned int U32;
 typedef unsigned long long U64; 
 
 #define LOWEST          0x0000000000000000LL

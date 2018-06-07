@@ -12,7 +12,7 @@ namespace std {}  // for MARS compiler
 using namespace std;
 
 typedef unsigned char U8;
-typedef unsigned long U32;  // 32 bit type
+typedef unsigned int U32;  // 32 bit type
 int cxt;  // Context: last 0-8 bits with a leading 1
 int ct[65536][256][2];  // 0 and 1 counts in context cxt [128MB]
 U32 rc,r1,r2;

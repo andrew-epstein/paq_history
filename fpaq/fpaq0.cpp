@@ -10,7 +10,7 @@
 namespace std {}  // for MARS compiler
 using namespace std;
 
-typedef unsigned long U32;  // 32 bit type
+typedef unsigned int U32;  // 32 bit type
 
 //////////////////////////// Predictor /////////////////////////
 

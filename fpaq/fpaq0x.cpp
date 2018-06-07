@@ -13,7 +13,7 @@ namespace std {}  // for MARS compiler
 using namespace std;
   int cxt;  // Context: last 0-8 bits with a leading 1
   int ct[65536][512][2];  // 0 and 1 counts in context cxt (256MB of memory)
-typedef unsigned long U32;  // 32 bit type
+typedef unsigned int U32;  // 32 bit type
 
   U32 rc,r1,r2; //  old two bytes
   U32 x1, x2;            // Range, initially [0, 1), scaled by 2^32
