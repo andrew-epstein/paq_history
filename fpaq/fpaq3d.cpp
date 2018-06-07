@@ -258,7 +258,7 @@ argv[2][0]!='6' && argv[2][0]!='7') )
   // Compress
   if (argv[1][0]=='c')
     {
-    memo=1<<(mbit+1);
+    memo=1ULL<<(mbit+1);
     buf = (unsigned char *)malloc(memo);
     memset(buf, 0, sizeof(buf));
     while ((c=getc(in))!=EOF) // reduction of bits to encode
