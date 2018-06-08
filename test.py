@@ -90,8 +90,8 @@ def evaluate_one_command_one_file(command, outfile, infile):
     try:
         outfiles = glob.glob(outfile + '*')
         if len(outfiles) != 1:
-            print(colorama.Fore.RED + command + '/ BAD OUTFILE(S)' + colorama.Fore.RESET)
-            return
+            print(colorama.Fore.RED + command + ' # BAD OUTFILE(S)' + colorama.Fore.RESET)
+            return False
         outfile = outfiles[0]
         new_size = get_size(outfile)
         new_hash = get_hash(outfile)
@@ -102,13 +102,11 @@ def evaluate_one_command_one_file(command, outfile, infile):
         print('Duration: {:.2f}s, Ratio: {:.2f}, kB/s: {:.2f}, bpb: {:.2f}, ({}/{})'.format(duration, ratio, kb_per_sec, bits_per_byte, new_size, original_size))
         os.remove(outfile)
         cursor.execute(query.format(command, infile, original_hash, original_size, outfile, new_hash, new_size, start_time, end_time, duration, ratio, kb_per_sec, bits_per_byte))
+        return True
     except Exception as e:
         print(colorama.Fore.RED + command + colorama.Fore.RESET)
         print(e)
-
-
-testfiles = get_test_files()
-executables = get_executables()
+        return False
 
 
 def worker_main(queue):
@@ -116,8 +114,10 @@ def worker_main(queue):
         command, outfile, infile = queue.get(True)
         evaluate_one_command_one_file(command, outfile, infile)
 
-the_pool = multiprocessing.Pool(6, worker_main,(the_queue,))
 
+testfiles = get_test_files()
+executables = get_executables()
+the_pool = multiprocessing.Pool(6, worker_main, (the_queue,))
 
 for executable in executables:
     p = subprocess.run(executable, input='\n', stdout=subprocess.PIPE, universal_newlines=True)
@@ -140,6 +140,8 @@ for executable in executables:
                 else:
                     outfile = make_outfilename()
                     the_queue.put(('{} {} {} out/{}'.format(executable, level, testfile, outfile), 'out/{}'.format(outfile), testfile))
+        elif 'paq8pxd' in executable:
+            continue
         else:
             if min_level is None:
                 outfile = make_outfilename()

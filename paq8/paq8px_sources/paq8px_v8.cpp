@@ -630,6 +630,7 @@ Removed pic model
 #define DEFAULT_OPTION 5
 #endif
 
+
 // 8, 16, 32 bit unsigned types (adjust as appropriate)
 typedef unsigned char  U8;
 typedef unsigned short U16;

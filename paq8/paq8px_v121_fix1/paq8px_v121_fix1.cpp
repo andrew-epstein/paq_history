@@ -615,7 +615,7 @@ Added gif recompression
 #define WINDOWS  //to compile for Windows
 #endif
 
-#if defined(unix) || defined(__unix__) || defined(__unix)
+#if defined(unix) || defined(__unix__) || defined(__unix) || defined(__APPLE__)
 #define UNIX //to compile for Unix, Linux, Solairs, MacOS / Darwin, etc)
 #endif
 
@@ -644,6 +644,7 @@ Added gif recompression
 #include <time.h>
 #include <math.h>
 #include <ctype.h>
+#include <limits.h> // PATH_MAX
 
 #include <zlib.h>
 
@@ -4826,8 +4827,14 @@ public:
 void exeModel::Train(){
   FILE *f;
   int i;
-  char filename[MAX_PATH+1];
-  if ((i=GetModuleFileName(NULL, filename,MAX_PATH)) && i<=MAX_PATH){
+  #ifdef WINDOWS
+    char filename[MAX_PATH+1];
+    if((i=GetModuleFileName(NULL, filename, MAX_PATH)) && i<=MAX_PATH) {
+  #endif
+  #ifdef UNIX
+    char filename[PATH_MAX+1];
+    if(readlink("/proc/self/exe", filename, PATH_MAX)!=-1) {
+  #endif
     if ((f = fopen(filename,"rb"))!=NULL){
       printf("Pre-training x86/x64 model...");
       i=0;

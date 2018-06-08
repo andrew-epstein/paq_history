@@ -571,7 +571,7 @@ class APM {
   const int N;   // number of contexts
   Array<U16> t;  // [N][33]:  p, context -> p
 public:
-  APM(int n);
+  APM(int n=256);
   int p(int pr=2048, int cxt=0, int rate=7) {
     assert(pr>=0 && pr<4096 && cxt>=0 && cxt<N && rate>0 && rate<32);
     pr=stretch(pr);
@@ -585,7 +585,7 @@ public:
 };
 
 // maps p, cxt -> p initially
-APM::APM(int n=256): index(0), N(n), t(n*33) {
+APM::APM(int n): index(0), N(n), t(n*33) {
   for (int i=0; i<N; ++i)
     for (int j=0; j<33; ++j)
       t[i*33+j] = i==0 ? squash((j-16)*128)*16 : t[j];
