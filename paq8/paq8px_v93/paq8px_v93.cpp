@@ -679,7 +679,8 @@ public:
   }
 } programChecker;
 
-                          typedef unsigned int uint;
+#ifndef UNIX
+typedef unsigned int uint;
 typedef unsigned long long qword;
 
 const uint g_PageFlag0 = 0x1000;
@@ -701,18 +702,19 @@ T* VAlloc( qword size ) {
 //printf( "r=%08X\n", r );
   if( (r==0) && (g_PageMask!=g_PageMask0) ) {
     g_PageFlag = g_PageFlag0;
-    g_PageMask = g_PageMask0; 
+    g_PageMask = g_PageMask0;
     s = size;
     goto Retry;
   }
   return (T*)r;
 }
 
-
 template< class T >
 void VFree( T* p ) {
   VirtualFree( p, 0, MEM_RELEASE );
 }
+#endif
+
 //////////////////////////// Array ////////////////////////////
 
 // Array<T> a(n); creates n elements of T initialized to 0 bits.
@@ -782,6 +784,7 @@ template<class T> void Array<T>::create(int i) {
   }
   const int sz=n*sizeof(T);
   programChecker.alloc(sz);
+#ifndef UNIX
   char* r;
 
   if( sz>(1<<24) ) {
@@ -795,17 +798,26 @@ template<class T> void Array<T>::create(int i) {
   }
 
   data = (T*)r; //ptr;
+#else
+  ptr = (char*)calloc(sz, 1);
+  if (!ptr) quit("Out of memory");
+  data = (T*)ptr;
+#endif
 }
 
 template<class T> Array<T>::~Array() {
   programChecker.alloc(-n*sizeof(T));
-                             const int sz=n*sizeof(T);
+#ifndef UNIX
+  const int sz=n*sizeof(T);
 
   if( sz>(1<<24) ) {
     VFree(ptr);
   } else {
     free(ptr);
   }
+#else
+  free(ptr);
+#endif
 }
 
 template<class T> void Array<T>::push_back(const T& x) {
