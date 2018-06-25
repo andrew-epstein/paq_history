@@ -1357,8 +1357,7 @@ BlockData& x;
   Mixer(int n, int m,BlockData& bd, int s=1, int w=0);
   
 #if defined(__AVX2__)
-    static inline int
-  dot_product(const short *const t, const short *const w, int n) {
+  static inline int dot_product(const short *const t, const short *const w, int n) {
     __m256i sum = _mm256_setzero_si256();
 
     while ((n -= 16) >= 0) {
@@ -1376,8 +1375,7 @@ BlockData& x;
     return _mm_cvtsi128_si32(newsum);
   }
 
-  static inline void
-  train(const short *const t, short *const w, int n, const int e) {
+  static inline void train(const short *const t, short *const w, int n, const int e) {
     const __m256i one = _mm256_set1_epi16(1);
     const __m256i err = _mm256_set1_epi16(short(e));
 

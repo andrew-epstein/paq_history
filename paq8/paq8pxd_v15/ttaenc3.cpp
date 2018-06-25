@@ -133,7 +133,7 @@ int write_wave(int *data, int byte_size, int num_chan, unsigned int len, FILE *f
 }
 
 /************************* filter functions ****************************/
-__inline void memshl (register int *pA, register int *pB) {
+__inline void memshl (int *pA, int *pB) {
     *pA++ = *pB++;
     *pA++ = *pB++;
     *pA++ = *pB++;
@@ -145,10 +145,10 @@ __inline void memshl (register int *pA, register int *pB) {
 }
 
 __inline void hybrid_filter (fltst *fs, int *in, int mode) {
-    register int *pA = fs->dl;
-    register int *pB = fs->qm;
-    register int *pM = fs->dx;
-    register int sum = fs->round;
+    int *pA = fs->dl;
+    int *pB = fs->qm;
+    int *pM = fs->dx;
+    int sum = fs->round;
 
     if (!fs->error) {
         sum += *pA++ * *pB, pB++;
