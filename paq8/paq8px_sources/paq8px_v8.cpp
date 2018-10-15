@@ -606,14 +606,14 @@ Removed pic model
 
 #define PROGNAME "paq8px"  // Please change this if you change the program.
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <math.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <ctime>
+#include <cmath>
 #include <ctype.h>
 #define NDEBUG  // remove for debugging (turns on Array bound checks)
-#include <assert.h>
+#include <cassert>
 
 #ifdef UNIX
 #include <sys/types.h>
@@ -2159,7 +2159,7 @@ int im24bitModel(Mixer& m) {
     //  24-bit .bmp images
     if (buf(54)=='B' && buf(53)=='M' && i4(44)<1079 && i4(40)==40 && i4(24)==0 && buf(26)==24) {
       w=i4(36);  // image width
-      h=abs(i4(32));  // image height
+      h=i4(32);  // image height
       ibmp=pos+i4(44)-54;
     }
     if (ibmp==pos && w>0 && h>0) {
@@ -2387,7 +2387,7 @@ int bmpModel8(Mixer& m) {
     //  8-bit .bmp images
     if (buf(54)=='B' && buf(53)=='M' && i4(44)<1079 && i4(40)==40 && i4(24)==0 && buf(26)==8) {
       w=i4(36);  // image width
-      h=abs(i4(32));  // image height
+      h=i4(32);  // image height
       ibmp=pos+i4(44)-54;
     }
     if (ibmp==pos && w>0 && h>0) {
@@ -2466,7 +2466,7 @@ void bmpModel1(Mixer& m) {
     //  1-bit .bmp images
     if (buf(54)=='B' && buf(53)=='M' && i4(44)<1079 && i4(40)==40 && i4(24)==0 && buf(26)==1) {
       w=i4(36);  // image width
-      h=abs(i4(32));  // image height
+      h=i4(32);  // image height
       ibmp=pos+i4(44)-54;
     }
     if (ibmp==pos && w>0 && h>0) {
@@ -3806,7 +3806,7 @@ Filetype detect(FILE* in, int n, Filetype type) {
       if (p==12) bmpimgoff=bswap(buf0);
       if (p==16 && buf0!=0x28000000) bmp=0; //windows bmp?
       if (p==20) bmpx=bswap(buf0),bmp=((bmpx==0||bmpx>0x30000)?0:bmp); //width
-      if (p==24) bmpy=abs(bswap(buf0)),bmp=((bmpy==0||bmpy>0x10000)?0:bmp); //height
+      if (p==24) bmpy=abs(static_cast<int>(bswap(buf0))),bmp=((bmpy==0||bmpy>0x10000)?0:bmp); //height
       if (p==27) imgbpp=c,bmp=((imgbpp!=1 && imgbpp!=4 && imgbpp!=8 && imgbpp!=24)?0:bmp);
       if (p==31) imgcomp=buf0,bmp=(imgcomp!=0?0:bmp);
       if ((type==BMPFILE1 || type==BMPFILE4 || type==BMPFILE8 || type==BMPFILE24) && imgbpp!=0 && imgcomp==0) {

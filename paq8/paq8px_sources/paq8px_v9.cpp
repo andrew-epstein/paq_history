@@ -3540,7 +3540,7 @@ Filetype detect(FILE* in, int n, Filetype type, int &imgw) {
       if (p==12) bmpimgoff=bswap(buf0);
       if (p==16 && buf0!=0x28000000) bmp=0; //windows bmp?
       if (p==20) bmpx=bswap(buf0),bmp=((bmpx==0||bmpx>0x30000)?0:bmp); //width
-      if (p==24) bmpy=abs(bswap(buf0)),bmp=((bmpy==0||bmpy>0x10000)?0:bmp); //height
+      if (p==24) bmpy=abs(static_cast<int>(bswap(buf0))),bmp=((bmpy==0||bmpy>0x10000)?0:bmp); //height
       if (p==27) imgbpp=c,bmp=((imgbpp!=1 && imgbpp!=8 && imgbpp!=24)?0:bmp);
       if (p==31) imgcomp=buf0,bmp=(imgcomp!=0?0:bmp);
       if (imgbpp!=0 && imgcomp==0) {

@@ -516,8 +516,6 @@ Also, give yourself credit in the help message.
 
 
 #define PROGNAME "PAQAR"
-#define min(a,b) ((a)<(b)?(a):(b))
-#define max(a,b) ((a)>(b)?(a):(b))
 #include <cctype>
 #include <cmath>
 #include <string>
@@ -525,6 +523,7 @@ Also, give yourself credit in the help message.
 #include <algorithm>
 #include <ctime>
 #include <cassert>
+#include <cstring>
 #define au 0xffffffff
 #define bu 0x1ffffff
 #define cu 0xffffff
@@ -533,6 +532,8 @@ Also, give yourself credit in the help message.
 using std::string;
 using std::vector;
 using std::swap;
+using std::min;
+using std::max;
 
 const int PSCALE=4096;  // Integer scale for representing probabilities
 int MEM=6;
