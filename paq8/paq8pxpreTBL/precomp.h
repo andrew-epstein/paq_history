@@ -1,32 +1,32 @@
 // Switches class
 class Switches {
-  public:
-    Switches();
+public:
+  Switches();
 
-    //byte positions to ignore (default: none)
-    unsigned int* ignore_list;
-    int ignore_list_len;
+  //byte positions to ignore (default: none)
+  unsigned int *ignore_list;
+  int ignore_list_len;
 
-    bool slow_mode;                //slow mode (default: off)
-    bool fast_mode;                //fast mode (default: off)
-    bool brute_mode;               //brute mode (default: off)
-    bool pdf_bmp_mode;             //wrap BMP header around PDF images
-                                   //  (default: off);
-    bool debug_mode;               //debug mode (default: off)
+  bool slow_mode;    //slow mode (default: off)
+  bool fast_mode;    //fast mode (default: off)
+  bool brute_mode;   //brute mode (default: off)
+  bool pdf_bmp_mode; //wrap BMP header around PDF images
+                     //  (default: off);
+  bool debug_mode;   //debug mode (default: off)
 
-    unsigned int min_ident_size;   //minimal identical bytes (default: 4)
+  unsigned int min_ident_size; //minimal identical bytes (default: 4)
 
-    //(p)recompression types to use (default: all)
-    bool use_pdf;
-    bool use_zip;
-    bool use_gzip;
-    bool use_png;
-    bool use_gif;
-    bool use_jpg;
+  //(p)recompression types to use (default: all)
+  bool use_pdf;
+  bool use_zip;
+  bool use_gzip;
+  bool use_png;
+  bool use_gif;
+  bool use_jpg;
 
-    bool level_switch;            //level switch used? (default: no)
-    bool use_comp_level[9];       //compression levels to use (default: all)
-    bool use_mem_level[9];        //memory levels to use (default: all)
+  bool level_switch;      //level switch used? (default: no)
+  bool use_comp_level[9]; //compression levels to use (default: all)
+  bool use_mem_level[9];  //memory levels to use (default: all)
 };
 
 //Switches constructor
@@ -46,7 +46,7 @@ Switches::Switches() {
   use_gif = true;
   use_jpg = true;
   level_switch = false;
-  for (int i = 0; i < 9; i++) {
+  for( int i = 0; i < 9; i++ ) {
     use_comp_level[i] = true;
     use_mem_level[i] = true;
   }

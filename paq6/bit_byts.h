@@ -11,165 +11,169 @@
  */
 struct bit_byts {
 public:
-  bit_byts() { xx(); }
-  void ir(FILE *fr) { /* open file for bit read FOF assumed */
+  bit_byts() {
+    xx();
+  }
+  void ir( FILE *fr ) { /* open file for bit read FOF assumed */
     CHK();
     inuse = 0x01;
     f = fr;
-    bn = getc(f);
-    if (bn == EOF) {
-      fprintf(stderr, " empty file in bit_byts \n");
+    bn = getc( f );
+    if( bn == EOF ) {
+      fprintf( stderr, " empty file in bit_byts \n" );
       abort();
     }
   }
-  void irc(FILE *fr) { /* open file for 01 read FOF assumed */
+  void irc( FILE *fr ) { /* open file for 01 read FOF assumed */
     CHK();
     inuse = 0x01;
     f = fr;
-    bn = getc(f);
-    if ((bn != (int)'1') && (bn != (int)'0')) {
-      fprintf(stderr, " empty file in bit_byts \n");
+    bn = getc( f );
+    if( ( bn != ( int ) '1' ) && ( bn != ( int ) '0' ) ) {
+      fprintf( stderr, " empty file in bit_byts \n" );
       abort();
     }
   }
-  int irr(FILE *frr) { /* open and read first bit */
-    ir(frr);
+  int irr( FILE *frr ) { /* open and read first bit */
+    ir( frr );
     return r();
   }
   int r();   /* get next bit */
   int rs() { /* get next bit psuedo random */
-    if ((d1r = r()) < 0)
+    if( ( d1r = r() ) < 0 )
       return d1r;
-    dr = (ax * dr) % bx;
-    if (d2r == 1)
-      dr = (ax * dr) % bx;
+    dr = ( ax * dr ) % bx;
+    if( d2r == 1 )
+      dr = ( ax * dr ) % bx;
     d1r = 1 & dr ^ d1r;
     d2r = d1r;
-    return (d1r);
+    return ( d1r );
   }
 
-  int rc();          /* get next ASCII 1 or 0 */
-  void iw(FILE *fw) { /* open file for bit write FOF
+  int rc();             /* get next ASCII 1 or 0 */
+  void iw( FILE *fw ) { /* open file for bit write FOF
                       * assumed */
     CHK();
     inuse = 0x02;
     f = fw;
   }
-  int iww(FILE *fww, int b) { /* open and write first bit */
-    iw(fww);
-    return w(b);
+  int iww( FILE *fww, int b ) { /* open and write first bit */
+    iw( fww );
+    return w( b );
   }
-  int w(int);  /* write next bit */
-  int wc(int); /* write next ASCII 1 or 0 */
-  int status() { return inuse; }
+  int w( int );  /* write next bit */
+  int wc( int ); /* write next ASCII 1 or 0 */
+  int status() {
+    return inuse;
+  }
 
   /* on read 0 if normal -1 if last bit -2 there after */
   /* on write -1 if current is last -2 if call after last one */
   /****  note a big error to issue -2 of no previous 1 ***/
-  int ws(int c) { /* write bit pusedo random */
-    if (c == 0) {
+  int ws( int c ) { /* write bit pusedo random */
+    if( c == 0 ) {
       d3w++;
       return 0;
     }
-    if (c == 1) {
-      if (d1w == 0) {
+    if( c == 1 ) {
+      if( d1w == 0 ) {
         d1w = 1;
         d2w = d3w;
         d3w = 0;
         return 0;
       }
-      for (; d2w > 0; d2w--) {
-        dw = (ax * dw) % bx;
-        if (dwr == 1)
-          dw = (ax * dw) % bx;
+      for( ; d2w > 0; d2w-- ) {
+        dw = ( ax * dw ) % bx;
+        if( dwr == 1 )
+          dw = ( ax * dw ) % bx;
         dwr = 0;
-        w(1 & dw);
+        w( 1 & dw );
       }
       d2w = d3w;
       d3w = 0;
-      dw = (ax * dw) % bx;
-      if (dwr == 1)
-        dw = (ax * dw) % bx;
+      dw = ( ax * dw ) % bx;
+      if( dwr == 1 )
+        dw = ( ax * dw ) % bx;
       dwr = 1;
-      return w(1 ^ (1 & dw));
+      return w( 1 ^ ( 1 & dw ) );
     }
-    if (c == -2) {
-      if (d1w == 0)
-        return w(-1);
-      for (; d2w > 0; d2w--) {
-        dw = (ax * dw) % bx;
-        if (dwr == 1)
-          dw = (ax * dw) % bx;
+    if( c == -2 ) {
+      if( d1w == 0 )
+        return w( -1 );
+      for( ; d2w > 0; d2w-- ) {
+        dw = ( ax * dw ) % bx;
+        if( dwr == 1 )
+          dw = ( ax * dw ) % bx;
         dwr = 0;
-        w(1 & dw);
+        w( 1 & dw );
       }
       d1w = 0;
-      return w(-1);
+      return w( -1 );
     }
-    if (d1w == 0) {
-      for (; d3w > 0; d3w--) {
-        dw = (ax * dw) % bx;
-        if (dwr == 1)
-          dw = (ax * dw) % bx;
+    if( d1w == 0 ) {
+      for( ; d3w > 0; d3w-- ) {
+        dw = ( ax * dw ) % bx;
+        if( dwr == 1 )
+          dw = ( ax * dw ) % bx;
         dwr = 0;
-        w(1 & dw);
+        w( 1 & dw );
       }
-      return w(-1);
+      return w( -1 );
     }
-    for (; d2w > 0; d2w--) {
-      dw = (ax * dw) % bx;
-      if (dwr == 1)
-        dw = (ax * dw) % bx;
+    for( ; d2w > 0; d2w-- ) {
+      dw = ( ax * dw ) % bx;
+      if( dwr == 1 )
+        dw = ( ax * dw ) % bx;
       dwr = 0;
-      w(1 & dw);
+      w( 1 & dw );
     }
-    dw = (ax * dw) % bx;
-    if (dwr == 1)
-      dw = (ax * dw) % bx;
+    dw = ( ax * dw ) % bx;
+    if( dwr == 1 )
+      dw = ( ax * dw ) % bx;
     dwr = 1;
-    w(1 ^ (1 & dw));
-    for (; d3w > 0; d3w--) {
-      dw = (ax * dw) % bx;
-      if (dwr == 1)
-        dw = (ax * dw) % bx;
+    w( 1 ^ ( 1 & dw ) );
+    for( ; d3w > 0; d3w-- ) {
+      dw = ( ax * dw ) % bx;
+      if( dwr == 1 )
+        dw = ( ax * dw ) % bx;
       dwr = 0;
-      w(1 & dw);
+      w( 1 & dw );
     }
     d1w = 0;
-    return w(-1);
+    return w( -1 );
   }
 
   /* on read 0 if normal -1 if last bit -2 there after */
   /* on write -1 if current is last -2 if call after last one */
-  int wz(int c) {
-    if (c == -2)
-      return w(-2);
-    if (c == 0) {
+  int wz( int c ) {
+    if( c == -2 )
+      return w( -2 );
+    if( c == 0 ) {
       bn++;
       return 0;
     } else {
-      for (; bn > 0; bn--)
-        w(0);
-      return w(c);
+      for( ; bn > 0; bn-- )
+        w( 0 );
+      return w( c );
     }
   }
-  int wzc(int c) {
-    if (c == -2)
-      return wc(-2);
-    if (c == 0) {
+  int wzc( int c ) {
+    if( c == -2 )
+      return wc( -2 );
+    if( c == 0 ) {
       bn++;
       return 0;
     } else {
-      for (; bn > 0; bn--)
-        wc(0);
-      return wc(c);
+      for( ; bn > 0; bn-- )
+        wc( 0 );
+      return wc( c );
     }
   }
 
 private:
   void CHK() {
-    if (inuse != 0x69) {
-      fprintf(stderr, " all read in use bit_byts use error %x \n", inuse);
+    if( inuse != 0x69 ) {
+      fprintf( stderr, " all read in use bit_byts use error %x \n", inuse );
       abort();
     }
   }

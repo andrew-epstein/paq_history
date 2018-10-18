@@ -11,43 +11,42 @@
   if exist dxe_ex.exe dxe_ex.exe
   for %%a in (yo.dxe yo.o dxe_ex.exe) do if exist %%a del %%a
 */
-#if !defined(DXE1) && !defined(DXE3)
-#if __DJGPP_MINOR__ == 3
-#define DXE1
-#endif
+#if !defined( DXE1 ) && !defined( DXE3 )
+#  if __DJGPP_MINOR__ == 3
+#    define DXE1
+#  endif
 #endif
 #ifdef YO
 yo() {
-  asm(".intel_syntax noprefix");
-  asm("mov al,0x48"); /* "H" */
-  asm("int 0x29");    /* output char in AL to screen */
-  asm("mov al,0x49"); /* "I" */
-  asm("int 0x29");
-  asm(".att_syntax prefix");
+  asm( ".intel_syntax noprefix" );
+  asm( "mov al,0x48" ); /* "H" */
+  asm( "int 0x29" );    /* output char in AL to screen */
+  asm( "mov al,0x49" ); /* "I" */
+  asm( "int 0x29" );
+  asm( ".att_syntax prefix" );
 }
 #else
-#ifdef DXE1
-#include <sys/dxe.h>
-#else
-#include <dlfcn.h>
-#endif
-#include <stdio.h>
+#  ifdef DXE1
+#    include <sys/dxe.h>
+#  else
+#    include <dlfcn.h>
+#  endif
+#  include <stdio.h>
 
 int main() {
+  static void ( *yo )(), *blah;
 
-static void (*yo)(), *blah;
-
-#ifdef DXE1
-if (yo = _dxe_load("yo.dxe"))
-  yo();
-#else
-if (blah=dlopen("yo.dxe",RTLD_GLOBAL)) {
-  yo=dlsym(blah,"_yo");
-  (*yo)();
-}
-#endif
-else
-  puts("\nCannot load YO.DXE");
-return 0;
+#  ifdef DXE1
+  if( yo = _dxe_load( "yo.dxe" ) )
+    yo();
+#  else
+  if( blah = dlopen( "yo.dxe", RTLD_GLOBAL ) ) {
+    yo = dlsym( blah, "_yo" );
+    ( *yo )();
+  }
+#  endif
+  else
+    puts( "\nCannot load YO.DXE" );
+  return 0;
 }
 #endif

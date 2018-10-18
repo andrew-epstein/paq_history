@@ -1,63 +1,58 @@
 #if !defined membuffer_h_included
-#define membuffer_h_included
+#  define membuffer_h_included
 
-#pragma warning(disable:4786)
+#  pragma warning( disable : 4786 )
 
-#include <stdio.h>
-#include <vector>
-#include <string>
-#include <map>
+#  include <stdio.h>
+#  include <vector>
+#  include <string>
+#  include <map>
 
-#define OUTPUT_BUFFER_MIN_SIZE 10240
-
+#  define OUTPUT_BUFFER_MIN_SIZE 10240
 
 // Input/Output using dynamic memory allocation
-class CMemoryBuffer
-{
+class CMemoryBuffer {
 public:
-	CMemoryBuffer(std::string mname="");
-	~CMemoryBuffer();
+  CMemoryBuffer( std::string mname = "" );
+  ~CMemoryBuffer();
 
-	void OutTgtByte( unsigned char c );
-	int InpSrcByte( void );
-	void UndoSrcByte( void ); 
-	inline int Size();
-	inline int Allocated(); 
-	inline void AllocSrcBuf( unsigned int len );
-	inline void Clear();
-	inline void SetSrcBuf( unsigned char* SrcBuf, unsigned int len );
+  void OutTgtByte( unsigned char c );
+  int InpSrcByte( void );
+  void UndoSrcByte( void );
+  inline int Size();
+  inline int Allocated();
+  inline void AllocSrcBuf( unsigned int len );
+  inline void Clear();
+  inline void SetSrcBuf( unsigned char *SrcBuf, unsigned int len );
 
-	static unsigned int memsize;
-	unsigned char* TargetBuf;
-	unsigned char* SourceBuf;
-	unsigned int SrcLen, TgtLen;
-	unsigned int SrcPtr, TgtPtr;
-	std::string name;
+  static unsigned int memsize;
+  unsigned char *TargetBuf;
+  unsigned char *SourceBuf;
+  unsigned int SrcLen, TgtLen;
+  unsigned int SrcPtr, TgtPtr;
+  std::string name;
 
 private:
-	inline void AllocTgtBuf( unsigned int len = OUTPUT_BUFFER_MIN_SIZE );
-	inline void ReallocTgtBuf(unsigned int len);
+  inline void AllocTgtBuf( unsigned int len = OUTPUT_BUFFER_MIN_SIZE );
+  inline void ReallocTgtBuf( unsigned int len );
 };
 
-class CContainers
-{
+class CContainers {
 public:
-	CContainers();
-	void prepareMemBuffers();
-	void writeMemBuffers(int preprocFlag,  int comprLevel);
-	void readMemBuffers(int preprocFlag, int maxMemSize);
-	void freeMemBuffers(bool freeMem);
-	void selectMemBuffer(unsigned char* s,int s_size);
-	void MemBufferPopBack();
+  CContainers();
+  void prepareMemBuffers();
+  void writeMemBuffers( int preprocFlag, int comprLevel );
+  void readMemBuffers( int preprocFlag, int maxMemSize );
+  void freeMemBuffers( bool freeMem );
+  void selectMemBuffer( unsigned char *s, int s_size );
+  void MemBufferPopBack();
 
-	CMemoryBuffer *memout;
-	unsigned char *bigBuffer;	
+  CMemoryBuffer *memout;
+  unsigned char *bigBuffer;
 
 private:
-	std::vector<CMemoryBuffer*> mem_stack;
-	std::map<std::string,CMemoryBuffer*> memmap;
+  std::vector<CMemoryBuffer *> mem_stack;
+  std::map<std::string, CMemoryBuffer *> memmap;
 };
-
-
 
 #endif

@@ -520,10 +520,9 @@ This will prevent any confusion about versions or archive compatibility.
 Also, give yourself credit in the help message.
 */
 
-
 #define PROGNAME "PAQAR"
-#define min(a,b) ((a)<(b)?(a):(b))
-#define max(a,b) ((a)>(b)?(a):(b))
+#define min( a, b ) ( ( a ) < ( b ) ? ( a ) : ( b ) )
+#define max( a, b ) ( ( a ) > ( b ) ? ( a ) : ( b ) )
 #include <cctype>
 #include <cmath>
 #include <string>
@@ -536,96 +535,105 @@ Also, give yourself credit in the help message.
 #define cu 0xffffff
 #define du 0x3fffff
 using std::string;
-using std::vector;
 using std::swap;
+using std::vector;
 
-const int PSCALE=4096;  // Integer scale for representing probabilities
-int MEM=6;
-int exe=0;
+const int PSCALE = 4096; // Integer scale for representing probabilities
+int MEM = 6;
+int exe = 0;
 
-template <class T> inline int size(const T& t) {return t.size();}
+template <class T>
+inline int size( const T &t ) {
+  return t.size();
+}
 
 // 8-32 bit unsigned types, adjust as appropriate
 typedef unsigned char U8;
 typedef unsigned short U16;
 typedef unsigned int U32;
 
-#define Top_value U32(0XFFFFFFFF)	/* Largest code value */
+#define Top_value U32( 0XFFFFFFFF ) /* Largest code value */
 /* HALF AND QUARTER POINTS IN THE CODE VALUE RANGE. */
-#define First_qtr U32(Top_value/4+1)  /* Point after first quarter    */
-#define Half	  U32(2*First_qtr)    /* Point after first half  */
-#define Third_qtr U32(3*First_qtr)    /* Point after third quarter */
+#define First_qtr U32( Top_value / 4 + 1 ) /* Point after first quarter    */
+#define Half U32( 2 * First_qtr )          /* Point after first half  */
+#define Third_qtr U32( 3 * First_qtr )     /* Point after third quarter */
 
 class ProgramChecker {
   clock_t start;
+
 public:
   ProgramChecker() {
-    start=clock();
+    start = clock();
 
     // Test the compiler for common but not guaranteed assumptions
-    assert(sizeof(U8)==1);
-    assert(sizeof(U16)==2);
-    assert(sizeof(U32)==4);
-    assert(sizeof(int)==4);
+    assert( sizeof( U8 ) == 1 );
+    assert( sizeof( U16 ) == 2 );
+    assert( sizeof( U32 ) == 4 );
+    assert( sizeof( int ) == 4 );
   }
-  clock_t start_time() const {return start;}  // When the program started
+  clock_t start_time() const {
+    return start;
+  } // When the program started
 } programChecker;
 
-void handler(){
-printf("Out of memory\n");exit(1);
+void handler() {
+  printf( "Out of memory\n" );
+  exit( 1 );
 }
-int wlen,clen,fsize,tf,po,bp,lon,z=0;
-U8 l8=0;
+int wlen, clen, fsize, tf, po, bp, lon, z = 0;
+U8 l8 = 0;
 
 //////////////////////////// rnd ////////////////////////////
 
 // 32-bit random number generator based on r(i) = r(i-24) ^ r(i-55)
 
-class Random{
-U32 table[55];
-int i;
+class Random {
+  U32 table[55];
+  int i;
+
 public:
-Random(){
-table[0]=123456789;
-table[1]=987654321;
-for(int j=0;j<53;j++)
-table[j+2]=table[j+1]*11+table[j]*23/16;
-i=0;
-}
-U32 operator()(){
-if(++i>54)
-i=0;
-if(i<24)
-return table[i]^=table[i+31];
-return table[i]^=table[i-24];
-}
-}rnd;
+  Random() {
+    table[0] = 123456789;
+    table[1] = 987654321;
+    for( int j = 0; j < 53; j++ )
+      table[j + 2] = table[j + 1] * 11 + table[j] * 23 / 16;
+    i = 0;
+  }
+  U32 operator()() {
+    if( ++i > 54 )
+      i = 0;
+    if( i < 24 )
+      return table[i] ^= table[i + 31];
+    return table[i] ^= table[i - 24];
+  }
+} rnd;
 
 //////////////////////////// hash ////////////////////////////
 
 // Hash functoid, returns 32 bit hash of 1-4 chars
 
-class Hash{
-U32 table[8][256];
+class Hash {
+  U32 table[8][256];
+
 public:
-Hash(){
-for(int i=7;i>=0;i--)
-for(int j=0;j<256;j++)
-table[i][j]=rnd();
-}
-U32 operator()(U8 a){
-return table[0][a];
-}
-U32 operator()(U8 a,U8 b){
-return table[0][a]+table[1][b];
-}
-U32 operator()(U8 a,U8 b,U8 c){
-return table[0][a]+table[1][b]+table[2][c];
-}
-U32 operator()(U8 a,U8 b,U8 c,U8 s){
-return table[0][a]+table[1][b]+table[2][c]+table[3][s];
-}
-}hash;
+  Hash() {
+    for( int i = 7; i >= 0; i-- )
+      for( int j = 0; j < 256; j++ )
+        table[i][j] = rnd();
+  }
+  U32 operator()( U8 a ) {
+    return table[0][a];
+  }
+  U32 operator()( U8 a, U8 b ) {
+    return table[0][a] + table[1][b];
+  }
+  U32 operator()( U8 a, U8 b, U8 c ) {
+    return table[0][a] + table[1][b] + table[2][c];
+  }
+  U32 operator()( U8 a, U8 b, U8 c, U8 s ) {
+    return table[0][a] + table[1][b] + table[2][c] + table[3][s];
+  }
+} hash;
 
 //////////////////////////// Counter ////////////////////////////
 
@@ -639,43 +647,42 @@ in a context.
     higher numbers should be favored.
 */
 
-class Counter{
-U8 state;
-struct E{
-U32 n0,n1;
-U8 s00,s01,s10,s11;
-U32 p0,p1;
-};
-static E table[];
+class Counter {
+  U8 state;
+  struct E {
+    U32 n0, n1;
+    U8 s00, s01, s10, s11;
+    U32 p0, p1;
+  };
+  static E table[];
+
 public:
-Counter(){}
-int get0(){
-return table[state].n0;
-}
-int get1(){
-return table[state].n1;
-}
-int priority(){
-return 4096*(table[state].n0+table[state].n1)+state;
-}
-void add(int y){
-if(y){
-if(state<214||rnd()<=table[state].p1)
-state=table[state].s11;
-else
-state=table[state].s10;
-}
-else
-{
-if(state<214||rnd()<=table[state].p0)
-state=table[state].s01;
-else
-state=table[state].s00;
-}
-}
+  Counter() {}
+  int get0() {
+    return table[state].n0;
+  }
+  int get1() {
+    return table[state].n1;
+  }
+  int priority() {
+    return 4096 * ( table[state].n0 + table[state].n1 ) + state;
+  }
+  void add( int y ) {
+    if( y ) {
+      if( state < 214 || rnd() <= table[state].p1 )
+        state = table[state].s11;
+      else
+        state = table[state].s10;
+    } else {
+      if( state < 214 || rnd() <= table[state].p0 )
+        state = table[state].s01;
+      else
+        state = table[state].s00;
+    }
+  }
 };
-Counter::E Counter::table[]={
-#include"statable.dat"
+Counter::E Counter::table[] = {
+#include "statable.dat"
 };
 
 //////////////////////////// ch ////////////////////////////
@@ -698,52 +705,53 @@ It stores all the input so far in a rotating buffer of the last N bytes
   ch.pos(c, i) -- Position of the i'th to last occurrence, i = 0 to 3
 */
 
-class Ch{
-U8 *buf,lidx[256];
-U32 N;
-U32 lpos[4][256];
+class Ch {
+  U8 *buf, lidx[256];
+  U32 N;
+  U32 lpos[4][256];
+
 public:
-Ch(){}
-void init(){
-lon=1;
-po=bp=0;
-N=1<<(16+MEM+(MEM>6));
-buf=(U8*)calloc(N--,1);
-if(!buf)
-handler();
-buf[0]=1;
-memset(lpos,0,4096);
-}
-U32 operator[](int i){
-return buf[i&N];
-}
-U32 operator()(int i){
-return buf[(po-i)&N];
-}
-void upd(int y){
-U8 &r=buf[po&N];
-r=r*2+y;
-l8=l8*2+y;
-++bp;
-if((lon=lon*2+y)>15){
-lon=1;
-if(!(bp&=7)){
-lpos[++lidx[r]&=3][r]=po++;
-buf[po&N]=1;
-z+=(l8>127);
-}
-}
-}
-U32 pos(U8 c,int i){
-return lpos[(lidx[c]-i)&3][c];
-}
-U32 hi(){
-if(bp>3)
-return buf[po&N]&15;
-else
-return buf[(po-1)&N]/16;
-}
-}ch;
+  Ch() {}
+  void init() {
+    lon = 1;
+    po = bp = 0;
+    N = 1 << ( 16 + MEM + ( MEM > 6 ) );
+    buf = ( U8 * ) calloc( N--, 1 );
+    if( !buf )
+      handler();
+    buf[0] = 1;
+    memset( lpos, 0, 4096 );
+  }
+  U32 operator[]( int i ) {
+    return buf[i & N];
+  }
+  U32 operator()( int i ) {
+    return buf[( po - i ) & N];
+  }
+  void upd( int y ) {
+    U8 &r = buf[po & N];
+    r = r * 2 + y;
+    l8 = l8 * 2 + y;
+    ++bp;
+    if( ( lon = lon * 2 + y ) > 15 ) {
+      lon = 1;
+      if( !( bp &= 7 ) ) {
+        lpos[++lidx[r] &= 3][r] = po++;
+        buf[po & N] = 1;
+        z += ( l8 > 127 );
+      }
+    }
+  }
+  U32 pos( U8 c, int i ) {
+    return lpos[( lidx[c] - i ) & 3][c];
+  }
+  U32 hi() {
+    if( bp > 3 )
+      return buf[po & N] & 15;
+    else
+      return buf[( po - 1 ) & N] / 16;
+  }
+} ch;
 
 //////////////////////////// Hashtable ////////////////////////////
 
@@ -763,81 +771,80 @@ Each bucket represents 15 counters for a context on a half-byte boundary.
 Normally there should be 4 calls to ht(c) after each ht.set(h).
 */
 
-class Hashtable{
-U32 N;
-struct HashElement{
-U8 cs[2];
-Counter c[15];
-};
-HashElement *table;
-Counter *Tcxt;
+class Hashtable {
+  U32 N;
+  struct HashElement {
+    U8 cs[2];
+    Counter c[15];
+  };
+  HashElement *table;
+  Counter *Tcxt;
+
 public:
-Hashtable(U32 n):N(n){
-U8 *p=(U8*)calloc((17<<N)+64,1);
-if(!p)
-handler();
-p+=64-((long)p&63);
-table=(HashElement*)p;
-Tcxt=&(table[0].c[-1]);
-}
-Counter& operator()(){
-return Tcxt[lon];
-}
-void set(U32 h){
-short cs=h;
-U32 lo=(h>>(32-N))&-4,i=lo;
-for(;i<lo+4;i++)
-if(*((short*)&table[i].cs[0])==cs)
-break;
-else
-if(!table[i].c[0].priority()){
-*((short*)&table[i].cs[0])=cs;
-break;
-}
-if(i==lo+4){
-if(table[lo+2].c[0].priority()<table[lo+3].c[0].priority())
-memmove(table+lo+1,table+lo,17*2);
-else
-memmove(table+lo+1,table+lo,17*3);
-memset(table+lo,0,17);
-*((short*)&table[lo].cs[0])=cs;
-}
-else
-if(i!=lo){
-HashElement he=table[i];
-memmove(table+lo+1,table+lo,17*(i-lo));
-table[lo]=he;
-}
-Tcxt=&(table[lo].c[-1]);
-}
+  Hashtable( U32 n ) : N( n ) {
+    U8 *p = ( U8 * ) calloc( ( 17 << N ) + 64, 1 );
+    if( !p )
+      handler();
+    p += 64 - ( ( long ) p & 63 );
+    table = ( HashElement * ) p;
+    Tcxt = &( table[0].c[-1] );
+  }
+  Counter &operator()() {
+    return Tcxt[lon];
+  }
+  void set( U32 h ) {
+    short cs = h;
+    U32 lo = ( h >> ( 32 - N ) ) & -4, i = lo;
+    for( ; i < lo + 4; i++ )
+      if( *( ( short * ) &table[i].cs[0] ) == cs )
+        break;
+      else if( !table[i].c[0].priority() ) {
+        *( ( short * ) &table[i].cs[0] ) = cs;
+        break;
+      }
+    if( i == lo + 4 ) {
+      if( table[lo + 2].c[0].priority() < table[lo + 3].c[0].priority() )
+        memmove( table + lo + 1, table + lo, 17 * 2 );
+      else
+        memmove( table + lo + 1, table + lo, 17 * 3 );
+      memset( table + lo, 0, 17 );
+      *( ( short * ) &table[lo].cs[0] ) = cs;
+    } else if( i != lo ) {
+      HashElement he = table[i];
+      memmove( table + lo + 1, table + lo, 17 * ( i - lo ) );
+      table[lo] = he;
+    }
+    Tcxt = &( table[lo].c[-1] );
+  }
 };
 
-int n=-1, mp=-1;
-U32 bc0[64],bc1[64],mxrs[64],mxwt[8][64];
-struct SSEContext{
-U8 c,n;
-int p(){
-return 4096*c/(n+(!n));
-}
-void upd(int y){
-c+=y;
-if(++n>254)
-c/=2,n/=2;
-}
+int n = -1, mp = -1;
+U32 bc0[64], bc1[64], mxrs[64], mxwt[8][64];
+struct SSEContext {
+  U8 c, n;
+  int p() {
+    return 4096 * c / ( n + ( !n ) );
+  }
+  void upd( int y ) {
+    c += y;
+    if( ++n > 254 )
+      c /= 2, n /= 2;
+  }
 };
-class SSEMap{
-U32 table[4096];
+class SSEMap {
+  U32 table[4096];
+
 public:
-int operator()(int p){
-return table[p];
-}
-SSEMap(){
-for(int i=0;i<4096;i++)
-table[i]=int(64*log((i+0.5)/(4096-0.5-i))+512);
-table[4095]=1023;
-table[0]=0;
-}
-}ssemap;
+  int operator()( int p ) {
+    return table[p];
+  }
+  SSEMap() {
+    for( int i = 0; i < 4096; i++ )
+      table[i] = int( 64 * log( ( i + 0.5 ) / ( 4096 - 0.5 - i ) ) + 512 );
+    table[4095] = 1023;
+    table[0] = 0;
+  }
+} ssemap;
 
 //////////////////////////// mixer ////////////////////////////
 
@@ -857,201 +864,214 @@ table[0]=0;
                       y = 0 or 1.
 */
 
-class Mixer{
+class Mixer {
 protected:
-SSEContext (*sse)[33];
-U32 (*wt)[64];
-U32 ssep,c,b0,b1;
-public:
-Mixer(int n):wt(new U32[n][64]),sse(new SSEContext[2048][33]){
-for(int i=0;i<n;i++)
-for(int j=0;j<64;j++)
-wt[i][j]=(j>3&&j<12)?8:12;
-ssep=16;
-int oldp=33;
-for(int i=4095;i>=0;i--){
-int p=(ssemap(i)+16)/32;
-int m=1+4096*4096/((i+1)*(4096-i));
-if(m>254)m=254;
-int c=(i*m+2048)/4096;
-for(int j=p;j<oldp;j++)
-for(int k=0;k<2048;k++){
-sse[k][j].c=c;
-sse[k][j].n=m;
-}
-oldp=p;
-}
-}
-void predict(int y){
-c=y;
-{
-int _b0=0;
-int _b1=0;
-for(int j=n+1;j!=0;--j){
-U32 w=wt[c][j-1];
-_b0+=bc0[j-1]*w;
-_b1+=bc1[j-1]*w;
-}
-b0=_b0;
-b1=_b1;
-}
-if(fsize>=0)
-b0+=n*3,b1+=n*3;
-int p=(int)((double)b1*4096/(b0+b1));
-if(fsize<0)
-b0+=n*4,b1+=n*4;
-else
-b0+=n,b1+=n;
+  SSEContext ( *sse )[33];
+  U32 ( *wt )[64];
+  U32 ssep, c, b0, b1;
 
-ssep=ssemap(p);
-U32 wt=ssep&31;
-ssep/=32;
-wt=sse[c][ssep].p()*(32-wt)+sse[c][ssep+1].p()*wt;
-if(fsize>300000){
-if(exe)
-p=(wt*26/32+p*6)/32;
-else
-p=(wt/32+p)/2;
-}
-else
-if(z!=0&&fsize!=0)
-p=(wt*22/32+p*10)/32;
-mxrs[++mp]=p;
-mxrs[16+mp]=4096-p;
-return;
-}
-void upd(int y,U32 d,U32 e){
-if(n>0){
-sse[c][ssep].upd(y);
-sse[c][ssep+1].upd(y);
-U32 s=b0+b1;
-U32 sy=y?b1:b0;
-U32 rn=rnd();
-U32 s1=(au/s+((rn>>(d-7))&63))/64+e*64;
-U32 syd=(au*(1.0/sy-1.0/s)+(rn&63))/64;
-int m0=y?-s1:syd;
-int m1=y?syd:-s1;
-rn=(rn>>d)&65535;
-{
-U32 *wl=&wt[c][0];
-for(int i=n+1;i!=0;i--){
-int dw=int(m0*bc0[i-1]+m1*bc1[i-1]+rn)>>16;
-wl[i-1]=max(int(wl[i-1]+dw),1);
-}
-}
-}
-}
+public:
+  Mixer( int n ) : wt( new U32[n][64] ), sse( new SSEContext[2048][33] ) {
+    for( int i = 0; i < n; i++ )
+      for( int j = 0; j < 64; j++ )
+        wt[i][j] = ( j > 3 && j < 12 ) ? 8 : 12;
+    ssep = 16;
+    int oldp = 33;
+    for( int i = 4095; i >= 0; i-- ) {
+      int p = ( ssemap( i ) + 16 ) / 32;
+      int m = 1 + 4096 * 4096 / ( ( i + 1 ) * ( 4096 - i ) );
+      if( m > 254 )
+        m = 254;
+      int c = ( i * m + 2048 ) / 4096;
+      for( int j = p; j < oldp; j++ )
+        for( int k = 0; k < 2048; k++ ) {
+          sse[k][j].c = c;
+          sse[k][j].n = m;
+        }
+      oldp = p;
+    }
+  }
+  void predict( int y ) {
+    c = y;
+    {
+      int _b0 = 0;
+      int _b1 = 0;
+      for( int j = n + 1; j != 0; --j ) {
+        U32 w = wt[c][j - 1];
+        _b0 += bc0[j - 1] * w;
+        _b1 += bc1[j - 1] * w;
+      }
+      b0 = _b0;
+      b1 = _b1;
+    }
+    if( fsize >= 0 )
+      b0 += n * 3, b1 += n * 3;
+    int p = ( int ) ( ( double ) b1 * 4096 / ( b0 + b1 ) );
+    if( fsize < 0 )
+      b0 += n * 4, b1 += n * 4;
+    else
+      b0 += n, b1 += n;
+
+    ssep = ssemap( p );
+    U32 wt = ssep & 31;
+    ssep /= 32;
+    wt = sse[c][ssep].p() * ( 32 - wt ) + sse[c][ssep + 1].p() * wt;
+    if( fsize > 300000 ) {
+      if( exe )
+        p = ( wt * 26 / 32 + p * 6 ) / 32;
+      else
+        p = ( wt / 32 + p ) / 2;
+    } else if( z != 0 && fsize != 0 )
+      p = ( wt * 22 / 32 + p * 10 ) / 32;
+    mxrs[++mp] = p;
+    mxrs[16 + mp] = 4096 - p;
+    return;
+  }
+  void upd( int y, U32 d, U32 e ) {
+    if( n > 0 ) {
+      sse[c][ssep].upd( y );
+      sse[c][ssep + 1].upd( y );
+      U32 s = b0 + b1;
+      U32 sy = y ? b1 : b0;
+      U32 rn = rnd();
+      U32 s1 = ( au / s + ( ( rn >> ( d - 7 ) ) & 63 ) ) / 64 + e * 64;
+      U32 syd = ( au * ( 1.0 / sy - 1.0 / s ) + ( rn & 63 ) ) / 64;
+      int m0 = y ? -s1 : syd;
+      int m1 = y ? syd : -s1;
+      rn = ( rn >> d ) & 65535;
+      {
+        U32 *wl = &wt[c][0];
+        for( int i = n + 1; i != 0; i-- ) {
+          int dw = int( m0 * bc0[i - 1] + m1 * bc1[i - 1] + rn ) >> 16;
+          wl[i - 1] = max( int( wl[i - 1] + dw ), 1 );
+        }
+      }
+    }
+  }
 };
 
 // A MultiMixer averages the output of N mixers using different contexts
 
-class MultiMixer{
-Mixer m0,m1,m2,m3,m4,m5,m6,m7,m8,m9,ma,mb;
-int b0,b1;
+class MultiMixer {
+  Mixer m0, m1, m2, m3, m4, m5, m6, m7, m8, m9, ma, mb;
+  int b0, b1;
+
 public:
-MultiMixer():m0(256),m1(256),m2(256),m3(256),m4(2048),m5(2048),m6(2048),m7(2048),m8(2048),m9(2048),ma(2048),mb(2048){
-for(int i=0;i<8;i++)
-for(int j=0;j<64;j++)
-mxwt[i][j]=4;
-}
-void wri(int n0,int n1){
-n++;
-bc0[n]=n0;
-bc1[n]=n1;
-}
-void add(int n0,int n1){
-bc0[n]+=n0;
-bc1[n]+=n1;
-}
-void mul(int m){
-bc0[n]*=m;
-bc1[n]*=m;
-}
-int predict(){
-int c=ch(1)*8+ch(2)/32;
-m6.predict(c);
-m7.predict(c);
-c=ch(2)/16+tf*16*(ch(1)/32+8*(wlen==clen));
-m0.predict(c);
-m2.predict(c);
-c=ch(0)*8+(ch(1)/64)*2+tf*(wlen==clen);
-ma.predict(c);
-mb.predict(c);
-c=ch(1)/32+8*(ch(2)/32)+(ch(3)&192);
-m3.predict(c);
-m1.predict(c);
-c=bp*256+c;
-m8.predict(c);
-m9.predict(c);
-c=bp*256+((ch(0)<<(8-bp))+(ch(1)>>bp)&255);
-m4.predict(c);
-m5.predict(c);
-b0=0,b1=0;
-for(int i=mp;i>=0;i--){
-int m=mxwt[bp][i];
-b1+=mxrs[i]*m;
-b0+=m;
-}
-//c=b1/b0;
-b0=4096*b0-b1;
-b0+=32;
-b1+=32;
-return (int)((double)b1*4096/(b0+b1));
-//return c;
-}
+  MultiMixer() :
+      m0( 256 ),
+      m1( 256 ),
+      m2( 256 ),
+      m3( 256 ),
+      m4( 2048 ),
+      m5( 2048 ),
+      m6( 2048 ),
+      m7( 2048 ),
+      m8( 2048 ),
+      m9( 2048 ),
+      ma( 2048 ),
+      mb( 2048 ) {
+    for( int i = 0; i < 8; i++ )
+      for( int j = 0; j < 64; j++ )
+        mxwt[i][j] = 4;
+  }
+  void wri( int n0, int n1 ) {
+    n++;
+    bc0[n] = n0;
+    bc1[n] = n1;
+  }
+  void add( int n0, int n1 ) {
+    bc0[n] += n0;
+    bc1[n] += n1;
+  }
+  void mul( int m ) {
+    bc0[n] *= m;
+    bc1[n] *= m;
+  }
+  int predict() {
+    int c = ch( 1 ) * 8 + ch( 2 ) / 32;
+    m6.predict( c );
+    m7.predict( c );
+    c = ch( 2 ) / 16 + tf * 16 * ( ch( 1 ) / 32 + 8 * ( wlen == clen ) );
+    m0.predict( c );
+    m2.predict( c );
+    c = ch( 0 ) * 8 + ( ch( 1 ) / 64 ) * 2 + tf * ( wlen == clen );
+    ma.predict( c );
+    mb.predict( c );
+    c = ch( 1 ) / 32 + 8 * ( ch( 2 ) / 32 ) + ( ch( 3 ) & 192 );
+    m3.predict( c );
+    m1.predict( c );
+    c = bp * 256 + c;
+    m8.predict( c );
+    m9.predict( c );
+    c = bp * 256 + ( ( ch( 0 ) << ( 8 - bp ) ) + ( ch( 1 ) >> bp ) & 255 );
+    m4.predict( c );
+    m5.predict( c );
+    b0 = 0, b1 = 0;
+    for( int i = mp; i >= 0; i-- ) {
+      int m = mxwt[bp][i];
+      b1 += mxrs[i] * m;
+      b0 += m;
+    }
+    //c=b1/b0;
+    b0 = 4096 * b0 - b1;
+    b0 += 32;
+    b1 += 32;
+    return ( int ) ( ( double ) b1 * 4096 / ( b0 + b1 ) );
+    //return c;
+  }
 
-void upd(int y){
-int i=0,j=10;
-if(fsize<0){
-i=3,j=64;
-}
-if(exe){
-i=5,j=128;
-}
-m0.upd(y,15,i);
-m1.upd(y,15,j);
-m3.upd(y,15,i);
-m2.upd(y,15,j);
-m4.upd(y,15,i);
-m5.upd(y,15,j);
-m6.upd(y,15,i);
-m7.upd(y,15,j);
-m8.upd(y,15,i);
-m9.upd(y,15,j);
-ma.upd(y,15,i);
-mb.upd(y,15,j);
-if(mp>0){
-U32 s=b0+b1;
-U32 sy=y?b1:b0;
-U32 rn=rnd()&32767;
-U32 s1=(au/s+64)/128;
-U32 syd=(au/sy-au/s+ 64)/128;
-int m0=y?-s1:syd;
-int m1=y?syd:-s1;
-U32 bp1=(bp-1)&7;
-int mi=4;
-if(z!=0&&fsize!=0)
-mi=2;
-for(int i=mp;i>=0;i--){
-int dw=int(rn+mxrs[i]*m1+mxrs[16+i]*m0)>>15;
-mxwt[bp1][i]=max(int(mxwt[bp1][i]+dw),mi);
-}
-}
+  void upd( int y ) {
+    int i = 0, j = 10;
+    if( fsize < 0 ) {
+      i = 3, j = 64;
+    }
+    if( exe ) {
+      i = 5, j = 128;
+    }
+    m0.upd( y, 15, i );
+    m1.upd( y, 15, j );
+    m3.upd( y, 15, i );
+    m2.upd( y, 15, j );
+    m4.upd( y, 15, i );
+    m5.upd( y, 15, j );
+    m6.upd( y, 15, i );
+    m7.upd( y, 15, j );
+    m8.upd( y, 15, i );
+    m9.upd( y, 15, j );
+    ma.upd( y, 15, i );
+    mb.upd( y, 15, j );
+    if( mp > 0 ) {
+      U32 s = b0 + b1;
+      U32 sy = y ? b1 : b0;
+      U32 rn = rnd() & 32767;
+      U32 s1 = ( au / s + 64 ) / 128;
+      U32 syd = ( au / sy - au / s + 64 ) / 128;
+      int m0 = y ? -s1 : syd;
+      int m1 = y ? syd : -s1;
+      U32 bp1 = ( bp - 1 ) & 7;
+      int mi = 4;
+      if( z != 0 && fsize != 0 )
+        mi = 2;
+      for( int i = mp; i >= 0; i-- ) {
+        int dw = int( rn + mxrs[i] * m1 + mxrs[16 + i] * m0 ) >> 15;
+        mxwt[bp1][i] = max( int( mxwt[bp1][i] + dw ), mi );
+      }
+    }
 
-mp=-1;
-n=-1;
-wri(1,0);
-wri(2,1);
-wri(3,1);
-wri(7,1);
-wri(0,1);
-wri(1,1);
-wri(12,12);
-wri(1,2);
-wri(1,3);
-wri(1,7);
-}
-}mixer;
+    mp = -1;
+    n = -1;
+    wri( 1, 0 );
+    wri( 2, 1 );
+    wri( 3, 1 );
+    wri( 7, 1 );
+    wri( 0, 1 );
+    wri( 1, 1 );
+    wri( 12, 12 );
+    wri( 1, 2 );
+    wri( 1, 3 );
+    wri( 1, 7 );
+  }
+} mixer;
 
 //////////////////////////// CounterMap ////////////////////////////
 
@@ -1068,154 +1088,167 @@ of bytes are read. */
 // Stores only the most recent byte and its count per context (run length)
 // in a hash table without collision detection
 
-class CounterMap1{
-int N;
-struct S{
-U8 c,n;
-};
-S *t,*cxt;
+class CounterMap1 {
+  int N;
+  struct S {
+    U8 c, n;
+  };
+  S *t, *cxt;
+
 public:
-CounterMap1(int n):N(n+MEM-9){
-if(!(t=(S*)calloc(1<<N,2)))
-handler();
-cxt=t;
-}
-void upd(U32 h){
-if(cxt->c!=ch(1))
-cxt->n=0;
-cxt->c=ch(1);
-if(cxt->n<255)
-++(cxt->n);
-cxt=t+(h>>(32-N));
-}
-void add(){
-U32 d=(cxt->c+256)>>(7-bp);
-if(!(d^=ch(0)*2))
-mixer.add(cxt->n,0);
-else
-if(d==1)
-mixer.add(0,cxt->n);
-}
+  CounterMap1( int n ) : N( n + MEM - 9 ) {
+    if( !( t = ( S * ) calloc( 1 << N, 2 ) ) )
+      handler();
+    cxt = t;
+  }
+  void upd( U32 h ) {
+    if( cxt->c != ch( 1 ) )
+      cxt->n = 0;
+    cxt->c = ch( 1 );
+    if( cxt->n < 255 )
+      ++( cxt->n );
+    cxt = t + ( h >> ( 32 - N ) );
+  }
+  void add() {
+    U32 d = ( cxt->c + 256 ) >> ( 7 - bp );
+    if( !( d ^= ch( 0 ) * 2 ) )
+      mixer.add( cxt->n, 0 );
+    else if( d == 1 )
+      mixer.add( 0, cxt->n );
+  }
 };
 
 // Uses a nibble-oriented hash table of contexts (counter state)
-class CounterMap2{
-U32 cxt;
-Hashtable ht2;
-Counter *cp[8];
+class CounterMap2 {
+  U32 cxt;
+  Hashtable ht2;
+  Counter *cp[8];
+
 public:
-CounterMap2(int n):ht2(n+MEM-10){
-for(int i=0;i<8;i++)
-cp[i]=0;
-cxt=0;
-}
-// After 8 predictions, update the models with the last input char, ch(1),
-// then set the new context hash to h
-void upd(U32 h){
-int c=ch(1);
-for(int i=0;i<8;i++)
-if(cp[i]){
-cp[i]->add((c>>(7-i))&1),cp[i]=0;
-}
-ht2.set(cxt=h);
-}
-void add(){
-if(bp==4){
-ht2.set(cxt^=hash(ch.hi()));
-}
-cp[bp]=&ht2();
-mixer.add(cp[bp]->get0(),cp[bp]->get1());
-}
-void wri(){
-if(bp==4){
-ht2.set(cxt^=hash(ch.hi()));
-}
-cp[bp]=&ht2();
-mixer.wri(cp[bp]->get0(),cp[bp]->get1());
-}
-void mul(int n){
-wri();
-mixer.mul(n);
-}
+  CounterMap2( int n ) : ht2( n + MEM - 10 ) {
+    for( int i = 0; i < 8; i++ )
+      cp[i] = 0;
+    cxt = 0;
+  }
+  // After 8 predictions, update the models with the last input char, ch(1),
+  // then set the new context hash to h
+  void upd( U32 h ) {
+    int c = ch( 1 );
+    for( int i = 0; i < 8; i++ )
+      if( cp[i] ) {
+        cp[i]->add( ( c >> ( 7 - i ) ) & 1 ), cp[i] = 0;
+      }
+    ht2.set( cxt = h );
+  }
+  void add() {
+    if( bp == 4 ) {
+      ht2.set( cxt ^= hash( ch.hi() ) );
+    }
+    cp[bp] = &ht2();
+    mixer.add( cp[bp]->get0(), cp[bp]->get1() );
+  }
+  void wri() {
+    if( bp == 4 ) {
+      ht2.set( cxt ^= hash( ch.hi() ) );
+    }
+    cp[bp] = &ht2();
+    mixer.wri( cp[bp]->get0(), cp[bp]->get1() );
+  }
+  void mul( int n ) {
+    wri();
+    mixer.mul( n );
+  }
 };
 
 // Combines 1 and 2 above.
-class CounterMap3{
-CounterMap1 cm1;
-CounterMap2 cm2;
+class CounterMap3 {
+  CounterMap1 cm1;
+  CounterMap2 cm2;
+
 public:
-CounterMap3(int n):cm1(n),cm2(n){}
-void upd(U32 h){
-cm1.upd(h);
-cm2.upd(h);
-}
-void mul(int n){
-wri();
-mixer.mul(n);
-}
-void wri(){
-cm2.wri();
-cm1.add();
-}
-void add(){
-cm2.add();
-cm1.add();
-}
+  CounterMap3( int n ) : cm1( n ), cm2( n ) {}
+  void upd( U32 h ) {
+    cm1.upd( h );
+    cm2.upd( h );
+  }
+  void mul( int n ) {
+    wri();
+    mixer.mul( n );
+  }
+  void wri() {
+    cm2.wri();
+    cm1.add();
+  }
+  void add() {
+    cm2.add();
+    cm1.add();
+  }
 };
 
 //////////////////////////// charModel ////////////////////////////
 
 // A CharModel contains n-gram models from 0 to 9
 
-class CharModel{
-CounterMap3 t2,t3;
-CounterMap2 t4,t5,t6,t7,t8,t9,ta;
-Counter *t0,*cp0,*cp1;
-U32 cxt[11];
+class CharModel {
+  CounterMap3 t2, t3;
+  CounterMap2 t4, t5, t6, t7, t8, t9, ta;
+  Counter *t0, *cp0, *cp1;
+  U32 cxt[11];
+
 public:
-CharModel():t0(new Counter[256*257]),t2(21),t3(23),t4(23),t5(24),t6(24),t7(24),t8(24),t9(23),ta(23){
-cp0=t0;
-cp1=t0+256;
-memset(t0,0,256*257);
-memset(cxt,0,44);
-}
-void model(){
-int y=ch(!bp)&1;
-cp0->add(y);
-cp1->add(y);
-if(!bp){
-for(int i=10;i!=0;i--)
-cxt[i]=cxt[i-1]^hash(ch(1),i,tf*(wlen==i));
-t2.upd(cxt[2]);
-t3.upd(cxt[3]);
-t4.upd(cxt[4]);
-t5.upd(cxt[5]);
-t6.upd(cxt[6]);
-t7.upd(cxt[7]);
-t8.upd(cxt[8]);
-t9.upd(cxt[9]);
-ta.upd(cxt[10]);
-}
-cp0=t0+ch(0);
-cp1=t0+256+ch(1)*256+ch(0);
-mixer.wri(cp0->get0(),cp0->get1());
-if(tf)
-mixer.mul(3);
-mixer.wri(cp1->get0(),cp1->get1());
-if(tf)
-mixer.mul(2);
-t2.wri();
-t3.wri();
-t4.wri();
-t5.add();
-if(fsize!=0){
-t6.add();
-t7.wri();
-t8.add();
-t9.add();
-ta.add();
-}
-}
+  CharModel() :
+      t0( new Counter[256 * 257] ),
+      t2( 21 ),
+      t3( 23 ),
+      t4( 23 ),
+      t5( 24 ),
+      t6( 24 ),
+      t7( 24 ),
+      t8( 24 ),
+      t9( 23 ),
+      ta( 23 ) {
+    cp0 = t0;
+    cp1 = t0 + 256;
+    memset( t0, 0, 256 * 257 );
+    memset( cxt, 0, 44 );
+  }
+  void model() {
+    int y = ch( !bp ) & 1;
+    cp0->add( y );
+    cp1->add( y );
+    if( !bp ) {
+      for( int i = 10; i != 0; i-- )
+        cxt[i] = cxt[i - 1] ^ hash( ch( 1 ), i, tf * ( wlen == i ) );
+      t2.upd( cxt[2] );
+      t3.upd( cxt[3] );
+      t4.upd( cxt[4] );
+      t5.upd( cxt[5] );
+      t6.upd( cxt[6] );
+      t7.upd( cxt[7] );
+      t8.upd( cxt[8] );
+      t9.upd( cxt[9] );
+      ta.upd( cxt[10] );
+    }
+    cp0 = t0 + ch( 0 );
+    cp1 = t0 + 256 + ch( 1 ) * 256 + ch( 0 );
+    mixer.wri( cp0->get0(), cp0->get1() );
+    if( tf )
+      mixer.mul( 3 );
+    mixer.wri( cp1->get0(), cp1->get1() );
+    if( tf )
+      mixer.mul( 2 );
+    t2.wri();
+    t3.wri();
+    t4.wri();
+    t5.add();
+    if( fsize != 0 ) {
+      t6.add();
+      t7.wri();
+      t8.add();
+      t9.add();
+      ta.add();
+    }
+  }
 };
 
 //////////////////////////// matchModel ////////////////////////////
@@ -1226,68 +1259,68 @@ in the previous context with weight n.  If the next bit is 1, then
 the mixer is assigned (0, n), else (n, 0).  Matchies are found using
 an index (a hash table of pointers into ch). */
 
-class MatchModel{
-U32 hash[2];
-U32 begin[4];
-U32 end[4];
-U32 *ptr;
+class MatchModel {
+  U32 hash[2];
+  U32 begin[4];
+  U32 end[4];
+  U32 *ptr;
+
 public:
-MatchModel():ptr(new U32[1<<21]){
-memset(ptr,0,1<<23);
-hash[0]=hash[1]=0;
-for(int i=0;i<4;i++)
-begin[i]=end[i]=0;
-}
-void model(){
-if(!bp){
-hash[0]=hash[0]*908754512+ch(1)+1;
-hash[1]=hash[1]*91368434+ch(1)+1;
-U32 h=hash[0]>>11;
-if(!(h>>17))
-h=hash[1]>>11;
-for(int i=0;i<4;i++)
-if(end[i]&&ch(1)==ch[end[i]])
-++end[i];
-for(int i=0;i<4;i++){
-if(!end[i]){
-int j;
-for(j=0;j<4;j++)
-if(end[j]==ptr[h])
-break;
-if(j<4)
-break;
-end[i]=ptr[h];
-if(end[i]){
-U32 p=po;
-begin[i]=end[i];
-while(begin[i]&&p&&begin[i]!=p+1&&ch[begin[i]-1]==ch[--p])
---begin[i];
-}
-if(end[i]==begin[i])
-begin[i]=end[i]=0;
-break;
-}
-}
-ptr[h]=po;
-}
-int n0=0,n1=0;
-for(int i=0;i<4;i++)
-if(end[i]){
-U32 d=(ch[end[i]]+256)>>(7-bp);
-if((d>>1)!=ch(0))
-begin[i]=end[i]=0;
-else
-{
-U32 wt=end[i]-begin[i];
-wt=min(int(wt*wt/4),1020);
-if(d&1)
-n1+=wt;
-else
-n0+=wt;
-}
-}
-mixer.wri(n0,n1);
-}
+  MatchModel() : ptr( new U32[1 << 21] ) {
+    memset( ptr, 0, 1 << 23 );
+    hash[0] = hash[1] = 0;
+    for( int i = 0; i < 4; i++ )
+      begin[i] = end[i] = 0;
+  }
+  void model() {
+    if( !bp ) {
+      hash[0] = hash[0] * 908754512 + ch( 1 ) + 1;
+      hash[1] = hash[1] * 91368434 + ch( 1 ) + 1;
+      U32 h = hash[0] >> 11;
+      if( !( h >> 17 ) )
+        h = hash[1] >> 11;
+      for( int i = 0; i < 4; i++ )
+        if( end[i] && ch( 1 ) == ch[end[i]] )
+          ++end[i];
+      for( int i = 0; i < 4; i++ ) {
+        if( !end[i] ) {
+          int j;
+          for( j = 0; j < 4; j++ )
+            if( end[j] == ptr[h] )
+              break;
+          if( j < 4 )
+            break;
+          end[i] = ptr[h];
+          if( end[i] ) {
+            U32 p = po;
+            begin[i] = end[i];
+            while( begin[i] && p && begin[i] != p + 1 && ch[begin[i] - 1] == ch[--p] )
+              --begin[i];
+          }
+          if( end[i] == begin[i] )
+            begin[i] = end[i] = 0;
+          break;
+        }
+      }
+      ptr[h] = po;
+    }
+    int n0 = 0, n1 = 0;
+    for( int i = 0; i < 4; i++ )
+      if( end[i] ) {
+        U32 d = ( ch[end[i]] + 256 ) >> ( 7 - bp );
+        if( ( d >> 1 ) != ch( 0 ) )
+          begin[i] = end[i] = 0;
+        else {
+          U32 wt = end[i] - begin[i];
+          wt = min( int( wt * wt / 4 ), 1020 );
+          if( d & 1 )
+            n1 += wt;
+          else
+            n0 += wt;
+        }
+      }
+    mixer.wri( n0, n1 );
+  }
 };
 
 //////////////////////////// recordModel ////////////////////////////
@@ -1300,140 +1333,167 @@ occurrence of a byte occuring 4 times in a row equally spaced, e.g.
 "x..x..x..x" would imply a record size of 3.  There are models for
 the 2 most recent, different record lengths of at least 2. */
 
-class RecordModel{
-enum{SIZE=20};
-CounterMap3 t0,t1,t3,t4,t5,t6,t7,t8,t9,ta,tb;
-CounterMap2 t2;
-int r1,r2,r3,r4,c1,c2;
+class RecordModel {
+  enum { SIZE = 20 };
+  CounterMap3 t0, t1, t3, t4, t5, t6, t7, t8, t9, ta, tb;
+  CounterMap2 t2;
+  int r1, r2, r3, r4, c1, c2;
+
 public:
-RecordModel():t0(17-MEM),tb(18-MEM),t1(20-MEM),t2(20-MEM),t3(SIZE),t4(SIZE),t5(SIZE),t6(SIZE),t7(SIZE),t8(SIZE),t9(SIZE),ta(SIZE),r1(2),r2(3),r3(2),r4(3),c1(0),c2(0){}
-void model(){
-if(!bp){
-int c=ch(1);
-int d=ch.pos(c,0)-ch.pos(c,1);
-if(d>2&&d==ch.pos(c,1)-ch.pos(c,2)&&d==ch.pos(c,2)-ch.pos(c,3))
-if(d==r1){
-if(++c1>=c2){
-swap(c1,c2);
-swap(r1,r2);
-}
-}
-else
-if(d==r2)
-++c2;
-else
-{
-r1=d;
-c1=0;
-}
-if(d>2){
-if(d==r3)
-swap(r3,r4);
-if(d!=r4)
-r3=d;
-}
-t0.upd(hash(ch(1),0));
-tb.upd(hash(ch(1),9));
-t1.upd(hash(ch(1),ch(2),1));
-t2.upd(hash(ch(1),ch(2),ch(3),2));
-t3.upd(hash(ch(r2),ch(r2*2),r2));
-t4.upd(hash(ch(1),ch(r2),ch(r2+1),r2));
-t5.upd(hash(ch(r2),po%r2));
-t6.upd(hash(ch(r1),ch(r1*2),r1));
-t7.upd(hash(ch(1),ch(r1),ch(r1+1),r1));
-t8.upd(hash(ch(r4),ch(r4*2),r4));
-t9.upd(hash(ch(1),ch(r4),ch(r4+1),r4));
-ta.upd(hash(ch(r4),r4));
-}
-if(fsize!=0){
-if(tf){
-t0.mul(2);
-tb.add();
-t1.mul(2);
-t2.mul(4);
-}
-else
-{
-t0.mul(2);
-tb.add();
-t1.mul(2);
-t2.mul(2);
-}
-t8.wri();
-t9.wri();
-ta.wri();
-t4.wri();
-}
-t3.wri();
-t5.wri();
-t6.wri();
-t7.wri();
-}
+  RecordModel() :
+      t0( 17 - MEM ),
+      tb( 18 - MEM ),
+      t1( 20 - MEM ),
+      t2( 20 - MEM ),
+      t3( SIZE ),
+      t4( SIZE ),
+      t5( SIZE ),
+      t6( SIZE ),
+      t7( SIZE ),
+      t8( SIZE ),
+      t9( SIZE ),
+      ta( SIZE ),
+      r1( 2 ),
+      r2( 3 ),
+      r3( 2 ),
+      r4( 3 ),
+      c1( 0 ),
+      c2( 0 ) {}
+  void model() {
+    if( !bp ) {
+      int c = ch( 1 );
+      int d = ch.pos( c, 0 ) - ch.pos( c, 1 );
+      if( d > 2 && d == ch.pos( c, 1 ) - ch.pos( c, 2 ) && d == ch.pos( c, 2 ) - ch.pos( c, 3 ) )
+        if( d == r1 ) {
+          if( ++c1 >= c2 ) {
+            swap( c1, c2 );
+            swap( r1, r2 );
+          }
+        } else if( d == r2 )
+          ++c2;
+        else {
+          r1 = d;
+          c1 = 0;
+        }
+      if( d > 2 ) {
+        if( d == r3 )
+          swap( r3, r4 );
+        if( d != r4 )
+          r3 = d;
+      }
+      t0.upd( hash( ch( 1 ), 0 ) );
+      tb.upd( hash( ch( 1 ), 9 ) );
+      t1.upd( hash( ch( 1 ), ch( 2 ), 1 ) );
+      t2.upd( hash( ch( 1 ), ch( 2 ), ch( 3 ), 2 ) );
+      t3.upd( hash( ch( r2 ), ch( r2 * 2 ), r2 ) );
+      t4.upd( hash( ch( 1 ), ch( r2 ), ch( r2 + 1 ), r2 ) );
+      t5.upd( hash( ch( r2 ), po % r2 ) );
+      t6.upd( hash( ch( r1 ), ch( r1 * 2 ), r1 ) );
+      t7.upd( hash( ch( 1 ), ch( r1 ), ch( r1 + 1 ), r1 ) );
+      t8.upd( hash( ch( r4 ), ch( r4 * 2 ), r4 ) );
+      t9.upd( hash( ch( 1 ), ch( r4 ), ch( r4 + 1 ), r4 ) );
+      ta.upd( hash( ch( r4 ), r4 ) );
+    }
+    if( fsize != 0 ) {
+      if( tf ) {
+        t0.mul( 2 );
+        tb.add();
+        t1.mul( 2 );
+        t2.mul( 4 );
+      } else {
+        t0.mul( 2 );
+        tb.add();
+        t1.mul( 2 );
+        t2.mul( 2 );
+      }
+      t8.wri();
+      t9.wri();
+      ta.wri();
+      t4.wri();
+    }
+    t3.wri();
+    t5.wri();
+    t6.wri();
+    t7.wri();
+  }
 };
 
 //////////////////////////// sparseModel ////////////////////////////
 
 // A SparseModel models several order-2 contexts with gaps
 
-class SparseModel{
-enum{SIZE=20};
-CounterMap3 t0,t1,t2,t3,t4,t5,t6,t7,t8,t9,ta;
+class SparseModel {
+  enum { SIZE = 20 };
+  CounterMap3 t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, ta;
+
 public:
-SparseModel():t0(SIZE),t1(SIZE),t2(SIZE),t3(SIZE),t4(SIZE),t5(SIZE),t6(SIZE),t7(SIZE),t8(SIZE),t9(SIZE),ta(SIZE){}
-void model(){
-if(!bp){
-int i=min(int(po-ch.pos(ch(1),1)),192)/4;
-int j=min(int(po-ch.pos(ch(2),1)),192)/4;
-if(j>8)
-j=j/4+7;
-if(i>8)
-i=i/4+7;
-U8 k=tf*(wlen+1);
-t0.upd(hash(ch(1),ch(3),k));
-t1.upd(hash(ch(1),ch(4),k));
-t2.upd(hash(ch(1),ch(5),k));
-t3.upd(hash(ch(1),ch(6),k));
-t4.upd(hash(ch(1),ch(3),ch(5),k));
-t5.upd(hash(ch(2),ch(3),k));
-t6.upd(hash(ch(2),ch(4),k));
-t7.upd(hash(ch(3),ch(4),k));
-t8.upd(hash(ch(2),ch(4),ch(6),k));
-t9.upd(hash(ch(1),ch(2),i,k));
-ta.upd(hash(ch(1),ch(2),j+64,k));
-}
-t0.wri();
-t1.wri();
-t2.wri();
-t3.wri();
-t4.wri();
-t5.wri();
-t6.wri();
-t7.wri();
-t8.wri();
-t9.wri();
-ta.wri();
-}
+  SparseModel() :
+      t0( SIZE ),
+      t1( SIZE ),
+      t2( SIZE ),
+      t3( SIZE ),
+      t4( SIZE ),
+      t5( SIZE ),
+      t6( SIZE ),
+      t7( SIZE ),
+      t8( SIZE ),
+      t9( SIZE ),
+      ta( SIZE ) {}
+  void model() {
+    if( !bp ) {
+      int i = min( int( po - ch.pos( ch( 1 ), 1 ) ), 192 ) / 4;
+      int j = min( int( po - ch.pos( ch( 2 ), 1 ) ), 192 ) / 4;
+      if( j > 8 )
+        j = j / 4 + 7;
+      if( i > 8 )
+        i = i / 4 + 7;
+      U8 k = tf * ( wlen + 1 );
+      t0.upd( hash( ch( 1 ), ch( 3 ), k ) );
+      t1.upd( hash( ch( 1 ), ch( 4 ), k ) );
+      t2.upd( hash( ch( 1 ), ch( 5 ), k ) );
+      t3.upd( hash( ch( 1 ), ch( 6 ), k ) );
+      t4.upd( hash( ch( 1 ), ch( 3 ), ch( 5 ), k ) );
+      t5.upd( hash( ch( 2 ), ch( 3 ), k ) );
+      t6.upd( hash( ch( 2 ), ch( 4 ), k ) );
+      t7.upd( hash( ch( 3 ), ch( 4 ), k ) );
+      t8.upd( hash( ch( 2 ), ch( 4 ), ch( 6 ), k ) );
+      t9.upd( hash( ch( 1 ), ch( 2 ), i, k ) );
+      ta.upd( hash( ch( 1 ), ch( 2 ), j + 64, k ) );
+    }
+    t0.wri();
+    t1.wri();
+    t2.wri();
+    t3.wri();
+    t4.wri();
+    t5.wri();
+    t6.wri();
+    t7.wri();
+    t8.wri();
+    t9.wri();
+    ta.wri();
+  }
 };
 
-class SparseModel2{
-enum{SIZE=21};
-CounterMap3 t0,t1,t2,t3,t4;
+class SparseModel2 {
+  enum { SIZE = 21 };
+  CounterMap3 t0, t1, t2, t3, t4;
+
 public:
-SparseModel2():t0(SIZE),t1(SIZE),t2(SIZE),t3(SIZE),t4(SIZE){}
-void model(){
-if(!bp){
-t0.upd(hash(ch(1),ch(7),ch(9),ch(13)));
-t1.upd(hash(ch(2),ch(5),ch(10),ch(14)));
-t2.upd(hash(ch(3),ch(8),ch(12),ch(15)));
-t3.upd(hash(ch(4),ch(6),ch(11),ch(16)));
-t4.upd(hash(ch(5),ch(7),ch(12),ch(18)));
-}
-t0.mul(2);
-t1.mul(2);
-t2.mul(2);
-t3.add();
-t4.add();
-}
+  SparseModel2() : t0( SIZE ), t1( SIZE ), t2( SIZE ), t3( SIZE ), t4( SIZE ) {}
+  void model() {
+    if( !bp ) {
+      t0.upd( hash( ch( 1 ), ch( 7 ), ch( 9 ), ch( 13 ) ) );
+      t1.upd( hash( ch( 2 ), ch( 5 ), ch( 10 ), ch( 14 ) ) );
+      t2.upd( hash( ch( 3 ), ch( 8 ), ch( 12 ), ch( 15 ) ) );
+      t3.upd( hash( ch( 4 ), ch( 6 ), ch( 11 ), ch( 16 ) ) );
+      t4.upd( hash( ch( 5 ), ch( 7 ), ch( 12 ), ch( 18 ) ) );
+    }
+    t0.mul( 2 );
+    t1.mul( 2 );
+    t2.mul( 2 );
+    t3.add();
+    t4.add();
+  }
 };
 
 //////////////////////////// analogModel ////////////////////////////
@@ -1442,102 +1502,139 @@ t4.add();
 // 24-bit images (BMP files), and 8 bit analog data (such as grayscale
 // images), and CCITT images.
 
-class AnalogModel{
-enum{SIZE=18};
-CounterMap3 t0,t1,t2,t3;
+class AnalogModel {
+  enum { SIZE = 18 };
+  CounterMap3 t0, t1, t2, t3;
+
 public:
-AnalogModel():t0(SIZE),t1(SIZE),t2(SIZE),t3(SIZE){}
-void model(){
-if(!bp){
-t0.upd(hash(ch(2)/16,ch(4)/16,po%2));
-t1.upd(hash(ch(4)/4,(ch(2)-ch(6))/4,(ch(4)-ch(8))/4));
-t2.upd(hash(ch(1)/2,ch(2)/8,ch(3)/32,5));
-t3.upd(hash(ch(1),ch(2)/4,ch(3)/16,6));
-}
-t0.wri();
-t1.wri();
-t2.wri();
-t3.wri();
-}
+  AnalogModel() : t0( SIZE ), t1( SIZE ), t2( SIZE ), t3( SIZE ) {}
+  void model() {
+    if( !bp ) {
+      t0.upd( hash( ch( 2 ) / 16, ch( 4 ) / 16, po % 2 ) );
+      t1.upd( hash( ch( 4 ) / 4, ( ch( 2 ) - ch( 6 ) ) / 4, ( ch( 4 ) - ch( 8 ) ) / 4 ) );
+      t2.upd( hash( ch( 1 ) / 2, ch( 2 ) / 8, ch( 3 ) / 32, 5 ) );
+      t3.upd( hash( ch( 1 ), ch( 2 ) / 4, ch( 3 ) / 16, 6 ) );
+    }
+    t0.wri();
+    t1.wri();
+    t2.wri();
+    t3.wri();
+  }
 };
 
-class PicModel{
-enum{SIZE=21};
-CounterMap3 t0,t1,ta,tb,tc,td,te,tf,tg,th;
-CounterMap2 t2,t3,t4,t5,t6,t7,t8,t9,ti,tj,tk,tl,tm,tn,to,tp,tq,tr,ts,tt,tu,tv,tw;
+class PicModel {
+  enum { SIZE = 21 };
+  CounterMap3 t0, t1, ta, tb, tc, td, te, tf, tg, th;
+  CounterMap2 t2, t3, t4, t5, t6, t7, t8, t9, ti, tj, tk, tl, tm, tn, to, tp, tq, tr, ts, tt, tu, tv, tw;
+
 public:
-PicModel():t0(SIZE),t1(SIZE),t2(SIZE),t3(SIZE),t4(SIZE),t5(SIZE),t6(SIZE),t7(SIZE),t8(SIZE),t9(SIZE),ta(SIZE),tb(SIZE),tc(SIZE),td(SIZE),te(SIZE),tf(SIZE),tg(SIZE),th(SIZE),ti(SIZE),tj(SIZE),tk(SIZE),tl(SIZE),tm(SIZE),tn(SIZE),to(SIZE),tp(SIZE),tq(SIZE),tr(SIZE),ts(SIZE),tt(SIZE),tu(SIZE),tv(SIZE),tw(SIZE){}
-void model(){
-if(!bp){
-int i=0,j=63;
-t0.upd(hash(ch(1),ch(2),ch(216),i++));
-t1.upd(hash(ch(1),ch(2),ch(217),i++));
-t2.upd(hash(ch(216),i++));
-t3.upd(hash(ch(216),ch(1),i++));
-t4.upd(hash(ch(216),ch(217),i++));
-t5.upd(hash(ch(216),ch(215),i++));
-t6.upd(hash(ch(216),ch(432),i++));
-t7.upd(hash(ch(216),ch(217),ch(1),i++));
-t8.upd(hash(ch(216),ch(215),ch(1),i++));
-t9.upd(hash(ch(216),ch(432),ch(1),i++));
-ta.upd(hash(ch(216),ch(217),ch(215),i++));
-tb.upd(hash(ch(216),ch(432),ch(217),i++));
-tc.upd(hash(ch(216),ch(432),ch(215),i++));
-td.upd(hash(ch(216),ch(432),ch(648),i++));
-te.upd(hash(ch(1),ch(216),ch(2),ch(215)));
-tf.upd(hash(ch(1),ch(216),ch(2),ch(217)));
-tg.upd(hash(ch(1),ch(216),ch(215),ch(217)));
-th.upd(hash(ch(1),ch(216),ch(432),ch(217)));
-ti.upd(hash(ch(1)&j,ch(216)&j,ch(2)&j,i++));
-tj.upd(hash(ch(1)&j,ch(216)&j,ch(217)&j,i++));
-tk.upd(hash(ch(1)&j,ch(216)&j,ch(215)&j,i++));
-tl.upd(hash(ch(1)&j,ch(216)&j,ch(432)&j,i++));
-tm.upd(hash(ch(216)&j,i++));j/=4;
-tn.upd(hash(ch(1)&j,ch(216)&j,ch(2)&j,i++));
-to.upd(hash(ch(1)&j,ch(216)&j,ch(217)&j,i++));
-tp.upd(hash(ch(1)&j,ch(216)&j,ch(215)&j,i++));
-tq.upd(hash(ch(1)&j,ch(216)&j,ch(432)&j,i++));
-tr.upd(hash(ch(216)&j,i++));j/=4;
-ts.upd(hash(ch(1)&j,ch(216)&j,ch(2)&j,i++));
-tt.upd(hash(ch(1)&j,ch(216)&j,ch(217)&j,i++));
-tu.upd(hash(ch(1)&j,ch(216)&j,ch(215)&j,i++));
-tv.upd(hash(ch(1)&j,ch(216)&j,ch(432)&j,i++));
-tw.upd(hash(ch(216)&j,i++));
-}
-t0.wri();
-t1.add();
-t2.wri();
-t3.wri();
-t4.wri();
-t5.wri();
-t6.wri();
-t7.wri();
-t8.wri();
-t9.wri();
-ta.wri();
-tb.wri();
-tc.wri();
-td.add();
-te.add();
-tf.add();
-tg.add();
-th.add();
-ti.wri();
-tj.wri();
-tk.wri();
-tl.wri();
-tm.wri();
-tn.wri();
-to.wri();
-tp.wri();
-tq.wri();
-tr.wri();
-ts.wri();
-tt.wri();
-tu.wri();
-tv.wri();
-tw.wri();
-}
+  PicModel() :
+      t0( SIZE ),
+      t1( SIZE ),
+      t2( SIZE ),
+      t3( SIZE ),
+      t4( SIZE ),
+      t5( SIZE ),
+      t6( SIZE ),
+      t7( SIZE ),
+      t8( SIZE ),
+      t9( SIZE ),
+      ta( SIZE ),
+      tb( SIZE ),
+      tc( SIZE ),
+      td( SIZE ),
+      te( SIZE ),
+      tf( SIZE ),
+      tg( SIZE ),
+      th( SIZE ),
+      ti( SIZE ),
+      tj( SIZE ),
+      tk( SIZE ),
+      tl( SIZE ),
+      tm( SIZE ),
+      tn( SIZE ),
+      to( SIZE ),
+      tp( SIZE ),
+      tq( SIZE ),
+      tr( SIZE ),
+      ts( SIZE ),
+      tt( SIZE ),
+      tu( SIZE ),
+      tv( SIZE ),
+      tw( SIZE ) {}
+  void model() {
+    if( !bp ) {
+      int i = 0, j = 63;
+      t0.upd( hash( ch( 1 ), ch( 2 ), ch( 216 ), i++ ) );
+      t1.upd( hash( ch( 1 ), ch( 2 ), ch( 217 ), i++ ) );
+      t2.upd( hash( ch( 216 ), i++ ) );
+      t3.upd( hash( ch( 216 ), ch( 1 ), i++ ) );
+      t4.upd( hash( ch( 216 ), ch( 217 ), i++ ) );
+      t5.upd( hash( ch( 216 ), ch( 215 ), i++ ) );
+      t6.upd( hash( ch( 216 ), ch( 432 ), i++ ) );
+      t7.upd( hash( ch( 216 ), ch( 217 ), ch( 1 ), i++ ) );
+      t8.upd( hash( ch( 216 ), ch( 215 ), ch( 1 ), i++ ) );
+      t9.upd( hash( ch( 216 ), ch( 432 ), ch( 1 ), i++ ) );
+      ta.upd( hash( ch( 216 ), ch( 217 ), ch( 215 ), i++ ) );
+      tb.upd( hash( ch( 216 ), ch( 432 ), ch( 217 ), i++ ) );
+      tc.upd( hash( ch( 216 ), ch( 432 ), ch( 215 ), i++ ) );
+      td.upd( hash( ch( 216 ), ch( 432 ), ch( 648 ), i++ ) );
+      te.upd( hash( ch( 1 ), ch( 216 ), ch( 2 ), ch( 215 ) ) );
+      tf.upd( hash( ch( 1 ), ch( 216 ), ch( 2 ), ch( 217 ) ) );
+      tg.upd( hash( ch( 1 ), ch( 216 ), ch( 215 ), ch( 217 ) ) );
+      th.upd( hash( ch( 1 ), ch( 216 ), ch( 432 ), ch( 217 ) ) );
+      ti.upd( hash( ch( 1 ) & j, ch( 216 ) & j, ch( 2 ) & j, i++ ) );
+      tj.upd( hash( ch( 1 ) & j, ch( 216 ) & j, ch( 217 ) & j, i++ ) );
+      tk.upd( hash( ch( 1 ) & j, ch( 216 ) & j, ch( 215 ) & j, i++ ) );
+      tl.upd( hash( ch( 1 ) & j, ch( 216 ) & j, ch( 432 ) & j, i++ ) );
+      tm.upd( hash( ch( 216 ) & j, i++ ) );
+      j /= 4;
+      tn.upd( hash( ch( 1 ) & j, ch( 216 ) & j, ch( 2 ) & j, i++ ) );
+      to.upd( hash( ch( 1 ) & j, ch( 216 ) & j, ch( 217 ) & j, i++ ) );
+      tp.upd( hash( ch( 1 ) & j, ch( 216 ) & j, ch( 215 ) & j, i++ ) );
+      tq.upd( hash( ch( 1 ) & j, ch( 216 ) & j, ch( 432 ) & j, i++ ) );
+      tr.upd( hash( ch( 216 ) & j, i++ ) );
+      j /= 4;
+      ts.upd( hash( ch( 1 ) & j, ch( 216 ) & j, ch( 2 ) & j, i++ ) );
+      tt.upd( hash( ch( 1 ) & j, ch( 216 ) & j, ch( 217 ) & j, i++ ) );
+      tu.upd( hash( ch( 1 ) & j, ch( 216 ) & j, ch( 215 ) & j, i++ ) );
+      tv.upd( hash( ch( 1 ) & j, ch( 216 ) & j, ch( 432 ) & j, i++ ) );
+      tw.upd( hash( ch( 216 ) & j, i++ ) );
+    }
+    t0.wri();
+    t1.add();
+    t2.wri();
+    t3.wri();
+    t4.wri();
+    t5.wri();
+    t6.wri();
+    t7.wri();
+    t8.wri();
+    t9.wri();
+    ta.wri();
+    tb.wri();
+    tc.wri();
+    td.add();
+    te.add();
+    tf.add();
+    tg.add();
+    th.add();
+    ti.wri();
+    tj.wri();
+    tk.wri();
+    tl.wri();
+    tm.wri();
+    tn.wri();
+    to.wri();
+    tp.wri();
+    tq.wri();
+    tr.wri();
+    ts.wri();
+    tt.wri();
+    tu.wri();
+    tv.wri();
+    tw.wri();
+  }
 };
 
 //////////////////////////// wordModel ////////////////////////////
@@ -1546,80 +1643,85 @@ tw.wri();
 // by whitespace ( <= 32).  There is a unigram, bigram and sparse
 // bigram model (skipping 1 word).
 
-class WordModel{
-enum{SIZE=23};
-CounterMap2 t0,t1,t2,t3,t4,t5;
-CounterMap3 t6,t7,t8,t9;
-U32 cxt[6];	// Hashes of last N words broken on whitespace
-U32 wxt[6];	// Hashes of last N words of letters only, lower case
+class WordModel {
+  enum { SIZE = 23 };
+  CounterMap2 t0, t1, t2, t3, t4, t5;
+  CounterMap3 t6, t7, t8, t9;
+  U32 cxt[6]; // Hashes of last N words broken on whitespace
+  U32 wxt[6]; // Hashes of last N words of letters only, lower case
 public:
-WordModel():t0(SIZE),t1(SIZE),t2(SIZE),t3(SIZE-1),t4(SIZE-1),t5(SIZE-1),t6(SIZE),t7(SIZE),t8(SIZE),t9(SIZE-1){
-wlen=0;
-for(int i=5;i>=0;i--)
-wxt[i]=cxt[i]=0;
-clen=0;
-}
-void model(){
-if(!bp){
-int c=ch(1);
-if(c>32)
-cxt[0]^=hash(cxt[0],cxt[0]>>8,c,clen++);
-else
-if(cxt[0]){
-for(int i=5;i!=0;i--)
-cxt[i]=cxt[i-1];
-cxt[0]=0;
-clen=0;
-}
-if(isalpha(c)){
-wxt[0]^=hash(wxt[0],tolower(c),wlen++);
-}
-else
-{
-wlen=0;
-for(int i=5;i!=0;i--)
-wxt[i]=wxt[i-1];
-wxt[0]=0;
-}
-t0.upd(-cxt[0]);
-t1.upd(cxt[1]-cxt[0]);
-t2.upd(cxt[2]-cxt[0]);
-t3.upd(cxt[3]-cxt[0]);
-t4.upd(cxt[4]-cxt[0]);
-t5.upd(cxt[5]-cxt[0]);
-t6.upd(-wxt[0]);
-t7.upd(wxt[1]-wxt[0]);
-t8.upd(wxt[2]-wxt[0]);
-t9.upd(wxt[3]-wxt[0]);
-}
-if(tf){
-t0.mul(3);
-t1.mul(4);
-t2.mul(4);
-t3.mul(3);
-t4.mul(3);
-t5.mul(2);
-t6.mul(3);
-t7.mul(2);
-t8.mul(2);
-t9.mul(2);
-}
-else
-{
-t0.wri();
-t1.wri();
-t2.wri();
-t3.wri();
-t4.wri();
-t5.wri();
-t6.wri();
-t7.wri();
-t8.wri();
-t9.wri();
-}
-}
+  WordModel() :
+      t0( SIZE ),
+      t1( SIZE ),
+      t2( SIZE ),
+      t3( SIZE - 1 ),
+      t4( SIZE - 1 ),
+      t5( SIZE - 1 ),
+      t6( SIZE ),
+      t7( SIZE ),
+      t8( SIZE ),
+      t9( SIZE - 1 ) {
+    wlen = 0;
+    for( int i = 5; i >= 0; i-- )
+      wxt[i] = cxt[i] = 0;
+    clen = 0;
+  }
+  void model() {
+    if( !bp ) {
+      int c = ch( 1 );
+      if( c > 32 )
+        cxt[0] ^= hash( cxt[0], cxt[0] >> 8, c, clen++ );
+      else if( cxt[0] ) {
+        for( int i = 5; i != 0; i-- )
+          cxt[i] = cxt[i - 1];
+        cxt[0] = 0;
+        clen = 0;
+      }
+      if( isalpha( c ) ) {
+        wxt[0] ^= hash( wxt[0], tolower( c ), wlen++ );
+      } else {
+        wlen = 0;
+        for( int i = 5; i != 0; i-- )
+          wxt[i] = wxt[i - 1];
+        wxt[0] = 0;
+      }
+      t0.upd( -cxt[0] );
+      t1.upd( cxt[1] - cxt[0] );
+      t2.upd( cxt[2] - cxt[0] );
+      t3.upd( cxt[3] - cxt[0] );
+      t4.upd( cxt[4] - cxt[0] );
+      t5.upd( cxt[5] - cxt[0] );
+      t6.upd( -wxt[0] );
+      t7.upd( wxt[1] - wxt[0] );
+      t8.upd( wxt[2] - wxt[0] );
+      t9.upd( wxt[3] - wxt[0] );
+    }
+    if( tf ) {
+      t0.mul( 3 );
+      t1.mul( 4 );
+      t2.mul( 4 );
+      t3.mul( 3 );
+      t4.mul( 3 );
+      t5.mul( 2 );
+      t6.mul( 3 );
+      t7.mul( 2 );
+      t8.mul( 2 );
+      t9.mul( 2 );
+    } else {
+      t0.wri();
+      t1.wri();
+      t2.wri();
+      t3.wri();
+      t4.wri();
+      t5.wri();
+      t6.wri();
+      t7.wri();
+      t8.wri();
+      t9.wri();
+    }
+  }
 };
-SSEContext sse[2048][33],ss2[2048][33],ss3[2048][33],ss4[2048][33];
+SSEContext sse[2048][33], ss2[2048][33], ss3[2048][33], ss4[2048][33];
 
 //////////////////////////// Predictor ////////////////////////////
 
@@ -1638,88 +1740,86 @@ the bins below and above the input probability.  This is averaged
 with the original probability with 25% weight to give the final
 probability passed to the encoder. */
 
-class Predictor{
-U32 ssep,c1,c2,c3,c4,nextp;
-CharModel charModel;
-MatchModel matchModel;
-RecordModel recordModel;
-SparseModel sparseModel;
-SparseModel2 sparseModel2;
-AnalogModel analogModel;
-WordModel wordModel;
-PicModel picModel;
+class Predictor {
+  U32 ssep, c1, c2, c3, c4, nextp;
+  CharModel charModel;
+  MatchModel matchModel;
+  RecordModel recordModel;
+  SparseModel sparseModel;
+  SparseModel2 sparseModel2;
+  AnalogModel analogModel;
+  WordModel wordModel;
+  PicModel picModel;
+
 public:
-Predictor(){
-ch.init();
-c1=0;
-c2=0;
-c3=0;
-c4=0;
-nextp=2048;
-ssep=16;
-int oldp=33;
-for(int i=4095;i>=0;i--){
-int p=(ssemap(i)+16)/32;
-int m=1+4096*4096/((i+1)*(4096-i));
-if(m>254)m=254;
-int c=(i*m+2048)/4096;
-for(int j=p;j<oldp;j++)
-for(int k=0;k<2048;k++){
-sse[k][j].c=ss2[k][j].c=ss3[k][j].c=ss4[k][j].c=c;
-sse[k][j].n=ss2[k][j].n=ss3[k][j].n=ss4[k][j].n=m;
-}
-oldp=p;
-}
-}
-int p(){
-return nextp;
-}
-void upd(int y){
-sse[c1][ssep].upd(y);
-ss2[c2][ssep].upd(y);
-ss3[c3][ssep].upd(y);
-ss4[c4][ssep].upd(y);
-ssep++;
-sse[c1][ssep].upd(y);
-ss2[c2][ssep].upd(y);
-ss3[c3][ssep].upd(y);
-ss4[c4][ssep].upd(y);
-ch.upd(y);
-tf=ch.pos(0,0)<ch.pos(32,3)&&ch.pos(255,0)<ch.pos(32,3);
-mixer.upd(y);
-charModel.model();
-recordModel.model();
-sparseModel.model();
-if(fsize!=0){
-mixer.wri(18,12);
-sparseModel2.model();
-analogModel.model();
-matchModel.model();
-wordModel.model();
-}
-else
-picModel.model();
-nextp=mixer.predict();
-ssep=ssemap(nextp);
-U32 wt=ssep&31;
-ssep/=32;
-c4=ch(1)*8+ch(2)/32;
-c1=ch(0)*8+(ch(1)/64)*2+tf*(wlen==clen);
-c2=bp*256+l8;
-c3=bp*256+ch(1)/32+8*(ch(2)/32)+(ch(3)&192);
-U32 p1=sse[c1][ssep].p()*(32-wt)+sse[c1][ssep+1].p()*wt;
-U32 p2=ss2[c2][ssep].p()*(32-wt)+ss2[c2][ssep+1].p()*wt;
-U32 p3=ss3[c3][ssep].p()*(32-wt)+ss3[c3][ssep+1].p()*wt;
-U32 p4=ss4[c4][ssep].p()*(32-wt)+ss4[c4][ssep+1].p()*wt;
-if(tf)
-nextp=((3*p3+6*p1+5*p2+1*p4)*11/32+7+nextp*15)/(15*12);
-else
-nextp=((3*p3+5*p1+4*p2+2*p4)*13/32+7+nextp*14)/(14*14);
-}
+  Predictor() {
+    ch.init();
+    c1 = 0;
+    c2 = 0;
+    c3 = 0;
+    c4 = 0;
+    nextp = 2048;
+    ssep = 16;
+    int oldp = 33;
+    for( int i = 4095; i >= 0; i-- ) {
+      int p = ( ssemap( i ) + 16 ) / 32;
+      int m = 1 + 4096 * 4096 / ( ( i + 1 ) * ( 4096 - i ) );
+      if( m > 254 )
+        m = 254;
+      int c = ( i * m + 2048 ) / 4096;
+      for( int j = p; j < oldp; j++ )
+        for( int k = 0; k < 2048; k++ ) {
+          sse[k][j].c = ss2[k][j].c = ss3[k][j].c = ss4[k][j].c = c;
+          sse[k][j].n = ss2[k][j].n = ss3[k][j].n = ss4[k][j].n = m;
+        }
+      oldp = p;
+    }
+  }
+  int p() {
+    return nextp;
+  }
+  void upd( int y ) {
+    sse[c1][ssep].upd( y );
+    ss2[c2][ssep].upd( y );
+    ss3[c3][ssep].upd( y );
+    ss4[c4][ssep].upd( y );
+    ssep++;
+    sse[c1][ssep].upd( y );
+    ss2[c2][ssep].upd( y );
+    ss3[c3][ssep].upd( y );
+    ss4[c4][ssep].upd( y );
+    ch.upd( y );
+    tf = ch.pos( 0, 0 ) < ch.pos( 32, 3 ) && ch.pos( 255, 0 ) < ch.pos( 32, 3 );
+    mixer.upd( y );
+    charModel.model();
+    recordModel.model();
+    sparseModel.model();
+    if( fsize != 0 ) {
+      mixer.wri( 18, 12 );
+      sparseModel2.model();
+      analogModel.model();
+      matchModel.model();
+      wordModel.model();
+    } else
+      picModel.model();
+    nextp = mixer.predict();
+    ssep = ssemap( nextp );
+    U32 wt = ssep & 31;
+    ssep /= 32;
+    c4 = ch( 1 ) * 8 + ch( 2 ) / 32;
+    c1 = ch( 0 ) * 8 + ( ch( 1 ) / 64 ) * 2 + tf * ( wlen == clen );
+    c2 = bp * 256 + l8;
+    c3 = bp * 256 + ch( 1 ) / 32 + 8 * ( ch( 2 ) / 32 ) + ( ch( 3 ) & 192 );
+    U32 p1 = sse[c1][ssep].p() * ( 32 - wt ) + sse[c1][ssep + 1].p() * wt;
+    U32 p2 = ss2[c2][ssep].p() * ( 32 - wt ) + ss2[c2][ssep + 1].p() * wt;
+    U32 p3 = ss3[c3][ssep].p() * ( 32 - wt ) + ss3[c3][ssep + 1].p() * wt;
+    U32 p4 = ss4[c4][ssep].p() * ( 32 - wt ) + ss4[c4][ssep + 1].p() * wt;
+    if( tf )
+      nextp = ( ( 3 * p3 + 6 * p1 + 5 * p2 + 1 * p4 ) * 11 / 32 + 7 + nextp * 15 ) / ( 15 * 12 );
+    else
+      nextp = ( ( 3 * p3 + 5 * p1 + 4 * p2 + 2 * p4 ) * 13 / 32 + 7 + nextp * 14 ) / ( 14 * 14 );
+  }
 };
-
-
-
 
 //////////////////////////// Encoder ////////////////////////////
 
@@ -1733,65 +1833,74 @@ nextp=((3*p3+5*p1+4*p2+2*p4)*13/32+7+nextp*14)/(14*14);
    flush() should be called when there is no more to compress
 */
 
-typedef enum {COMPRESS, DECOMPRESS} Mode;
+typedef enum { COMPRESS, DECOMPRESS } Mode;
 class Encoder {
 private:
   Predictor predictor;
-  const Mode mode;       // Compress or decompress?
-  FILE* archive;         // Compressed data file
-  U32 x1, x2;            // Range, initially [0, 1), scaled by 2^32
-  U32 x;                 // Last 4 input bytes of archive.
-  int  LPS;
+  const Mode mode; // Compress or decompress?
+  FILE *archive;   // Compressed data file
+  U32 x1, x2;      // Range, initially [0, 1), scaled by 2^32
+  U32 x;           // Last 4 input bytes of archive.
+  int LPS;
   U32 bits_to_follow;
-  U8 bptr,bout,bptrin;
+  U8 bptr, bout, bptrin;
   int bin;
+
 public:
-  Encoder(Mode m, FILE* f);
-  void encode(int y);    // Compress bit y
-  int decode();          // Uncompress and return bit y
-  void flush();          // Call when done compressing
-  void bit_plus_follow(int bit);
-  int input_bit(void);
+  Encoder( Mode m, FILE *f );
+  void encode( int y ); // Compress bit y
+  int decode();         // Uncompress and return bit y
+  void flush();         // Call when done compressing
+  void bit_plus_follow( int bit );
+  int input_bit( void );
 };
 
-
-void Encoder::bit_plus_follow(int bit)
-{ 
-	if (bit) bout|=bptr;
-	if (!(bptr>>=1)) {
-		putc(bout,archive);
-		bptr=128;
-		bout=0;
-	}
-	bit^=1;
-	for (; bits_to_follow > 0; bits_to_follow--) {
-		if (bit) bout|=bptr;
-		if (!(bptr>>=1)) {
-			putc(bout,archive);
-			bptr=128;
-			bout=0;
-		}
-	}
+void Encoder::bit_plus_follow( int bit ) {
+  if( bit )
+    bout |= bptr;
+  if( !( bptr >>= 1 ) ) {
+    putc( bout, archive );
+    bptr = 128;
+    bout = 0;
+  }
+  bit ^= 1;
+  for( ; bits_to_follow > 0; bits_to_follow-- ) {
+    if( bit )
+      bout |= bptr;
+    if( !( bptr >>= 1 ) ) {
+      putc( bout, archive );
+      bptr = 128;
+      bout = 0;
+    }
+  }
 }
-inline int Encoder::input_bit(void)
-{
-	if (!(bptrin>>=1)) {
-		bin=getc(archive);
-		if (bin==EOF) bin=0;
-		bptrin=128;
-	}
-	return ((bin&bptrin)!=0);
+inline int Encoder::input_bit( void ) {
+  if( !( bptrin >>= 1 ) ) {
+    bin = getc( archive );
+    if( bin == EOF )
+      bin = 0;
+    bptrin = 128;
+  }
+  return ( ( bin & bptrin ) != 0 );
 }
-
 
 // Constructor
-Encoder::Encoder(Mode m, FILE* f): predictor(), mode(m), archive(f), x1(0),
-                                   x2(0xffffffff), x(0), bits_to_follow(0), bptr(128), bout(0), bptrin(1) {
-
+Encoder::Encoder( Mode m, FILE *f ) :
+    predictor(),
+    mode( m ),
+    archive( f ),
+    x1( 0 ),
+    x2( 0xffffffff ),
+    x( 0 ),
+    bits_to_follow( 0 ),
+    bptr( 128 ),
+    bout( 0 ),
+    bptrin( 1 ) {
   // In DECOMPRESS mode, initialize x to the first 4 bytes of the archive
-  if (mode==DECOMPRESS) {
+  if( mode == DECOMPRESS ) {
     x = 1;
-    for (;x < Half;) x = 2 * x + input_bit();
+    for( ; x < Half; )
+      x = 2 * x + input_bit();
     x = 2 * x + input_bit();
   }
 }
@@ -1800,109 +1909,104 @@ Encoder::Encoder(Mode m, FILE* f): predictor(), mode(m), archive(f), x1(0),
 to P(1) and P(0) as given by the predictor and narrowing to the appropriate
 subrange.  Output leading bytes of the range as they become known. */
 
-
-inline void Encoder::encode(int y) {
-
+inline void Encoder::encode( int y ) {
   // Split the range
-  U32 p=predictor.p()*(4096/PSCALE); // P(1) * 4K
-  assert(p<4096);
-  const U32 xdiff=x2-x1;
-  U32 a,b,c;
-  U32 xmid;  // = x1+p*(x2-x1) multiply without overflow, round down
+  U32 p = predictor.p() * ( 4096 / PSCALE ); // P(1) * 4K
+  assert( p < 4096 );
+  const U32 xdiff = x2 - x1;
+  U32 a, b, c;
+  U32 xmid; // = x1+p*(x2-x1) multiply without overflow, round down
 
-  c = 2*p + 1;
+  c = 2 * p + 1;
   a = xdiff >> 13;
   b = xdiff & 0x1fff;
-  xmid = x1 + a * c + (( c * b ) >> 13);
+  xmid = x1 + a * c + ( ( c * b ) >> 13 );
 
   // Update the range
-  if (y)
-    x2=xmid;
+  if( y )
+    x2 = xmid;
   else
-    x1=xmid+1;
-  predictor.upd(y);
+    x1 = xmid + 1;
+  predictor.upd( y );
 
   // Shift equal MSB's out
-  for (;;) {
-    if ( x2 < Half ) {
-	 bit_plus_follow(0);	/* Output 0 if in low half. */
-      } else if (x1 >= Half) {	/* Output 1 if in high half. */
-	 bit_plus_follow(1);
-//	 x1 -= Half;
-//	 x2 -= Half;		/* Subtract offset to top.  */
-      } else if (x1 >= First_qtr	/* Output an opposite bit   */
-		 && x2 < Third_qtr) {	/* later if in middle half. */
-	 bits_to_follow ++;
-	 x1 ^= First_qtr;	/* Subtract offset to middle */
-	 x2 ^= First_qtr;
-      } else {
-	 break;			/* Otherwise exit loop.     */
-      }
-      x1 = 2 * x1;
-      x2 = 2 * x2 + 1;	/* Scale up code range.     */
-   }
-
+  for( ;; ) {
+    if( x2 < Half ) {
+      bit_plus_follow( 0 );   /* Output 0 if in low half. */
+    } else if( x1 >= Half ) { /* Output 1 if in high half. */
+      bit_plus_follow( 1 );
+      //	 x1 -= Half;
+      //	 x2 -= Half;		/* Subtract offset to top.  */
+    } else if( x1 >= First_qtr       /* Output an opposite bit   */
+               && x2 < Third_qtr ) { /* later if in middle half. */
+      bits_to_follow++;
+      x1 ^= First_qtr; /* Subtract offset to middle */
+      x2 ^= First_qtr;
+    } else {
+      break; /* Otherwise exit loop.     */
+    }
+    x1 = 2 * x1;
+    x2 = 2 * x2 + 1; /* Scale up code range.     */
+  }
 }
 
 /* Decode one bit from the archive, splitting [x1, x2] as in the encoder
 and returning 1 or 0 depending on which subrange the archive point x is in.
 */
 inline int Encoder::decode() {
-
   // Split the range
-  const U32 p=predictor.p()*(4096/PSCALE); // P(1) * 4K
-  assert(p<4096);
-  const U32 xdiff=x2-x1;
-  U32 a,b,c;
-  U32 xmid;  // = x1+p*(x2-x1) multiply without overflow, round down
+  const U32 p = predictor.p() * ( 4096 / PSCALE ); // P(1) * 4K
+  assert( p < 4096 );
+  const U32 xdiff = x2 - x1;
+  U32 a, b, c;
+  U32 xmid; // = x1+p*(x2-x1) multiply without overflow, round down
 
-  c = 2*p + 1;
+  c = 2 * p + 1;
   a = xdiff >> 13;
   b = xdiff & 0x1fff;
-  xmid = x1 + a * c + (( c * b ) >> 13);
+  xmid = x1 + a * c + ( ( c * b ) >> 13 );
 
   // Update the range
-  int y=0;
-  if (x<=xmid) {
-    y=1;
-    x2=xmid;
-  }
-  else
-    x1=xmid+1;
-  predictor.upd(y);
+  int y = 0;
+  if( x <= xmid ) {
+    y = 1;
+    x2 = xmid;
+  } else
+    x1 = xmid + 1;
+  predictor.upd( y );
 
   // Shift equal MSB's out
-  for (;;) {
-      if ( x2 < Half ) {
-      } else if (x1 >= Half) {	/* Output 1 if in high half. */
-	 x1 -= Half;
-	 x -= Half;
-	 x2 -= Half;		/* Subtract offset to top.  */
-      } else if (x1 >= First_qtr	/* Output an opposite bit   */
-		 && x2 < Third_qtr) {	/* later if in middle half. */
-	 x1 -= First_qtr;	/* Subtract offset to middle */
-	 x -=  First_qtr;
-	 x2 -= First_qtr;
-      } else {
-	 break;			/* Otherwise exit loop.     */
-      }
-      x1 = 2 * x1;
-      x = 2 * x + input_bit();
-      x2 = 2 * x2 + 1;	/* Scale up code range.     */
-   }
+  for( ;; ) {
+    if( x2 < Half ) {
+    } else if( x1 >= Half ) { /* Output 1 if in high half. */
+      x1 -= Half;
+      x -= Half;
+      x2 -= Half;                    /* Subtract offset to top.  */
+    } else if( x1 >= First_qtr       /* Output an opposite bit   */
+               && x2 < Third_qtr ) { /* later if in middle half. */
+      x1 -= First_qtr;               /* Subtract offset to middle */
+      x -= First_qtr;
+      x2 -= First_qtr;
+    } else {
+      break; /* Otherwise exit loop.     */
+    }
+    x1 = 2 * x1;
+    x = 2 * x + input_bit();
+    x2 = 2 * x2 + 1; /* Scale up code range.     */
+  }
   return y;
 }
 // Should be called when there is no more to compress
 void Encoder::flush() {
   // In COMPRESS mode, write out the remaining bytes of x, x1 < x < x2
-  if (mode==COMPRESS) {
-  if ( x1 == 0 ) 
-     bit_plus_follow(0);
-   else 
-     bit_plus_follow(1); 
-	if (bout) putc(bout,archive);
-
-   }
+  if( mode == COMPRESS ) {
+    if( x1 == 0 )
+      bit_plus_follow( 0 );
+    else
+      bit_plus_follow( 1 );
+    if( bout )
+      putc( bout, archive );
+  }
 }
 
 //////////////////////////// Transformer ////////////////////////////
@@ -1921,16 +2025,17 @@ void Encoder::flush() {
 
 class Transformer {
   Encoder e;
+
 public:
-  Transformer(Mode mode, FILE* f): e(mode, f) {}
-  void encode(int c) {
-    for (int i=7; i>=0; --i)
-      e.encode((c>>i)&1);
+  Transformer( Mode mode, FILE *f ) : e( mode, f ) {}
+  void encode( int c ) {
+    for( int i = 7; i >= 0; --i )
+      e.encode( ( c >> i ) & 1 );
   }
   U32 decode() {
-    U32 c=0;
-    for (int i=0; i<8; ++i)
-      c=c+c+e.decode();
+    U32 c = 0;
+    for( int i = 0; i < 8; ++i )
+      c = c + c + e.decode();
     return c;
   }
   void flush() {
@@ -1938,130 +2043,124 @@ public:
   }
 };
 
-#define CONSTA 292*1024+512
+#define CONSTA 292 * 1024 + 512
 char *st0, *st;
 extern "C" {
-void te8e9(char*, int, int, int*);
+void te8e9( char *, int, int, int * );
 }
 
 //////////////////////////// main ////////////////////////////
 
 // Read and return a line of input from FILE f (default stdin) up to
 // first control character except tab.  Skips CR in CR LF.
-string getline(FILE* f=stdin) {
+string getline( FILE *f = stdin ) {
   int c;
-  string result="";
-  while ((c=getc(f))!=EOF && (c>=32 || c=='\t'))
-    result+=char(c);
-  if (c=='\r')
-    (void) getc(f);
+  string result = "";
+  while( ( c = getc( f ) ) != EOF && ( c >= 32 || c == '\t' ) )
+    result += char( c );
+  if( c == '\r' )
+    ( void ) getc( f );
   return result;
 }
 
-
 // User interface
-int main(int argc, char** argv) {
-
+int main( int argc, char **argv ) {
   // Check arguments
-  if (argc<2) {
-    printf(
-      PROGNAME " v1.3 file compressor/archiver, (C)2004, Matt Mahoney, mmahoney@cs.fit.edu\n"
-          "                                        & Alexander Ratushnyak, artest@inbox.ru\n"
-      "This program is free software distributed without warranty under the terms\n"
-      "of the GNU General Public License, see http://www.gnu.org/licenses/gpl.txt\n"
-      "\n"
-      "To compress:         " PROGNAME " -6 archive filenames...  (archive will be created)\n"
-      "  or (MSDOS):        dir/b | " PROGNAME " -6 archive  (reads file names from input)\n"
-      "To extract/compare:  " PROGNAME " archive  (does not clobber existing files)\n"
-      "To view contents:    more < archive\n"
-      "\n"
-      "Compression option  Memory needed to compress/decompress\n"
-      "------------------  ------------------------------------\n"
-      " -0                  ~8 Mb (fastest)\n"
-      " -1                 ~12 Mb\n"
-      " -2                 ~15 Mb\n"
-      " -3                 ~30 Mb\n"
-      " -4                 <60 Mb\n"
-      " -5                <120 Mb\n"
-      " -6                <230 Mb (default)\n"
-      " -7                <460 Mb\n"
-      " -8                <920 Mb\n"
-      " -9               <1840 Mb (best compression, slowest)\n");
+  if( argc < 2 ) {
+    printf( PROGNAME " v1.3 file compressor/archiver, (C)2004, Matt Mahoney, mmahoney@cs.fit.edu\n"
+                     "                                        & Alexander Ratushnyak, artest@inbox.ru\n"
+                     "This program is free software distributed without warranty under the terms\n"
+                     "of the GNU General Public License, see http://www.gnu.org/licenses/gpl.txt\n"
+                     "\n"
+                     "To compress:         " PROGNAME " -6 archive filenames...  (archive will be created)\n"
+                     "  or (MSDOS):        dir/b | " PROGNAME " -6 archive  (reads file names from input)\n"
+                     "To extract/compare:  " PROGNAME " archive  (does not clobber existing files)\n"
+                     "To view contents:    more < archive\n"
+                     "\n"
+                     "Compression option  Memory needed to compress/decompress\n"
+                     "------------------  ------------------------------------\n"
+                     " -0                  ~8 Mb (fastest)\n"
+                     " -1                 ~12 Mb\n"
+                     " -2                 ~15 Mb\n"
+                     " -3                 ~30 Mb\n"
+                     " -4                 <60 Mb\n"
+                     " -5                <120 Mb\n"
+                     " -6                <230 Mb (default)\n"
+                     " -7                <460 Mb\n"
+                     " -8                <920 Mb\n"
+                     " -9               <1840 Mb (best compression, slowest)\n" );
     return 1;
   }
 
   // Read and remove -MEM option
-  if (argc>1 && argv[1][0]=='-') {
-    if (isdigit(argv[1][1])) {
-      MEM=argv[1][1]-'0';
-      if (argv[1][2]=='e') exe=1;
-    }
-    else
-      printf("Option %s ignored\n", argv[1]);
+  if( argc > 1 && argv[1][0] == '-' ) {
+    if( isdigit( argv[1][1] ) ) {
+      MEM = argv[1][1] - '0';
+      if( argv[1][2] == 'e' )
+        exe = 1;
+    } else
+      printf( "Option %s ignored\n", argv[1] );
     argc--;
     argv++;
   }
 
   // File names and sizes from input or archive
-  vector<string> filename; // List of names
-  vector<long> filesize;   // Size or -1 if error
-  int uncompressed_bytes=0, compressed_bytes=0;  // Input, output sizes
-  FILE* archive=fopen(argv[1], "rb");
-
+  vector<string> filename;                          // List of names
+  vector<long> filesize;                            // Size or -1 if error
+  int uncompressed_bytes = 0, compressed_bytes = 0; // Input, output sizes
+  FILE *archive = fopen( argv[1], "rb" );
 
   // Extract files
-  if (archive) {
-    if (argc>2) {
-      printf("File %s already exists\n", argv[1]);
+  if( archive ) {
+    if( argc > 2 ) {
+      printf( "File %s already exists\n", argv[1] );
       return 1;
     }
 
     // Read PROGNAME " -m\r\n" at start of archive
-    string s=getline(archive);
-    if (s.substr(0, string(PROGNAME).size()) != PROGNAME) {
-      printf("Archive file %s not in " PROGNAME " format\n", argv[1]);
+    string s = getline( archive );
+    if( s.substr( 0, string( PROGNAME ).size() ) != PROGNAME ) {
+      printf( "Archive file %s not in " PROGNAME " format\n", argv[1] );
       return 1;
     }
 
-    exe=0;
+    exe = 0;
     // Get option -m where m is a digit
-    if (s.size()>2) {
-      if (s[s.size()-2]=='-') {
-        int c=s[s.size()-1];
-        if (c>='0' && c<='9')
-          MEM=c-'0';
-      }
-      else
-      if (s[s.size()-3]=='-') {
-        int c=s[s.size()-2];
-        if (c>='0' && c<='9')
-          MEM=c-'0';
-        c=s[s.size()-1];
-	if (c=='e') exe=1;
+    if( s.size() > 2 ) {
+      if( s[s.size() - 2] == '-' ) {
+        int c = s[s.size() - 1];
+        if( c >= '0' && c <= '9' )
+          MEM = c - '0';
+      } else if( s[s.size() - 3] == '-' ) {
+        int c = s[s.size() - 2];
+        if( c >= '0' && c <= '9' )
+          MEM = c - '0';
+        c = s[s.size() - 1];
+        if( c == 'e' )
+          exe = 1;
       }
     }
-    if (exe)
-    printf("Extracting archive " PROGNAME " -%de %s ...\n", MEM, argv[1]);
+    if( exe )
+      printf( "Extracting archive " PROGNAME " -%de %s ...\n", MEM, argv[1] );
     else
-    printf("Extracting archive " PROGNAME " -%d %s ...\n", MEM, argv[1]);
+      printf( "Extracting archive " PROGNAME " -%d %s ...\n", MEM, argv[1] );
 
     // Read "size filename" in "%d\t%s\r\n" format
-    while (true) {
-      string s=getline(archive);
-      if (s.size()>1) {
-        filesize.push_back(atol(s.c_str()));
-        string::iterator tab=find(s.begin(), s.end(), '\t');
-        if (tab!=s.end())
-          filename.push_back(string(tab+1, s.end()));
+    while( true ) {
+      string s = getline( archive );
+      if( s.size() > 1 ) {
+        filesize.push_back( atol( s.c_str() ) );
+        string::iterator tab = find( s.begin(), s.end(), '\t' );
+        if( tab != s.end() )
+          filename.push_back( string( tab + 1, s.end() ) );
         else
-          filename.push_back("");
-      }
-      else
+          filename.push_back( "" );
+      } else
         break;
     }
 
     // Test end of header for "\f\0"
-/*  {
+    /*  {
       int c1=0, c2=0;
       if ((c1=getc(archive))!='\f' || (c2=getc(archive))!=0) {
         printf("%s: Bad " PROGNAME " header format %d %d\n", argv[1],
@@ -2072,221 +2171,214 @@ int main(int argc, char** argv) {
 */
 
     // Extract files from archive data
-    Transformer e(DECOMPRESS, archive);
-    for (int i=0; i<int(filename.size()); ++i) {
-      printf("%10ld %s: ", filesize[i], filename[i].c_str());
+    Transformer e( DECOMPRESS, archive );
+    for( int i = 0; i < int( filename.size() ); ++i ) {
+      printf( "%10ld %s: ", filesize[i], filename[i].c_str() );
 
       // Compare with existing file
-      FILE* f=fopen(filename[i].c_str(), "rb");
-      long size=filesize[i];
-      uncompressed_bytes+=size;
-      if (f) {
-        bool different=false;
-        fsize=size-513216;
-        for (long j=0; j<size; ++j) {
-          int c1=e.decode();
-          int c2=getc(f);
-          if (!different && c1!=c2) {
-            printf("differ at offset %ld, archive=%d file=%d\n",
-              j, c1, c2);
-            different=true;
+      FILE *f = fopen( filename[i].c_str(), "rb" );
+      long size = filesize[i];
+      uncompressed_bytes += size;
+      if( f ) {
+        bool different = false;
+        fsize = size - 513216;
+        for( long j = 0; j < size; ++j ) {
+          int c1 = e.decode();
+          int c2 = getc( f );
+          if( !different && c1 != c2 ) {
+            printf( "differ at offset %ld, archive=%d file=%d\n", j, c1, c2 );
+            different = true;
           }
         }
-        if (!different)
-          printf("identical\n");
-        fclose(f);
+        if( !different )
+          printf( "identical\n" );
+        fclose( f );
       }
 
       // Extract to new file
       else {
-        f=fopen(filename[i].c_str(), "wb");
-        if (!f)
-          printf("cannot create, skipping...\n");
-        fsize=size-513216;
-        if (exe && size>0) {
-          int c=e.decode();
-          if (f) putc(c, f);
-          if (c) {
-		c-=23;
-		if ( (c<0 && ((c+8)&1)) || (c>=0 && ((c+2)&1)) )
-		{
-          	  int c=e.decode();
-          	  if (f) putc(c, f);
-          	  int d=e.decode();
-          	  if (f) putc(d, f);
-		  d=d*256+c;
-	        	for (long j=0; j<d*3; ++j) {
-        		  int c=e.decode();
-		          if (f) putc(c, f);
-        		}
-		}
-	  }
-	}
-        for (long j=0; j<size; ++j) {
-          int c=e.decode();
-          if (f)
-            putc(c, f);
+        f = fopen( filename[i].c_str(), "wb" );
+        if( !f )
+          printf( "cannot create, skipping...\n" );
+        fsize = size - 513216;
+        if( exe && size > 0 ) {
+          int c = e.decode();
+          if( f )
+            putc( c, f );
+          if( c ) {
+            c -= 23;
+            if( ( c < 0 && ( ( c + 8 ) & 1 ) ) || ( c >= 0 && ( ( c + 2 ) & 1 ) ) ) {
+              int c = e.decode();
+              if( f )
+                putc( c, f );
+              int d = e.decode();
+              if( f )
+                putc( d, f );
+              d = d * 256 + c;
+              for( long j = 0; j < d * 3; ++j ) {
+                int c = e.decode();
+                if( f )
+                  putc( c, f );
+              }
+            }
+          }
         }
-        if (f) {
-          printf("extracted\n");
-		if (exe && size>0)
-		{
-		int data2write[4]={0,0,0,0};
+        for( long j = 0; j < size; ++j ) {
+          int c = e.decode();
+          if( f )
+            putc( c, f );
+        }
+        if( f ) {
+          printf( "extracted\n" );
+          if( exe && size > 0 ) {
+            int data2write[4] = {0, 0, 0, 0};
 
-			fclose(f);
-			f=fopen(filename[i].c_str(), "rb");
-			fseek(f, 0L, SEEK_END);
-			long flen= ftell(f);
-			fseek(f, 0L, 0);
+            fclose( f );
+            f = fopen( filename[i].c_str(), "rb" );
+            fseek( f, 0L, SEEK_END );
+            long flen = ftell( f );
+            fseek( f, 0L, 0 );
 
-		if ((st0=(char*)malloc(CONSTA+2*flen+256))==NULL) handler();
-		st=st0+256-((long)st0&255);	// 256-byte-alignment
-		flen=fread(st+CONSTA-32768,1,flen,f);
-			fclose(f);
-			f=fopen(filename[i].c_str(), "wb");
+            if( ( st0 = ( char * ) malloc( CONSTA + 2 * flen + 256 ) ) == NULL )
+              handler();
+            st = st0 + 256 - ( ( long ) st0 & 255 ); // 256-byte-alignment
+            flen = fread( st + CONSTA - 32768, 1, flen, f );
+            fclose( f );
+            f = fopen( filename[i].c_str(), "wb" );
 
-		if (flen) te8e9(st,4,flen,&data2write[0]);
-		if (data2write[0])
-		  fwrite((char *)data2write[1],1,data2write[0],f);
+            if( flen )
+              te8e9( st, 4, flen, &data2write[0] );
+            if( data2write[0] )
+              fwrite( ( char * ) data2write[1], 1, data2write[0], f );
 
-		free(st0);
-		}
-          fclose(f);
+            free( st0 );
+          }
+          fclose( f );
         }
       }
     }
-    compressed_bytes=ftell(archive);
+    compressed_bytes = ftell( archive );
   }
-
 
   // Compress files
   else {
-
     // Read file names from command line or input
-    if (argc>2)
-      for (int i=2; i<argc; ++i)
-        filename.push_back(argv[i]);
+    if( argc > 2 )
+      for( int i = 2; i < argc; ++i )
+        filename.push_back( argv[i] );
     else {
-      printf(
-        "Enter names of files to compress, followed by blank line or EOF.\n");
-      while (true) {
-        string s=getline(stdin);
-        if (s=="")
+      printf( "Enter names of files to compress, followed by blank line or EOF.\n" );
+      while( true ) {
+        string s = getline( stdin );
+        if( s == "" )
           break;
         else
-          filename.push_back(s);
+          filename.push_back( s );
       }
     }
 
     // Get file sizes
     int i;
-    for (i=0; i<int(filename.size()); ++i) {
-      FILE* f=fopen(filename[i].c_str(), "rb");
-      if (!f) {
-        printf("File not found, skipping: %s\n",
-          filename[i].c_str());
-        filesize.push_back(-1);
-      }
-      else {
-        fseek(f, 0L, SEEK_END);
-        filesize.push_back(ftell(f));
-        fclose(f);
+    for( i = 0; i < int( filename.size() ); ++i ) {
+      FILE *f = fopen( filename[i].c_str(), "rb" );
+      if( !f ) {
+        printf( "File not found, skipping: %s\n", filename[i].c_str() );
+        filesize.push_back( -1 );
+      } else {
+        fseek( f, 0L, SEEK_END );
+        filesize.push_back( ftell( f ) );
+        fclose( f );
       }
     }
-    if (filesize.empty() || *max_element(filesize.begin(), filesize.end())<0){
-      printf("No files to compress, no archive created.\n");
+    if( filesize.empty() || *max_element( filesize.begin(), filesize.end() ) < 0 ) {
+      printf( "No files to compress, no archive created.\n" );
       return 1;
     }
 
     // Write header
-    archive=fopen(argv[1], "wb");
-    if (!archive) {
-      printf("Cannot create archive: %s\n", argv[1]);
+    archive = fopen( argv[1], "wb" );
+    if( !archive ) {
+      printf( "Cannot create archive: %s\n", argv[1] );
       return 1;
     }
-    fprintf(archive, PROGNAME " -%d", MEM);
-    if (exe)
-    fprintf(archive, "e");
-    fprintf(archive, "\r\n");
-    for ( i=0; i<int(filename.size()); ++i) {
-      if (filesize[i]>=0)
-        fprintf(archive, "%ld\t%s\r\n", filesize[i], filename[i].c_str());
+    fprintf( archive, PROGNAME " -%d", MEM );
+    if( exe )
+      fprintf( archive, "e" );
+    fprintf( archive, "\r\n" );
+    for( i = 0; i < int( filename.size() ); ++i ) {
+      if( filesize[i] >= 0 )
+        fprintf( archive, "%ld\t%s\r\n", filesize[i], filename[i].c_str() );
     }
-    putc(032, archive);  // MSDOS EOF
-//    putc('\f', archive);
-//    putc(0, archive);
-
+    putc( 032, archive ); // MSDOS EOF
+                          //    putc('\f', archive);
+                          //    putc(0, archive);
 
     // Write data
-    Transformer e(COMPRESS, archive);
-    long file_start=ftell(archive);
-    for ( i=0; i<int(filename.size()); ++i) {
-      long size=filesize[i];
-      if (size>=0) {
-        uncompressed_bytes+=size;
-        printf("%-23s %10ld -> ", filename[i].c_str(), size);
-        FILE* f=fopen(filename[i].c_str(), "rb");
-        fsize=size-513216;
+    Transformer e( COMPRESS, archive );
+    long file_start = ftell( archive );
+    for( i = 0; i < int( filename.size() ); ++i ) {
+      long size = filesize[i];
+      if( size >= 0 ) {
+        uncompressed_bytes += size;
+        printf( "%-23s %10ld -> ", filename[i].c_str(), size );
+        FILE *f = fopen( filename[i].c_str(), "rb" );
+        fsize = size - 513216;
 
-		if (f && exe && size>0)
-		{
-		int data2write[4]={0,0,0,0};
-			FILE* fw=fopen("paqar11tmp.tmp", "wb");
+        if( f && exe && size > 0 ) {
+          int data2write[4] = {0, 0, 0, 0};
+          FILE *fw = fopen( "paqar11tmp.tmp", "wb" );
 
-			fseek(f, 0L, SEEK_END);
-			long flen= ftell(f);
-			fseek(f, 0L, 0);
+          fseek( f, 0L, SEEK_END );
+          long flen = ftell( f );
+          fseek( f, 0L, 0 );
 
-		if ((st0=(char*)malloc(CONSTA+2*flen+256))==NULL) handler();
-		st=st0+256-((long)st0&255);	// 256-byte-alignment
-		flen=fread(st+CONSTA-32768,1,flen,f);
+          if( ( st0 = ( char * ) malloc( CONSTA + 2 * flen + 256 ) ) == NULL )
+            handler();
+          st = st0 + 256 - ( ( long ) st0 & 255 ); // 256-byte-alignment
+          flen = fread( st + CONSTA - 32768, 1, flen, f );
 
-		if (flen) te8e9(st,3,flen,&data2write[0]);
- 		size=0;
-		if (data2write[0])
-		  size+=data2write[0],
-		  fwrite((char *)data2write[1],1,data2write[0],fw);
-		if (data2write[2])
-		  size+=data2write[2],
-		  fwrite((char *)data2write[3],1,data2write[2],fw);
-		free(st0);
+          if( flen )
+            te8e9( st, 3, flen, &data2write[0] );
+          size = 0;
+          if( data2write[0] )
+            size += data2write[0], fwrite( ( char * ) data2write[1], 1, data2write[0], fw );
+          if( data2write[2] )
+            size += data2write[2], fwrite( ( char * ) data2write[3], 1, data2write[2], fw );
+          free( st0 );
 
-		fclose(fw);
-		fclose(f);
-		f=fopen("paqar11tmp.tmp", "rb");
-		}
+          fclose( fw );
+          fclose( f );
+          f = fopen( "paqar11tmp.tmp", "rb" );
+        }
 
         int c;
-        for (long j=0; j<size; ++j) {
-          if (f)
-            c=getc(f);
+        for( long j = 0; j < size; ++j ) {
+          if( f )
+            c = getc( f );
           else
-            c=0;
-          e.encode(c); 
+            c = 0;
+          e.encode( c );
         }
-        if (f)
-          fclose(f);
-		if (f && exe && size>0) remove("paqar11tmp.tmp");
-        printf("%ld\n", ftell(archive)-file_start);
-        file_start=ftell(archive);
+        if( f )
+          fclose( f );
+        if( f && exe && size > 0 )
+          remove( "paqar11tmp.tmp" );
+        printf( "%ld\n", ftell( archive ) - file_start );
+        file_start = ftell( archive );
       }
     }
     e.flush();
-    compressed_bytes=ftell(archive);
-    fclose(archive);
+    compressed_bytes = ftell( archive );
+    fclose( archive );
   }
 
   // Report statistics
-  const double elapsed_time =
-    double(clock()-programChecker.start_time())/CLOCKS_PER_SEC;
-  printf("%d/%d in %1.2f sec.", compressed_bytes, uncompressed_bytes,
-    elapsed_time);
-  if (uncompressed_bytes>0 && elapsed_time>0) {
-    printf(" (%1.4f bpc, %1.2f%% at %1.0f KB/s)",
-      compressed_bytes*8.0/uncompressed_bytes,
-      compressed_bytes*100.0/uncompressed_bytes,
-      uncompressed_bytes/(elapsed_time*1000.0));
+  const double elapsed_time = double( clock() - programChecker.start_time() ) / CLOCKS_PER_SEC;
+  printf( "%d/%d in %1.2f sec.", compressed_bytes, uncompressed_bytes, elapsed_time );
+  if( uncompressed_bytes > 0 && elapsed_time > 0 ) {
+    printf( " (%1.4f bpc, %1.2f%% at %1.0f KB/s)", compressed_bytes * 8.0 / uncompressed_bytes,
+            compressed_bytes * 100.0 / uncompressed_bytes, uncompressed_bytes / ( elapsed_time * 1000.0 ) );
   }
-  printf("\n");
+  printf( "\n" );
   return 0;
 }

@@ -170,84 +170,88 @@ To compile (g++ 3.4.5, upx 3.00w):
 #include <time.h>
 #include <math.h>
 #include <ctype.h>
-#define NDEBUG  // remove for debugging
+#define NDEBUG // remove for debugging
 #include <assert.h>
 
 // 8, 16, 32 bit unsigned types (adjust as appropriate)
-typedef unsigned char  U8;
+typedef unsigned char U8;
 typedef unsigned short U16;
-typedef unsigned int   U32;
+typedef unsigned int U32;
 
-int DP_SHIFT=14;
+int DP_SHIFT = 14;
 
 #ifdef WIKI
-#define TOLIMIT_1 1023
-#define TOLIMIT_2 1023
-#define SQUARD 4
-#define add2order0 (c>>4)
-#define upd3_cp\
-	cp[2]=t1a.get(hash7(c0*23-(c4&0xc0ffffff)*241 ));	/*  3.25 */\
-	cp[3]=t2a.get(hash8(c0   -c4*19+(c8&0xc0ff)*19991));	/*  5.25 */\
-	cp[4]=t3b.get(hash9(c0*31-c4*59-(c8&0xfcffffff)*59999));/*  7.75 */
-#define upd7_cp\
-	cp[2]=t1b.get(hash2((c4&0xffffff)*251));		/* order 3   */\
-	cp[3]=t2b.get(hash3(c4*127+((c8>>4)&15) ));		/* order 4.5 */\
-	cp[4]=t3a.get(hash4(c4*197-(c8&0xfcffff)*63331));	/* order 6.75*/
-#define upd7_h123\
-    h2=hash1(c4*59+c8*59999)&HN;\
-    h1=hash2(c4*73-c8*101+(cc&0xffffff)*421)&HN;
+#  define TOLIMIT_1 1023
+#  define TOLIMIT_2 1023
+#  define SQUARD 4
+#  define add2order0 ( c >> 4 )
+#  define upd3_cp                                                                                                      \
+    cp[2] = t1a.get( hash7( c0 * 23 - ( c4 & 0xc0ffffff ) * 241 ) );             /*  3.25 */                           \
+    cp[3] = t2a.get( hash8( c0 - c4 * 19 + ( c8 & 0xc0ff ) * 19991 ) );          /*  5.25 */                           \
+    cp[4] = t3b.get( hash9( c0 * 31 - c4 * 59 - ( c8 & 0xfcffffff ) * 59999 ) ); /*  7.75 */
+#  define upd7_cp                                                                                                      \
+    cp[2] = t1b.get( hash2( ( c4 & 0xffffff ) * 251 ) );              /* order 3   */                                  \
+    cp[3] = t2b.get( hash3( c4 * 127 + ( ( c8 >> 4 ) & 15 ) ) );      /* order 4.5 */                                  \
+    cp[4] = t3a.get( hash4( c4 * 197 - ( c8 & 0xfcffff ) * 63331 ) ); /* order 6.75*/
+#  define upd7_h123                                                                                                    \
+    h2 = hash1( c4 * 59 + c8 * 59999 ) & HN;                                                                           \
+    h1 = hash2( c4 * 73 - c8 * 101 + ( cc & 0xffffff ) * 421 ) & HN;
 
 #else
-#define TOLIMIT_1 159
-#define TOLIMIT_2 175
-#define SQUARD 2
-#define add2order0 ( (c>>6) + ((c4>>4)&12) )
-	int calcprevfail[256];
-#define upd3_cp\
-	cp[2]=t1a.get(hash7(c0*23-(c4&0xffffff)*251));\
-	cp[3]=t2a.get(hash8(c0   -c4*19));\
-	cp[4]=t3b.get(hash9(c0*31-c4*197+(c8& 0xffff)*63331 ));
-#define upd7_cp\
-	cp[2]=t1b.get(hash2((c4&0xffffff)*251));\
-	cp[3]=t2b.get(hash3(c4*127));\
-	cp[4]=t3a.get(hash4(c4*197-(c8& 0xffff)*63331));
-#define upd7_h123\
-    t0c1=t0+c1*256;\
-    prevfail=calcprevfail[fails];\
-    fails=1;\
-    h1=h1*(3 <<1)+c+1&HN;\
-    h2=hash2(c4*73-c8*101+cc*421)&HN;\
-    h3=hash1(c4*59+c8*59999)&HN;
+#  define TOLIMIT_1 159
+#  define TOLIMIT_2 175
+#  define SQUARD 2
+#  define add2order0 ( ( c >> 6 ) + ( ( c4 >> 4 ) & 12 ) )
+int calcprevfail[256];
+#  define upd3_cp                                                                                                      \
+    cp[2] = t1a.get( hash7( c0 * 23 - ( c4 & 0xffffff ) * 251 ) );                                                     \
+    cp[3] = t2a.get( hash8( c0 - c4 * 19 ) );                                                                          \
+    cp[4] = t3b.get( hash9( c0 * 31 - c4 * 197 + ( c8 & 0xffff ) * 63331 ) );
+#  define upd7_cp                                                                                                      \
+    cp[2] = t1b.get( hash2( ( c4 & 0xffffff ) * 251 ) );                                                               \
+    cp[3] = t2b.get( hash3( c4 * 127 ) );                                                                              \
+    cp[4] = t3a.get( hash4( c4 * 197 - ( c8 & 0xffff ) * 63331 ) );
+#  define upd7_h123                                                                                                    \
+    t0c1 = t0 + c1 * 256;                                                                                              \
+    prevfail = calcprevfail[fails];                                                                                    \
+    fails = 1;                                                                                                         \
+    h1 = h1 * ( 3 << 1 ) + c + 1 & HN;                                                                                 \
+    h2 = hash2( c4 * 73 - c8 * 101 + cc * 421 ) & HN;                                                                  \
+    h3 = hash1( c4 * 59 + c8 * 59999 ) & HN;
 #endif
 
-
 // Error handler: print message if any, and exit
-void quit(const char* message=0) {
-  if (message) printf("%s\n", message);
-  exit(1);
+void quit( const char *message = 0 ) {
+  if( message )
+    printf( "%s\n", message );
+  exit( 1 );
 }
 
-U32 mem_usage=0;
+U32 mem_usage = 0;
 
 // Create an array p of n elements of type T
-template <class T> void alloc(T*&p, int n) {
-  p=(T*)calloc(n, sizeof(T));
-  mem_usage+=n*sizeof(T);
-  if (!p) quit("out of memory");
+template <class T>
+void alloc( T *&p, int n ) {
+  p = ( T * ) calloc( n, sizeof( T ) );
+  mem_usage += n * sizeof( T );
+  if( !p )
+    quit( "out of memory" );
 }
 
 ///////////////////////////// Squash //////////////////////////////
 
-int squash_t[4096];	//initialized when Encoder is created
+int squash_t[4096]; //initialized when Encoder is created
 
-#define squash(x)  squash_t[(x)+2047]
+#define squash( x ) squash_t[( x ) + 2047]
 
 // return p = 1/(1 + exp(-d)), d scaled by 8 bits, p scaled by 12 bits
-int squash_init(int d) {
-  if (d==2047) return 4095;
-  if (d==-2047) return 0;
-  double k=4096/(double(1+exp(-(double(d)/256))));
-  return int(k);
+int squash_init( int d ) {
+  if( d == 2047 )
+    return 4095;
+  if( d == -2047 )
+    return 0;
+  double k = 4096 / ( double( 1 + exp( -( double( d ) / 256 ) ) ) );
+  return int( k );
 }
 
 //////////////////////////// Stretch ///////////////////////////////
@@ -256,19 +260,19 @@ int squash_init(int d) {
 // p by 12 bits.  d has range -2047 to 2047 representing -8 to 8.
 // p has range 0 to 4095 representing 0 to 1.
 
-  static int stretch_t[4096];	//initialized when Encoder is created
-  static int stretch_t2[4096];
-  static int dt[1024];	// i -> 16K/(i+3)
-  static int calcfails[8192];   //as above, initialized when Encoder is created
+static int stretch_t[4096]; //initialized when Encoder is created
+static int stretch_t2[4096];
+static int dt[1024];        // i -> 16K/(i+3)
+static int calcfails[8192]; //as above, initialized when Encoder is created
 
-  static int TextFlag=0;
-  static int y22;   // y<<22
-  static int c0=1;  // last 0-7 bits with leading 1
-  static int c4=0;  // last 4 bytes
-  static int c1=0;  // last two higher 4-bit nibbles
-  static int bcount=0;  // bit count
-  static U8* buf;    // input buffer
-  static int pos;    // number of bytes in buf
+static int TextFlag = 0;
+static int y22;        // y<<22
+static int c0 = 1;     // last 0-7 bits with leading 1
+static int c4 = 0;     // last 4 bytes
+static int c1 = 0;     // last two higher 4-bit nibbles
+static int bcount = 0; // bit count
+static U8 *buf;        // input buffer
+static int pos;        // number of bytes in buf
 
 ///////////////////////// state table ////////////////////////
 
@@ -288,11 +292,10 @@ int squash_init(int d) {
 // Also, when a bit is observed and the count of the opposite bit is large,
 // then part of this count is discarded to favor newer data over old.
 
-static const U8 State_table[512*3]={
+static const U8 State_table[512 * 3] = {
 #include "State_tables.dat"
 };
-#define nex(state,sel) *(p+state+sel*256)
-
+#define nex( state, sel ) *( p + state + sel * 256 )
 
 //////////////////////////// StateMap, APM //////////////////////////
 
@@ -306,30 +309,30 @@ static const U8 State_table[512*3]={
 
 class StateMap {
 public:
-  U32 *t_cxt;	// Context of last prediction
-  U32 *t;	// cxt -> prediction in high 22 bits, count in low 10 bits
-  StateMap(int n=512);
+  U32 *t_cxt; // Context of last prediction
+  U32 *t;     // cxt -> prediction in high 22 bits, count in low 10 bits
+  StateMap( int n = 512 );
 
   // update bit y (0..1), predict next bit in context cx
-  inline int p(int cx) {	//, int limit=1023)
-  assert(y>>1==0);
-  assert(cx>=0 && cx<N);
-  assert(cxt>=0 && cxt<N);
-    U32 p0=*t_cxt;
-    U32 i=p0&1023, pr=p0>>10; // count, prediction
-    p0+=(i<TOLIMIT_1);
-    p0+=((y22-(int)pr>>3)*dt[i])&0xfffffc00;
-    *t_cxt=p0;
-    t_cxt=t+cx;
-    return (*t_cxt) >>20;
+  inline int p( int cx ) { //, int limit=1023)
+    assert( y >> 1 == 0 );
+    assert( cx >= 0 && cx < N );
+    assert( cxt >= 0 && cxt < N );
+    U32 p0 = *t_cxt;
+    U32 i = p0 & 1023, pr = p0 >> 10; // count, prediction
+    p0 += ( i < TOLIMIT_1 );
+    p0 += ( ( y22 - ( int ) pr >> 3 ) * dt[i] ) & 0xfffffc00;
+    *t_cxt = p0;
+    t_cxt = t + cx;
+    return ( *t_cxt ) >> 20;
   }
 };
 
-StateMap::StateMap(int n) {
-  alloc(t, n);
-  t_cxt=t;
-  for (int i=0; i<n; ++i)
-    t[i]=1<<31;
+StateMap::StateMap( int n ) {
+  alloc( t, n );
+  t_cxt = t;
+  for( int i = 0; i < n; ++i )
+    t[i] = 1 << 31;
 }
 
 // An APM maps a probability and a context to a new probability.  Methods:
@@ -344,34 +347,34 @@ StateMap::StateMap(int n) {
 
 class APM {
 protected:
-  int cxt;	// Context of last prediction
-  U32 *t;	// cxt -> prediction in high 22 bits, count in low 10 bits
+  int cxt; // Context of last prediction
+  U32 *t;  // cxt -> prediction in high 22 bits, count in low 10 bits
 public:
-  APM(int n);
-  inline int pp(int pr, int cx) {	//, int limit=1023)
-    assert(y>>1==0);
-    assert(cx>=0 && cx<N/24);
-    assert(cxt>=0 && cxt<N);
-  {
-    U32 *p=&t[cxt], p0=p[0];
-    U32 i=p0&1023, pr=p0>>10; // count, prediction
-    p0+=(i<TOLIMIT_2);
-    p0+=((y22-(int)pr>>3)*dt[i]+0x200)&0xfffffc00;
-    p[0]=p0;
-  }
-    int wt=pr&0xfff;  // interpolation weight of next element
-    cx=cx*24+(pr>>12);
-    cxt=cx+(wt>>11);
-    pr=(t[cx]>>13)*(0x1000-wt)+(t[cx+1]>>13)*wt>>19;
+  APM( int n );
+  inline int pp( int pr, int cx ) { //, int limit=1023)
+    assert( y >> 1 == 0 );
+    assert( cx >= 0 && cx < N / 24 );
+    assert( cxt >= 0 && cxt < N );
+    {
+      U32 *p = &t[cxt], p0 = p[0];
+      U32 i = p0 & 1023, pr = p0 >> 10; // count, prediction
+      p0 += ( i < TOLIMIT_2 );
+      p0 += ( ( y22 - ( int ) pr >> 3 ) * dt[i] + 0x200 ) & 0xfffffc00;
+      p[0] = p0;
+    }
+    int wt = pr & 0xfff; // interpolation weight of next element
+    cx = cx * 24 + ( pr >> 12 );
+    cxt = cx + ( wt >> 11 );
+    pr = ( t[cx] >> 13 ) * ( 0x1000 - wt ) + ( t[cx + 1] >> 13 ) * wt >> 19;
     return pr;
   }
 };
 
-APM::APM(int n): cxt(0) {
-  alloc(t, n);
-  for (int i=0; i<n; ++i) {
-    int p=((i%24*2+1)*4096)/48-2048;
-    t[i]=(U32(squash_init(p))<<20)+8;
+APM::APM( int n ) : cxt( 0 ) {
+  alloc( t, n );
+  for( int i = 0; i < n; ++i ) {
+    int p = ( ( i % 24 * 2 + 1 ) * 4096 ) / 48 - 2048;
+    t[i] = ( U32( squash_init( p ) ) << 20 ) + 8;
   }
 }
 
@@ -395,13 +398,13 @@ APM::APM(int n): cxt(0) {
 
 #define MI 8
 #define MC 1280
-  int mxr_tx[MI];	// MI inputs
-  int* mxr_wx;		// MI*MC weights
-  int* mxr_cxt;		// context
-  int mxr_pr=2048;	// last result (scaled 12 bits)
+int mxr_tx[MI];    // MI inputs
+int *mxr_wx;       // MI*MC weights
+int *mxr_cxt;      // context
+int mxr_pr = 2048; // last result (scaled 12 bits)
 
-#if 0			// ATTENTION !  CHANGE this to 1 if you start to use
-			//		<mixer max inputs>!=8 in your versions.
+#if 0 // ATTENTION !  CHANGE this to 1 if you start to use                                                             \
+      //		<mixer max inputs>!=8 in your versions.
 inline void train(int err) {
   int *w=mxr_cxt;
   assert(err>=-32768 && err<32768);
@@ -421,54 +424,60 @@ inline int dot_product() {
 }
 
 #else
-inline void train(int err) {
-    int *w=mxr_cxt;
-    assert(err>=-32768 && err<32768);
-    w[0]+=mxr_tx[0]*err+0x2000>>14;
-    w[1]+=mxr_tx[1]*err+0x2000>>14;
-    w[2]+=mxr_tx[2]*err+0x2000>>14;
-    w[3]+=mxr_tx[3]*err+0x2000>>14;
-    w[4]+=mxr_tx[4]*err+0x2000>>14;
-    w[5]+=mxr_tx[5]*err+0x2000>>14;
-    w[6]+=mxr_tx[6]*err+0x2000>>14;
-    w[7]+=	    err+0x20  >>6;
+inline void train( int err ) {
+  int *w = mxr_cxt;
+  assert( err >= -32768 && err < 32768 );
+  w[0] += mxr_tx[0] * err + 0x2000 >> 14;
+  w[1] += mxr_tx[1] * err + 0x2000 >> 14;
+  w[2] += mxr_tx[2] * err + 0x2000 >> 14;
+  w[3] += mxr_tx[3] * err + 0x2000 >> 14;
+  w[4] += mxr_tx[4] * err + 0x2000 >> 14;
+  w[5] += mxr_tx[5] * err + 0x2000 >> 14;
+  w[6] += mxr_tx[6] * err + 0x2000 >> 14;
+  w[7] += err + 0x20 >> 6;
 }
 inline int dot_product() {
-    int *w=mxr_cxt;
-    int sum =mxr_tx[0]*w[0];
-	sum+=mxr_tx[1]*w[1];
-	sum+=mxr_tx[2]*w[2];
-	sum+=mxr_tx[3]*w[3];
-	sum+=mxr_tx[4]*w[4];
-	sum+=mxr_tx[5]*w[5];
-	sum+=mxr_tx[6]*w[6];
-	sum+=		w[7]<<8;
-  sum>>=DP_SHIFT;
-  if (sum<-2047) sum=-2047;
-  if (sum> 2047) sum= 2047;
+  int *w = mxr_cxt;
+  int sum = mxr_tx[0] * w[0];
+  sum += mxr_tx[1] * w[1];
+  sum += mxr_tx[2] * w[2];
+  sum += mxr_tx[3] * w[3];
+  sum += mxr_tx[4] * w[4];
+  sum += mxr_tx[5] * w[5];
+  sum += mxr_tx[6] * w[6];
+  sum += w[7] << 8;
+  sum >>= DP_SHIFT;
+  if( sum < -2047 )
+    sum = -2047;
+  if( sum > 2047 )
+    sum = 2047;
   return sum;
 }
 #endif
-
 
 ///class Mixer {
 ///public:
 ///  Mixer(int m);
 
-  // Adjust weights to minimize coding cost of last prediction
-#define m_update(y) {			\
-    int err=y*0xfff-mxr_pr;		\
-    fails<<=1;				\
-    fails|=calcfails[err+4096];		\
-    train(err);				\
+// Adjust weights to minimize coding cost of last prediction
+#define m_update( y )                                                                                                  \
+  {                                                                                                                    \
+    int err = y * 0xfff - mxr_pr;                                                                                      \
+    fails <<= 1;                                                                                                       \
+    fails |= calcfails[err + 4096];                                                                                    \
+    train( err );                                                                                                      \
   }
 
-  // Input x (call up to MI times)
+// Input x (call up to MI times)
 
-#define m_add(a,b) { assert((a)<MI); mxr_tx[a]=stretch_t[b]; }
+#define m_add( a, b )                                                                                                  \
+  {                                                                                                                    \
+    assert( ( a ) < MI );                                                                                              \
+    mxr_tx[a] = stretch_t[b];                                                                                          \
+  }
 
-  // predict next bit
-#define m_p	dot_product();
+// predict next bit
+#define m_p dot_product();
 
 ///};
 
@@ -487,55 +496,99 @@ inline int dot_product() {
 
 template <int B>
 class HashTable {
-  U8* t;	// table: 1 element = B bytes: checksum,priority,data,data,...
-  const int NB;	// size in bytes
+  U8 *t;        // table: 1 element = B bytes: checksum,priority,data,data,...
+  const int NB; // size in bytes
 public:
-  HashTable(int n);
-  U8* get(U32 i);
+  HashTable( int n );
+  U8 *get( U32 i );
 };
 
 template <int B>
-HashTable<B>::HashTable(int n): NB(n-B) {
-  assert(B>=2 && (B&B-1)==0);
-  assert(n>=B*4 && (n&n-1)==0);
-  alloc(t, n+512);
-  t = (U8 *)(((uintptr_t)t + 63) & ~(uintptr_t)63); // align on cache line boundary
-
+HashTable<B>::HashTable( int n ) : NB( n - B ) {
+  assert( B >= 2 && ( B & B - 1 ) == 0 );
+  assert( n >= B * 4 && ( n & n - 1 ) == 0 );
+  alloc( t, n + 512 );
+  t = ( U8 * ) ( ( ( uintptr_t ) t + 63 ) & ~( uintptr_t ) 63 ); // align on cache line boundary
 }
 
-inline U32 hash1(U32 i) {  i*=234567891; i=i<<21|i>>11; return (i*765432197); }
-inline U32 hash2(U32 i) {  i*=234567891; i=i<<19|i>>13; return (i*654321893); }
-inline U32 hash3(U32 i) {  i*=234567891; i=i<<21|i>>11; return (i*543210973); }
-inline U32 hash4(U32 i) {  i*=234567891; i=i<<19|i>>13; return (i*432109879); }
-inline U32 hash5(U32 i) {  i*=234567891; i=i<<21|i>>11; return (i*987654323); }
+inline U32 hash1( U32 i ) {
+  i *= 234567891;
+  i = i << 21 | i >> 11;
+  return ( i * 765432197 );
+}
+inline U32 hash2( U32 i ) {
+  i *= 234567891;
+  i = i << 19 | i >> 13;
+  return ( i * 654321893 );
+}
+inline U32 hash3( U32 i ) {
+  i *= 234567891;
+  i = i << 21 | i >> 11;
+  return ( i * 543210973 );
+}
+inline U32 hash4( U32 i ) {
+  i *= 234567891;
+  i = i << 19 | i >> 13;
+  return ( i * 432109879 );
+}
+inline U32 hash5( U32 i ) {
+  i *= 234567891;
+  i = i << 21 | i >> 11;
+  return ( i * 987654323 );
+}
 
-inline U32 hash6(U32 i) {  i*=345678941; i=i<<19|i>>13; return (i*876543211); }
-inline U32 hash7(U32 i) {  i*=345678941; i=i<<21|i>>11; return (i*765432197); }
-inline U32 hash8(U32 i) {  i*=345678941; i=i<<19|i>>13; return (i*654321893); }
-inline U32 hash9(U32 i) {  i*=345678941; i=i<<21|i>>11; return (i*543210973); }
-inline U32 hash0(U32 i) {  i*=345678941; i=i<<19|i>>13; return (i*432109879); }
+inline U32 hash6( U32 i ) {
+  i *= 345678941;
+  i = i << 19 | i >> 13;
+  return ( i * 876543211 );
+}
+inline U32 hash7( U32 i ) {
+  i *= 345678941;
+  i = i << 21 | i >> 11;
+  return ( i * 765432197 );
+}
+inline U32 hash8( U32 i ) {
+  i *= 345678941;
+  i = i << 19 | i >> 13;
+  return ( i * 654321893 );
+}
+inline U32 hash9( U32 i ) {
+  i *= 345678941;
+  i = i << 21 | i >> 11;
+  return ( i * 543210973 );
+}
+inline U32 hash0( U32 i ) {
+  i *= 345678941;
+  i = i << 19 | i >> 13;
+  return ( i * 432109879 );
+}
 
 template <int B>
-inline U8* HashTable<B>::get(U32 i) {
-  U8 *p=t+(i*B&NB), *q, *r;
-  i>>=24;
-  U8 c=i;
-  if (*(p-1)==c) return p;
-  q=(U8*)((uintptr_t)p^B);
-  if (*(q-1)==c) return q;
-  r=(U8*)((uintptr_t)p^B*2);
-  if (*(r-1)==c) return r;
-  if (*p>*q) p=q;
-  if (*p>*r) p=r;
-#if 0			// ATTENTION !	CHANGE this to 1 if you start to use
-			//		HashTable with B!=16 in your versions.
+inline U8 *HashTable<B>::get( U32 i ) {
+  U8 *p = t + ( i * B & NB ), *q, *r;
+  i >>= 24;
+  U8 c = i;
+  if( *( p - 1 ) == c )
+    return p;
+  q = ( U8 * ) ( ( uintptr_t ) p ^ B );
+  if( *( q - 1 ) == c )
+    return q;
+  r = ( U8 * ) ( ( uintptr_t ) p ^ B * 2 );
+  if( *( r - 1 ) == c )
+    return r;
+  if( *p > *q )
+    p = q;
+  if( *p > *r )
+    p = r;
+#if 0 // ATTENTION !	CHANGE this to 1 if you start to use                                                              \
+      //		HashTable with B!=16 in your versions.
   memset(p-1, 0, B);
   *(p-1)=i;		// This is big-endian-compatible
 #else
-		*(U32*)(p -1)=i;	// This is NOT big-endian-compatible
-		*(U32*)(p+ 3)=0;
-		*(U32*)(p+ 7)=0;
-		*(U32*)(p+11)=0;
+  *( U32 * ) ( p - 1 ) = i; // This is NOT big-endian-compatible
+  *( U32 * ) ( p + 3 ) = 0;
+  *( U32 * ) ( p + 7 ) = 0;
+  *( U32 * ) ( p + 11 ) = 0;
 #endif
   return p;
 }
@@ -548,104 +601,108 @@ inline U8* HashTable<B>::get(U32 i) {
 //     a prediction of the next bit to Mixer m.  It returns the length of
 //     context matched (0..62).
 
-  U32 h1, h2, h3; // context hashes
-  int N, HN; // last hash table index, n/8-1
+U32 h1, h2, h3; // context hashes
+int N, HN;      // last hash table index, n/8-1
 
-  enum {MAXLEN=62};   // maximum match length, at most 62
-  U32 len2cxt[MAXLEN*2+1];
-  U32 len2order[MAXLEN+1];
+enum { MAXLEN = 62 }; // maximum match length, at most 62
+U32 len2cxt[MAXLEN * 2 + 1];
+U32 len2order[MAXLEN + 1];
 
 class MatchModel {
-  int* ht;    // context hash -> next byte in buf
-  int match;  // pointer to current byte in matched context in buf
-  int buf_match;  // buf[match]+256
-  int len;    // length of match
-  StateMap sm;  // len, bit, last byte -> prediction
+  int *ht;       // context hash -> next byte in buf
+  int match;     // pointer to current byte in matched context in buf
+  int buf_match; // buf[match]+256
+  int len;       // length of match
+  StateMap sm;   // len, bit, last byte -> prediction
 public:
-  MatchModel(int n);  // n must be a power of 2 at least 8.
-  int p();	// predict next bit to m
-  void upd();	// update bit y (0..1)
+  MatchModel( int n ); // n must be a power of 2 at least 8.
+  int p();             // predict next bit to m
+  void upd();          // update bit y (0..1)
 };
 
-MatchModel::MatchModel(int n): sm(55<<8) {
-  N=n/2-1;
-  HN=n/8-1;
-  pos=h1=h2=h3=match=len=0;
-  assert(n>=8 && (n&n-1)==0);
-  alloc(buf, N+1);
-  alloc(ht, HN+1);
+MatchModel::MatchModel( int n ) : sm( 55 << 8 ) {
+  N = n / 2 - 1;
+  HN = n / 8 - 1;
+  pos = h1 = h2 = h3 = match = len = 0;
+  assert( n >= 8 && ( n & n - 1 ) == 0 );
+  alloc( buf, N + 1 );
+  alloc( ht, HN + 1 );
 }
 
-#define SEARCH(hsh) {	\
-	len=1;		\
-	match=ht[hsh];	\
-	if (match!=pos) {\
-	  while (len<MAXLEN+1 && buf[match-len&N]==buf[pos-len&N])	++len; \
-	}		\
-}
-#define SEARCH2(hsh) {	\
-	len=1;		\
-	match=ht[hsh];	\
-	if (match!=pos) {\
-	  p=p1;		\
-	  while (len<MAXLEN+1 && buf[match-len&N]==*p)		--p, ++len; \
-	}		\
-}
+#define SEARCH( hsh )                                                                                                  \
+  {                                                                                                                    \
+    len = 1;                                                                                                           \
+    match = ht[hsh];                                                                                                   \
+    if( match != pos ) {                                                                                               \
+      while( len < MAXLEN + 1 && buf[match - len & N] == buf[pos - len & N] )                                          \
+        ++len;                                                                                                         \
+    }                                                                                                                  \
+  }
+#define SEARCH2( hsh )                                                                                                 \
+  {                                                                                                                    \
+    len = 1;                                                                                                           \
+    match = ht[hsh];                                                                                                   \
+    if( match != pos ) {                                                                                               \
+      p = p1;                                                                                                          \
+      while( len < MAXLEN + 1 && buf[match - len & N] == *p )                                                          \
+        --p, ++len;                                                                                                    \
+    }                                                                                                                  \
+  }
 
 void MatchModel::upd() {
-
-    // find or extend match
-    if (len>2) {
-      ++match;
-      match&=N;
-      if (len<MAXLEN)	++len;
-    }
-    else {
-	if (pos>=MAXLEN) {
-		U8 *p1=buf+pos-1, *p;
-			   SEARCH2(h1)
-		if (len<3) SEARCH2(h2)
+  // find or extend match
+  if( len > 2 ) {
+    ++match;
+    match &= N;
+    if( len < MAXLEN )
+      ++len;
+  } else {
+    if( pos >= MAXLEN ) {
+      U8 *p1 = buf + pos - 1, *p;
+      SEARCH2( h1 )
+      if( len < 3 )
+        SEARCH2( h2 )
 #ifndef WIKI
-		if (len<3) SEARCH2(h3)
+      if( len < 3 )
+        SEARCH2( h3 )
 #endif
-	}
-	else {
-			   SEARCH(h1)
-		if (len<3) SEARCH(h2)
+    } else {
+      SEARCH( h1 )
+      if( len < 3 )
+        SEARCH( h2 )
 #ifndef WIKI
-		if (len<3) SEARCH(h3)
+      if( len < 3 )
+        SEARCH( h3 )
 #endif
-	}
-
-	--len;
     }
-    buf_match=buf[match]+256;
 
-    // update index
+    --len;
+  }
+  buf_match = buf[match] + 256;
+
+  // update index
 #ifdef WIKI
-  if ( (pos&1) || (len>11) )
+  if( ( pos & 1 ) || ( len > 11 ) )
 #endif
-    ht[h1]=pos;
-    ht[h2]=pos;
+    ht[h1] = pos;
+  ht[h2] = pos;
 #ifndef WIKI
-    ht[h3]=pos;
+  ht[h3] = pos;
 #endif
 }
 
 int MatchModel::p() {
-
-  int cxt=c0;
-  if (len>0) {
-    int b=buf_match;
-    if ((b>>8-bcount)==cxt) {
-      b=b>>7-bcount&1;	// next bit
-      cxt=len2cxt[len*2-b] + c1;
-    }
-    else
-	len=0;
+  int cxt = c0;
+  if( len > 0 ) {
+    int b = buf_match;
+    if( ( b >> 8 - bcount ) == cxt ) {
+      b = b >> 7 - bcount & 1; // next bit
+      cxt = len2cxt[len * 2 - b] + c1;
+    } else
+      len = 0;
   }
 
-  m_add(0, sm.p(cxt));
+  m_add( 0, sm.p( cxt ) );
   return len;
 }
 
@@ -657,14 +714,14 @@ int MatchModel::p() {
 // p() returns P(1) as a 12 bit number (0-4095).
 // update(y) trains the predictor with the actual bit (0 or 1).
 
-int MEM=0;	// Global memory usage = 3*MEM bytes (1<<20 .. 1<<29)
+int MEM = 0; // Global memory usage = 3*MEM bytes (1<<20 .. 1<<29)
 
-  U8 t0[0x10000];  // order 1 cxt -> state
-  U8 *t0c1=t0, *cp[6]={t0, t0, t0, t0, t0, t0}; // pointer to bit history
-  U32 h[6], pw=0, c8=0, cc=0, prevfail=0;
-  U8 fails=0;
-  StateMap sm[6];
-  APM a1(24 * 0x10000), a2(24 * 0x800);
+U8 t0[0x10000];                                   // order 1 cxt -> state
+U8 *t0c1 = t0, *cp[6] = {t0, t0, t0, t0, t0, t0}; // pointer to bit history
+U32 h[6], pw = 0, c8 = 0, cc = 0, prevfail = 0;
+U8 fails = 0;
+StateMap sm[6];
+APM a1( 24 * 0x10000 ), a2( 24 * 0x800 );
 
 //////////////////////////// Encoder ////////////////////////////
 
@@ -680,409 +737,527 @@ int MEM=0;	// Global memory usage = 3*MEM bytes (1<<20 .. 1<<29)
 // flush() should be called exactly once after compression is done and
 //     before closing f.  It does nothing in DECOMPRESS mode.
 
-typedef enum {COMPRESS, DECOMPRESS} Mode;
+typedef enum { COMPRESS, DECOMPRESS } Mode;
 class Encoder {
 public:
 #ifdef WIKI
-  HashTable<16> t4a;  // cxt -> state
-  HashTable<16> t4b;  // cxt -> state
-#define t1a t4a
-#define t2a t4a
-#define t3a t4a
-#define t1b t4b
-#define t2b t4b
-#define t3b t4b
+  HashTable<16> t4a; // cxt -> state
+  HashTable<16> t4b; // cxt -> state
+#  define t1a t4a
+#  define t2a t4a
+#  define t3a t4a
+#  define t1b t4b
+#  define t2b t4b
+#  define t3b t4b
 #else
-  HashTable<16> t1;  // cxt -> state
-  HashTable<16> t2;  // cxt -> state
-  HashTable<16> t3;  // cxt -> state
-#define t1a t1
-#define t2a t2
-#define t3a t3
-#define t1b t1
-#define t2b t2
-#define t3b t3
+  HashTable<16> t1; // cxt -> state
+  HashTable<16> t2; // cxt -> state
+  HashTable<16> t3; // cxt -> state
+#  define t1a t1
+#  define t2a t2
+#  define t3a t3
+#  define t1b t1
+#  define t2b t2
+#  define t3b t3
 #endif
-  MatchModel mm;	// predicts next bit by matching context
-  FILE* archive;	// Compressed data file
-  U32 x1, x2;		// Range, initially [0, 1), scaled by 2^32
-  U32 x;		// Decompress mode: last 4 input bytes of archive
+  MatchModel mm; // predicts next bit by matching context
+  FILE *archive; // Compressed data file
+  U32 x1, x2;    // Range, initially [0, 1), scaled by 2^32
+  U32 x;         // Decompress mode: last 4 input bytes of archive
   U32 p;
   int *add2order;
 
-#define cp_update(m0,m1,m2,m3,m4,m5)\
-  assert(y==0 || y==1);	\
-  y22=y<<22;            \
-  {                     \
-  const U8 *p=&State_table[0]; if(y) p+=256*3;	\
-  *cp[0]=nex(*cp[0], m0);  \
-  *cp[1]=nex(*cp[1], m1);  \
-  *cp[2]=nex(*cp[2], m2);  \
-  *cp[3]=nex(*cp[3], m3);  \
-  *cp[4]=nex(*cp[4], m4);  \
-  *cp[5]=nex(*cp[5], m5);  \
-  }                        \
-  c0+=c0+y;
+#define cp_update( m0, m1, m2, m3, m4, m5 )                                                                            \
+  assert( y == 0 || y == 1 );                                                                                          \
+  y22 = y << 22;                                                                                                       \
+  {                                                                                                                    \
+    const U8 *p = &State_table[0];                                                                                     \
+    if( y )                                                                                                            \
+      p += 256 * 3;                                                                                                    \
+    *cp[0] = nex( *cp[0], m0 );                                                                                        \
+    *cp[1] = nex( *cp[1], m1 );                                                                                        \
+    *cp[2] = nex( *cp[2], m2 );                                                                                        \
+    *cp[3] = nex( *cp[3], m3 );                                                                                        \
+    *cp[4] = nex( *cp[4], m4 );                                                                                        \
+    *cp[5] = nex( *cp[5], m5 );                                                                                        \
+  }                                                                                                                    \
+  c0 += c0 + y;
 
-#define upd0(m0,m1,m2,m3,m4,m5,bc,sh) \
-  assert(y==0 || y==1);	\
-  y22=y<<22;            \
-	bcount=bc;		\
-	add2order+=MI*10;       \
-	{                       \
-	  const U8 *p=&State_table[0]; if(y) p+=256*3; \
-	  int j=y+1<<sh;	\
-	  *cp[1]=nex(*cp[1], m1); cp[1]+=j; \
-	  *cp[2]=nex(*cp[2], m2); cp[2]+=j; \
-	  *cp[3]=nex(*cp[3], m3); cp[3]+=j; \
-	  *cp[4]=nex(*cp[4], m4); cp[4]+=j; \
-	  *cp[5]=nex(*cp[5], m5); cp[5]+=j; \
-	  *cp[0]=nex(*cp[0], m0);\
-	}			\
-  c0+=c0+y;
+#define upd0( m0, m1, m2, m3, m4, m5, bc, sh )                                                                         \
+  assert( y == 0 || y == 1 );                                                                                          \
+  y22 = y << 22;                                                                                                       \
+  bcount = bc;                                                                                                         \
+  add2order += MI * 10;                                                                                                \
+  {                                                                                                                    \
+    const U8 *p = &State_table[0];                                                                                     \
+    if( y )                                                                                                            \
+      p += 256 * 3;                                                                                                    \
+    int j = y + 1 << sh;                                                                                               \
+    *cp[1] = nex( *cp[1], m1 );                                                                                        \
+    cp[1] += j;                                                                                                        \
+    *cp[2] = nex( *cp[2], m2 );                                                                                        \
+    cp[2] += j;                                                                                                        \
+    *cp[3] = nex( *cp[3], m3 );                                                                                        \
+    cp[3] += j;                                                                                                        \
+    *cp[4] = nex( *cp[4], m4 );                                                                                        \
+    cp[4] += j;                                                                                                        \
+    *cp[5] = nex( *cp[5], m5 );                                                                                        \
+    cp[5] += j;                                                                                                        \
+    *cp[0] = nex( *cp[0], m0 );                                                                                        \
+  }                                                                                                                    \
+  c0 += c0 + y;
 
-#define upd3(m0,m1,m2,m3,m4,m5,bc) \
-  cp_update(m0,m1,m2,m3,m4,m5)	\
-	bcount=bc;		\
-	add2order+=MI*10;       \
-	  cp[1]=t1b.get(hash6(c0   -h[1] ));\
-	  upd3_cp			    \
-	  cp[5]=t2b.get(hash0(c0*37-h[5] ));\
+#define upd3( m0, m1, m2, m3, m4, m5, bc )                                                                             \
+  cp_update( m0, m1, m2, m3, m4, m5 ) bcount = bc;                                                                     \
+  add2order += MI * 10;                                                                                                \
+  cp[1] = t1b.get( hash6( c0 - h[1] ) );                                                                               \
+  upd3_cp cp[5] = t2b.get( hash0( c0 * 37 - h[5] ) );
 
-#define upd7(m0,m1,m2,m3,m4,m5) \
-  cp_update(m0,m1,m2,m3,m4,m5)		\
-    {					\
-    int c=c0-256;			\
-    add2order=mxr_wx+MI*10*add2order0*8;\
-    c1=(c1>>4)+(c&240);                 \
-    buf[pos++]=c;                       \
-    pos&=N;                             \
-    cc=(cc<<8)+(c8>>24);		\
-    c8=(c8<<8)+(c4>>24);                \
-    c4=c4<<8|c;                         \
-    upd7_h123				\
-    h[0]=c<<8;			/* order 1 */\
-    h[1]=(c4&0xffff)*8191;	/* order 2 */\
-    cp[1]=t1b.get(hash1(h[1]));		\
-    upd7_cp				\
-    if (c>=65 && c<=90) c+=32;		/* lowercase unigram word order */    \
-    if (c>=97 && c<=122) h[5]=(h[5]+c)*(191<<1);\
-    else pw=h[5]*241, h[5]=0;		\
-    cp[5]=t2a.get(hash5(h[5]-pw));	\
-    c0=1;		\
-    bcount=0;		\
-    mm.upd();		\
-    }
+#define upd7( m0, m1, m2, m3, m4, m5 )                                                                                 \
+  cp_update( m0, m1, m2, m3, m4, m5 ) {                                                                                \
+    int c = c0 - 256;                                                                                                  \
+    add2order = mxr_wx + MI * 10 * add2order0 * 8;                                                                     \
+    c1 = ( c1 >> 4 ) + ( c & 240 );                                                                                    \
+    buf[pos++] = c;                                                                                                    \
+    pos &= N;                                                                                                          \
+    cc = ( cc << 8 ) + ( c8 >> 24 );                                                                                   \
+    c8 = ( c8 << 8 ) + ( c4 >> 24 );                                                                                   \
+    c4 = c4 << 8 | c;                                                                                                  \
+    upd7_h123 h[0] = c << 8;       /* order 1 */                                                                       \
+    h[1] = ( c4 & 0xffff ) * 8191; /* order 2 */                                                                       \
+    cp[1] = t1b.get( hash1( h[1] ) );                                                                                  \
+    upd7_cp if( c >= 65 && c <= 90 ) c += 32; /* lowercase unigram word order */                                       \
+    if( c >= 97 && c <= 122 )                                                                                          \
+      h[5] = ( h[5] + c ) * ( 191 << 1 );                                                                              \
+    else                                                                                                               \
+      pw = h[5] * 241, h[5] = 0;                                                                                       \
+    cp[5] = t2a.get( hash5( h[5] - pw ) );                                                                             \
+    c0 = 1;                                                                                                            \
+    bcount = 0;                                                                                                        \
+    mm.upd();                                                                                                          \
+  }
 
-U32 Predictor_upd(int y) {
-  m_update(y);
+  U32 Predictor_upd( int y ) {
+    m_update( y );
 
-  // predict
-  int len=mm.p(), pr;
-  if (len==0)
-	len=((*cp[1]!=0)+(*cp[2]!=0)+(*cp[3]!=0)+(*cp[4]!=0))*MI;
-   else len=len2order[len];
-  mxr_cxt=add2order+len;
-  m_add(1, sm[1].p(*cp[1]));
-  m_add(2, sm[2].p(*cp[2]));
-  m_add(3, sm[3].p(*cp[3]));
-  m_add(4, sm[4].p(*cp[4]));
-  m_add(5, sm[5].p(*cp[5]));
+    // predict
+    int len = mm.p(), pr;
+    if( len == 0 )
+      len = ( ( *cp[1] != 0 ) + ( *cp[2] != 0 ) + ( *cp[3] != 0 ) + ( *cp[4] != 0 ) ) * MI;
+    else
+      len = len2order[len];
+    mxr_cxt = add2order + len;
+    m_add( 1, sm[1].p( *cp[1] ) );
+    m_add( 2, sm[2].p( *cp[2] ) );
+    m_add( 3, sm[3].p( *cp[3] ) );
+    m_add( 4, sm[4].p( *cp[4] ) );
+    m_add( 5, sm[5].p( *cp[5] ) );
 
 #ifdef WIKI
-  int h0c0=h[0]+c0;
-  cp[0]=t0+h0c0;
-  m_add(6, sm[0].p(*cp[0]));
-  pr=m_p;
-  pr=squash(pr) +7*a1.pp((pr+2047)*23, h0c0) >>3;
-  mxr_pr=pr;
-  pr=pr		+3*a2.pp(stretch_t2[pr], fails*8+bcount)+2 >>2;
+    int h0c0 = h[0] + c0;
+    cp[0] = t0 + h0c0;
+    m_add( 6, sm[0].p( *cp[0] ) );
+    pr = m_p;
+    pr = squash( pr ) + 7 * a1.pp( ( pr + 2047 ) * 23, h0c0 ) >> 3;
+    mxr_pr = pr;
+    pr = pr + 3 * a2.pp( stretch_t2[pr], fails * 8 + bcount ) + 2 >> 2;
 #else
-  cp[0]=t0c1+c0;
-  m_add(6, sm[0].p(*cp[0]));
-  pr=m_p;
-  pr=squash(pr)	+3*a1.pp((pr+2047)*23, h[0]+c0) >>2;
-  mxr_pr=pr;
-  pr=pr*3	+5*a2.pp(stretch_t2[pr], fails+prevfail)+4 >>3;
+    cp[0] = t0c1 + c0;
+    m_add( 6, sm[0].p( *cp[0] ) );
+    pr = m_p;
+    pr = squash( pr ) + 3 * a1.pp( ( pr + 2047 ) * 23, h[0] + c0 ) >> 2;
+    mxr_pr = pr;
+    pr = pr * 3 + 5 * a2.pp( stretch_t2[pr], fails + prevfail ) + 4 >> 3;
 #endif
-  return pr+(pr<2048);
-}
-
+    return pr + ( pr < 2048 );
+  }
 
   // Compress bit y
-#define enc1(k)\
-    int y=(c>>k)&1;\
-    U32 xmid=x1 + (x2-x1>>12)*p + ((x2-x1&0xfff)*p>>12);\
-    assert(xmid>=x1 && xmid<x2);                        \
-    y ? (x2=xmid) : (x1=xmid+1);
+#define enc1( k )                                                                                                      \
+  int y = ( c >> k ) & 1;                                                                                              \
+  U32 xmid = x1 + ( x2 - x1 >> 12 ) * p + ( ( x2 - x1 & 0xfff ) * p >> 12 );                                           \
+  assert( xmid >= x1 && xmid < x2 );                                                                                   \
+  y ? ( x2 = xmid ) : ( x1 = xmid + 1 );
 
-#define enc2 \
-    while (((x1^x2)&0xff000000)==0) {  /* pass equal leading bytes of range */ \
-      putc(x2>>24, archive); \
-      x1<<=8;                \
-      x2=(x2<<8)+255;        \
-    }
+#define enc2                                                                                                           \
+  while( ( ( x1 ^ x2 ) & 0xff000000 ) == 0 ) { /* pass equal leading bytes of range */                                 \
+    putc( x2 >> 24, archive );                                                                                         \
+    x1 <<= 8;                                                                                                          \
+    x2 = ( x2 << 8 ) + 255;                                                                                            \
+  }
 
   // Return decompressed bit
-#define dec1(k) \
-    U32 xmid=x1 + (x2-x1>>12)*p + ((x2-x1&0xfff)*p>>12);\
-    assert(xmid>=x1 && xmid<x2);                        \
-    int y=x<=xmid;                                      \
-    y ? (x2=xmid) : (x1=xmid+1);
+#define dec1( k )                                                                                                      \
+  U32 xmid = x1 + ( x2 - x1 >> 12 ) * p + ( ( x2 - x1 & 0xfff ) * p >> 12 );                                           \
+  assert( xmid >= x1 && xmid < x2 );                                                                                   \
+  int y = x <= xmid;                                                                                                   \
+  y ? ( x2 = xmid ) : ( x1 = xmid + 1 );
 
-#define dec2 \
-    while (((x1^x2)&0xff000000)==0) {  /* pass equal leading bytes of range */ \
-      x=(x<<8)+(getc(archive)&255);	/* EOF is OK */ \
-      x1<<=8;                                           \
-      x2=(x2<<8)+255;                                   \
-    }
+#define dec2                                                                                                           \
+  while( ( ( x1 ^ x2 ) & 0xff000000 ) == 0 ) {  /* pass equal leading bytes of range */                                \
+    x = ( x << 8 ) + ( getc( archive ) & 255 ); /* EOF is OK */                                                        \
+    x1 <<= 8;                                                                                                          \
+    x2 = ( x2 << 8 ) + 255;                                                                                            \
+  }
 
-  Encoder(Mode m, FILE* f);
-  void flush();  // call this when compression is finished
+  Encoder( Mode m, FILE *f );
+  void flush(); // call this when compression is finished
 
 #ifdef WIKI
-#define eight_bits(part1,part2) \
-    sm[0].t+=256;\
-    { part1(7); upd0(0,1,1,0,0,0, 1,0); p=Predictor_upd(y); } part2;\
-    { part1(6); upd0(1,1,1,0,0,0, 2,1); p=Predictor_upd(y); } part2;\
-    sm[1].t+=256;\
-    { part1(5); upd0(1,1,1,0,0,0, 3,2); p=Predictor_upd(y); } part2;\
-    sm[2].t+=256;\
-    sm[5].t+=256;\
-    { part1(4); upd3(1,1,1,0,0,0, 4  ); p=Predictor_upd(y); } part2;\
-    sm[4].t+=256;\
-    { part1(3); upd0(1,1,0,0,0,1, 5,0); p=Predictor_upd(y); } part2;\
-    { part1(2); upd0(1,1,0,0,2,1, 6,1); p=Predictor_upd(y); } part2;\
-    { part1(1); upd0(1,1,0,0,2,1, 7,2); p=Predictor_upd(y); } part2;\
-    sm[0].t-=256;\
-    sm[1].t-=256;\
-    sm[2].t-=256;\
-    sm[4].t-=256;\
-    sm[5].t-=256;\
-    { part1(0); upd7(1,1,0,0,2,1     ); p=Predictor_upd(y); } part2;
+#  define eight_bits( part1, part2 )                                                                                   \
+    sm[0].t += 256;                                                                                                    \
+    {                                                                                                                  \
+      part1( 7 );                                                                                                      \
+      upd0( 0, 1, 1, 0, 0, 0, 1, 0 );                                                                                  \
+      p = Predictor_upd( y );                                                                                          \
+    }                                                                                                                  \
+    part2;                                                                                                             \
+    {                                                                                                                  \
+      part1( 6 );                                                                                                      \
+      upd0( 1, 1, 1, 0, 0, 0, 2, 1 );                                                                                  \
+      p = Predictor_upd( y );                                                                                          \
+    }                                                                                                                  \
+    part2;                                                                                                             \
+    sm[1].t += 256;                                                                                                    \
+    {                                                                                                                  \
+      part1( 5 );                                                                                                      \
+      upd0( 1, 1, 1, 0, 0, 0, 3, 2 );                                                                                  \
+      p = Predictor_upd( y );                                                                                          \
+    }                                                                                                                  \
+    part2;                                                                                                             \
+    sm[2].t += 256;                                                                                                    \
+    sm[5].t += 256;                                                                                                    \
+    {                                                                                                                  \
+      part1( 4 );                                                                                                      \
+      upd3( 1, 1, 1, 0, 0, 0, 4 );                                                                                     \
+      p = Predictor_upd( y );                                                                                          \
+    }                                                                                                                  \
+    part2;                                                                                                             \
+    sm[4].t += 256;                                                                                                    \
+    {                                                                                                                  \
+      part1( 3 );                                                                                                      \
+      upd0( 1, 1, 0, 0, 0, 1, 5, 0 );                                                                                  \
+      p = Predictor_upd( y );                                                                                          \
+    }                                                                                                                  \
+    part2;                                                                                                             \
+    {                                                                                                                  \
+      part1( 2 );                                                                                                      \
+      upd0( 1, 1, 0, 0, 2, 1, 6, 1 );                                                                                  \
+      p = Predictor_upd( y );                                                                                          \
+    }                                                                                                                  \
+    part2;                                                                                                             \
+    {                                                                                                                  \
+      part1( 1 );                                                                                                      \
+      upd0( 1, 1, 0, 0, 2, 1, 7, 2 );                                                                                  \
+      p = Predictor_upd( y );                                                                                          \
+    }                                                                                                                  \
+    part2;                                                                                                             \
+    sm[0].t -= 256;                                                                                                    \
+    sm[1].t -= 256;                                                                                                    \
+    sm[2].t -= 256;                                                                                                    \
+    sm[4].t -= 256;                                                                                                    \
+    sm[5].t -= 256;                                                                                                    \
+    {                                                                                                                  \
+      part1( 0 );                                                                                                      \
+      upd7( 1, 1, 0, 0, 2, 1 );                                                                                        \
+      p = Predictor_upd( y );                                                                                          \
+    }                                                                                                                  \
+    part2;
 #else
-#define eight_bits(part1,part2) \
-    { part1(7); upd0(1,0,0,2,0,1, 1,0); p=Predictor_upd(y); } part2;\
-    sm[4].t+=256;\
-    sm[5].t+=256;\
-    { part1(6); upd0(1,0,0,2,0,1, 2,1); p=Predictor_upd(y); } part2;\
-    sm[2].t+=256;\
-    { part1(5); upd0(1,0,0,2,0,1, 3,2); p=Predictor_upd(y); } part2;\
-    sm[1].t+=256;\
-    { part1(4); upd3(1,0,1,2,0,1, 4  ); p=Predictor_upd(y); } part2;\
-    { part1(3); upd0(1,0,1,2,0,1, 5,0); p=Predictor_upd(y); } part2;\
-    { part1(2); upd0(1,0,1,2,0,1, 6,1); p=Predictor_upd(y); } part2;\
-    { part1(1); upd0(1,0,1,2,0,1, 7,2); p=Predictor_upd(y); } part2;\
-    sm[1].t-=256;\
-    sm[2].t-=256;\
-    sm[4].t-=256;\
-    sm[5].t-=256;\
-    { part1(0); upd7(1,0,1,2,0,1     ); p=Predictor_upd(y); } part2;
+#  define eight_bits( part1, part2 )                                                                                   \
+    {                                                                                                                  \
+      part1( 7 );                                                                                                      \
+      upd0( 1, 0, 0, 2, 0, 1, 1, 0 );                                                                                  \
+      p = Predictor_upd( y );                                                                                          \
+    }                                                                                                                  \
+    part2;                                                                                                             \
+    sm[4].t += 256;                                                                                                    \
+    sm[5].t += 256;                                                                                                    \
+    {                                                                                                                  \
+      part1( 6 );                                                                                                      \
+      upd0( 1, 0, 0, 2, 0, 1, 2, 1 );                                                                                  \
+      p = Predictor_upd( y );                                                                                          \
+    }                                                                                                                  \
+    part2;                                                                                                             \
+    sm[2].t += 256;                                                                                                    \
+    {                                                                                                                  \
+      part1( 5 );                                                                                                      \
+      upd0( 1, 0, 0, 2, 0, 1, 3, 2 );                                                                                  \
+      p = Predictor_upd( y );                                                                                          \
+    }                                                                                                                  \
+    part2;                                                                                                             \
+    sm[1].t += 256;                                                                                                    \
+    {                                                                                                                  \
+      part1( 4 );                                                                                                      \
+      upd3( 1, 0, 1, 2, 0, 1, 4 );                                                                                     \
+      p = Predictor_upd( y );                                                                                          \
+    }                                                                                                                  \
+    part2;                                                                                                             \
+    {                                                                                                                  \
+      part1( 3 );                                                                                                      \
+      upd0( 1, 0, 1, 2, 0, 1, 5, 0 );                                                                                  \
+      p = Predictor_upd( y );                                                                                          \
+    }                                                                                                                  \
+    part2;                                                                                                             \
+    {                                                                                                                  \
+      part1( 2 );                                                                                                      \
+      upd0( 1, 0, 1, 2, 0, 1, 6, 1 );                                                                                  \
+      p = Predictor_upd( y );                                                                                          \
+    }                                                                                                                  \
+    part2;                                                                                                             \
+    {                                                                                                                  \
+      part1( 1 );                                                                                                      \
+      upd0( 1, 0, 1, 2, 0, 1, 7, 2 );                                                                                  \
+      p = Predictor_upd( y );                                                                                          \
+    }                                                                                                                  \
+    part2;                                                                                                             \
+    sm[1].t -= 256;                                                                                                    \
+    sm[2].t -= 256;                                                                                                    \
+    sm[4].t -= 256;                                                                                                    \
+    sm[5].t -= 256;                                                                                                    \
+    {                                                                                                                  \
+      part1( 0 );                                                                                                      \
+      upd7( 1, 0, 1, 2, 0, 1 );                                                                                        \
+      p = Predictor_upd( y );                                                                                          \
+    }                                                                                                                  \
+    part2;
 #endif
 
   // Compress one byte
-  inline void compress(int c) {
+  inline void compress( int c ) {
     ///assert(mode==COMPRESS);
-    if (TextFlag)
-	if (c==0x20||c==0x1f) c^=0x3f;
-    eight_bits(enc1,enc2)
+    if( TextFlag )
+      if( c == 0x20 || c == 0x1f )
+        c ^= 0x3f;
+    eight_bits( enc1, enc2 )
   }
 
   // Decompress and return one byte
   inline int decompress() {
-    eight_bits(dec1,dec2)
-    int c=c4&255;
-    if (TextFlag)
-	if (c==0x20||c==0x1f) c^=0x3f;
+    eight_bits( dec1, dec2 ) int c = c4 & 255;
+    if( TextFlag )
+      if( c == 0x20 || c == 0x1f )
+        c ^= 0x3f;
     return c;
   }
 };
 
-Encoder::Encoder(Mode m, FILE* f):
+Encoder::Encoder( Mode m, FILE *f ) :
 #ifdef WIKI
-    t4a(MEM), t4b(MEM),
+    t4a( MEM ),
+    t4b( MEM ),
 #else
-    t1(MEM/2), t2(MEM), t3(MEM/2),
+    t1( MEM / 2 ),
+    t2( MEM ),
+    t3( MEM / 2 ),
 #endif
-    mm(MEM), archive(f), x1(0), x2(0xffffffff), x(0), p(2048) {
+    mm( MEM ),
+    archive( f ),
+    x1( 0 ),
+    x2( 0xffffffff ),
+    x( 0 ),
+    p( 2048 ) {
 
-  if (m==DECOMPRESS) {  // x = first 4 bytes of archive
-    for (int i=0; i<4; ++i)
-      x=(x<<8)+(getc(archive)&255);
+  if( m == DECOMPRESS ) { // x = first 4 bytes of archive
+    for( int i = 0; i < 4; ++i )
+      x = ( x << 8 ) + ( getc( archive ) & 255 );
   }
 
-  int i, pi=0;
-  for (int x=-2047; x<=2047; ++x) {  // invert squash()
-    int i=squash_init(x);
-    squash(x)=i+SQUARD;	//rounding,  needed at the end of Predictor::update()
-    for (int j=pi; j<=i; ++j)
-      stretch_t[j]=x, stretch_t2[j]=(x+2047)*23;
-    pi=i+1;
+  int i, pi = 0;
+  for( int x = -2047; x <= 2047; ++x ) { // invert squash()
+    int i = squash_init( x );
+    squash( x ) = i + SQUARD; //rounding,  needed at the end of Predictor::update()
+    for( int j = pi; j <= i; ++j )
+      stretch_t[j] = x, stretch_t2[j] = ( x + 2047 ) * 23;
+    pi = i + 1;
   }
-  stretch_t[4095]=2047;
-  stretch_t2[4095]=4094*23;
+  stretch_t[4095] = 2047;
+  stretch_t2[4095] = 4094 * 23;
 
-  for (i=0; i<1024; ++i)
-    dt[i]=16384/(i+i+3);
+  for( i = 0; i < 1024; ++i )
+    dt[i] = 16384 / ( i + i + 3 );
 
 #ifndef WIKI
-  for (i=0; i<256; ++i) {
-    pi=(i&  1)<<10;
-    if (i&  6) pi+=512;
-    if (i&248) pi+=256;
-    calcprevfail[i]=pi;
+  for( i = 0; i < 256; ++i ) {
+    pi = ( i & 1 ) << 10;
+    if( i & 6 )
+      pi += 512;
+    if( i & 248 )
+      pi += 256;
+    calcprevfail[i] = pi;
   }
 #endif
 
-  for (i=-4096; i<4096; ++i) {
-    int e=i, v=0;
-    if (e<0) e=-e;
-    if (e > 1024  ) v=1;
-    if (e > 2624  ) v=3;
-    calcfails[i+4096]=v;
+  for( i = -4096; i < 4096; ++i ) {
+    int e = i, v = 0;
+    if( e < 0 )
+      e = -e;
+    if( e > 1024 )
+      v = 1;
+    if( e > 2624 )
+      v = 3;
+    calcfails[i + 4096] = v;
   }
 
-  for (i=2; i<=MAXLEN*2; i+=2) {
-      int c;
-      if (i<32) c=i;
-      else c=(i>>3)*2+24;
-      c*=256;
-	 len2cxt[i]=c;
-	 len2cxt[i-1]=c-256;
-	c=i>>1;
-	len2order[c]=(5+(c>=8)+(c>=12)+(c>=16)+(c>=32))*MI;
+  for( i = 2; i <= MAXLEN * 2; i += 2 ) {
+    int c;
+    if( i < 32 )
+      c = i;
+    else
+      c = ( i >> 3 ) * 2 + 24;
+    c *= 256;
+    len2cxt[i] = c;
+    len2cxt[i - 1] = c - 256;
+    c = i >> 1;
+    len2order[c] = ( 5 + ( c >= 8 ) + ( c >= 12 ) + ( c >= 16 ) + ( c >= 32 ) ) * MI;
   }
 
-  alloc(mxr_wx, MI*MC);
-  for (i=0; i<MI*MC; ++i)	mxr_wx[i] = (1<<(DP_SHIFT-2));
-  mxr_cxt=mxr_wx;
-  add2order=mxr_wx;
+  alloc( mxr_wx, MI * MC );
+  for( i = 0; i < MI * MC; ++i )
+    mxr_wx[i] = ( 1 << ( DP_SHIFT - 2 ) );
+  mxr_cxt = mxr_wx;
+  add2order = mxr_wx;
 }
 
 void Encoder::flush() {
   ///if (mode==COMPRESS)
-    putc(x1>>24, archive);  // Flush first unequal byte of range
+  putc( x1 >> 24, archive ); // Flush first unequal byte of range
 }
-
 
 //////////////////////////// User Interface ////////////////////////////
 
-int main(int argc, char **argv) {
-
+int main( int argc, char **argv ) {
   // Check arguments
-  if (argc!=4 || !isdigit(argv[1][0]) && argv[1][0]!='d') {
-    printf(
-	"lpaq5 file compressor (C) 2007, Matt Mahoney\n"
-	"Licensed under GPL, http://www.gnu.org/copyleft/gpl.html\n"
-	"\n"
-	"To compress:   lpaq5 N input output  (N=0..9, uses 6+3*2^N MB)\n"
-	"To decompress: lpaq5 d input output  (needs same memory)\n");
+  if( argc != 4 || !isdigit( argv[1][0] ) && argv[1][0] != 'd' ) {
+    printf( "lpaq5 file compressor (C) 2007, Matt Mahoney\n"
+            "Licensed under GPL, http://www.gnu.org/copyleft/gpl.html\n"
+            "\n"
+            "To compress:   lpaq5 N input output  (N=0..9, uses 6+3*2^N MB)\n"
+            "To decompress: lpaq5 d input output  (needs same memory)\n" );
     return 1;
   }
 
   // Get start time
-  clock_t start=clock();
+  clock_t start = clock();
 
   // Open input file
-  FILE *in=fopen(argv[2], "rb"),  *out=0;
-  if (!in) perror(argv[2]), exit(1);
+  FILE *in = fopen( argv[2], "rb" ), *out = 0;
+  if( !in )
+    perror( argv[2] ), exit( 1 );
 
   // Compress
-  if (isdigit(argv[1][0])) {
+  if( isdigit( argv[1][0] ) ) {
 #ifndef WITHOUT_COMPRESSOR
-    MEM=1<<(argv[1][0]-'0'+20);
+    MEM = 1 << ( argv[1][0] - '0' + 20 );
 
-      {	// a better data detection algorithm will be here in future
+    { // a better data detection algorithm will be here in future
       U8 buf[4096];
-      int i=fread(buf, 1, 4096, in), k=0;
-      while (i-->0)	{ if (buf[i]>0x7f) ++k; }
-      if (k==0) TextFlag=1;
+      int i = fread( buf, 1, 4096, in ), k = 0;
+      while( i-- > 0 ) {
+        if( buf[i] > 0x7f )
+          ++k;
       }
+      if( k == 0 )
+        TextFlag = 1;
+    }
 
     // Encode header: version 5, memory option, file size
-    fseek(in, 0, SEEK_END);
-    long size=ftell(in);
-    if (size<0 || size>=0x7FFFFFFF) quit("input file too big");
-    fseek(in, 0, SEEK_SET);
+    fseek( in, 0, SEEK_END );
+    long size = ftell( in );
+    if( size < 0 || size >= 0x7FFFFFFF )
+      quit( "input file too big" );
+    fseek( in, 0, SEEK_SET );
 
-    out=fopen(argv[3], "wb");
-    if (!out) perror(argv[3]), exit(1);
-    fprintf(out, "pQ%c%c%c%c%c%c", 5, argv[1][0],
-      size>>24, size>>16, size>>8, size);
+    out = fopen( argv[3], "wb" );
+    if( !out )
+      perror( argv[3] ), exit( 1 );
+    fprintf( out, "pQ%c%c%c%c%c%c", 5, argv[1][0], size >> 24, size >> 16, size >> 8, size );
 
     // Compress
-    Encoder e(COMPRESS, out);
+    Encoder e( COMPRESS, out );
     int c;
-    while ((c=getc(in))!=EOF) {
-      e.compress(c);
-	if ( (pos&(256*1024-1))==0 )
-#ifndef WIKI
-	if (TextFlag)
-	if ( (pos==7*1024*1024 && DP_SHIFT==16) || (pos==1024*1024 && DP_SHIFT==15) || DP_SHIFT==14 )
-#else
-	if ( (pos==7*1024*1024 && DP_SHIFT==16) || (pos==1280*1024 && DP_SHIFT==15) || DP_SHIFT==14 )
-#endif
-		for (DP_SHIFT++, c=0; c<MI*MC; ++c)	mxr_wx[c] *= 2;
+    while( ( c = getc( in ) ) != EOF ) {
+      e.compress( c );
+      if( ( pos & ( 256 * 1024 - 1 ) ) == 0 )
+#  ifndef WIKI
+        if( TextFlag )
+          if( ( pos == 7 * 1024 * 1024 && DP_SHIFT == 16 ) || ( pos == 1024 * 1024 && DP_SHIFT == 15 )
+              || DP_SHIFT == 14 )
+#  else
+        if( ( pos == 7 * 1024 * 1024 && DP_SHIFT == 16 ) || ( pos == 1280 * 1024 && DP_SHIFT == 15 ) || DP_SHIFT == 14 )
+#  endif
+            for( DP_SHIFT++, c = 0; c < MI * MC; ++c )
+              mxr_wx[c] *= 2;
     }
     e.flush();
 #endif
   }
 
   // Decompress
-  else
-  {
+  else {
 #ifndef WITHOUT_DECOMPRESSOR
     // Check header version, get memory option, file size
-    if (getc(in)!='p' || getc(in)!='Q' || getc(in)!=5)
-      quit("Not a lpaq5 file");
-    MEM=getc(in);
-    if (MEM<'0' || MEM>'9') quit("Bad memory option (not 0..9)");
-    MEM=1<<(MEM-'0'+20);
-    long size=getc(in)<<24;
-    size|=getc(in)<<16;
-    size|=getc(in)<<8;
-    size|=getc(in);
-    if (size<0) quit("Bad file size");
+    if( getc( in ) != 'p' || getc( in ) != 'Q' || getc( in ) != 5 )
+      quit( "Not a lpaq5 file" );
+    MEM = getc( in );
+    if( MEM < '0' || MEM > '9' )
+      quit( "Bad memory option (not 0..9)" );
+    MEM = 1 << ( MEM - '0' + 20 );
+    long size = getc( in ) << 24;
+    size |= getc( in ) << 16;
+    size |= getc( in ) << 8;
+    size |= getc( in );
+    if( size < 0 )
+      quit( "Bad file size" );
 
     // Decompress
-    out=fopen(argv[3], "wb");
-    if (!out) perror(argv[3]), exit(1);
-    Encoder e(DECOMPRESS, in);
+    out = fopen( argv[3], "wb" );
+    if( !out )
+      perror( argv[3] ), exit( 1 );
+    Encoder e( DECOMPRESS, in );
 
-      {	// this is because we don't save TextFlag in the compressed file
-      U8 buf[4096], *p=&buf[0], c;
-      long s=4096, ss, k=0;
-      if (s>size) s=size;
-      size-=s;
-      ss=s;
-      while (s-->0)
-	{ c=e.decompress(); *p++=c; if(c>0x7f) ++k; }
-      if (k==0)
-	  for (s=0, TextFlag=1; s<ss; ++s)
-		if (buf[s]==0x1f||buf[s]==0x20) buf[s]^=0x3f;
-      fwrite(buf, 1, ss, out), k=0;
+    { // this is because we don't save TextFlag in the compressed file
+      U8 buf[4096], *p = &buf[0], c;
+      long s = 4096, ss, k = 0;
+      if( s > size )
+        s = size;
+      size -= s;
+      ss = s;
+      while( s-- > 0 ) {
+        c = e.decompress();
+        *p++ = c;
+        if( c > 0x7f )
+          ++k;
       }
+      if( k == 0 )
+        for( s = 0, TextFlag = 1; s < ss; ++s )
+          if( buf[s] == 0x1f || buf[s] == 0x20 )
+            buf[s] ^= 0x3f;
+      fwrite( buf, 1, ss, out ), k = 0;
+    }
 
-    while (size-->0) {
+    while( size-- > 0 ) {
       int c;
-      putc(e.decompress(), out);
-	if ( (pos&(256*1024-1))==0 )
-#ifndef WIKI
-	if (TextFlag)
-	if ( (pos==7*1024*1024 && DP_SHIFT==16) || (pos==1024*1024 && DP_SHIFT==15) || DP_SHIFT==14 )
-#else
-	if ( (pos==7*1024*1024 && DP_SHIFT==16) || (pos==1280*1024 && DP_SHIFT==15) || DP_SHIFT==14 )
-#endif
-		for (DP_SHIFT++, c=0; c<MI*MC; ++c)	mxr_wx[c] *= 2;
+      putc( e.decompress(), out );
+      if( ( pos & ( 256 * 1024 - 1 ) ) == 0 )
+#  ifndef WIKI
+        if( TextFlag )
+          if( ( pos == 7 * 1024 * 1024 && DP_SHIFT == 16 ) || ( pos == 1024 * 1024 && DP_SHIFT == 15 )
+              || DP_SHIFT == 14 )
+#  else
+        if( ( pos == 7 * 1024 * 1024 && DP_SHIFT == 16 ) || ( pos == 1280 * 1024 && DP_SHIFT == 15 ) || DP_SHIFT == 14 )
+#  endif
+            for( DP_SHIFT++, c = 0; c < MI * MC; ++c )
+              mxr_wx[c] *= 2;
     }
 #endif
   }
 
   // Report result
-  assert(in);
-  assert(out);
-  printf("%ld -> %ld in %1.3f sec. using %d MB memory\n", ftell(in), ftell(out),
-	double(clock()-start)/CLOCKS_PER_SEC, mem_usage>>20);
+  assert( in );
+  assert( out );
+  printf( "%ld -> %ld in %1.3f sec. using %d MB memory\n", ftell( in ), ftell( out ),
+          double( clock() - start ) / CLOCKS_PER_SEC, mem_usage >> 20 );
 
   return 0;
 }

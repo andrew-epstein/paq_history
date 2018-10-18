@@ -38,13 +38,15 @@ differs from fpaqb in that the block size (n) is not stored.
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#define NDEBUG  // remove for debugging
+#define NDEBUG // remove for debugging
 #include <assert.h>
 
 // Create an array p of n elements of type T
-template <class T> void alloc(T*&p, int n) {
-  p=(T*)calloc(n, sizeof(T));
-  if (!p) printf("Out of memory"), exit(1);
+template <class T>
+void alloc( T *&p, int n ) {
+  p = ( T * ) calloc( n, sizeof( T ) );
+  if( !p )
+    printf( "Out of memory" ), exit( 1 );
 }
 
 //////////////////////////// Predictor /////////////////////////
@@ -53,23 +55,27 @@ template <class T> void alloc(T*&p, int n) {
 
 class Predictor {
 private:
-  int cxt; // Context: last 0-8 bits with a leading 1
+  int cxt;             // Context: last 0-8 bits with a leading 1
   unsigned int t[512]; // Probability of 1
 
 public:
-  Predictor(): cxt(1) {
-    for (int i=0; i<512; i++) t[i]=32768;
+  Predictor() : cxt( 1 ) {
+    for( int i = 0; i < 512; i++ )
+      t[i] = 32768;
   }
 
   // Assume a stationary order 0 stream of 9-bit symbols
   int p() const {
-    return t[cxt]>>4;
+    return t[cxt] >> 4;
   }
 
-  void update(int y) {
-    if (y) t[cxt]+=65536-t[cxt]>>5;
-    else t[cxt]-=t[cxt]>>5;
-    if ((cxt+=cxt+y)>=512) cxt=1;
+  void update( int y ) {
+    if( y )
+      t[cxt] += 65536 - t[cxt] >> 5;
+    else
+      t[cxt] -= t[cxt] >> 5;
+    if( ( cxt += cxt + y ) >= 512 )
+      cxt = 1;
   }
 };
 
@@ -97,31 +103,30 @@ It is also used in most version of PAQ, LPAQ, SR2, and BBB.
 
 #ifdef ARITH
 
-typedef enum {COMPRESS, DECOMPRESS} Mode;
+typedef enum { COMPRESS, DECOMPRESS } Mode;
 class Encoder {
 private:
   Predictor predictor;
-  const Mode mode;       // Compress or decompress?
-  FILE* archive;         // Compressed data file
-  unsigned int x1, x2;   // Range, initially [0, 1), scaled by 2^32
-  unsigned int x;        // Last 4 input bytes of archive.
+  const Mode mode;     // Compress or decompress?
+  FILE *archive;       // Compressed data file
+  unsigned int x1, x2; // Range, initially [0, 1), scaled by 2^32
+  unsigned int x;      // Last 4 input bytes of archive.
 public:
-  Encoder(Mode m, FILE* f);
-  void encode(int y);    // Compress bit y
-  int decode();          // Uncompress and return bit y
-  void flush();          // Call when done compressing
+  Encoder( Mode m, FILE *f );
+  void encode( int y ); // Compress bit y
+  int decode();         // Uncompress and return bit y
+  void flush();         // Call when done compressing
 };
 
 // Constructor
-Encoder::Encoder(Mode m, FILE* f): predictor(), mode(m), archive(f), x1(0),
-                                   x2(0xffffffff), x(0) {
-
+Encoder::Encoder( Mode m, FILE *f ) : predictor(), mode( m ), archive( f ), x1( 0 ), x2( 0xffffffff ), x( 0 ) {
   // In DECOMPRESS mode, initialize x to the first 4 bytes of the archive
-  if (mode==DECOMPRESS) {
-    for (int i=0; i<4; ++i) {
-      int c=getc(archive);
-      if (c==EOF) c=0;
-      x=(x<<8)+c;
+  if( mode == DECOMPRESS ) {
+    for( int i = 0; i < 4; ++i ) {
+      int c = getc( archive );
+      if( c == EOF )
+        c = 0;
+      x = ( x << 8 ) + c;
     }
   }
 }
@@ -130,22 +135,21 @@ Encoder::Encoder(Mode m, FILE* f): predictor(), mode(m), archive(f), x1(0),
 to P(1) and P(0) as given by the predictor and narrowing to the appropriate
 subrange.  Output leading bytes of the range as they become known. */
 
-inline void Encoder::encode(int y) {
-
+inline void Encoder::encode( int y ) {
   // Update the range
-  const unsigned int xmid = x1 + ((x2-x1) >> 12) * predictor.p();
-  assert(xmid >= x1 && xmid < x2);
-  if (y)
-    x2=xmid;
+  const unsigned int xmid = x1 + ( ( x2 - x1 ) >> 12 ) * predictor.p();
+  assert( xmid >= x1 && xmid < x2 );
+  if( y )
+    x2 = xmid;
   else
-    x1=xmid+1;
-  predictor.update(y);
+    x1 = xmid + 1;
+  predictor.update( y );
 
   // Shift equal MSB's out
-  while (((x1^x2)&0xff000000)==0) {
-    putc(x2>>24, archive);
-    x1<<=8;
-    x2=(x2<<8)+255;
+  while( ( ( x1 ^ x2 ) & 0xff000000 ) == 0 ) {
+    putc( x2 >> 24, archive );
+    x1 <<= 8;
+    x2 = ( x2 << 8 ) + 255;
   }
 }
 
@@ -153,34 +157,33 @@ inline void Encoder::encode(int y) {
 and returning 1 or 0 depending on which subrange the archive point x is in.
 */
 inline int Encoder::decode() {
-
   // Update the range
-  const unsigned int xmid = x1 + ((x2-x1) >> 12) * predictor.p();
-  assert(xmid >= x1 && xmid < x2);
-  int y=0;
-  if (x<=xmid) {
-    y=1;
-    x2=xmid;
-  }
-  else
-    x1=xmid+1;
-  predictor.update(y);
+  const unsigned int xmid = x1 + ( ( x2 - x1 ) >> 12 ) * predictor.p();
+  assert( xmid >= x1 && xmid < x2 );
+  int y = 0;
+  if( x <= xmid ) {
+    y = 1;
+    x2 = xmid;
+  } else
+    x1 = xmid + 1;
+  predictor.update( y );
 
   // Shift equal MSB's out
-  while (((x1^x2)&0xff000000)==0) {
-    x1<<=8;
-    x2=(x2<<8)+255;
-    int c=getc(archive);
-    if (c==EOF) c=0;
-    x=(x<<8)+c;
+  while( ( ( x1 ^ x2 ) & 0xff000000 ) == 0 ) {
+    x1 <<= 8;
+    x2 = ( x2 << 8 ) + 255;
+    int c = getc( archive );
+    if( c == EOF )
+      c = 0;
+    x = ( x << 8 ) + c;
   }
   return y;
 }
 
 // Should be called when there is no more to compress
 void Encoder::flush() {
-  if (mode==COMPRESS) 
-    putc(x2>>24, archive);  // First unequal byte 
+  if( mode == COMPRESS )
+    putc( x2 >> 24, archive ); // First unequal byte
 }
 
 #else
@@ -298,166 +301,173 @@ As an optimization, the encoding function replaces division by q with
 a 64-bit scaled multiplication by 1/q from a lookup table.
 */
 
-typedef enum {COMPRESS, DECOMPRESS} Mode;
+typedef enum { COMPRESS, DECOMPRESS } Mode;
 class Encoder {
 private:
   Predictor predictor;
-  const Mode mode;     // Compress or decompress?
-  enum {B=0x80000};    // Input stack size, max 0xffffff
-  enum {BO=B/4+10};    // Output stack size in bytes, >B/8 to allow expansion
-  enum {N=12};         // Number of bits in q and min number in x
-  FILE* archive;       // Compressed data file
-  unsigned int x;      // Encoder state
-  int n;               // Number of bits in input stack/block
-  unsigned short *ins; // Input stack, q*2+d (compression)
-  unsigned char *outs; // Output stack (compression)
-  unsigned long long qinv[2<<N]; // lookup table of inverses of q
+  const Mode mode;                 // Compress or decompress?
+  enum { B = 0x80000 };            // Input stack size, max 0xffffff
+  enum { BO = B / 4 + 10 };        // Output stack size in bytes, >B/8 to allow expansion
+  enum { N = 12 };                 // Number of bits in q and min number in x
+  FILE *archive;                   // Compressed data file
+  unsigned int x;                  // Encoder state
+  int n;                           // Number of bits in input stack/block
+  unsigned short *ins;             // Input stack, q*2+d (compression)
+  unsigned char *outs;             // Output stack (compression)
+  unsigned long long qinv[2 << N]; // lookup table of inverses of q
 public:
-  Encoder(Mode m, FILE* f);
-  int decode();        // Uncompress and return bit y
-  void encode(int y);  // Compress bit y
-  void flush();        // Call when done compressing
+  Encoder( Mode m, FILE *f );
+  int decode();         // Uncompress and return bit y
+  void encode( int y ); // Compress bit y
+  void flush();         // Call when done compressing
 };
 
 // Initialize
-Encoder::Encoder(Mode m, FILE* f): mode(m), archive(f), x(1<<N), 
-    n(mode==DECOMPRESS), ins(0), outs(0) {
-  if (mode==COMPRESS) {
-    alloc(ins, B);
-    alloc(outs, BO);
-    for (int i=1; i<1<<N; ++i) {
-      qinv[i*2+1]=qinv[(2<<N)-2*i]=(1ull<<32+N)/i;
-      ++qinv[i*2+1];
+Encoder::Encoder( Mode m, FILE *f ) :
+    mode( m ),
+    archive( f ),
+    x( 1 << N ),
+    n( mode == DECOMPRESS ),
+    ins( 0 ),
+    outs( 0 ) {
+  if( mode == COMPRESS ) {
+    alloc( ins, B );
+    alloc( outs, BO );
+    for( int i = 1; i < 1 << N; ++i ) {
+      qinv[i * 2 + 1] = qinv[( 2 << N ) - 2 * i] = ( 1ull << 32 + N ) / i;
+      ++qinv[i * 2 + 1];
     }
   }
 }
 
 // Return an uncompressed bit
 inline int Encoder::decode() {
-
   // Read x and n from block header
-  if (!--n) {
-    if (x!=1<<N) {
-      printf("Archive error: x=%X at %ld\n", x, ftell(archive));
-      exit(1);
+  if( !--n ) {
+    if( x != 1 << N ) {
+      printf( "Archive error: x=%X at %ld\n", x, ftell( archive ) );
+      exit( 1 );
     }
-    x=getc(archive);
-    x=x*256+getc(archive);
-    x=x*256+getc(archive);
-    n=B;
-    if (x<1<<N || x>=256<<N) {
-      printf("Archive error: x=%X at %ld\n", x, ftell(archive));
-      exit(1);
+    x = getc( archive );
+    x = x * 256 + getc( archive );
+    x = x * 256 + getc( archive );
+    n = B;
+    if( x < 1 << N || x >= 256 << N ) {
+      printf( "Archive error: x=%X at %ld\n", x, ftell( archive ) );
+      exit( 1 );
     }
   }
 
   // Decode
-  unsigned int q=predictor.p();
-  q+=q<2048;
-  assert(q>=1 && q<1<<N);
-  unsigned int xq=x*q-1;
-  int d=(xq&((1<<N)-1))+q>>N;
-  assert(d==0 || d==1);
-  predictor.update(d);
-  xq=(xq>>N)+1;
-  assert(xq>0 && xq<x);
-  if (d) x=xq;
-  else x-=xq;
-  while (x<1<<N)
-    x=(x<<8)+getc(archive);
-  assert(x>=1<<N && x<256<<N);
+  unsigned int q = predictor.p();
+  q += q < 2048;
+  assert( q >= 1 && q < 1 << N );
+  unsigned int xq = x * q - 1;
+  int d = ( xq & ( ( 1 << N ) - 1 ) ) + q >> N;
+  assert( d == 0 || d == 1 );
+  predictor.update( d );
+  xq = ( xq >> N ) + 1;
+  assert( xq > 0 && xq < x );
+  if( d )
+    x = xq;
+  else
+    x -= xq;
+  while( x < 1 << N )
+    x = ( x << 8 ) + getc( archive );
+  assert( x >= 1 << N && x < 256 << N );
   return d;
 }
 
 // Compress bit d
-inline void Encoder::encode(int d) {
-  if (n>=B) flush();  // sets n=0;
-  int q=predictor.p();
-  q+=q<2048;
-  ins[n++]=q*2+d;
-  predictor.update(d);
+inline void Encoder::encode( int d ) {
+  if( n >= B )
+    flush(); // sets n=0;
+  int q = predictor.p();
+  q += q < 2048;
+  ins[n++] = q * 2 + d;
+  predictor.update( d );
 }
 
 // Compress pending data in input stack
 void Encoder::flush() {
-  unsigned int w=1<<N;  // encoder state
-  unsigned char *p=&outs[BO];  // output stack pointer
+  unsigned int w = 1 << N;      // encoder state
+  unsigned char *p = &outs[BO]; // output stack pointer
 
   // Encode input stack to output stack
-  while (n) {
-    int q=ins[--n];
-    assert(q>=2 && q<2<<N);
-    while (1) {
-      x=((~q&1)+w)*qinv[q]-1>>32;
-      if (x<256<<N) break;
-      assert(p>outs+3 && p<=outs+BO);
-      *--p=w;
-      w>>=8;
+  while( n ) {
+    int q = ins[--n];
+    assert( q >= 2 && q < 2 << N );
+    while( 1 ) {
+      x = ( ( ~q & 1 ) + w ) * qinv[q] - 1 >> 32;
+      if( x < 256 << N )
+        break;
+      assert( p > outs + 3 && p <= outs + BO );
+      *--p = w;
+      w >>= 8;
     }
-    assert(x>=1<<N && x<256<<N);
-    w=x;
+    assert( x >= 1 << N && x < 256 << N );
+    w = x;
   }
 
   // Append w to output stack and write
-  assert(p>outs+3 && p<=outs+BO);
-  *--p=w;
-  *--p=w>>8;
-  *--p=w>>16;
-  fwrite(p, 1, outs+BO-p, archive);
+  assert( p > outs + 3 && p <= outs + BO );
+  *--p = w;
+  *--p = w >> 8;
+  *--p = w >> 16;
+  fwrite( p, 1, outs + BO - p, archive );
 }
 
 #endif
 
 //////////////////////////// main ////////////////////////////
 
-int main(int argc, char** argv) {
-
+int main( int argc, char **argv ) {
   // Check arguments: fpaqc c/d input output
-  if (argc!=4 || (argv[1][0]!='c' && argv[1][0]!='d')) {
-    printf("fpaqc (C) 2007, Matt Mahoney\n"
-      "This is free software under GPL, http://www.gnu.org/copyleft/gpl.html\n\n"
-      "To compress:   fpaqc c input output\n"
-      "To decompress: fpaqc d input output\n");
-    exit(1);
+  if( argc != 4 || ( argv[1][0] != 'c' && argv[1][0] != 'd' ) ) {
+    printf( "fpaqc (C) 2007, Matt Mahoney\n"
+            "This is free software under GPL, http://www.gnu.org/copyleft/gpl.html\n\n"
+            "To compress:   fpaqc c input output\n"
+            "To decompress: fpaqc d input output\n" );
+    exit( 1 );
   }
 
   // Start timer
   clock_t start = clock();
 
   // Open files
-  FILE *in=fopen(argv[2], "rb");
-  if (!in) perror(argv[2]), exit(1);
-  FILE *out=fopen(argv[3], "wb");
-  if (!out) perror(argv[3]), exit(1);
+  FILE *in = fopen( argv[2], "rb" );
+  if( !in )
+    perror( argv[2] ), exit( 1 );
+  FILE *out = fopen( argv[3], "wb" );
+  if( !out )
+    perror( argv[3] ), exit( 1 );
   int c;
 
   // Compress
-  if (argv[1][0]=='c') {
-    Encoder e(COMPRESS, out);
-    while ((c=getc(in))!=EOF) {
-      e.encode(0);
-      for (int i=7; i>=0; --i)
-        e.encode((c>>i)&1);
+  if( argv[1][0] == 'c' ) {
+    Encoder e( COMPRESS, out );
+    while( ( c = getc( in ) ) != EOF ) {
+      e.encode( 0 );
+      for( int i = 7; i >= 0; --i )
+        e.encode( ( c >> i ) & 1 );
     }
-    e.encode(1);  // EOF code
+    e.encode( 1 ); // EOF code
     e.flush();
   }
 
   // Decompress
   else {
-    Encoder e(DECOMPRESS, in);
-    while (!e.decode()) {
-      int c=1;
-      while (c<256)
-        c+=c+e.decode();
-      putc(c-256, out);
+    Encoder e( DECOMPRESS, in );
+    while( !e.decode() ) {
+      int c = 1;
+      while( c < 256 )
+        c += c + e.decode();
+      putc( c - 256, out );
     }
   }
 
   // Print results
-  printf("%s (%ld bytes) -> %s (%ld bytes) in %1.2f s.\n",
-    argv[2], ftell(in), argv[3], ftell(out),
-    ((double)clock()-start)/CLOCKS_PER_SEC);
+  printf( "%s (%ld bytes) -> %s (%ld bytes) in %1.2f s.\n", argv[2], ftell( in ), argv[3], ftell( out ),
+          ( ( double ) clock() - start ) / CLOCKS_PER_SEC );
   return 0;
 }
-

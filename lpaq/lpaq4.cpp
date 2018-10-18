@@ -165,15 +165,15 @@ To compile (g++ 3.4.5, upx 3.00w):
 
 */
 #ifdef WIKI
-#define DP_SHIFT 17
-#define TOLIMIT_1 1023
-#define TOLIMIT_2 1023
-#define ORDER6_MASK 0xc0ffff
+#  define DP_SHIFT 17
+#  define TOLIMIT_1 1023
+#  define TOLIMIT_2 1023
+#  define ORDER6_MASK 0xc0ffff
 #else
-#define DP_SHIFT 14
-#define TOLIMIT_1 159
-#define TOLIMIT_2 175
-#define ORDER6_MASK 0xffff
+#  define DP_SHIFT 14
+#  define TOLIMIT_1 159
+#  define TOLIMIT_2 175
+#  define ORDER6_MASK 0xffff
 #endif
 
 #include <stdio.h>
@@ -182,46 +182,50 @@ To compile (g++ 3.4.5, upx 3.00w):
 #include <time.h>
 #include <math.h>
 #include <ctype.h>
-#define NDEBUG  // remove for debugging
+#define NDEBUG // remove for debugging
 #include <assert.h>
 
 // 8, 16, 32 bit unsigned types (adjust as appropriate)
-typedef unsigned char  U8;
+typedef unsigned char U8;
 typedef unsigned short U16;
-typedef unsigned int   U32;
+typedef unsigned int U32;
 
 // Error handler: print message if any, and exit
-void quit(const char* message=0) {
-  if (message) printf("%s\n", message);
-  exit(1);
+void quit( const char *message = 0 ) {
+  if( message )
+    printf( "%s\n", message );
+  exit( 1 );
 }
 
-U32 mem_usage=0;
+U32 mem_usage = 0;
 
 // Create an array p of n elements of type T
-template <class T> void alloc(T*&p, int n) {
-  p=(T*)calloc(n, sizeof(T));
-  mem_usage+=n*sizeof(T);
-  if (!p) quit("out of memory");
+template <class T>
+void alloc( T *&p, int n ) {
+  p = ( T * ) calloc( n, sizeof( T ) );
+  mem_usage += n * sizeof( T );
+  if( !p )
+    quit( "out of memory" );
 }
 
 ///////////////////////////// Squash //////////////////////////////
 
-int squash_t[4096];	//initialized when Encoder is created
+int squash_t[4096]; //initialized when Encoder is created
 
-#define squash(x)  squash_t[(x)+2047]
+#define squash( x ) squash_t[( x ) + 2047]
 
 // return p = 1/(1 + exp(-d)), d scaled by 8 bits, p scaled by 12 bits
-int squash_init(int d) {
-  static const int t[33]={
-    1,2,3,6,10,16,27,45,73,120,194,310,488,747,1101,
-    1546,2047,2549,2994,3348,3607,3785,3901,3975,4022,
-    4050,4068,4079,4085,4089,4092,4093,4094};
-  if (d==2047) return 4095;
-  if (d==-2047) return 0;
-  int w=d&127;
-  d=(d>>7)+16;
-  return (t[d]*(128-w)+t[(d+1)]*w+64) >> 7;
+int squash_init( int d ) {
+  static const int t[33] = {1,    2,    3,    6,    10,   16,   27,   45,   73,   120,  194,
+                            310,  488,  747,  1101, 1546, 2047, 2549, 2994, 3348, 3607, 3785,
+                            3901, 3975, 4022, 4050, 4068, 4079, 4085, 4089, 4092, 4093, 4094};
+  if( d == 2047 )
+    return 4095;
+  if( d == -2047 )
+    return 0;
+  int w = d & 127;
+  d = ( d >> 7 ) + 16;
+  return ( t[d] * ( 128 - w ) + t[( d + 1 )] * w + 64 ) >> 7;
 }
 
 //////////////////////////// Stretch ///////////////////////////////
@@ -230,20 +234,20 @@ int squash_init(int d) {
 // p by 12 bits.  d has range -2047 to 2047 representing -8 to 8.
 // p has range 0 to 4095 representing 0 to 1.
 
-  static int stretch_t[4096];	//initialized when Encoder is created
-  static int stretch_t2[4096];
-  static int dt[1024];	// i -> 16K/(i+3)
-  static int calcprevfail[256];
-  static int calcfails[8192];   //as above, initialized when Encoder is created
+static int stretch_t[4096]; //initialized when Encoder is created
+static int stretch_t2[4096];
+static int dt[1024]; // i -> 16K/(i+3)
+static int calcprevfail[256];
+static int calcfails[8192]; //as above, initialized when Encoder is created
 
-  static int TextFlag=0;
-  static int y22;   // y<<22
-  static int c0=1;  // last 0-7 bits with leading 1
-  static int c4=0;  // last 4 bytes
-  static int c1=0;  // last two higher 4-bit nibbles
-  static int bcount=0;  // bit count
-  static U8* buf;    // input buffer
-  static int pos;    // number of bytes in buf
+static int TextFlag = 0;
+static int y22;        // y<<22
+static int c0 = 1;     // last 0-7 bits with leading 1
+static int c4 = 0;     // last 4 bytes
+static int c1 = 0;     // last two higher 4-bit nibbles
+static int bcount = 0; // bit count
+static U8 *buf;        // input buffer
+static int pos;        // number of bytes in buf
 
 ///////////////////////// state table ////////////////////////
 
@@ -263,46 +267,46 @@ int squash_init(int d) {
 // Also, when a bit is observed and the count of the opposite bit is large,
 // then part of this count is discarded to favor newer data over old.
 
-static const U8 State_table[256][2]={
-{  1,  2},{  3,  5},{  4,  6},{  7, 10},{  8, 12},{  9, 13},{ 11, 14}, // 0
-{ 15, 19},{ 16, 23},{ 17, 24},{ 18, 25},{ 20, 27},{ 21, 28},{ 22, 29}, // 7
-{ 26, 30},{ 31, 33},{ 32, 35},{ 32, 35},{ 32, 35},{ 32, 35},{ 34, 37}, // 14
-{ 34, 37},{ 34, 37},{ 34, 37},{ 34, 37},{ 34, 37},{ 36, 39},{ 36, 39}, // 21
-{ 36, 39},{ 36, 39},{ 38, 40},{ 41, 43},{ 42, 45},{ 42, 45},{ 44, 47}, // 28
-{ 44, 47},{ 46, 49},{ 46, 49},{ 48, 51},{ 48, 51},{ 50, 52},{ 53, 43}, // 35
-{ 54, 57},{ 54, 57},{ 56, 59},{ 56, 59},{ 58, 61},{ 58, 61},{ 60, 63}, // 42
-{ 60, 63},{ 62, 65},{ 62, 65},{ 50, 66},{ 67, 55},{ 68, 57},{ 68, 57}, // 49
-{ 70, 73},{ 70, 73},{ 72, 75},{ 72, 75},{ 74, 77},{ 74, 77},{ 76, 79}, // 56
-{ 76, 79},{ 62, 81},{ 62, 81},{ 64, 82},{ 83, 69},{ 84, 71},{ 84, 71}, // 63
-{ 86, 73},{ 86, 73},{ 44, 59},{ 44, 59},{ 58, 61},{ 58, 61},{ 60, 49}, // 70
-{ 60, 49},{ 76, 89},{ 76, 89},{ 78, 91},{ 78, 91},{ 80, 92},{ 93, 69}, // 77
-{ 94, 87},{ 94, 87},{ 96, 45},{ 96, 45},{ 48, 99},{ 48, 99},{ 88,101}, // 84
-{ 88,101},{ 80,102},{103, 69},{104, 87},{104, 87},{106, 57},{106, 57}, // 91
-{ 62,109},{ 62,109},{ 88,111},{ 88,111},{ 80,112},{113, 85},{114, 87}, // 98
-{114, 87},{116, 57},{116, 57},{ 62,119},{ 62,119},{ 88,121},{ 88,121}, // 105
-{ 90,122},{123, 85},{124, 97},{124, 97},{126, 57},{126, 57},{ 62,129}, // 112
-{ 62,129},{ 98,131},{ 98,131},{ 90,132},{133, 85},{134, 97},{134, 97}, // 119
-{136, 57},{136, 57},{ 62,139},{ 62,139},{ 98,141},{ 98,141},{ 90,142}, // 126
-{143, 95},{144, 97},{144, 97},{ 68, 57},{ 68, 57},{ 62, 81},{ 62, 81}, // 133
-{ 98,147},{ 98,147},{100,148},{149, 95},{150,107},{150,107},{108,151}, // 140
-{108,151},{100,152},{153, 95},{154,107},{108,155},{100,156},{157, 95}, // 147
-{158,107},{108,159},{100,160},{161,105},{162,107},{108,163},{110,164}, // 154
-{165,105},{166,117},{118,167},{110,168},{169,105},{170,117},{118,171}, // 161
-{110,172},{173,105},{174,117},{118,175},{110,176},{177,105},{178,117}, // 168
-{118,179},{110,180},{181,115},{182,117},{118,183},{120,184},{185,115}, // 175
-{186,127},{128,187},{120,188},{189,115},{190,127},{128,191},{120,192}, // 182
-{193,115},{194,127},{128,195},{120,196},{197,115},{198,127},{128,199}, // 189
-{120,200},{201,115},{202,127},{128,203},{120,204},{205,115},{206,127}, // 196
-{128,207},{120,208},{209,125},{210,127},{128,211},{130,212},{213,125}, // 203
-{214,137},{138,215},{130,216},{217,125},{218,137},{138,219},{130,220}, // 210
-{221,125},{222,137},{138,223},{130,224},{225,125},{226,137},{138,227}, // 217
-{130,228},{229,125},{230,137},{138,231},{130,232},{233,125},{234,137}, // 224
-{138,235},{130,236},{237,125},{238,137},{138,239},{130,240},{241,125}, // 231
-{242,137},{138,243},{130,244},{245,135},{246,137},{138,247},{140,248}, // 238
-{249,135},{250, 69},{ 80,251},{140,252},{253,135},{254, 69},{ 80,255}, // 245
-{140,252},{253,135},{254, 69},{ 80,255}};
+static const U8 State_table[256][2] = {
+    {1, 2},     {3, 5},     {4, 6},     {7, 10},    {8, 12},    {9, 13},    {11, 14},   // 0
+    {15, 19},   {16, 23},   {17, 24},   {18, 25},   {20, 27},   {21, 28},   {22, 29},   // 7
+    {26, 30},   {31, 33},   {32, 35},   {32, 35},   {32, 35},   {32, 35},   {34, 37},   // 14
+    {34, 37},   {34, 37},   {34, 37},   {34, 37},   {34, 37},   {36, 39},   {36, 39},   // 21
+    {36, 39},   {36, 39},   {38, 40},   {41, 43},   {42, 45},   {42, 45},   {44, 47},   // 28
+    {44, 47},   {46, 49},   {46, 49},   {48, 51},   {48, 51},   {50, 52},   {53, 43},   // 35
+    {54, 57},   {54, 57},   {56, 59},   {56, 59},   {58, 61},   {58, 61},   {60, 63},   // 42
+    {60, 63},   {62, 65},   {62, 65},   {50, 66},   {67, 55},   {68, 57},   {68, 57},   // 49
+    {70, 73},   {70, 73},   {72, 75},   {72, 75},   {74, 77},   {74, 77},   {76, 79},   // 56
+    {76, 79},   {62, 81},   {62, 81},   {64, 82},   {83, 69},   {84, 71},   {84, 71},   // 63
+    {86, 73},   {86, 73},   {44, 59},   {44, 59},   {58, 61},   {58, 61},   {60, 49},   // 70
+    {60, 49},   {76, 89},   {76, 89},   {78, 91},   {78, 91},   {80, 92},   {93, 69},   // 77
+    {94, 87},   {94, 87},   {96, 45},   {96, 45},   {48, 99},   {48, 99},   {88, 101},  // 84
+    {88, 101},  {80, 102},  {103, 69},  {104, 87},  {104, 87},  {106, 57},  {106, 57},  // 91
+    {62, 109},  {62, 109},  {88, 111},  {88, 111},  {80, 112},  {113, 85},  {114, 87},  // 98
+    {114, 87},  {116, 57},  {116, 57},  {62, 119},  {62, 119},  {88, 121},  {88, 121},  // 105
+    {90, 122},  {123, 85},  {124, 97},  {124, 97},  {126, 57},  {126, 57},  {62, 129},  // 112
+    {62, 129},  {98, 131},  {98, 131},  {90, 132},  {133, 85},  {134, 97},  {134, 97},  // 119
+    {136, 57},  {136, 57},  {62, 139},  {62, 139},  {98, 141},  {98, 141},  {90, 142},  // 126
+    {143, 95},  {144, 97},  {144, 97},  {68, 57},   {68, 57},   {62, 81},   {62, 81},   // 133
+    {98, 147},  {98, 147},  {100, 148}, {149, 95},  {150, 107}, {150, 107}, {108, 151}, // 140
+    {108, 151}, {100, 152}, {153, 95},  {154, 107}, {108, 155}, {100, 156}, {157, 95},  // 147
+    {158, 107}, {108, 159}, {100, 160}, {161, 105}, {162, 107}, {108, 163}, {110, 164}, // 154
+    {165, 105}, {166, 117}, {118, 167}, {110, 168}, {169, 105}, {170, 117}, {118, 171}, // 161
+    {110, 172}, {173, 105}, {174, 117}, {118, 175}, {110, 176}, {177, 105}, {178, 117}, // 168
+    {118, 179}, {110, 180}, {181, 115}, {182, 117}, {118, 183}, {120, 184}, {185, 115}, // 175
+    {186, 127}, {128, 187}, {120, 188}, {189, 115}, {190, 127}, {128, 191}, {120, 192}, // 182
+    {193, 115}, {194, 127}, {128, 195}, {120, 196}, {197, 115}, {198, 127}, {128, 199}, // 189
+    {120, 200}, {201, 115}, {202, 127}, {128, 203}, {120, 204}, {205, 115}, {206, 127}, // 196
+    {128, 207}, {120, 208}, {209, 125}, {210, 127}, {128, 211}, {130, 212}, {213, 125}, // 203
+    {214, 137}, {138, 215}, {130, 216}, {217, 125}, {218, 137}, {138, 219}, {130, 220}, // 210
+    {221, 125}, {222, 137}, {138, 223}, {130, 224}, {225, 125}, {226, 137}, {138, 227}, // 217
+    {130, 228}, {229, 125}, {230, 137}, {138, 231}, {130, 232}, {233, 125}, {234, 137}, // 224
+    {138, 235}, {130, 236}, {237, 125}, {238, 137}, {138, 239}, {130, 240}, {241, 125}, // 231
+    {242, 137}, {138, 243}, {130, 244}, {245, 135}, {246, 137}, {138, 247}, {140, 248}, // 238
+    {249, 135}, {250, 69},  {80, 251},  {140, 252}, {253, 135}, {254, 69},  {80, 255},  // 245
+    {140, 252}, {253, 135}, {254, 69},  {80, 255}};
 
-#define nex(state,sel) State_table[state][sel]
+#define nex( state, sel ) State_table[state][sel]
 
 //////////////////////////// StateMap, APM //////////////////////////
 
@@ -316,31 +320,31 @@ static const U8 State_table[256][2]={
 
 class StateMap {
 protected:
-  U32 *t_cxt;	// Context of last prediction
-  U32 *t;	// cxt -> prediction in high 22 bits, count in low 10 bits
+  U32 *t_cxt; // Context of last prediction
+  U32 *t;     // cxt -> prediction in high 22 bits, count in low 10 bits
 public:
-  StateMap(int n=256);
+  StateMap( int n = 256 );
 
   // update bit y (0..1), predict next bit in context cx
-  inline int p(int cx) {	//, int limit=1023)
-  assert(y>>1==0);
-  assert(cx>=0 && cx<N);
-  assert(cxt>=0 && cxt<N);
-    U32 p0=*t_cxt;
-    U32 i=p0&1023, pr=p0>>10; // count, prediction
-    p0+=(i<TOLIMIT_1);
-    p0+=((y22-(int)pr>>3)*dt[i])&0xfffffc00;
-    *t_cxt=p0;
-    t_cxt=t+cx;
-    return (*t_cxt) >>20;
+  inline int p( int cx ) { //, int limit=1023)
+    assert( y >> 1 == 0 );
+    assert( cx >= 0 && cx < N );
+    assert( cxt >= 0 && cxt < N );
+    U32 p0 = *t_cxt;
+    U32 i = p0 & 1023, pr = p0 >> 10; // count, prediction
+    p0 += ( i < TOLIMIT_1 );
+    p0 += ( ( y22 - ( int ) pr >> 3 ) * dt[i] ) & 0xfffffc00;
+    *t_cxt = p0;
+    t_cxt = t + cx;
+    return ( *t_cxt ) >> 20;
   }
 };
 
-StateMap::StateMap(int n) {
-  alloc(t, n);
-  t_cxt=t;
-  for (int i=0; i<n; ++i)
-    t[i]=1<<31;
+StateMap::StateMap( int n ) {
+  alloc( t, n );
+  t_cxt = t;
+  for( int i = 0; i < n; ++i )
+    t[i] = 1 << 31;
 }
 
 // An APM maps a probability and a context to a new probability.  Methods:
@@ -355,34 +359,34 @@ StateMap::StateMap(int n) {
 
 class APM {
 protected:
-  int cxt;	// Context of last prediction
-  U32 *t;	// cxt -> prediction in high 22 bits, count in low 10 bits
+  int cxt; // Context of last prediction
+  U32 *t;  // cxt -> prediction in high 22 bits, count in low 10 bits
 public:
-  APM(int n);
-  inline int pp(int pr, int cx) {	//, int limit=1023)
-    assert(y>>1==0);
-    assert(cx>=0 && cx<N/24);
-    assert(cxt>=0 && cxt<N);
-  {
-    U32 *p=&t[cxt], p0=p[0];
-    U32 i=p0&1023, pr=p0>>10; // count, prediction
-    p0+=(i<TOLIMIT_2);
-    p0+=((y22-(int)pr>>3)*dt[i]+0x200)&0xfffffc00;
-    p[0]=p0;
-  }
-    int wt=pr&0xfff;  // interpolation weight of next element
-    cx=cx*24+(pr>>12);
-    cxt=cx+(wt>>11);
-    pr=(t[cx]>>13)*(0x1000-wt)+(t[cx+1]>>13)*wt>>19;
+  APM( int n );
+  inline int pp( int pr, int cx ) { //, int limit=1023)
+    assert( y >> 1 == 0 );
+    assert( cx >= 0 && cx < N / 24 );
+    assert( cxt >= 0 && cxt < N );
+    {
+      U32 *p = &t[cxt], p0 = p[0];
+      U32 i = p0 & 1023, pr = p0 >> 10; // count, prediction
+      p0 += ( i < TOLIMIT_2 );
+      p0 += ( ( y22 - ( int ) pr >> 3 ) * dt[i] + 0x200 ) & 0xfffffc00;
+      p[0] = p0;
+    }
+    int wt = pr & 0xfff; // interpolation weight of next element
+    cx = cx * 24 + ( pr >> 12 );
+    cxt = cx + ( wt >> 11 );
+    pr = ( t[cx] >> 13 ) * ( 0x1000 - wt ) + ( t[cx + 1] >> 13 ) * wt >> 19;
     return pr;
   }
 };
 
-APM::APM(int n): cxt(0) {
-  alloc(t, n);
-  for (int i=0; i<n; ++i) {
-    int p=((i%24*2+1)*4096)/48-2048;
-    t[i]=(U32(squash_init(p))<<20)+8;
+APM::APM( int n ) : cxt( 0 ) {
+  alloc( t, n );
+  for( int i = 0; i < n; ++i ) {
+    int p = ( ( i % 24 * 2 + 1 ) * 4096 ) / 48 - 2048;
+    t[i] = ( U32( squash_init( p ) ) << 20 ) + 8;
   }
 }
 
@@ -406,13 +410,13 @@ APM::APM(int n): cxt(0) {
 
 #define MI 8
 #define MC 640
-  int mxr_tx[MI];	// MI inputs
-  int* mxr_wx;		// MI*MC weights
-  int* mxr_cxt;		// context
-  int mxr_pr=2048;	// last result (scaled 12 bits)
+int mxr_tx[MI];    // MI inputs
+int *mxr_wx;       // MI*MC weights
+int *mxr_cxt;      // context
+int mxr_pr = 2048; // last result (scaled 12 bits)
 
-#if 0			// ATTENTION !  CHANGE this to 1 if you start to use
-			//		<mixer max inputs>!=8 in your versions.
+#if 0 // ATTENTION !  CHANGE this to 1 if you start to use                                                             \
+      //		<mixer max inputs>!=8 in your versions.
 inline void train(int err) {
   int *w=mxr_cxt;
   assert(err>=-32768 && err<32768);
@@ -429,54 +433,60 @@ inline int dot_product() {
 }
 
 #else
-inline void train(int err) {
-    int *w=mxr_cxt;
-    assert(err>=-32768 && err<32768);
-    w[0]+=mxr_tx[0]*err+0x2000>>14;
-    w[1]+=mxr_tx[1]*err+0x2000>>14;
-    w[2]+=mxr_tx[2]*err+0x2000>>14;
-    w[3]+=mxr_tx[3]*err+0x2000>>14;
-    w[4]+=mxr_tx[4]*err+0x2000>>14;
-    w[5]+=mxr_tx[5]*err+0x2000>>14;
-    w[6]+=mxr_tx[6]*err+0x2000>>14;
-    w[7]+=	    err+0x20  >>6;
+inline void train( int err ) {
+  int *w = mxr_cxt;
+  assert( err >= -32768 && err < 32768 );
+  w[0] += mxr_tx[0] * err + 0x2000 >> 14;
+  w[1] += mxr_tx[1] * err + 0x2000 >> 14;
+  w[2] += mxr_tx[2] * err + 0x2000 >> 14;
+  w[3] += mxr_tx[3] * err + 0x2000 >> 14;
+  w[4] += mxr_tx[4] * err + 0x2000 >> 14;
+  w[5] += mxr_tx[5] * err + 0x2000 >> 14;
+  w[6] += mxr_tx[6] * err + 0x2000 >> 14;
+  w[7] += err + 0x20 >> 6;
 }
 inline int dot_product() {
-    int *w=mxr_cxt;
-    int sum =mxr_tx[0]*w[0];
-	sum+=mxr_tx[1]*w[1];
-	sum+=mxr_tx[2]*w[2];
-	sum+=mxr_tx[3]*w[3];
-	sum+=mxr_tx[4]*w[4];
-	sum+=mxr_tx[5]*w[5];
-	sum+=mxr_tx[6]*w[6];
-	sum+=		w[7]<<8;
-  sum>>=DP_SHIFT;
-  if (sum<-2047) sum=-2047;
-  if (sum> 2047) sum= 2047;
+  int *w = mxr_cxt;
+  int sum = mxr_tx[0] * w[0];
+  sum += mxr_tx[1] * w[1];
+  sum += mxr_tx[2] * w[2];
+  sum += mxr_tx[3] * w[3];
+  sum += mxr_tx[4] * w[4];
+  sum += mxr_tx[5] * w[5];
+  sum += mxr_tx[6] * w[6];
+  sum += w[7] << 8;
+  sum >>= DP_SHIFT;
+  if( sum < -2047 )
+    sum = -2047;
+  if( sum > 2047 )
+    sum = 2047;
   return sum;
 }
 #endif
-
 
 ///class Mixer {
 ///public:
 ///  Mixer(int m);
 
-  // Adjust weights to minimize coding cost of last prediction
-#define m_update(y) {			\
-    int err=y*0xfff-mxr_pr;		\
-    fails<<=1;				\
-    fails|=calcfails[err+4096];		\
-    train(err);				\
+// Adjust weights to minimize coding cost of last prediction
+#define m_update( y )                                                                                                  \
+  {                                                                                                                    \
+    int err = y * 0xfff - mxr_pr;                                                                                      \
+    fails <<= 1;                                                                                                       \
+    fails |= calcfails[err + 4096];                                                                                    \
+    train( err );                                                                                                      \
   }
 
-  // Input x (call up to MI times)
+// Input x (call up to MI times)
 
-#define m_add(a,b) { assert((a)<MI); mxr_tx[a]=stretch_t[b]; }
+#define m_add( a, b )                                                                                                  \
+  {                                                                                                                    \
+    assert( ( a ) < MI );                                                                                              \
+    mxr_tx[a] = stretch_t[b];                                                                                          \
+  }
 
-  // predict next bit
-#define m_p	dot_product();
+// predict next bit
+#define m_p dot_product();
 
 ///};
 
@@ -495,48 +505,68 @@ inline int dot_product() {
 
 template <int B>
 class HashTable {
-  U8* t;	// table: 1 element = B bytes: checksum,priority,data,data,...
-  const int NB;	// size in bytes
+  U8 *t;        // table: 1 element = B bytes: checksum,priority,data,data,...
+  const int NB; // size in bytes
 public:
-  HashTable(int n);
-  U8* get(U32 i);
+  HashTable( int n );
+  U8 *get( U32 i );
 };
 
 template <int B>
-HashTable<B>::HashTable(int n): NB(n-B) {
-  assert(B>=2 && (B&B-1)==0);
-  assert(n>=B*4 && (n&n-1)==0);
-  alloc(t, n+512);
-  t = (U8 *)(((uintptr_t)t + 63) & ~(uintptr_t)63); // align on cache line boundary
-
+HashTable<B>::HashTable( int n ) : NB( n - B ) {
+  assert( B >= 2 && ( B & B - 1 ) == 0 );
+  assert( n >= B * 4 && ( n & n - 1 ) == 0 );
+  alloc( t, n + 512 );
+  t = ( U8 * ) ( ( ( uintptr_t ) t + 63 ) & ~( uintptr_t ) 63 ); // align on cache line boundary
 }
 
-inline U32 hash1(U32 i) {  i*=123456791; i=i<<21|i>>11; return (i*987654323); }
-inline U32 hash2(U32 i) {  i*=123456791; i=i<<19|i>>13; return (i*987654323); }
-inline U32 hash6(U32 i) {  i*=234567891; i=i<<19|i>>13; return (i*987654323); }
-inline U32 hash7(U32 i) {  i*=234567891; i=i<<21|i>>11; return (i*987654323); }
+inline U32 hash1( U32 i ) {
+  i *= 123456791;
+  i = i << 21 | i >> 11;
+  return ( i * 987654323 );
+}
+inline U32 hash2( U32 i ) {
+  i *= 123456791;
+  i = i << 19 | i >> 13;
+  return ( i * 987654323 );
+}
+inline U32 hash6( U32 i ) {
+  i *= 234567891;
+  i = i << 19 | i >> 13;
+  return ( i * 987654323 );
+}
+inline U32 hash7( U32 i ) {
+  i *= 234567891;
+  i = i << 21 | i >> 11;
+  return ( i * 987654323 );
+}
 
 template <int B>
-inline U8* HashTable<B>::get(U32 i) {
-  U8 *p=t+(i*B&NB), *q, *r;
-  i>>=24;
-  U8 c=i;
-  if (*(p-1)==c) return p;
-  q=(U8*)((uintptr_t)p^B);
-  if (*(q-1)==c) return q;
-  r=(U8*)((uintptr_t)p^B*2);
-  if (*(r-1)==c) return r;
-  if (*p>*q) p=q;
-  if (*p>*r) p=r;
-#if 0			// ATTENTION !	CHANGE this to 1 if you start to use
-			//		HashTable with B!=16 in your versions.
+inline U8 *HashTable<B>::get( U32 i ) {
+  U8 *p = t + ( i * B & NB ), *q, *r;
+  i >>= 24;
+  U8 c = i;
+  if( *( p - 1 ) == c )
+    return p;
+  q = ( U8 * ) ( ( uintptr_t ) p ^ B );
+  if( *( q - 1 ) == c )
+    return q;
+  r = ( U8 * ) ( ( uintptr_t ) p ^ B * 2 );
+  if( *( r - 1 ) == c )
+    return r;
+  if( *p > *q )
+    p = q;
+  if( *p > *r )
+    p = r;
+#if 0 // ATTENTION !	CHANGE this to 1 if you start to use                                                              \
+      //		HashTable with B!=16 in your versions.
   memset(p-1, 0, B);
   *(p-1)=i;		// This is big-endian-compatible
 #else
-		*(U32*)(p -1)=i;	// This is NOT big-endian-compatible
-		*(U32*)(p+ 3)=0;
-		*(U32*)(p+ 7)=0;
-		*(U32*)(p+11)=0;
+  *( U32 * ) ( p - 1 ) = i; // This is NOT big-endian-compatible
+  *( U32 * ) ( p + 3 ) = 0;
+  *( U32 * ) ( p + 7 ) = 0;
+  *( U32 * ) ( p + 11 ) = 0;
 #endif
   return p;
 }
@@ -549,102 +579,106 @@ inline U8* HashTable<B>::get(U32 i) {
 //     a prediction of the next bit to Mixer m.  It returns the length of
 //     context matched (0..62).
 
-  U32 h1, h2, h3; // context hashes
-  int N, HN; // last hash table index, n/8-1
+U32 h1, h2, h3; // context hashes
+int N, HN;      // last hash table index, n/8-1
 
-  enum {MAXLEN=62};   // maximum match length, at most 62
-  U32 len2cxt[MAXLEN*2+1];
-  U32 len2order[MAXLEN+1];
+enum { MAXLEN = 62 }; // maximum match length, at most 62
+U32 len2cxt[MAXLEN * 2 + 1];
+U32 len2order[MAXLEN + 1];
 
 class MatchModel {
-  int* ht;    // context hash -> next byte in buf
-  int match;  // pointer to current byte in matched context in buf
-  int buf_match;  // buf[match]+256
-  int len;    // length of match
-  StateMap sm;  // len, bit, last byte -> prediction
+  int *ht;       // context hash -> next byte in buf
+  int match;     // pointer to current byte in matched context in buf
+  int buf_match; // buf[match]+256
+  int len;       // length of match
+  StateMap sm;   // len, bit, last byte -> prediction
 public:
-  MatchModel(int n);  // n must be a power of 2 at least 8.
-  int p();  // update bit y (0..1), predict next bit to m
+  MatchModel( int n ); // n must be a power of 2 at least 8.
+  int p();             // update bit y (0..1), predict next bit to m
 };
 
-MatchModel::MatchModel(int n): sm(55<<8) {
-  N=n/2-1;
-  HN=n/8-1;
-  pos=h1=h2=h3=match=len=0;
-  assert(n>=8 && (n&n-1)==0);
-  alloc(buf, N+1);
-  alloc(ht, HN+1);
+MatchModel::MatchModel( int n ) : sm( 55 << 8 ) {
+  N = n / 2 - 1;
+  HN = n / 8 - 1;
+  pos = h1 = h2 = h3 = match = len = 0;
+  assert( n >= 8 && ( n & n - 1 ) == 0 );
+  alloc( buf, N + 1 );
+  alloc( ht, HN + 1 );
 }
 
-#define SEARCH(hsh) {	\
-	len=1;		\
-	match=ht[hsh];	\
-	if (match!=pos) {\
-	  while (len<MAXLEN+1 && buf[match-len&N]==buf[pos-len&N])	++len; \
-	}		\
-}
-#define SEARCH2(hsh) {	\
-	len=1;		\
-	match=ht[hsh];	\
-	if (match!=pos) {\
-	  p=p1;		\
-	  while (len<MAXLEN+1 && buf[match-len&N]==*p)		--p, ++len; \
-	}		\
-}
+#define SEARCH( hsh )                                                                                                  \
+  {                                                                                                                    \
+    len = 1;                                                                                                           \
+    match = ht[hsh];                                                                                                   \
+    if( match != pos ) {                                                                                               \
+      while( len < MAXLEN + 1 && buf[match - len & N] == buf[pos - len & N] )                                          \
+        ++len;                                                                                                         \
+    }                                                                                                                  \
+  }
+#define SEARCH2( hsh )                                                                                                 \
+  {                                                                                                                    \
+    len = 1;                                                                                                           \
+    match = ht[hsh];                                                                                                   \
+    if( match != pos ) {                                                                                               \
+      p = p1;                                                                                                          \
+      while( len < MAXLEN + 1 && buf[match - len & N] == *p )                                                          \
+        --p, ++len;                                                                                                    \
+    }                                                                                                                  \
+  }
 
 int MatchModel::p() {
-
   // update context
-  if (bcount==0) {
-
+  if( bcount == 0 ) {
     // find or extend match
-    if (len>2) {
+    if( len > 2 ) {
       ++match;
-      match&=N;
-      if (len<MAXLEN)	++len;
-    }
-    else {
-	if ((pos&N)>=MAXLEN) {
-		U8 *p1=buf+(pos&N)-1, *p;
-			   SEARCH2(h1)
-		if (len<3) SEARCH2(h2)
+      match &= N;
+      if( len < MAXLEN )
+        ++len;
+    } else {
+      if( ( pos & N ) >= MAXLEN ) {
+        U8 *p1 = buf + ( pos & N ) - 1, *p;
+        SEARCH2( h1 )
+        if( len < 3 )
+          SEARCH2( h2 )
 #ifndef WIKI
-		if (len<3) SEARCH2(h3)
+        if( len < 3 )
+          SEARCH2( h3 )
 #endif
-	}
-	else {
-			   SEARCH(h1)
-		if (len<3) SEARCH(h2)
+      } else {
+        SEARCH( h1 )
+        if( len < 3 )
+          SEARCH( h2 )
 #ifndef WIKI
-		if (len<3) SEARCH(h3)
+        if( len < 3 )
+          SEARCH( h3 )
 #endif
-	}
+      }
 
-	--len;
+      --len;
     }
-    buf_match=buf[match]+256;
+    buf_match = buf[match] + 256;
 
     // update index
-    ht[h1]=pos;
-    ht[h2]=pos;
+    ht[h1] = pos;
+    ht[h2] = pos;
 #ifndef WIKI
-    ht[h3]=pos;
+    ht[h3] = pos;
 #endif
   }
 
   // predict
-  int cxt=c0;
-  if (len>0) {
-    int b=buf_match;
-    if ((b>>8-bcount)==cxt) {
-      b=b>>7-bcount&1;	// next bit
-      cxt=len2cxt[len*2-b] + c1;
-    }
-    else
-	len=0;
+  int cxt = c0;
+  if( len > 0 ) {
+    int b = buf_match;
+    if( ( b >> 8 - bcount ) == cxt ) {
+      b = b >> 7 - bcount & 1; // next bit
+      cxt = len2cxt[len * 2 - b] + c1;
+    } else
+      len = 0;
   }
 
-  m_add(0, sm.p(cxt));
+  m_add( 0, sm.p( cxt ) );
   return len;
 }
 
@@ -656,144 +690,151 @@ int MatchModel::p() {
 // p() returns P(1) as a 12 bit number (0-4095).
 // update(y) trains the predictor with the actual bit (0 or 1).
 
-int MEM=0;	// Global memory usage = 3*MEM bytes (1<<20 .. 1<<29)
+int MEM = 0; // Global memory usage = 3*MEM bytes (1<<20 .. 1<<29)
 
 class Predictor {
-  int pr;  // next prediction
+  int pr; // next prediction
   int *add2order;
+
 public:
   Predictor();
-  int p() const {assert(pr>=0 && pr<4096); return pr;}
-  void update(int y);
+  int p() const {
+    assert( pr >= 0 && pr < 4096 );
+    return pr;
+  }
+  void update( int y );
 };
 
-Predictor::Predictor(): pr(2048) {
-  alloc(mxr_wx, MI*MC);
-  for (int i=0; i<MI*MC; ++i)	mxr_wx[i] = (1<<(DP_SHIFT-2));
-  mxr_cxt=mxr_wx;
-  add2order=mxr_wx;
+Predictor::Predictor() : pr( 2048 ) {
+  alloc( mxr_wx, MI * MC );
+  for( int i = 0; i < MI * MC; ++i )
+    mxr_wx[i] = ( 1 << ( DP_SHIFT - 2 ) );
+  mxr_cxt = mxr_wx;
+  add2order = mxr_wx;
 }
 
-void Predictor::update(int y) {
+void Predictor::update( int y ) {
 #ifdef WIKI
-  static HashTable<16> t4(MEM*2);  // cxt -> state
-#define t1 t4
-#define t2 t4
-#define t3 t4
+  static HashTable<16> t4( MEM * 2 ); // cxt -> state
+#  define t1 t4
+#  define t2 t4
+#  define t3 t4
 #else
-  static HashTable<16> t1(MEM/2);  // cxt -> state
-  static HashTable<16> t3(MEM/2);  // cxt -> state
-  static HashTable<16> t2(MEM);	// cxt -> state
+  static HashTable<16> t1( MEM / 2 ); // cxt -> state
+  static HashTable<16> t3( MEM / 2 ); // cxt -> state
+  static HashTable<16> t2( MEM );     // cxt -> state
 #endif
-  static U8 t0[0x10000];  // order 1 cxt -> state
-  static U8 *t0c1=t0, *cp[6]={t0, t0, t0, t0, t0, t0}; // pointer to bit history
+  static U8 t0[0x10000];                                   // order 1 cxt -> state
+  static U8 *t0c1 = t0, *cp[6] = {t0, t0, t0, t0, t0, t0}; // pointer to bit history
   static StateMap sm[6];
-  static APM a1(24 * 0x10000), a2(24 * 0x800);
-  static U32 h[6], pw=0, c8=0, prevfail=0;
-  static U8 fails=0;
-  static MatchModel mm(MEM);	// predicts next bit by matching context
-  assert(MEM>0);
+  static APM a1( 24 * 0x10000 ), a2( 24 * 0x800 );
+  static U32 h[6], pw = 0, c8 = 0, prevfail = 0;
+  static U8 fails = 0;
+  static MatchModel mm( MEM ); // predicts next bit by matching context
+  assert( MEM > 0 );
 
   // update model
-  assert(y==0 || y==1);
-  y22=y<<22;
-  *cp[0]=nex(*cp[0], y);
-  *cp[1]=nex(*cp[1], y);
-  *cp[2]=nex(*cp[2], y);
-  *cp[3]=nex(*cp[3], y);
-  *cp[4]=nex(*cp[4], y);
-  *cp[5]=nex(*cp[5], y);
-  m_update(y);
+  assert( y == 0 || y == 1 );
+  y22 = y << 22;
+  *cp[0] = nex( *cp[0], y );
+  *cp[1] = nex( *cp[1], y );
+  *cp[2] = nex( *cp[2], y );
+  *cp[3] = nex( *cp[3], y );
+  *cp[4] = nex( *cp[4], y );
+  *cp[5] = nex( *cp[5], y );
+  m_update( y );
 
   // update context
-  c0+=c0+y;
-  if (c0>=256) {
-    int c=c0-256;
-    add2order=mxr_wx+MI*10*(c>>5)*8;
-    c1=(c1>>4)+(c&240);
+  c0 += c0 + y;
+  if( c0 >= 256 ) {
+    int c = c0 - 256;
+    add2order = mxr_wx + MI * 10 * ( c >> 5 ) * 8;
+    c1 = ( c1 >> 4 ) + ( c & 240 );
 #ifdef WIKI
-    h1=h1*(3 <<2)-c-1&HN;
-    h2=h2*(5 <<3)+c&HN;
+    h1 = h1 * ( 3 << 2 ) - c - 1 & HN;
+    h2 = h2 * ( 5 << 3 ) + c & HN;
 #else
-    t0c1=t0+c1*256;
-    prevfail=calcprevfail[fails];
-    fails=1;
-    h1=h1*(3 <<1)+c+1&HN;
-    h2=h2*(7 <<2)-c-1&HN;
-    h3=h3*(5 <<3)+c&HN;
+    t0c1 = t0 + c1 * 256;
+    prevfail = calcprevfail[fails];
+    fails = 1;
+    h1 = h1 * ( 3 << 1 ) + c + 1 & HN;
+    h2 = h2 * ( 7 << 2 ) - c - 1 & HN;
+    h3 = h3 * ( 5 << 3 ) + c & HN;
 #endif
-    buf[pos++]=c;
-    pos&=N;
+    buf[pos++] = c;
+    pos &= N;
 
-    c8=(c8<<8)+(c4>>24);
-    c4=c4<<8|c;
-    h[0]=c<<8;  // order 1
+    c8 = ( c8 << 8 ) + ( c4 >> 24 );
+    c4 = c4 << 8 | c;
+    h[0] = c << 8; // order 1
 
-    h[1]=(c4&0xffff)*8191;	// order 2
-    cp[1]=t1.get(hash1(h[1]));
+    h[1] = ( c4 & 0xffff ) * 8191; // order 2
+    cp[1] = t1.get( hash1( h[1] ) );
 
-    h[2]=(c4&0xffffff)*251;	// order 3
-    cp[2]=t1.get(hash2(h[2]));
+    h[2] = ( c4 & 0xffffff ) * 251; // order 3
+    cp[2] = t1.get( hash2( h[2] ) );
 
-    cp[3]=t2.get(hash1(c4*127));	// order 4
+    cp[3] = t2.get( hash1( c4 * 127 ) ); // order 4
 
-    h[4]=c4*197-(c8& ORDER6_MASK)*63331;	// order 6
-    cp[4]=t3.get(hash2(h[4]));
+    h[4] = c4 * 197 - ( c8 & ORDER6_MASK ) * 63331; // order 6
+    cp[4] = t3.get( hash2( h[4] ) );
 
-    if (c>=65 && c<=90) c+=32;  // lowercase unigram word order
-    if (c>=97 && c<=122) h[5]=(h[5]+c)*(191<<1);
-    else pw=h[5]*241, h[5]=0;
-    cp[5]=t2.get(hash2(h[5]-pw));
+    if( c >= 65 && c <= 90 )
+      c += 32; // lowercase unigram word order
+    if( c >= 97 && c <= 122 )
+      h[5] = ( h[5] + c ) * ( 191 << 1 );
+    else
+      pw = h[5] * 241, h[5] = 0;
+    cp[5] = t2.get( hash2( h[5] - pw ) );
 
-    c0=1;
-    bcount=0;
-  }
-  else {
-	++bcount;
-	add2order+=MI*10;
-	if (bcount==4) {
-	  cp[1]=t1.get(hash6(c0   -h[1] ));
-	  cp[2]=t1.get(hash7(c0*23-h[2] ));
-	  cp[3]=t2.get(hash6(c0   -c4*19));
-	  cp[4]=t3.get(hash7(c0*31-h[4] ));
-	  cp[5]=t2.get(hash7(c0*37-h[5] ));
-	}
-	else {
-	  int j=y+1<<(bcount&3)-1;
-	  cp[1]+=j;
-	  cp[2]+=j;
-	  cp[3]+=j;
-	  cp[4]+=j;
-	  cp[5]+=j;
-	}
+    c0 = 1;
+    bcount = 0;
+  } else {
+    ++bcount;
+    add2order += MI * 10;
+    if( bcount == 4 ) {
+      cp[1] = t1.get( hash6( c0 - h[1] ) );
+      cp[2] = t1.get( hash7( c0 * 23 - h[2] ) );
+      cp[3] = t2.get( hash6( c0 - c4 * 19 ) );
+      cp[4] = t3.get( hash7( c0 * 31 - h[4] ) );
+      cp[5] = t2.get( hash7( c0 * 37 - h[5] ) );
+    } else {
+      int j = y + 1 << ( bcount & 3 ) - 1;
+      cp[1] += j;
+      cp[2] += j;
+      cp[3] += j;
+      cp[4] += j;
+      cp[5] += j;
+    }
   }
 
   // predict
-  int len=mm.p();
-  if (len==0)
-	len=((*cp[1]!=0)+(*cp[2]!=0)+(*cp[3]!=0)+(*cp[4]!=0))*MI;
-   else len=len2order[len];
-  mxr_cxt=add2order+len;
-  m_add(1, sm[1].p(*cp[1]));
-  m_add(2, sm[2].p(*cp[2]));
-  m_add(3, sm[3].p(*cp[3]));
-  m_add(4, sm[4].p(*cp[4]));
-  m_add(5, sm[5].p(*cp[5]));
+  int len = mm.p();
+  if( len == 0 )
+    len = ( ( *cp[1] != 0 ) + ( *cp[2] != 0 ) + ( *cp[3] != 0 ) + ( *cp[4] != 0 ) ) * MI;
+  else
+    len = len2order[len];
+  mxr_cxt = add2order + len;
+  m_add( 1, sm[1].p( *cp[1] ) );
+  m_add( 2, sm[2].p( *cp[2] ) );
+  m_add( 3, sm[3].p( *cp[3] ) );
+  m_add( 4, sm[4].p( *cp[4] ) );
+  m_add( 5, sm[5].p( *cp[5] ) );
 #ifdef WIKI
-  len=h[0]+c0;
-  cp[0]=t0+len;
-  m_add(6, sm[0].p(*cp[0]));
-  pr=m_p;
-  pr=squash(pr) +7*a1.pp((pr+2048)*23, len) >>3;
-  mxr_pr=pr;
-  pr=pr		+3*a2.pp(stretch_t2[pr], fails*8+bcount)+2 >>2;
+  len = h[0] + c0;
+  cp[0] = t0 + len;
+  m_add( 6, sm[0].p( *cp[0] ) );
+  pr = m_p;
+  pr = squash( pr ) + 7 * a1.pp( ( pr + 2048 ) * 23, len ) >> 3;
+  mxr_pr = pr;
+  pr = pr + 3 * a2.pp( stretch_t2[pr], fails * 8 + bcount ) + 2 >> 2;
 #else
-  cp[0]=t0c1+c0;
-  m_add(6, sm[0].p(*cp[0]));
-  pr=m_p;
-  pr=squash(pr)	+3*a1.pp((pr+2048)*23, h[0]+c0) >>2;
-  mxr_pr=pr;
-  pr=pr*3	+5*a2.pp(stretch_t2[pr], fails+prevfail)+4 >>3;
+  cp[0] = t0c1 + c0;
+  m_add( 6, sm[0].p( *cp[0] ) );
+  pr = m_p;
+  pr = squash( pr ) + 3 * a1.pp( ( pr + 2048 ) * 23, h[0] + c0 ) >> 2;
+  mxr_pr = pr;
+  pr = pr * 3 + 5 * a2.pp( stretch_t2[pr], fails + prevfail ) + 4 >> 3;
 #endif
 }
 
@@ -811,211 +852,233 @@ void Predictor::update(int y) {
 // flush() should be called exactly once after compression is done and
 //     before closing f.  It does nothing in DECOMPRESS mode.
 
-typedef enum {COMPRESS, DECOMPRESS} Mode;
+typedef enum { COMPRESS, DECOMPRESS } Mode;
 class Encoder {
 private:
   Predictor predictor;
-  const Mode mode;	// Compress or decompress?
-  FILE* archive;	// Compressed data file
-  U32 x1, x2;		// Range, initially [0, 1), scaled by 2^32
-  U32 x;		// Decompress mode: last 4 input bytes of archive
+  const Mode mode; // Compress or decompress?
+  FILE *archive;   // Compressed data file
+  U32 x1, x2;      // Range, initially [0, 1), scaled by 2^32
+  U32 x;           // Decompress mode: last 4 input bytes of archive
 
   // Compress bit y or return decompressed bit
-  int code(int y=0) {
-    int p=predictor.p();
-    assert(p>=0 && p<4096);
-    p+=p<2048;
-    U32 xmid=x1 + (x2-x1>>12)*p + ((x2-x1&0xfff)*p>>12);
-    assert(xmid>=x1 && xmid<x2);
-    if (mode==DECOMPRESS) y=x<=xmid;
-    y ? (x2=xmid) : (x1=xmid+1);
-    predictor.update(y);
-    while (((x1^x2)&0xff000000)==0) {  // pass equal leading bytes of range
-      if (mode==COMPRESS) putc(x2>>24, archive);
-      else /*mode==DECOMPRESS*/ x=(x<<8)+(getc(archive)&255);  // EOF is OK
-      x1<<=8;
-      x2=(x2<<8)+255;
+  int code( int y = 0 ) {
+    int p = predictor.p();
+    assert( p >= 0 && p < 4096 );
+    p += p < 2048;
+    U32 xmid = x1 + ( x2 - x1 >> 12 ) * p + ( ( x2 - x1 & 0xfff ) * p >> 12 );
+    assert( xmid >= x1 && xmid < x2 );
+    if( mode == DECOMPRESS )
+      y = x <= xmid;
+    y ? ( x2 = xmid ) : ( x1 = xmid + 1 );
+    predictor.update( y );
+    while( ( ( x1 ^ x2 ) & 0xff000000 ) == 0 ) { // pass equal leading bytes of range
+      if( mode == COMPRESS )
+        putc( x2 >> 24, archive );
+      else                                          /*mode==DECOMPRESS*/
+        x = ( x << 8 ) + ( getc( archive ) & 255 ); // EOF is OK
+      x1 <<= 8;
+      x2 = ( x2 << 8 ) + 255;
     }
     return y;
   }
 
 public:
-  Encoder(Mode m, FILE* f);
-  void flush();  // call this when compression is finished
+  Encoder( Mode m, FILE *f );
+  void flush(); // call this when compression is finished
 
   // Compress one byte
-  void compress(int c) {
-    assert(mode==COMPRESS);
-    if (TextFlag)
-	if (c==0x20||c==0x1f) c^=0x3f;
-    for (int i=7; i>=0; --i)
-      code((c>>i)&1);
+  void compress( int c ) {
+    assert( mode == COMPRESS );
+    if( TextFlag )
+      if( c == 0x20 || c == 0x1f )
+        c ^= 0x3f;
+    for( int i = 7; i >= 0; --i )
+      code( ( c >> i ) & 1 );
   }
 
   // Decompress and return one byte
   int decompress() {
-    int c=0;
-    for (int i=8; i!=0; --i)
-      c+=c+code();
-    if (TextFlag)
-	if (c==0x20||c==0x1f) c^=0x3f;
+    int c = 0;
+    for( int i = 8; i != 0; --i )
+      c += c + code();
+    if( TextFlag )
+      if( c == 0x20 || c == 0x1f )
+        c ^= 0x3f;
     return c;
   }
 };
 
-Encoder::Encoder(Mode m, FILE* f):
-    mode(m), archive(f), x1(0), x2(0xffffffff), x(0) {
-  if (mode==DECOMPRESS) {  // x = first 4 bytes of archive
-    for (int i=0; i<4; ++i)
-      x=(x<<8)+(getc(archive)&255);
+Encoder::Encoder( Mode m, FILE *f ) : mode( m ), archive( f ), x1( 0 ), x2( 0xffffffff ), x( 0 ) {
+  if( mode == DECOMPRESS ) { // x = first 4 bytes of archive
+    for( int i = 0; i < 4; ++i )
+      x = ( x << 8 ) + ( getc( archive ) & 255 );
   }
-  int i, pi=0;
-  for (int x=-2047; x<=2047; ++x) {  // invert squash()
-    int i=squash_init(x);
+  int i, pi = 0;
+  for( int x = -2047; x <= 2047; ++x ) { // invert squash()
+    int i = squash_init( x );
 #ifdef WIKI
-    squash(x)=i+4;	//rounding,  needed at the end of Predictor::update()
+    squash( x ) = i + 4; //rounding,  needed at the end of Predictor::update()
 #else
-    squash(x)=i+2;	//rounding, for a1.pp, the end of Predictor::update()
+    squash( x ) = i + 2; //rounding, for a1.pp, the end of Predictor::update()
 #endif
-    for (int j=pi; j<=i; ++j)
-      stretch_t[j]=x, stretch_t2[j]=(x+2048)*23;
-    pi=i+1;
+    for( int j = pi; j <= i; ++j )
+      stretch_t[j] = x, stretch_t2[j] = ( x + 2048 ) * 23;
+    pi = i + 1;
   }
-  stretch_t[4095]=2047;
-  stretch_t2[4095]=4095*23;
+  stretch_t[4095] = 2047;
+  stretch_t2[4095] = 4095 * 23;
 
-  for (i=0; i<1024; ++i)
-    dt[i]=16384/(i+i+3);
+  for( i = 0; i < 1024; ++i )
+    dt[i] = 16384 / ( i + i + 3 );
 
-  for (i=0; i<256; ++i) {
-    pi=(i&  1)<<10;
-    if (i&  6) pi+=512;
-    if (i&248) pi+=256;
-    calcprevfail[i]=pi;
-  }
-
-  for (i=-4096; i<4096; ++i) {
-    int e=i, v=0;
-    if (e<0) e=-e;
-    if (e >  960  ) v=1;
-    if (e > 2560  ) v=3;
-    calcfails[i+4096]=v;
+  for( i = 0; i < 256; ++i ) {
+    pi = ( i & 1 ) << 10;
+    if( i & 6 )
+      pi += 512;
+    if( i & 248 )
+      pi += 256;
+    calcprevfail[i] = pi;
   }
 
-  for (i=2; i<=MAXLEN*2; i+=2) {
-      int c;
-      if (i<32) c=i;
-      else c=(i>>3)*2+24;
-      c*=256;
-	 len2cxt[i]=c;
-	 len2cxt[i-1]=c-256;
-	c=i>>1;
-	len2order[c]=(5+(c>=8)+(c>=12)+(c>=16)+(c>=32))*MI;
+  for( i = -4096; i < 4096; ++i ) {
+    int e = i, v = 0;
+    if( e < 0 )
+      e = -e;
+    if( e > 960 )
+      v = 1;
+    if( e > 2560 )
+      v = 3;
+    calcfails[i + 4096] = v;
+  }
+
+  for( i = 2; i <= MAXLEN * 2; i += 2 ) {
+    int c;
+    if( i < 32 )
+      c = i;
+    else
+      c = ( i >> 3 ) * 2 + 24;
+    c *= 256;
+    len2cxt[i] = c;
+    len2cxt[i - 1] = c - 256;
+    c = i >> 1;
+    len2order[c] = ( 5 + ( c >= 8 ) + ( c >= 12 ) + ( c >= 16 ) + ( c >= 32 ) ) * MI;
   }
 }
 
 void Encoder::flush() {
-  if (mode==COMPRESS)
-    putc(x1>>24, archive);  // Flush first unequal byte of range
+  if( mode == COMPRESS )
+    putc( x1 >> 24, archive ); // Flush first unequal byte of range
 }
-
 
 //////////////////////////// User Interface ////////////////////////////
 
-int main(int argc, char **argv) {
-
+int main( int argc, char **argv ) {
   // Check arguments
-  if (argc!=4 || !isdigit(argv[1][0]) && argv[1][0]!='d') {
-    printf(
-	"lpaq4 file compressor (C) 2007, Matt Mahoney\n"
-	"Licensed under GPL, http://www.gnu.org/copyleft/gpl.html\n"
-	"\n"
-	"To compress:   lpaq4 N input output  (N=0..9, uses 6+3*2^N MB)\n"
-	"To decompress: lpaq4 d input output  (needs same memory)\n");
+  if( argc != 4 || !isdigit( argv[1][0] ) && argv[1][0] != 'd' ) {
+    printf( "lpaq4 file compressor (C) 2007, Matt Mahoney\n"
+            "Licensed under GPL, http://www.gnu.org/copyleft/gpl.html\n"
+            "\n"
+            "To compress:   lpaq4 N input output  (N=0..9, uses 6+3*2^N MB)\n"
+            "To decompress: lpaq4 d input output  (needs same memory)\n" );
     return 1;
   }
 
   // Get start time
-  clock_t start=clock();
+  clock_t start = clock();
 
   // Open input file
-  FILE *in=fopen(argv[2], "rb"),  *out=0;
-  if (!in) perror(argv[2]), exit(1);
+  FILE *in = fopen( argv[2], "rb" ), *out = 0;
+  if( !in )
+    perror( argv[2] ), exit( 1 );
 
   // Compress
-  if (isdigit(argv[1][0])) {
-    MEM=1<<(argv[1][0]-'0'+20);
+  if( isdigit( argv[1][0] ) ) {
+    MEM = 1 << ( argv[1][0] - '0' + 20 );
 
     // Encode header: version 1, memory option, file size
-    fseek(in, 0, SEEK_END);
-    long size=ftell(in);
-    if (size<0 || size>=0x7FFFFFFF) quit("input file too big");
-    fseek(in, 0, SEEK_SET);
+    fseek( in, 0, SEEK_END );
+    long size = ftell( in );
+    if( size < 0 || size >= 0x7FFFFFFF )
+      quit( "input file too big" );
+    fseek( in, 0, SEEK_SET );
 
-      {	// a better data detection algorithm will be here in future
+    { // a better data detection algorithm will be here in future
       U8 buf[4096];
-      int i=fread(buf, 1, 4096, in), k=0;
-      while (i-->0)	{ if (buf[i]>0x7f) ++k; }
-      if (k==0) TextFlag=1;
-      fseek(in, 0, SEEK_SET);
+      int i = fread( buf, 1, 4096, in ), k = 0;
+      while( i-- > 0 ) {
+        if( buf[i] > 0x7f )
+          ++k;
       }
+      if( k == 0 )
+        TextFlag = 1;
+      fseek( in, 0, SEEK_SET );
+    }
 
-    out=fopen(argv[3], "wb");
-    if (!out) perror(argv[3]), exit(1);
-    fprintf(out, "pQ%c%c%c%c%c%c", 4, argv[1][0],
-      size>>24, size>>16, size>>8, size);
+    out = fopen( argv[3], "wb" );
+    if( !out )
+      perror( argv[3] ), exit( 1 );
+    fprintf( out, "pQ%c%c%c%c%c%c", 4, argv[1][0], size >> 24, size >> 16, size >> 8, size );
 
     // Compress
-    Encoder e(COMPRESS, out);
+    Encoder e( COMPRESS, out );
     int c;
-    while ((c=getc(in))!=EOF)
-      e.compress(c);
+    while( ( c = getc( in ) ) != EOF )
+      e.compress( c );
     e.flush();
   }
 
   // Decompress
   else {
-
     // Check header version, get memory option, file size
-    if (getc(in)!='p' || getc(in)!='Q' || getc(in)!=4)
-      quit("Not a lpaq4 file");
-    MEM=getc(in);
-    if (MEM<'0' || MEM>'9') quit("Bad memory option (not 0..9)");
-    MEM=1<<(MEM-'0'+20);
-    long size=getc(in)<<24;
-    size|=getc(in)<<16;
-    size|=getc(in)<<8;
-    size|=getc(in);
-    if (size<0) quit("Bad file size");
+    if( getc( in ) != 'p' || getc( in ) != 'Q' || getc( in ) != 4 )
+      quit( "Not a lpaq4 file" );
+    MEM = getc( in );
+    if( MEM < '0' || MEM > '9' )
+      quit( "Bad memory option (not 0..9)" );
+    MEM = 1 << ( MEM - '0' + 20 );
+    long size = getc( in ) << 24;
+    size |= getc( in ) << 16;
+    size |= getc( in ) << 8;
+    size |= getc( in );
+    if( size < 0 )
+      quit( "Bad file size" );
 
     // Decompress
-    out=fopen(argv[3], "wb");
-    if (!out) perror(argv[3]), exit(1);
-    Encoder e(DECOMPRESS, in);
+    out = fopen( argv[3], "wb" );
+    if( !out )
+      perror( argv[3] ), exit( 1 );
+    Encoder e( DECOMPRESS, in );
 
-      {	// this is because we don't save TextFlag in the compressed file
-      U8 buf[4096], *p=&buf[0], c;
-      long s=4096, ss, k=0;
-      if (s>size) s=size;
-      size-=s;
-      ss=s;
-      while (s-->0)
-	{ c=e.decompress(); *p++=c; if(c>0x7f) ++k; }
-      if (k==0)
-	  for (s=0, TextFlag=1; s<ss; ++s)
-		if (buf[s]==0x1f||buf[s]==0x20) buf[s]^=0x3f;
-      fwrite(buf, 1, ss, out), k=0;
+    { // this is because we don't save TextFlag in the compressed file
+      U8 buf[4096], *p = &buf[0], c;
+      long s = 4096, ss, k = 0;
+      if( s > size )
+        s = size;
+      size -= s;
+      ss = s;
+      while( s-- > 0 ) {
+        c = e.decompress();
+        *p++ = c;
+        if( c > 0x7f )
+          ++k;
       }
+      if( k == 0 )
+        for( s = 0, TextFlag = 1; s < ss; ++s )
+          if( buf[s] == 0x1f || buf[s] == 0x20 )
+            buf[s] ^= 0x3f;
+      fwrite( buf, 1, ss, out ), k = 0;
+    }
 
-    while (size-->0)
-      putc(e.decompress(), out);
+    while( size-- > 0 )
+      putc( e.decompress(), out );
   }
 
   // Report result
-  assert(in);
-  assert(out);
-  printf("%ld -> %ld in %1.3f sec. using %d MB memory\n", ftell(in), ftell(out),
-	double(clock()-start)/CLOCKS_PER_SEC, mem_usage>>20);
+  assert( in );
+  assert( out );
+  printf( "%ld -> %ld in %1.3f sec. using %d MB memory\n", ftell( in ), ftell( out ),
+          double( clock() - start ) / CLOCKS_PER_SEC, mem_usage >> 20 );
 
   return 0;
 }
