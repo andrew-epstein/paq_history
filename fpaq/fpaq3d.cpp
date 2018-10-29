@@ -46,11 +46,11 @@ void update( int y ) {
     Pokeb( buf + rc[y], Peekb( buf + rc[y] ) + 8 );
   else {
     Pokeb( buf + rc[y], Peekb( buf + rc[y] ) >> 1 );
-    Pokeb( buf + rc[!y], Peekb( buf + rc[!y] ) >> 1 );
+    Pokeb( buf + rc[y == 0], Peekb( buf + rc[y == 0] ) >> 1 );
   }
   rc[y] >>= 1;            //
   rc[y] += ( 1 << mbit ); // old 28 state of     y [0001...................01] count
-  rc[!y] >>= 1;           // old 28 state of not y [1110...................10] count
+  rc[y == 0] >>= 1;           // old 28 state of not y [1110...................10] count
 }
 
 //////////////////////////// Encoder ////////////////////////////
@@ -101,7 +101,7 @@ inline void Encoder::encode( int y ) {
   // Update the range
   const U32 xmid = x1 + ( ( x2 - x1 ) >> 12 ) * p();
   assert( xmid >= x1 && xmid < x2 );
-  if( y )
+  if( y != 0 )
     x2 = xmid;
   else
     x1 = xmid + 1;
@@ -240,17 +240,17 @@ int main( int argc, char **argv ) {
       printf( " Memory :  2 Gb\n" );
     }
     in = fopen( argv[3], "rb" );
-    if( !in )
+    if( in == nullptr )
       perror( argv[3] ), exit( 1 );
     out = fopen( argv[4], "wb" );
-    if( !out )
+    if( out == nullptr )
       perror( argv[4] ), exit( 1 );
   } else {
     in = fopen( argv[2], "rb" );
-    if( !in )
+    if( in == nullptr )
       perror( argv[2] ), exit( 1 );
     out = fopen( argv[3], "wb" );
-    if( !out )
+    if( out == nullptr )
       perror( argv[3] ), exit( 1 );
   }
 
@@ -328,7 +328,7 @@ int main( int argc, char **argv ) {
     memset( buf, 0, sizeof( buf ) );
     Encoder e( DECOMPRESS, in );
     for( r1 = 0; r1 < 256; r1++ ) {
-      if( e.decode() )
+      if( e.decode() != 0 )
         for( r2 = 0; r2 < 256; r2++ ) {
           sce = e.decode();
           if( sce == 1 ) {

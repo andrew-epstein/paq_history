@@ -707,7 +707,7 @@ public:
     return get0() + get1();
   }
   void add( int y ) {
-    if( y ) {
+    if( y != 0 ) {
       if( state < 208 || rnd() < table[state].p1 )
         state = table[state].s11;
       else
@@ -1017,10 +1017,10 @@ public:
     memset( lidx, 0, 256 * sizeof( U32 ) );
   }
   void init() {
-    N = 1 << 19 + MEM - ( MEM >= 6 );
+    N = 1 << (19 + MEM - static_cast<int>( MEM >= 6 ));
     N1 = N - 1;
     buf = ( U8 * ) calloc( N, 1 );
-    if( !buf )
+    if( buf == nullptr )
       handler();
     buf[0] = 1;
   }
@@ -1036,7 +1036,7 @@ public:
     ++bp;
     if( ( lo_nibble += lo_nibble + y ) >= 16 ) {
       lo_nibble = 1;
-      if( !( bp &= 7 ) ) {
+      if( ( bp &= 7 ) == 0u ) {
         ++lidx[r];
         lpos[r][lidx[r] &= 3] = p++;
         buf[p & ( N1 )] = 1;
@@ -1153,7 +1153,7 @@ Hashtable<T>::Hashtable( U32 n ) : N( n > 4 ? n - 4 : 1 ), table( 0 ), cxt( 0 ) 
 
   // Align the hash table on a 64 byte cache page boundary
   char *p = ( char * ) calloc( ( 16 << N ) + 64, 1 );
-  if( !p )
+  if( p == nullptr )
     handler();
   p += 64 - ( ( ( long ) p ) & 63 ); // Aligned
   table = ( HashElement * ) p;
@@ -1245,12 +1245,12 @@ void Mixer::update( int y ) {
   if( s0 > 0 && s1 > 0 ) {
     U32 rn = rnd();
     const U32 s = s0 + s1;
-    const U32 sy = y ? s1 : s0;
-    const U32 sy1 = 0xffffffff / sy + ( rn & 255 ) >> 8;
-    const U32 s1 = 0xffffffff / s + ( ( rn >> 8 ) & 255 ) >> 8;
+    const U32 sy = y != 0 ? s1 : s0;
+    const U32 sy1 = (0xffffffff / sy + ( rn & 255 )) >> 8;
+    const U32 s1 = (0xffffffff / s + ( ( rn >> 8 ) & 255 )) >> 8;
     const U32 syd = sy1 - s1;
-    const int m0 = y ? -s1 : syd;
-    const int m1 = y ? syd : -s1;
+    const int m0 = y != 0 ? -s1 : syd;
+    const int m1 = y != 0 ? syd : -s1;
     rn = ( rn >> 16 ) & 255;
 
     for( int i = 0; i <= n; ++i ) {
@@ -1310,7 +1310,7 @@ public:
     }
   }
   int predict() {
-    U32 p1 = m1.predict( ( ch( 1 ) >> 5 ) + 8 * ( ch.pos( 0, 3 ) < ch.pos( 32, 3 ) ) );
+    U32 p1 = m1.predict( ( ch( 1 ) >> 5 ) + 8 * static_cast<int>( ch.pos( 0, 3 ) < ch.pos( 32, 3 ) ) );
     if( MEM >= MINMEM ) {
       U32 p2 = m2.predict( ( ch( 1 ) >> 6 ) + 4 * ( ch( 2 ) >> 6 ) );
       return ( p1 + p2 ) >> 1;
@@ -1360,7 +1360,7 @@ public:
   CounterMap1( int n ) : N( n > 1 ? n - 1 : 1 ), cxt( 0 ) {
     assert( sizeof( S ) == 2 );
     t = ( S * ) calloc( 1 << N, 2 );
-    if( !t )
+    if( t == nullptr )
       handler();
   }
   void update( U32 h ) {
@@ -1376,21 +1376,21 @@ public:
         t[cxt].n = 1;
       }
     }
-    cxt = h >> 32 - N;
+    cxt = h >> (32 - N);
   }
   void add() {
-    U32 d = ( t[cxt].c + 256 >> 7 - ch.bpos() );
+    U32 d = ( (t[cxt].c + 256) >> (7 - ch.bpos()) );
     if( d >> 1 == ch() ) {
-      if( d & 1 )
+      if( (d & 1) != 0u )
         mixer.add( 0, t[cxt].n );
       else
         mixer.add( t[cxt].n, 0 );
     }
   }
   void write() {
-    U32 d = ( t[cxt].c + 256 >> 7 - ch.bpos() );
+    U32 d = ( (t[cxt].c + 256) >> (7 - ch.bpos()) );
     if( d >> 1 == ch() ) {
-      if( d & 1 )
+      if( (d & 1) != 0u )
         mixer.write( 0, t[cxt].n );
       else
         mixer.write( t[cxt].n, 0 );
@@ -1443,7 +1443,7 @@ void CounterMap2::update( U32 h ) {
 
   // Update the secondary context
   for( int i = 0; i < 8; ++i ) {
-    if( cp[i] ) {
+    if( cp[i] != nullptr ) {
       cp[i]->add( ( c >> ( 7 - i ) ) & 1 );
       cp[i] = 0;
     }
@@ -1520,11 +1520,11 @@ public:
       t2( MEM + 15 ),
       t3( MEM + 17 ),
       t4( MEM + 18 ),
-      t5( ( MEM >= 1 ) * ( MEM + 18 ) ),
-      t6( ( MEM >= 3 ) * ( MEM + 18 ) ),
-      t7( ( MEM >= 3 ) * ( MEM + 18 ) ),
-      t8( ( MEM >= 5 ) * ( MEM + 18 - ( MEM >= 6 ) ) ),
-      t9( ( MEM >= 5 ) * ( MEM + 18 - ( MEM >= 6 ) ) ),
+      t5( static_cast<int>( MEM >= 1 ) * ( MEM + 18 ) ),
+      t6( static_cast<int>( MEM >= 3 ) * ( MEM + 18 ) ),
+      t7( static_cast<int>( MEM >= 3 ) * ( MEM + 18 ) ),
+      t8( static_cast<int>( MEM >= 5 ) * ( MEM + 18 - static_cast<int>( MEM >= 6 ) ) ),
+      t9( static_cast<int>( MEM >= 5 ) * ( MEM + 18 - static_cast<int>( MEM >= 6 ) ) ),
       cxt( new U32[N] ) {
     cp0 = &t0[0];
     cp1 = &t1[0];
@@ -1539,7 +1539,7 @@ public:
 // Update with bit y, put array of 0 counts in n0 and 1 counts in n1
 inline void CharModel::model() {
   // Update models
-  int y = ch( ch.bpos() == 0 ) & 1; // last input bit
+  int y = ch( static_cast<int>(ch.bpos() == 0) ) & 1; // last input bit
   cp0->add( y );
   cp1->add( y );
 
@@ -1598,7 +1598,7 @@ class MatchModel : public Model {
   U32 end[M];     // Points to last matching byte + 1, 0 if no match
   U32 *ptr;       // Hash table of pointers [2^(MEM+17)]
 public:
-  MatchModel() : N( 17 + MEM - ( MEM >= 6 ) ), ptr( new U32[1 << N] ) {
+  MatchModel() : N( 17 + MEM - static_cast<int>( MEM >= 6 ) ), ptr( new U32[1 << N] ) {
     memset( ptr, 0, ( 1 << N ) * sizeof( U32 ) );
     hash[0] = hash[1] = 0;
     for( int i = 0; i < M; ++i )
@@ -1616,11 +1616,11 @@ inline void MatchModel::model() {
       h = hash[1] >> ( 32 - N ); // 1/16 of 8-contexts are hashed to 32 bytes
     int i;
     for( i = 0; i < M; ++i ) {
-      if( end[i] && ch( 1 ) == ch[end[i]] )
+      if( (end[i] != 0u) && ch( 1 ) == ch[end[i]] )
         ++end[i];
     }
     for( i = 0; i < M; ++i ) {
-      if( !end[i] ) { // Search for a matching context
+      if( end[i] == 0u ) { // Search for a matching context
         int j;
         for( j = 0; j < M; ++j ) // Search for duplicate match
           if( ptr[h] == end[j] )
@@ -1647,7 +1647,7 @@ inline void MatchModel::model() {
   // Predict the bit found in the matching contexts
   int n0 = 0, n1 = 0;
   for( int i = 0; i < M; ++i ) {
-    if( end[i] ) {
+    if( end[i] != 0u ) {
       U32 d = ( ch[end[i]] + 256 ) >> ( 7 - ch.bpos() );
       if( ( d >> 1 ) != ch() )
         begin[i] = end[i] = 0;
@@ -1657,7 +1657,7 @@ inline void MatchModel::model() {
           wt = 511;
         else
           wt = wt * wt >> 2;
-        if( d & 1 )
+        if( (d & 1) != 0u )
           n1 += wt;
         else
           n0 += wt;
@@ -1684,7 +1684,7 @@ class RecordModel : public Model {
   int repeat1, repeat2;          // 2 last cycle lengths
 public:
   RecordModel() :
-      SIZE( ( MEM >= 4 ) * ( 16 + MEM - ( MEM >= 6 ) ) ),
+      SIZE( static_cast<int>( MEM >= 4 ) * ( 16 + MEM - static_cast<int>( MEM >= 6 ) ) ),
       t0( SIZE ),
       t1( SIZE ),
       t2( SIZE ),
@@ -1740,7 +1740,7 @@ class SparseModel : public Model {
   CounterMap t0, t1, t2, t3, t4, t5, t6, t7, t8; // Sparse models
 public:
   SparseModel() :
-      SIZE( ( MEM >= 4 ) * ( MEM + 15 - ( MEM >= 6 ) ) ),
+      SIZE( static_cast<int>( MEM >= 4 ) * ( MEM + 15 - static_cast<int>( MEM >= 6 ) ) ),
       t0( SIZE ),
       t1( SIZE ),
       t2( SIZE ),
@@ -1794,7 +1794,7 @@ class AnalogModel : public Model {
   int pos3; // pos % 3
 public:
   AnalogModel() :
-      SIZE( ( MEM >= 4 ) * ( MEM + 13 ) ),
+      SIZE( static_cast<int>( MEM >= 4 ) * ( MEM + 13 ) ),
       t0( SIZE ),
       t1( SIZE ),
       t2( SIZE ),
@@ -1839,7 +1839,7 @@ class WordModel : public Model {
   U32 word[N]; // Hashes of last N words of letters only, lower case
 public:
   WordModel() :
-      SIZE( ( MEM >= 4 ) * ( MEM + 17 - ( MEM >= 6 ) ) ),
+      SIZE( static_cast<int>( MEM >= 4 ) * ( MEM + 17 - static_cast<int>( MEM >= 6 ) ) ),
       t0( SIZE ),
       t1( SIZE ),
       t2( SIZE ),
@@ -1856,12 +1856,12 @@ public:
       int c = ch( 1 );
       if( c > 32 ) {
         cxt[0] ^= hash( cxt[0], c );
-      } else if( cxt[0] ) {
+      } else if( cxt[0] != 0u ) {
         for( int i = N - 1; i > 0; --i )
           cxt[i] = cxt[i - 1];
         cxt[0] = 0;
       }
-      if( isalpha( c ) || c >= 192 )
+      if( (isalpha( c ) != 0) || c >= 192 )
         word[0] ^= hash( word[0], tolower( c ), 1 );
       else {
         for( int i = N - 1; i > 0; --i )
@@ -1928,7 +1928,7 @@ public:
         // ch(0) should be this if context matches so far
         int y = ( r >> ( 31 - ch.bpos() ) ) & 1; // predicted bit
         if( ch( 0 ) == ck && ch( 1 ) == ( ( r >> 16 ) & 0xff ) ) {
-          if( y )
+          if( y != 0 )
             n1 = 0xffff; //t[i].n*(ch.bpos()+23);
           else
             n0 = 0xffff; //t[i].n*(ch.bpos()+23);
@@ -1944,7 +1944,7 @@ public:
         U32 ck = ( ( r & 0xff0000 ) + 0x1000000 ) >> ( 24 - ch.bpos() );
         int y = ( r >> ( 23 - ch.bpos() ) ) & 1;
         if( ch( 0 ) == ck && ch( 1 ) == ( ( r >> 8 ) & 0xff ) ) {
-          if( y )
+          if( y != 0 )
             n1 = 0xffff; //t[i].n*(ch.bpos()+17);
           else
             n0 = 0xffff; //t[i].n*(ch.bpos()+17);
@@ -1960,7 +1960,7 @@ public:
         U32 ck = ( ( r & 0xff00 ) + 0x10000 ) >> ( 16 - ch.bpos() );
         int y = ( r >> ( 15 - ch.bpos() ) ) & 1;
         if( ch( 0 ) == ck ) {
-          if( y )
+          if( y != 0 )
             n1 = t[i].n * ( ch.bpos() + 9 );
           else
             n0 = t[i].n * ( ch.bpos() + 9 );
@@ -2111,7 +2111,7 @@ inline void Predictor::update( int y ) {
 
   // Get final probability, interpolate SSE and average with original
   if( MEM >= 1 ) {
-    context = ( ch( 0 ) * 4 + ch( 1 ) / 64 ) * 2 + ( ch.pos( 0, 3 ) < ch.pos( 32, 3 ) ); // for SSE
+    context = ( ch( 0 ) * 4 + ch( 1 ) / 64 ) * 2 + static_cast<unsigned int>( ch.pos( 0, 3 ) < ch.pos( 32, 3 ) ); // for SSE
     ssep = ssemap( nextp );
     U32 wt = ssep % SSESCALE;
     U32 i = ssep / SSESCALE;
@@ -2178,7 +2178,7 @@ inline void Encoder::encode( int y ) {
     xmid += ( xdiff * p ) >> 12;
 
   // Update the range
-  if( y )
+  if( y != 0 )
     x2 = xmid;
   else
     x1 = xmid + 1;
@@ -2320,7 +2320,7 @@ int main( int argc, char **argv ) {
 
   // Read and remove -MEM option
   if( argc > 1 && argv[1][0] == '-' ) {
-    if( isdigit( argv[1][1] ) && argv[1][2] == 0 ) {
+    if( (isdigit( argv[1][1] ) != 0) && argv[1][2] == 0 ) {
       MEM = argv[1][1] - '0';
     } else
       printf( "Option %s ignored\n", argv[1] );
@@ -2335,7 +2335,7 @@ int main( int argc, char **argv ) {
 
   // Extract files
   FILE *archive = fopen( argv[1], "rb" );
-  if( archive ) {
+  if( archive != nullptr ) {
     if( argc > 2 ) {
       printf( "File %s already exists\n", argv[1] );
       return 1;
@@ -2388,7 +2388,7 @@ int main( int argc, char **argv ) {
       FILE *f = fopen( filename[i].c_str(), "rb" );
       const long size = filesize[i];
       uncompressed_bytes += size;
-      if( f ) {
+      if( f != nullptr ) {
         bool different = false;
         for( long j = 0; j < size; ++j ) {
           int c1 = e.decode();
@@ -2406,14 +2406,14 @@ int main( int argc, char **argv ) {
       // Extract to new file
       else {
         f = fopen( filename[i].c_str(), "wb" );
-        if( !f )
+        if( f == nullptr )
           printf( "cannot create, skipping...\n" );
         for( long j = 0; j < size; ++j ) {
           int c = e.decode();
-          if( f )
+          if( f != nullptr )
             putc( c, f );
         }
-        if( f ) {
+        if( f != nullptr ) {
           printf( "extracted\n" );
           fclose( f );
         }
@@ -2444,7 +2444,7 @@ int main( int argc, char **argv ) {
     int i;
     for( i = 0; i < int( filename.size() ); ++i ) {
       FILE *f = fopen( filename[i].c_str(), "rb" );
-      if( !f ) {
+      if( f == nullptr ) {
         printf( "File not found, skipping: %s\n", filename[i].c_str() );
         filesize.push_back( -1 );
       } else {
@@ -2460,7 +2460,7 @@ int main( int argc, char **argv ) {
 
     // Write header
     archive = fopen( argv[1], "wb" );
-    if( !archive ) {
+    if( archive == nullptr ) {
       printf( "Cannot create archive: %s\n", argv[1] );
       return 1;
     }
@@ -2484,13 +2484,13 @@ int main( int argc, char **argv ) {
         FILE *f = fopen( filename[i].c_str(), "rb" );
         int c;
         for( long j = 0; j < size; ++j ) {
-          if( f )
+          if( f != nullptr )
             c = getc( f );
           else
             c = 0;
           e.encode( c );
         }
-        if( f )
+        if( f != nullptr )
           fclose( f );
         printf( "%ld\n", ftell( archive ) - file_start );
         file_start = ftell( archive );

@@ -178,7 +178,7 @@ typedef unsigned int U32;
 
 // Error handler: print message if any, and exit
 void quit( const char *message = 0 ) {
-  if( message )
+  if( message != nullptr )
     printf( "%s\n", message );
   exit( 1 );
 }
@@ -296,7 +296,7 @@ protected:
     if( n < limit )
       ++p0;
     //else p0=pr*1024+limit;
-    p0 += ( y - pr >> 3 ) * dt[n] & 0xfffffc00;
+    p0 += ( (y - pr) >> 3 ) * dt[n] & 0xfffffc00;
     p[0] = p0;
   }
 
@@ -343,7 +343,7 @@ public:
     cx = cx * 24 + ( pr >> 12 );
     assert( cx >= 0 && cx < N - 1 );
     cxt = cx + ( wt >> 11 );
-    pr = ( t[cx] >> 13 ) * ( 0x1000 - wt ) + ( t[cx + 1] >> 13 ) * wt >> 19;
+    pr = (( t[cx] >> 13 ) * ( 0x1000 - wt ) + ( t[cx + 1] >> 13 ) * wt) >> 19;
     return pr;
   }
 };
@@ -395,13 +395,13 @@ inline int dot_product(int *w, int n) {
 #else
 inline void train( int *w, int err ) {
   int *t = mxr_tx;
-  w[0] += t[0] * err + 0x8000 >> 16;
-  w[1] += t[1] * err + 0x8000 >> 16;
-  w[2] += t[2] * err + 0x8000 >> 16;
-  w[3] += t[3] * err + 0x8000 >> 16;
-  w[4] += t[4] * err + 0x8000 >> 16;
-  w[5] += t[5] * err + 0x8000 >> 16;
-  w[6] += t[6] * err + 0x8000 >> 16;
+  w[0] += (t[0] * err + 0x8000) >> 16;
+  w[1] += (t[1] * err + 0x8000) >> 16;
+  w[2] += (t[2] * err + 0x8000) >> 16;
+  w[3] += (t[3] * err + 0x8000) >> 16;
+  w[4] += (t[4] * err + 0x8000) >> 16;
+  w[5] += (t[5] * err + 0x8000) >> 16;
+  w[6] += (t[6] * err + 0x8000) >> 16;
 }
 inline int dot_product( int *w ) {
   int *t = mxr_tx;
@@ -600,8 +600,8 @@ int MatchModel::p( int y, Mixer &m ) {
 
   // predict
   int cxt = c0;
-  if( len > 0 && ( buf[match] + 256 >> 8 - bcount ) == cxt ) {
-    int b = buf[match] >> 7 - bcount & 1; // next bit
+  if( len > 0 && ( (buf[match] + 256) >> (8 - bcount) ) == cxt ) {
+    int b = buf[match] >> (7 - bcount) & 1; // next bit
     if( len < 16 )
       cxt = len * 2 + b;
     else
@@ -697,7 +697,7 @@ void Predictor::update( int y ) {
       cp[4] = t[h[4] + c0] + 1;
       cp[5] = t[h[5] + c0] + 1;
     } else {
-      int j = y + 1 << ( bcount & 3 ) - 1;
+      int j = (y + 1) << (( bcount & 3 ) - 1);
       cp[1] += j;
       cp[2] += j;
       cp[3] += j;
@@ -710,9 +710,9 @@ void Predictor::update( int y ) {
   // predict
   int y22 = y << 22, len = mm.p( y22, m ), order;
   if( len == 0 )
-    order = ( *cp[1] != 0 ) + ( *cp[2] != 0 ) + ( *cp[3] != 0 ) + ( *cp[4] != 0 );
+    order = static_cast<int>( *cp[1] != 0 ) + static_cast<int>( *cp[2] != 0 ) + static_cast<int>( *cp[3] != 0 ) + static_cast<int>( *cp[4] != 0 );
   else
-    order = 5 + ( len >= 8 ) + ( len >= 12 ) + ( len >= 16 ) + ( len >= 32 );
+    order = 5 + static_cast<int>( len >= 8 ) + static_cast<int>( len >= 12 ) + static_cast<int>( len >= 16 ) + static_cast<int>( len >= 32 );
   m_add( 1, sm[0].p( y22, *cp[0] ) );
   m_add( 2, sm[1].p( y22, *cp[1] ) );
   m_add( 3, sm[2].p( y22, *cp[2] ) );
@@ -721,8 +721,8 @@ void Predictor::update( int y ) {
   m_add( 6, sm[5].p( y22, *cp[5] ) );
   m.set( order + 10 * ( h[0] >> 13 ) );
   pr = m.p();
-  pr = pr + 3 * a1.pp( y22, pr, c0 ) >> 2;
-  pr = pr + 3 * a2.pp( y22, pr, c0 ^ h[0] >> 2 ) >> 2;
+  pr = (pr + 3 * a1.pp( y22, pr, c0 )) >> 2;
+  pr = (pr + 3 * a2.pp( y22, pr, c0 ^ h[0] >> 2 )) >> 2;
 }
 
 //////////////////////////// Encoder ////////////////////////////
@@ -752,12 +752,12 @@ private:
   int code( int y = 0 ) {
     int p = predictor.p();
     assert( p >= 0 && p < 4096 );
-    p += p < 2048;
-    U32 xmid = x1 + ( x2 - x1 >> 12 ) * p + ( ( x2 - x1 & 0xfff ) * p >> 12 );
+    p += static_cast<int>(p < 2048);
+    U32 xmid = x1 + ( (x2 - x1) >> 12 ) * p + ( ( x2 - x1 & 0xfff ) * p >> 12 );
     assert( xmid >= x1 && xmid < x2 );
     if( mode == DECOMPRESS )
-      y = x <= xmid;
-    y ? ( x2 = xmid ) : ( x1 = xmid + 1 );
+      y = static_cast<int>(x <= xmid);
+    y != 0 ? ( x2 = xmid ) : ( x1 = xmid + 1 );
     predictor.update( y );
     while( ( ( x1 ^ x2 ) & 0xff000000 ) == 0 ) { // pass equal leading bytes of range
       if( mode == COMPRESS )
@@ -817,7 +817,7 @@ void Encoder::flush() {
 
 int main( int argc, char **argv ) {
   // Check arguments
-  if( argc != 4 || !isdigit( argv[1][0] ) && argv[1][0] != 'd' ) {
+  if( argc != 4 || ((isdigit( argv[1][0] ) == 0) && argv[1][0] != 'd') ) {
     printf( "lpaq1 file compressor (C) 2007, Matt Mahoney\n"
             "Licensed under GPL, http://www.gnu.org/copyleft/gpl.html\n"
             "\n"
@@ -831,12 +831,12 @@ int main( int argc, char **argv ) {
 
   // Open input file
   FILE *in = fopen( argv[2], "rb" );
-  if( !in )
+  if( in == nullptr )
     perror( argv[2] ), exit( 1 );
   FILE *out = 0;
 
   // Compress
-  if( isdigit( argv[1][0] ) ) {
+  if( isdigit( argv[1][0] ) != 0 ) {
     MEM = 1 << ( argv[1][0] - '0' + 20 );
 
     // Encode header: version 1, memory option, file size
@@ -846,9 +846,9 @@ int main( int argc, char **argv ) {
       quit( "input file too big" );
     fseek( in, 0, SEEK_SET );
     out = fopen( argv[3], "wb" );
-    if( !out )
+    if( out == nullptr )
       perror( argv[3] ), exit( 1 );
-    fprintf( out, "pQ%c%c%c%c%c%c", 1, argv[1][0], size >> 24, size >> 16, size >> 8, size );
+    fprintf( out, "pQ%c%c%ld%ld%ld%ld", 1, argv[1][0], size >> 24, size >> 16, size >> 8, size );
 
     // Compress
     Encoder e( COMPRESS, out );
@@ -876,7 +876,7 @@ int main( int argc, char **argv ) {
 
     // Decompress
     out = fopen( argv[3], "wb" );
-    if( !out )
+    if( out == nullptr )
       perror( argv[3] ), exit( 1 );
     Encoder e( DECOMPRESS, in );
     while( size-- > 0 )

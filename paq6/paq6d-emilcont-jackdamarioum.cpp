@@ -681,7 +681,7 @@ public:
     return get0() + get1();
   }
   void add( int y ) {
-    if( y ) {
+    if( y != 0 ) {
       if( state < 108 || rnd() < table[state].p1 )
         state = table[state].s11;
       else
@@ -881,9 +881,9 @@ public:
     memset( lpos, 0, 256 * 4 * sizeof( U32 ) );
   }
   void init() {
-    N = 1 << 19 + MEM;
+    N = 1 << (19 + MEM);
     buf = ( U8 * ) calloc( N, 1 );
-    if( !buf )
+    if( buf == nullptr )
       handler();
     buf[0] = 1;
   }
@@ -1017,7 +1017,7 @@ Hashtable<T>::Hashtable( U32 n ) : N( n > 4 ? n - 4 : 1 ), table( 0 ), cxt( 0 ) 
 
   // Align the hash table on a 64 byte cache page boundary
   char *p = ( char * ) calloc( ( 16 << N ) + 64, 1 );
-  if( !p )
+  if( p == nullptr )
     handler();
   p += 64 - ( ( ( long ) p ) & 63 ); // Aligned
   table = ( HashElement * ) p;
@@ -1100,11 +1100,11 @@ void Mixer::update( int y ) {
   }
   if( s0 > 0 && s1 > 0 ) {
     const U32 s = s0 + s1;
-    const U32 sy = y ? s1 : s0;
-    const U32 sy1 = 0xffffffff / sy + ( rnd() & 1023 ) >> 10;
-    const U32 s1 = 0xffffffff / s + ( rnd() & 1023 ) >> 10;
+    const U32 sy = y != 0 ? s1 : s0;
+    const U32 sy1 = (0xffffffff / sy + ( rnd() & 1023 )) >> 10;
+    const U32 s1 = (0xffffffff / s + ( rnd() & 1023 )) >> 10;
     for( int i = 0; i < n; ++i ) {
-      const int dw = int( ( y ? bc1[i] : bc0[i] ) * sy1 - ( bc0[i] + bc1[i] ) * s1 + ( rnd() & 255 ) ) >> 8;
+      const int dw = int( ( y != 0 ? bc1[i] : bc0[i] ) * sy1 - ( bc0[i] + bc1[i] ) * s1 + ( rnd() & 255 ) ) >> 8;
       wt[c][i] = min( 65535, max( 1, int( wt[c][i] + dw ) ) );
     }
   }
@@ -1210,7 +1210,7 @@ public:
   CounterMap1( int n ) : N( n > 1 ? n - 1 : 1 ), cxt( 0 ) {
     assert( sizeof( S ) == 2 );
     t = ( S * ) calloc( 1 << N, 2 );
-    if( !t )
+    if( t == nullptr )
       handler();
   }
   void update( U32 h ) {
@@ -1226,11 +1226,11 @@ public:
         t[cxt].n = 1;
       }
     }
-    cxt = h >> 32 - N;
+    cxt = h >> (32 - N);
   }
   void add() {
-    if( ( U32 )( ( t[cxt].c + 256 ) >> 8 - ch.bpos() ) == ch() ) {
-      if( ( t[cxt].c >> 7 - ch.bpos() ) & 1 )
+    if( ( U32 )( ( t[cxt].c + 256 ) >> (8 - ch.bpos()) ) == ch() ) {
+      if( (( t[cxt].c >> (7 - ch.bpos()) ) & 1) != 0 )
         mixer.add( 0, t[cxt].n );
       else
         mixer.add( t[cxt].n, 0 );
@@ -1282,7 +1282,7 @@ void CounterMap2::update( U32 h ) {
 
   // Update the secondary context
   for( int i = 0; i < 8; ++i ) {
-    if( cp[i] ) {
+    if( cp[i] != nullptr ) {
       cp[i]->add( ( c >> ( 7 - i ) ) & 1 );
       cp[i] = 0;
     }
@@ -1357,9 +1357,9 @@ public:
       t2( MEM + 16 ),
       t3( MEM + 18 ),
       t4( MEM + 20 ),
-      t5( ( MEM >= 1 ) * ( MEM + 20 ) ),
-      t6( ( MEM >= 3 ) * ( MEM + 20 ) ),
-      t7( ( MEM >= 3 ) * ( MEM + 20 ) ),
+      t5( static_cast<int>( MEM >= 1 ) * ( MEM + 20 ) ),
+      t6( static_cast<int>( MEM >= 3 ) * ( MEM + 20 ) ),
+      t7( static_cast<int>( MEM >= 3 ) * ( MEM + 20 ) ),
 
       cxt( new U32[N] ) {
     cp0 = &t0[0];
@@ -1374,7 +1374,7 @@ public:
 // Update with bit y, put array of 0 counts in n0 and 1 counts in n1
 inline void CharModel::model() {
   // Update models
-  int y = ch( ch.bpos() == 0 ) & 1; // last input bit
+  int y = ch( static_cast<int>(ch.bpos() == 0) ) & 1; // last input bit
   cp0->add( y );
   cp1->add( y );
 
@@ -1442,11 +1442,11 @@ inline void MatchModel::model() {
     if( ( hash[0] >> 28 ) == 0 )
       h = hash[1] >> ( 15 - MEM ); // 1/16 of 8-contexts are hashed to 32 bytes
     for( int i = 0; i < M; ++i ) {
-      if( end[i] && ch( 1 ) == ch[end[i]] )
+      if( (end[i] != 0u) && ch( 1 ) == ch[end[i]] )
         ++end[i];
     }
     for( int i = 0; i < M; ++i ) {
-      if( !end[i] ) { // Search for a matching context
+      if( end[i] == 0u ) { // Search for a matching context
         int j;
         for( j = 0; j < M; ++j ) // Search for duplicate match
           if( ptr[h] == end[j] )
@@ -1472,20 +1472,20 @@ inline void MatchModel::model() {
 
   // Test whether the current context is valid in the last 0-7 bits
   for( int i = 0; i < M; ++i ) {
-    if( end[i] && ( ( ch[end[i]] + 256 ) >> ( 8 - ch.bpos() ) ) != ch() )
+    if( (end[i] != 0u) && ( ( ch[end[i]] + 256 ) >> ( 8 - ch.bpos() ) ) != ch() )
       begin[i] = end[i] = 0;
   }
 
   // Predict the bit found in the matching contexts
   int n0 = 0, n1 = 0;
   for( int i = 0; i < M; ++i ) {
-    if( end[i] ) {
+    if( end[i] != 0u ) {
       U32 wt = ( end[i] - begin[i] );
       wt = wt * wt / 4;
       if( wt > 511 )
         wt = 511;
       int y = ( ch[end[i]] >> ( 7 - ch.bpos() ) ) & 1;
-      if( y )
+      if( y != 0 )
         n1 += wt;
       else
         n0 += wt;
@@ -1511,7 +1511,7 @@ class RecordModel : public Model {
   int repeat1, repeat2;          // 2 last cycle lengths
 public:
   RecordModel() :
-      SIZE( ( MEM >= 4 ) * ( 17 + MEM ) ),
+      SIZE( static_cast<int>( MEM >= 4 ) * ( 17 + MEM ) ),
       t0( SIZE ),
       t1( SIZE ),
       t2( SIZE ),
@@ -1567,7 +1567,7 @@ class SparseModel : public Model {
   CounterMap t0, t1, t2, t3, t4, t5, t6, t7, t8, t9; // Sparse models
 public:
   SparseModel() :
-      SIZE( ( MEM >= 5 ) * ( MEM + 17 ) ),
+      SIZE( static_cast<int>( MEM >= 5 ) * ( MEM + 17 ) ),
       t0( SIZE ),
       t1( SIZE ),
       t2( SIZE ),
@@ -1622,7 +1622,7 @@ class AnalogModel : public Model {
   int pos3; // pos % 3
 public:
   AnalogModel() :
-      SIZE( ( MEM >= 5 ) * ( MEM + 17 ) ),
+      SIZE( static_cast<int>( MEM >= 5 ) * ( MEM + 17 ) ),
       t0( SIZE ),
       t1( SIZE ),
       t2( SIZE ),
@@ -1667,7 +1667,7 @@ class WordModel : public Model {
   U32 word[N]; // Hashes of last N words of letters only
 public:
   WordModel() :
-      SIZE( ( MEM >= 4 ) * ( MEM + 18 ) ),
+      SIZE( static_cast<int>( MEM >= 4 ) * ( MEM + 18 ) ),
       t0( 24 ),
       t1( SIZE ),
       t2( SIZE ),
@@ -1682,12 +1682,12 @@ public:
       int c = ch( 1 );
       if( c > 32 ) {
         cxt[0] ^= hash( cxt[0], c );
-      } else if( cxt[0] ) {
+      } else if( cxt[0] != 0u ) {
         for( int i = N - 1; i > 0; --i )
           cxt[i] = cxt[i - 1];
         cxt[0] = 0;
       }
-      if( isalpha( c ) )
+      if( isalpha( c ) != 0 )
         word[0] ^= hash( word[0], tolower( c ), 1 );
       else {
         for( int i = N - 1; i > 0; --i )
@@ -1762,7 +1762,7 @@ class Predictor {
       return PSCALE * ( c1 * 64 + 1 ) / ( n * 64 + 2 );
     }
     void update( int y ) {
-      if( y )
+      if( y != 0 )
         ++c1;
       if( ++n > 254 ) { // Roll over count overflows
         c1 /= 2;
@@ -1850,7 +1850,7 @@ inline void Predictor::update( int y ) {
 
   // Get final probability, interpolate SSE and average with original
   if( MEM >= 1 ) {
-    context = ( ch( 0 ) * 4 + ch( 1 ) / 64 ) * 2 + ( ch.pos( 0, 3 ) < ch.pos( 32, 3 ) ); // for SSE
+    context = ( ch( 0 ) * 4 + ch( 1 ) / 64 ) * 2 + static_cast<unsigned int>( ch.pos( 0, 3 ) < ch.pos( 32, 3 ) ); // for SSE
     ssep = ssemap( nextp );
     U32 wt = ssep % SSESCALE;
     U32 i = ssep / SSESCALE;
@@ -1915,7 +1915,7 @@ inline void Encoder::encode( int y ) {
     xmid += ( xdiff * p ) >> 12;
 
   // Update the range
-  if( y )
+  if( y != 0 )
     x2 = xmid;
   else
     x1 = xmid + 1;
@@ -2012,7 +2012,7 @@ public:
   void encode( int c ) {
     if( filetype == TEXT ) {
       // Convert uppercase to U + lowercase
-      if( isupper( c ) ) {
+      if( isupper( c ) != 0 ) {
         compress( 'U' );
         c = tolower( c );
       }
@@ -2076,7 +2076,7 @@ int main( int argc, char **argv ) {
 
   // Read and remove -m option
   if( argc > 1 && argv[1][0] == '-' ) {
-    if( isdigit( argv[1][1] ) ) {
+    if( isdigit( argv[1][1] ) != 0 ) {
       MEM = argv[1][1] - '0';
       printf( "Memory usage option -%d\n", MEM );
     } else
@@ -2092,7 +2092,7 @@ int main( int argc, char **argv ) {
 
   // Extract files
   FILE *archive = fopen( argv[1], "rb" );
-  if( archive ) {
+  if( archive != nullptr ) {
     if( argc > 2 ) {
       printf( "File %s already exists\n", argv[1] );
       return 1;
@@ -2145,7 +2145,7 @@ int main( int argc, char **argv ) {
       FILE *f = fopen( filename[i].c_str(), "rb" );
       const long size = filesize[i];
       uncompressed_bytes += size;
-      if( f ) {
+      if( f != nullptr ) {
         bool different = false;
         for( long j = 0; j < size; ++j ) {
           int c1 = e.decode();
@@ -2163,14 +2163,14 @@ int main( int argc, char **argv ) {
       // Extract to new file
       else {
         f = fopen( filename[i].c_str(), "wb" );
-        if( !f )
+        if( f == nullptr )
           printf( "cannot create, skipping...\n" );
         for( long j = 0; j < size; ++j ) {
           int c = e.decode();
-          if( f )
+          if( f != nullptr )
             putc( c, f );
         }
-        if( f ) {
+        if( f != nullptr ) {
           printf( "extracted\n" );
           fclose( f );
         }
@@ -2200,7 +2200,7 @@ int main( int argc, char **argv ) {
     // Get file sizes
     for( int i = 0; i < int( filename.size() ); ++i ) {
       FILE *f = fopen( filename[i].c_str(), "rb" );
-      if( !f ) {
+      if( f == nullptr ) {
         printf( "File not found, skipping: %s\n", filename[i].c_str() );
         filesize.push_back( -1 );
       } else {
@@ -2216,7 +2216,7 @@ int main( int argc, char **argv ) {
 
     // Write header
     archive = fopen( argv[1], "wb" );
-    if( !archive ) {
+    if( archive == nullptr ) {
       printf( "Cannot create archive: %s\n", argv[1] );
       return 1;
     }
@@ -2243,13 +2243,13 @@ int main( int argc, char **argv ) {
         FILE *f = fopen( filename[i].c_str(), "rb" );
         int c;
         for( long j = 0; j < size; ++j ) {
-          if( f )
+          if( f != nullptr )
             c = getc( f );
           else
             c = 0;
           e.encode( c );
         }
-        if( f )
+        if( f != nullptr )
           fclose( f );
         printf( "%ld\n", ftell( archive ) - file_start );
         file_start = ftell( archive );

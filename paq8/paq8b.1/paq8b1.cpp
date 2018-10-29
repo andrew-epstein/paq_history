@@ -468,7 +468,7 @@ inline int max( int a, int b ) {
 
 // strings are equal ignoring case?
 int equals( const char *a, const char *b ) {
-  while( *a && *b ) {
+  while( (*a != 0) && (*b != 0) ) {
     int c1 = *a;
     if( c1 >= 'A' && c1 <= 'Z' )
       c1 += 'a' - 'A';
@@ -480,7 +480,7 @@ int equals( const char *a, const char *b ) {
     ++a;
     ++b;
   }
-  return *a == *b;
+  return static_cast<int>(*a == *b);
 }
 
 //////////////////////// Program Checker /////////////////////
@@ -553,7 +553,7 @@ Array<T>::Array( int i ) : n( i ) {
   const int sz = 64 + n * sizeof( T );
   programChecker.alloc( sz );
   ptr = ( char * ) calloc( sz, 1 );
-  if( !ptr )
+  if( ptr == nullptr )
     fprintf( stderr, "Out of memory\n" ), exit( 1 );
   data = ( T * ) ( ptr + 64 - ( ( ( long ) ptr ) & 63 ) );
   assert( ( char * ) data >= ptr && ( char * ) data <= ptr + 64 );
@@ -599,12 +599,12 @@ class Buf {
 
 public:
   Buf( int i = 0 ) : b( 0 ) {
-    if( i )
+    if( i != 0 )
       setsize( i );
   }
   void setsize( int i ) {
     assert( b == 0 );
-    if( !i )
+    if( i == 0 )
       return;
     assert( i > 0 && ( i & ( i - 1 ) ) == 0 );
     b = new Array<U8>( i );
@@ -1046,9 +1046,9 @@ public:
 
   // predict next bit
   int p() {
-    while( nx & 7 )
+    while( (nx & 7) != 0 )
       tx[nx++] = 0; // pad
-    if( mp ) {      // combine outputs
+    if( mp != nullptr ) {      // combine outputs
       mp->update();
       for( int i = 0; i < ncxt; ++i ) {
         pr[i] = squash( dot_product( &tx[0], &wx[cxt[i] * N], nx ) >> 5 );
@@ -1121,11 +1121,11 @@ public:
     assert( pr >= 0 && pr < 4096 && cxt >= 0 && cxt < N && rate > 0 && rate < 32 );
     pr = stretch( pr );
     int g = ( y << 16 ) + ( y << rate ) - y - y;
-    t[index] += g - t[index] >> rate;
-    t[index + 1] += g - t[index + 1] >> rate;
+    t[index] += (g - t[index]) >> rate;
+    t[index + 1] += (g - t[index + 1]) >> rate;
     const int w = pr & 127; // interpolation weight (33 points)
-    index = ( pr + 2048 >> 7 ) + cxt * 33;
-    return t[index] * ( 128 - w ) + t[index + 1] * w >> 11;
+    index = ( (pr + 2048) >> 7 ) + cxt * 33;
+    return (t[index] * ( 128 - w ) + t[index + 1] * w) >> 11;
   }
 };
 
@@ -1164,7 +1164,7 @@ public:
   }
   int p( int cx ) {
     assert( cx >= 0 && cx < 256 );
-    t[cxt] += ( y << 16 ) - t[cxt] + 128 >> 8;
+    t[cxt] += (( y << 16 ) - t[cxt] + 128) >> 8;
     return t[cxt = cx] >> 4;
   }
 };
@@ -1279,10 +1279,10 @@ inline int mix2( Mixer &m, int s, StateMap &sm ) {
   p1 >>= 4;
   int p0 = 255 - p1;
   m.add( p1 - p0 );
-  m.add( st * ( !n0 - !n1 ) );
-  m.add( ( p1 & -!n0 ) - ( p0 & -!n1 ) );
-  m.add( ( p1 & -!n1 ) - ( p0 & -!n0 ) );
-  return s > 0;
+  m.add( st * static_cast<int>( static_cast<int>(static_cast<int>(n0) == 0 - static_cast<int>(n1)) == 0 ) );
+  m.add( ( (p1 & (static_cast<int>(-static_cast<int>(n0)) == 0)) ) - ( (p0 & (static_cast<int>(-static_cast<int>(n1)) == 0)) ) );
+  m.add( ( (p1 & (static_cast<int>(-static_cast<int>(n1)) == 0)) ) - ( (p0 & (static_cast<int>(-static_cast<int>(n0)) == 0)) ) );
+  return static_cast<int>(s > 0);
 }
 
 // A RunContextMap maps a context into the next byte and a repeat
@@ -1304,14 +1304,14 @@ public:
     cp = t[cx] + 1;
   }
   int p() { // predict next bit
-    if( cp[1] + 256 >> 8 - bpos == c0 )
-      return ( ( cp[1] >> 7 - bpos & 1 ) * 2 - 1 ) * ilog( cp[0] + 1 ) * 8;
+    if( (cp[1] + 256) >> (8 - bpos) == c0 )
+      return ( ( cp[1] >> (7 - bpos) & 1 ) * 2 - 1 ) * ilog( cp[0] + 1 ) * 8;
     else
       return 0;
   }
   int mix( Mixer &m ) { // return run length
     m.add( p() );
-    return cp[0] != 0;
+    return static_cast<int>(cp[0] != 0);
   }
 };
 
@@ -1333,7 +1333,7 @@ public:
     cxt = cx * 256 & t.size() - 256;
   }
   void mix( Mixer &m, int rate = 7 ) {
-    *cp += ( y << 16 ) - *cp + ( 1 << rate - 1 ) >> rate;
+    *cp += (( y << 16 ) - *cp + ( 1 << (rate - 1) )) >> rate;
     cp = &t[cxt + c0];
     m.add( stretch( *cp >> 4 ) );
   }
@@ -1470,7 +1470,7 @@ int ContextMap::mix1( Mixer &m, int y1 ) {
     assert( cp[i] >= &t[0].bh[0][0] && cp[i] <= &t[t.size() - 1].bh[6][6] );
     assert( ( long( cp[i] ) & 63 ) >= 15 );
     int ns = nex( *cp[i], y1 );
-    if( ns >= 204 && rnd() << ( 452 - ns >> 3 ) )
+    if( ns >= 204 && ((rnd() << ( (452 - ns) >> 3 )) != 0u) )
       ns -= 4; // probabilistic increment
     *cp[i] = ns;
 
@@ -1483,7 +1483,7 @@ int ContextMap::mix1( Mixer &m, int y1 ) {
       cp[i] = cp0[i] + 3 + ( cc & 3 );
 
     // Update run count of previous context
-    if( !bp ) {
+    if( bp == 0 ) {
       if( runp[i][0] == 0 || runp[i][1] != c1 )
         runp[i][0] = 1, runp[i][1] = c1; // count, value, mark
       else if( runp[i][0] < 255 )
@@ -1492,8 +1492,8 @@ int ContextMap::mix1( Mixer &m, int y1 ) {
     }
 
     // predict from byte context
-    if( bp < 8 && runp[i][1] + 256 >> 8 - bp == cc )
-      m.add( ( ( runp[i][1] >> 7 - bp & 1 ) * 2 - 1 ) * 8 * ilog( runp[i][0] + 1 ) );
+    if( bp < 8 && (runp[i][1] + 256) >> (8 - bp) == cc )
+      m.add( ( ( runp[i][1] >> (7 - bp) & 1 ) * 2 - 1 ) * 8 * ilog( runp[i][0] + 1 ) );
     else
       m.add( 0 );
 
@@ -1523,19 +1523,19 @@ int matchModel( Mixer &m ) {
   static int len = 0;         // length of match, or 0 if no match
   static int result = 0;
 
-  if( !bpos ) {
+  if( bpos == 0 ) {
     h = h * 997 * 8 + buf( 1 ) + 1 & t.size() - 1; // update context hash
-    if( len )
+    if( len != 0 )
       ++len, ++ptr;
     else { // find match
       ptr = t[h];
-      if( ptr && pos - ptr < buf.size() )
+      if( (ptr != 0) && pos - ptr < buf.size() )
         while( buf( len + 1 ) == buf[ptr - len - 1] && len < MAXLEN )
           ++len;
     }
     t[h] = pos; // update hash table
     result = len;
-    if( result > 0 && !( result & 0xfff ) )
+    if( result > 0 && (( result & 0xfff ) == 0) )
       printf( "pos=%d len=%d ptr=%d\n", pos, len, ptr );
   }
 
@@ -1543,8 +1543,8 @@ int matchModel( Mixer &m ) {
   if( len > MAXLEN )
     len = MAXLEN;
   int sgn;
-  if( len && buf( 1 ) == buf[ptr - 1] && c0 == buf[ptr] + 256 >> 8 - bpos ) {
-    if( buf[ptr] >> 7 - bpos & 1 )
+  if( (len != 0) && buf( 1 ) == buf[ptr - 1] && c0 == (buf[ptr] + 256) >> (8 - bpos) ) {
+    if( (buf[ptr] >> (7 - bpos) & 1) != 0 )
       sgn = 1;
     else
       sgn = -1;
@@ -1578,9 +1578,9 @@ void picModel( Mixer &m ) {
   r1 += r1 + ( ( buf( 215 ) >> ( 7 - bpos ) ) & 1 );
   r2 += r2 + ( ( buf( 431 ) >> ( 7 - bpos ) ) & 1 );
   r3 += r3 + ( ( buf( 647 ) >> ( 7 - bpos ) ) & 1 );
-  cxt[0] = r0 & 0x7 | r1 >> 4 & 0x38 | r2 >> 3 & 0xc0;
-  cxt[1] = 0x100 + ( r0 & 1 | r1 >> 4 & 0x3e | r2 >> 2 & 0x40 | r3 >> 1 & 0x80 );
-  cxt[2] = 0x200 + ( r0 & 0x3f ^ r1 & 0x3ffe ^ r2 << 2 & 0x7f00 ^ r3 << 5 & 0xf800 );
+  cxt[0] = (r0 & 0x7) | (r1 >> 4 & 0x38) | (r2 >> 3 & 0xc0);
+  cxt[1] = 0x100 + ( (r0 & 1) | (r1 >> 4 & 0x3e) | (r2 >> 2 & 0x40) | (r3 >> 1 & 0x80) );
+  cxt[2] = 0x200 + ( (r0 & 0x3f) ^ (r1 & 0x3ffe) ^ (r2 << 2 & 0x7f00) ^ (r3 << 5 & 0xf800) );
 
   // predict
   for( i = 0; i < N; ++i )
@@ -1603,10 +1603,10 @@ void wordModel( Mixer &m ) {
     int c = c4 & 255;
     if( c >= 'A' && c <= 'Z' )
       c += 'a' - 'A';
-    if( c >= 'a' && c <= 'z' || c >= 128 ) {
+    if( (c >= 'a' && c <= 'z') || c >= 128 ) {
       word0 = word0 * 263 * 4 + c;
       text0 = text0 * 997 * 16 + c;
-    } else if( word0 ) {
+    } else if( word0 != 0u ) {
       word4 = word3 * 11;
       word3 = word2 * 7;
       word2 = word1 * 5;
@@ -1650,12 +1650,12 @@ void recordModel( Mixer &m ) {
   static ContextMap cm( MEM * 4, 7 );
 
   // Find record length
-  if( !bpos ) {
+  if( bpos == 0 ) {
     int c = buf( 1 );
     int w = c4 & 0xffff;
     int r = pos - cpos1[c];
     if( r > 1 && r == cpos1[c] - cpos2[c] && r == cpos2[c] - cpos3[c] && r == cpos3[c] - cpos4[c]
-        && ( r > 15 || ( c == buf( r * 5 + 1 ) ) && c == buf( r * 6 + 1 ) ) ) {
+        && ( r > 15 || (( c == buf( r * 5 + 1 ) ) && c == buf( r * 6 + 1 )) ) ) {
       if( r == rlen1 )
         ++rcount1;
       else if( r == rlen2 )
@@ -1741,7 +1741,7 @@ int bmpModel( Mixer &m ) {
   static ContextMap cm( MEM * 4, 8 );
 
   // Detect .bmp file header (24 bit color, not compressed)
-  if( !bpos && buf( 54 ) == 'B' && buf( 53 ) == 'M' && i4( 44 ) == 54 && i4( 40 ) == 40 && i4( 24 ) == 0 ) {
+  if( (bpos == 0) && buf( 54 ) == 'B' && buf( 53 ) == 'M' && i4( 44 ) == 54 && i4( 40 ) == 40 && i4( 24 ) == 0 ) {
     w = ( i4( 36 ) + 3 & -4 ) * 3; // image width
     const int height = i4( 32 );
     eoi = pos;
@@ -1754,12 +1754,12 @@ int bmpModel( Mixer &m ) {
 
   // Detect .tif file header (24 bit color, not compressed).
   // Parsing is crude, won't work with weird formats.
-  if( !bpos ) {
+  if( bpos == 0 ) {
     if( c4 == 0x49492a00 )
       tiff = pos; // Intel format only
     if( pos - tiff == 4 && c4 != 0x08000000 )
       tiff = 0;                           // 8=normal offset to directory
-    if( tiff && pos - tiff == 200 ) {     // most of directory should be read by now
+    if( (tiff != 0u) && pos - tiff == 200 ) {     // most of directory should be read by now
       int dirsize = i2( pos - tiff - 4 ); // number of 12-byte directory entries
       w = 0;
       int bpp = 0, compression = 0, width = 0, height = 0;
@@ -1792,10 +1792,10 @@ int bmpModel( Mixer &m ) {
     return w = 0;
 
   // Select nearby pixels as context
-  if( !bpos ) {
+  if( bpos == 0 ) {
     int color = pos % 3;
     int mean = buf( 3 ) + buf( w - 3 ) + buf( w ) + buf( w + 3 );
-    const int var = sqrbuf( 3 ) + sqrbuf( w - 3 ) + sqrbuf( w ) + sqrbuf( w + 3 ) - mean * mean / 4 >> 2;
+    const int var = (sqrbuf( 3 ) + sqrbuf( w - 3 ) + sqrbuf( w ) + sqrbuf( w + 3 ) - mean * mean / 4) >> 2;
     mean >>= 2;
     const int logvar = ilog( var );
     int i = 0;
@@ -1804,15 +1804,15 @@ int bmpModel( Mixer &m ) {
     cm.set( hash( ++i, buf( 3 ) >> 2, buf( 2 ) >> 2, color ), 2 );
     cm.set( hash( ++i, buf( w ) >> 2, buf( 1 ) >> 2, color ), 3 );
     cm.set( hash( ++i, buf( w ) >> 2, buf( 1 ) >> 2, color ), 4 );
-    cm.set( hash( ++i, buf( 3 ) + buf( w ) >> 1, color ), 5 );
-    cm.set( hash( ++i, buf( 3 ) + buf( w ) >> 3, buf( 1 ) >> 5, buf( 2 ) >> 5, color ), 6 );
+    cm.set( hash( ++i, (buf( 3 ) + buf( w )) >> 1, color ), 5 );
+    cm.set( hash( ++i, (buf( 3 ) + buf( w )) >> 3, buf( 1 ) >> 5, buf( 2 ) >> 5, color ), 6 );
     cm.set( hash( ++i, mean, logvar >> 5, color ), 7 );
-    scm1.set( buf( 3 ) + buf( w ) >> 1 );
-    scm2.set( buf( 3 ) + buf( w ) - buf( w + 3 ) >> 1 );
-    scm3.set( buf( 3 ) * 2 - buf( 6 ) >> 1 );
-    scm4.set( buf( w ) * 2 - buf( w * 2 ) >> 1 );
-    scm5.set( buf( 3 ) + buf( w ) - buf( w - 3 ) >> 1 );
-    scm6.set( mean >> 1 | logvar << 1 & 0x180 );
+    scm1.set( (buf( 3 ) + buf( w )) >> 1 );
+    scm2.set( (buf( 3 ) + buf( w ) - buf( w + 3 )) >> 1 );
+    scm3.set( (buf( 3 ) * 2 - buf( 6 )) >> 1 );
+    scm4.set( (buf( w ) * 2 - buf( w * 2 )) >> 1 );
+    scm5.set( (buf( 3 ) + buf( w ) - buf( w - 3 )) >> 1 );
+    scm6.set( mean >> 1 | (logvar << 1 & 0x180) );
   }
 
   // Predict next bit
@@ -1925,15 +1925,15 @@ int jpegModel( Mixer &m ) {
   int i, j;
 
   // Be sure to quit on a byte boundary
-  if( !bpos )
-    next_jpeg = jpeg > 1;
-  if( bpos && !jpeg )
+  if( bpos == 0 )
+    next_jpeg = static_cast<int>(jpeg > 1);
+  if( (bpos != 0) && (jpeg == 0) )
     return next_jpeg;
-  if( !bpos && app > 0 )
+  if( (bpos == 0) && app > 0 )
     --app;
   if( app > 0 )
     return next_jpeg;
-  if( !bpos ) {
+  if( bpos == 0 ) {
     // Parse.  Baseline DCT-Huffman JPEG syntax is:
     // SOI APPx... misc... SOF0 DHT... SOS data EOI
     // SOI (= FF D8) start of image.
@@ -1970,7 +1970,7 @@ int jpegModel( Mixer &m ) {
     // FF 00 is interpreted as FF (to distinguish from RSTx, DNL, EOI).
 
     // Detect JPEG (SOI, APPx)
-    if( !jpeg && buf( 4 ) == FF && buf( 3 ) == SOI && buf( 2 ) == FF && buf( 1 ) >> 4 == 0xe ) {
+    if( (jpeg == 0) && buf( 4 ) == FF && buf( 3 ) == SOI && buf( 2 ) == FF && buf( 1 ) >> 4 == 0xe ) {
       jpeg = 1;
       app = sos = sof = htsize = data = mcusize = linesize = 0;
       huffcode = huffbits = huffsize = mcupos = cpos = 0, rs = -1;
@@ -1980,21 +1980,21 @@ int jpegModel( Mixer &m ) {
 
     // Detect end of JPEG when data contains a marker other than RSTx
     // or byte stuff (00).
-    if( jpeg && data && buf( 2 ) == FF && buf( 1 ) && ( buf( 1 ) & 0xf8 ) != RST0 ) {
+    if( (jpeg != 0) && (data != 0) && buf( 2 ) == FF && (buf( 1 ) != 0) && ( buf( 1 ) & 0xf8 ) != RST0 ) {
       jassert( buf( 1 ) == EOI );
       jpeg = 0;
     }
-    if( !jpeg )
+    if( jpeg == 0 )
       return next_jpeg;
 
     // Detect APPx or COM field
-    if( !data && !app && buf( 4 ) == FF && ( buf( 3 ) >> 4 == 0xe || buf( 3 ) == COM ) )
+    if( (data == 0) && (app == 0) && buf( 4 ) == FF && ( buf( 3 ) >> 4 == 0xe || buf( 3 ) == COM ) )
       app = buf( 2 ) * 256 + buf( 1 ) + 2;
 
     // Save pointers to sof, ht, sos, data,
     if( buf( 5 ) == FF && buf( 4 ) == SOS ) {
       int len = buf( 3 ) * 256 + buf( 2 );
-      if( len == 6 + 2 * buf( 1 ) && buf( 1 ) && buf( 1 ) <= 4 ) // buf(1) is Ns
+      if( len == 6 + 2 * buf( 1 ) && (buf( 1 ) != 0) && buf( 1 ) <= 4 ) // buf(1) is Ns
         sos = pos - 5, data = sos + len + 2, jpeg = 2;
     }
     if( buf( 4 ) == FF && buf( 3 ) == DHT && htsize < 8 )
@@ -2046,7 +2046,7 @@ int jpegModel( Mixer &m ) {
 
       // Build Huffman table selection table (indexed by mcupos).
       // Get image width.
-      if( !sof && sos )
+      if( (sof == 0) && (sos != 0) )
         return next_jpeg;
       int ns = buf[sos + 4];
       int nf = buf[sof + 9];
@@ -2061,7 +2061,7 @@ int jpegModel( Mixer &m ) {
               hmax = hv >> 4;
             hv = ( hv & 15 ) * ( hv >> 4 ); // number of blocks in component C
             jassert( hv >= 1 && hv + mcusize <= 10 );
-            while( hv ) {
+            while( hv != 0 ) {
               jassert( mcusize < 10 );
               hufsel[0][mcusize] = buf[sos + 2 * i + 6] >> 4 & 15;
               hufsel[1][mcusize] = buf[sos + 2 * i + 6] & 15;
@@ -2086,13 +2086,13 @@ int jpegModel( Mixer &m ) {
 
   // Decode Huffman
   {
-    if( mcusize && buf( 1 + ( !bpos ) ) != FF ) { // skip stuffed byte
+    if( (mcusize != 0) && buf( 1 + static_cast<int>( bpos == 0 ) ) != FF ) { // skip stuffed byte
       jassert( huffbits <= 32 );
       huffcode += huffcode + y;
       ++huffbits;
       if( rs < 0 ) {
         jassert( huffbits >= 1 && huffbits <= 16 );
-        const int ac = ( mcupos & 63 ) > 0;
+        const int ac = static_cast<const int>(( mcupos & 63 ) > 0);
         jassert( mcupos >= 0 && ( mcupos >> 6 ) < 10 );
         jassert( ac == 0 || ac == 1 );
         const int sel = hufsel[ac][mcupos >> 6];
@@ -2120,11 +2120,11 @@ int jpegModel( Mixer &m ) {
           rs2 = rs1;
           rs1 = rs;
           int x = 0;          // decoded extra bits
-          if( mcupos & 63 ) { // AC
+          if( (mcupos & 63) != 0 ) { // AC
             if( rs == 0 ) {   // EOB
               mcupos = mcupos + 63 & -64;
               jassert( mcupos >= 0 && mcupos <= mcusize && mcupos <= 640 );
-              while( cpos & 63 )
+              while( (cpos & 63) != 0 )
                 cbuf[cpos++] = 0;
             } else { // rs = r zeros + s extra bits for the next nonzero value
                      // If first extra bit is 0 then value is negative.
@@ -2134,25 +2134,25 @@ int jpegModel( Mixer &m ) {
               jassert( mcupos >> 6 == mcupos + r >> 6 );
               mcupos += r + 1;
               x = huffcode & ( 1 << s ) - 1;
-              if( s && !( x >> s - 1 ) )
+              if( (s != 0) && (( x >> (s - 1) ) == 0) )
                 x -= ( 1 << s ) - 1;
               for( int i = r; i >= 1; --i )
                 cbuf[cpos++] = i << 4 | s;
-              cbuf[cpos++] = s << 4 | huffcode << 2 >> s & 3 | 12;
+              cbuf[cpos++] = s << 4 | (huffcode << 2 >> s & 3) | 12;
               ssum += s;
             }
           } else { // DC: rs = 0S, s<12
             jassert( rs < 12 );
             ++mcupos;
             x = huffcode & ( 1 << rs ) - 1;
-            if( rs && !( x >> rs - 1 ) )
+            if( (rs != 0) && (( x >> (rs - 1) ) == 0) )
               x -= ( 1 << rs ) - 1;
             jassert( mcupos >= 0 && mcupos >> 6 < 10 );
             const int comp = color[mcupos >> 6];
             jassert( comp >= 0 && comp < 4 );
             dc = pred[comp] += x;
             jassert( ( cpos & 63 ) == 0 );
-            cbuf[cpos++] = dc + 1023 >> 3;
+            cbuf[cpos++] = (dc + 1023) >> 3;
             ssum4 = ssum3;
             ssum3 = ssum2;
             ssum2 = ssum1;
@@ -2172,7 +2172,7 @@ int jpegModel( Mixer &m ) {
   }
 
   // Estimate next bit probability
-  if( !jpeg || !data )
+  if( (jpeg == 0) || (data == 0) )
     return next_jpeg;
 
   // Context model
@@ -2195,7 +2195,7 @@ int jpegModel( Mixer &m ) {
                              3, 4, 5, 6, 7, 7, 6, 5, 4, 3, 4, 5, 6, 7, 7, 6, 5, 6, 7, 7};
 
   // Update model
-  if( cp[N - 1] ) {
+  if( cp[N - 1] != nullptr ) {
     for( int i = 0; i < N; ++i )
       *cp[i] = nex( *cp[i], y );
   }
@@ -2211,7 +2211,7 @@ int jpegModel( Mixer &m ) {
   jassert( coef >= 0 && coef < 256 );
   const int zu = zzu[mcupos & 63], zv = zzv[mcupos & 63];
   if( hbcount == 0 ) {
-    const int mpos = mcupos >> 4 | !( mcupos & -64 ) << 7;
+    const int mpos = (mcupos >> 4 | (static_cast<int>(static_cast<int>(( mcupos & -64 ))) == 0 << 7));
     int n = 0;
     cxt[0] = hash( ++n, hc, mcupos >> 2, min( 3, mcupos & 63 ) );
     cxt[1] = hash( ++n, hc, mpos >> 4, cbuf[cpos - mcusize] );
@@ -2252,7 +2252,7 @@ int jpegModel( Mixer &m ) {
   m1.set( mcupos, 640 );
   int pr = m1.p();
   pr = a1.p( pr, hc & 1023 );
-  pr = a2.p( pr, hc & 255 | coef << 8 );
+  pr = a2.p( pr, (hc & 255) | coef << 8 );
   m.add( stretch( pr ) );
   return 1;
 }
@@ -2265,8 +2265,8 @@ int jpegModel( Mixer &m ) {
 
 // Get context at buf(i) relevant to parsing 32-bit x86 code
 U32 execxt( int i, int x = 0 ) {
-  int prefix = ( buf( i + 2 ) == 0x0f ) + 2 * ( buf( i + 2 ) == 0x66 ) + 3 * ( buf( i + 2 ) == 0x67 )
-               + 4 * ( buf( i + 3 ) == 0x0f ) + 8 * ( buf( i + 3 ) == 0x66 ) + 12 * ( buf( i + 3 ) == 0x67 );
+  int prefix = static_cast<int>( buf( i + 2 ) == 0x0f ) + 2 * static_cast<int>( buf( i + 2 ) == 0x66 ) + 3 * static_cast<int>( buf( i + 2 ) == 0x67 )
+               + 4 * static_cast<int>( buf( i + 3 ) == 0x0f ) + 8 * static_cast<int>( buf( i + 3 ) == 0x66 ) + 12 * static_cast<int>( buf( i + 3 ) == 0x67 );
   int opcode = buf( i + 1 );
   int modrm = buf( i ) & 0xc7;
   return prefix | opcode << 4 | modrm << 12 | x << 20;
@@ -2275,9 +2275,9 @@ U32 execxt( int i, int x = 0 ) {
 void exeModel( Mixer &m ) {
   const int N = 12;
   static ContextMap cm( MEM * 2, N );
-  if( !bpos ) {
+  if( bpos == 0 ) {
     for( int i = 0; i < N; ++i )
-      cm.set( execxt( i, buf( 1 ) * ( i > 4 ) ), i );
+      cm.set( execxt( i, buf( 1 ) * static_cast<int>( i > 4 ) ), i );
   }
   cm.mix( m );
 }
@@ -2304,18 +2304,18 @@ int contextModel2() {
   if( ismatch > 400 ) { // Model long matches directly
     m.set( 0, 8 );
     return m.p();
-  } else if( isjpeg ) {
+  } else if( isjpeg != 0 ) {
     m.set( 1, 8 );
     m.set( c0, 256 );
     m.set( buf( 1 ), 256 );
     return m.p();
-  } else if( isbmp ) {
+  } else if( isbmp != 0 ) {
     static int col = 0;
     if( ++col >= 24 )
       col = 0;
     m.set( 2, 8 );
     m.set( col, 24 );
-    m.set( buf( isbmp ) + buf( 3 ) >> 4, 32 );
+    m.set( (buf( isbmp ) + buf( 3 )) >> 4, 32 );
     m.set( c0, 256 );
     return m.p();
   }
@@ -2348,7 +2348,7 @@ int contextModel2() {
   }
   m.set( buf( 1 ) + 8, 264 );
   m.set( c0, 256 );
-  m.set( order + 8 * ( c4 >> 5 & 7 ) + 64 * ( buf( 1 ) == buf( 2 ) ), 128 );
+  m.set( order + 8 * ( c4 >> 5 & 7 ) + 64 * static_cast<int>( buf( 1 ) == buf( 2 ) ), 128 );
   m.set( buf( 2 ), 256 );
   int pr = m.p();
   return pr;
@@ -2388,11 +2388,11 @@ void Predictor::update() {
 
   // Filter the context model with APMs
   pr = contextModel2();
-  pr = a1.p( pr, c0 ) * 3 + pr >> 2;
+  pr = (a1.p( pr, c0 ) * 3 + pr) >> 2;
   int pr2 = a2.p( pr, c0 + 256 * buf( 1 ) );
-  int pr3 = a3.p( pr, c0 ^ hash( buf( 1 ), buf( 2 ) ) & 0xffff );
-  int pr4 = a4.p( pr, c0 ^ hash( buf( 1 ), buf( 2 ), buf( 3 ) ) & 0xffff );
-  pr = pr2 + pr3 * 2 + pr4 + 2 >> 2;
+  int pr3 = a3.p( pr, c0 ^ (hash( buf( 1 ), buf( 2 ) ) & 0xffff) );
+  int pr4 = a4.p( pr, c0 ^ (hash( buf( 1 ), buf( 2 ), buf( 3 ) ) & 0xffff) );
+  pr = (pr2 + pr3 * 2 + pr4 + 2) >> 2;
 }
 
 //////////////////////////// Encoder ////////////////////////////
@@ -2423,14 +2423,14 @@ private:
   int code( int i = 0 ) {
     int p = predictor.p();
     assert( p >= 0 && p < 4096 );
-    p += p < 2048;
-    U32 xmid = x1 + ( x2 - x1 >> 12 ) * p + ( ( x2 - x1 & 0xfff ) * p >> 12 );
+    p += static_cast<int>(p < 2048);
+    U32 xmid = x1 + ( (x2 - x1) >> 12 ) * p + ( ( x2 - x1 & 0xfff ) * p >> 12 );
     assert( xmid >= x1 && xmid < x2 );
     if( mode == DECOMPRESS )
-      y = x <= xmid;
+      y = static_cast<int>(x <= xmid);
     else
       y = i;
-    y ? ( x2 = xmid ) : ( x1 = xmid + 1 );
+    y != 0 ? ( x2 = xmid ) : ( x1 = xmid + 1 );
     predictor.update();
     while( ( ( x1 ^ x2 ) & 0xff000000 ) == 0 ) { // pass equal leading bytes of range
       if( mode == COMPRESS )
@@ -2575,7 +2575,7 @@ protected:
   Filter( const Filter & );                  // copying not allowed
   Filter &operator=( const Filter & );       // assignment not allowed
   static void printStatus( int n ) {         // print progress
-    if( n > 0 && !( n & 0x3fff ) )
+    if( n > 0 && (( n & 0x3fff ) == 0) )
       printf( "%10d \b\b\b\b\b\b\b\b\b\b\b", n ), fflush( stdout );
   }
 
@@ -2588,7 +2588,7 @@ public:
   void compress( FILE *f, int n );
   static Filter *make( const char *filename, Encoder &e );
   int read() {
-    return ++reads, tmp ? getc( tmp ) : en.decompress();
+    return ++reads, tmp != nullptr ? getc( tmp ) : en.decompress();
   }
   int reads; // number of calls to read()
 };
@@ -2629,7 +2629,7 @@ void Filter::skip( int n ) {
 // Compress n bytes of f. If filetype > 0 then transform
 void Filter::compress( FILE *f, int n ) {
   // No transform
-  if( !filetype ) {
+  if( filetype == 0 ) {
     en.compress( 0 );
     for( int i = 0; i < n; ++i ) {
       printStatus( i );
@@ -2640,7 +2640,7 @@ void Filter::compress( FILE *f, int n ) {
 
   // Try transform
   tmp = fopen( PAQ_TEMP_FILE, "wb+" );
-  if( !tmp )
+  if( tmp == nullptr )
     perror( PAQ_TEMP_FILE ), exit( 1 );
   encode( f, n );
 
@@ -2701,7 +2701,7 @@ public:
 
 protected:
   void encode( FILE *f, int n ) { // not executed if filetype is 0
-    while( n-- )
+    while( (n--) != 0 )
       putc( getc( f ), tmp );
   }
   int decode() {
@@ -2826,7 +2826,7 @@ public:
   void reset() {
     first = true;
     wrt.WRT_prepare_decoding();
-    if( dtmp )
+    if( dtmp != nullptr )
       fclose( dtmp );
     remove( WRT_TEMP_FILE );
   };
@@ -2839,12 +2839,12 @@ void TextFilter::encode( FILE *f, int n ) {
 
 int TextFilter::decode() {
   if( first ) {
-    if( !tmp ) {
-      if( dtmp )
+    if( tmp == nullptr ) {
+      if( dtmp != nullptr )
         fclose( dtmp );
 
       dtmp = fopen( WRT_TEMP_FILE, "wb" );
-      if( !dtmp )
+      if( dtmp == nullptr )
         perror( WRT_TEMP_FILE ), exit( 1 );
 
       unsigned int size = 0, i;
@@ -2862,7 +2862,7 @@ int TextFilter::decode() {
       fclose( dtmp );
 
       dtmp = fopen( WRT_TEMP_FILE, "rb" );
-      if( !dtmp )
+      if( dtmp == nullptr )
         perror( WRT_TEMP_FILE ), exit( 1 );
       tmp = dtmp;
     }
@@ -2881,16 +2881,16 @@ int TextFilter::decode() {
 // of filetype.
 
 Filter *Filter::make( const char *filename, Encoder &e ) {
-  if( filename ) {
+  if( filename != nullptr ) {
     filetype = 0;
     const char *ext = strrchr( filename, '.' );
-    if( ext
-        && ( equals( ext, ".exe" ) || equals( ext, ".dll" ) || equals( ext, ".obj" ) || equals( ext, ".ocx" )
-             || equals( ext, ".drv" ) ) )
+    if( (ext != nullptr)
+        && ( (equals( ext, ".exe" ) != 0) || (equals( ext, ".dll" ) != 0) || (equals( ext, ".obj" ) != 0) || (equals( ext, ".ocx" ) != 0)
+             || (equals( ext, ".drv" ) != 0) ) )
       filetype = EXE;
-    else if( !ext || !equals( ext, ".dbf" ) ) {
+    else if( (ext == nullptr) || (equals( ext, ".dbf" ) == 0) ) {
       FILE *file = fopen( filename, "rb" );
-      if( file ) {
+      if( file != nullptr ) {
         wrt.defaultSettings( 0, NULL );
         if( wrt.WRT_getFileType( file ) > 0 ) // 0 = binary or not known
         {
@@ -2972,11 +2972,11 @@ int main( int argc, char **argv ) {
   // and ending with \r\n.  The last entry is followed by ^Z
   Mode mode = DECOMPRESS;
   FILE *f = fopen( argv[1], "rb" );
-  if( !f ) {
+  if( f == nullptr ) {
     mode = COMPRESS;
 
     f = fopen( argv[1], "wb" );
-    if( !f )
+    if( f == nullptr )
       perror( argv[1] ), exit( 1 );
     fprintf( f, "%s -%c\r\n", PROGNAME, option );
 
@@ -2988,7 +2988,7 @@ int main( int argc, char **argv ) {
       char *filename;
       if( argc == 2 ) {
         filename = getline();
-        if( !filename || !filename[0] )
+        if( (filename == nullptr) || (filename[0] == 0) )
           break;
       } else {
         if( i == argc )
@@ -2998,13 +2998,13 @@ int main( int argc, char **argv ) {
 
       // Test if files exist and get their sizes, store in archive header
       FILE *fi = fopen( filename, "rb" );
-      if( !fi )
+      if( fi == nullptr )
         perror( filename );
       else {
         fseek( fi, 0, SEEK_END ); // get size
         long size = ftell( fi );
         total_size += size;
-        if( ( size & ~0x7fffffffL ) || ( total_size & ~0x7fffffffL ) ) {
+        if( (( size & ~0x7fffffffL ) != 0) || (( total_size & ~0x7fffffffL ) != 0) ) {
           fprintf( stderr, "File sizes must total less than 2 gigabytes\n" );
           fprintf( f, "-1\tError: over 2 GB\r\n" );
           exit( 1 );
@@ -3026,14 +3026,14 @@ int main( int argc, char **argv ) {
     f = fopen( argv[1], "r+b" );
   else
     f = fopen( argv[1], "rb" );
-  if( !f )
+  if( f == nullptr )
     perror( argv[1] ), exit( 1 );
   long header, body;             // file positions in header, body
   char *filename = getline( f ); // check header
-  if( !filename || strncmp( filename, PROGNAME " -", strlen( PROGNAME ) + 2 ) )
+  if( (filename == nullptr) || (strncmp( filename, PROGNAME " -", strlen( PROGNAME ) + 2 ) != 0) )
     fprintf( stderr, "%s: not a " PROGNAME " file\n", argv[1] ), exit( 1 );
   option = filename[strlen( filename ) - 1];
-  MEM = 0x10000 << option - '0';
+  MEM = 0x10000 << (option - '0');
   buf.setsize( MEM * 8 );
   header = ftell( f );
 
@@ -3057,12 +3057,12 @@ int main( int argc, char **argv ) {
   while( ( filename = getline( f ) ) != 0 ) {
     long size = atol( filename ); // parse size and filename, separated by tab
     total_size += size;
-    while( *filename && *filename != '\t' )
+    while( (*filename != 0) && *filename != '\t' )
       ++filename;
     if( *filename == '\t' )
       ++filename;
     printf( "%ld\t%s", size, filename );
-    if( mode == DECOMPRESS && ++filenum < argc && strcmp( argv[filenum], filename ) ) {
+    if( mode == DECOMPRESS && ++filenum < argc && (strcmp( argv[filenum], filename ) != 0) ) {
       printf( " -> %s", argv[filenum] );
       filename = argv[filenum];
     }
@@ -3075,7 +3075,7 @@ int main( int argc, char **argv ) {
     // If file exists in COMPRESS mode, compare, else compress/decompress
     FILE *fi = fopen( filename, "rb" );
     if( mode == COMPRESS ) {
-      if( !fi )
+      if( fi == nullptr )
         perror( filename ), exit( 1 );
       filetype = 0;
       Filter *fp = Filter::make( filename, en ); // sets filetype
@@ -3086,11 +3086,11 @@ int main( int argc, char **argv ) {
       filetype = 0;
       filetype = en.decompress();
       Filter *fp = Filter::make( 0, en );
-      if( fi )
+      if( fi != nullptr )
         fp->compare( fi, size );
       else { // extract
         fi = fopen( filename, "wb" );
-        if( fi )
+        if( fi != nullptr )
           fp->decompress( fi, size );
         else {
           perror( filename );
@@ -3099,7 +3099,7 @@ int main( int argc, char **argv ) {
       }
       delete fp;
     }
-    if( fi )
+    if( fi != nullptr )
       fclose( fi );
     body = ftell( f );
     fseek( f, header, SEEK_SET );
@@ -3108,7 +3108,7 @@ int main( int argc, char **argv ) {
   en.flush();
 
   // Print stats
-  if( f ) {
+  if( f != nullptr ) {
     if( mode == DECOMPRESS && filenum < argc - 1 )
       printf( "No more files to extract\n" );
     fseek( f, 0, SEEK_END );

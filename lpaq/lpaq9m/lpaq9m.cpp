@@ -292,7 +292,7 @@ inline void do_putc_end() {
 
 // Error handler: print message if any, and exit
 void quit( const char *message = 0 ) {
-  if( message )
+  if( message != nullptr )
     printf( "%s\n", message );
   exit( 1 );
 }
@@ -714,7 +714,7 @@ public:
     {
       U32 p0 = *tcxt;
       U32 i = p0 & 1023, pd = p0 >> 12; // count, prediction
-      p0 += ( i < TOLIMIT_2a );
+      p0 += static_cast<unsigned int>( i < TOLIMIT_2a );
       p0 += ( ( y20 - ( int ) pd ) * dt[i] + 0x380 ) & 0xfffffc00;
       *tcxt = p0;
     }
@@ -725,7 +725,7 @@ public:
     int v1 = *( tcx + 1 );
     pr = v0 >> 12;
     v1 = ( ( U32 ) v1 >> 12 ) - pr;
-    pr = v1 * wt + v0 >> 20;
+    pr = (v1 * wt + v0) >> 20;
     tcxt = tcx + ( wt >> 11 );
     return pr;
   }
@@ -737,7 +737,7 @@ public:
     {
       U32 p0 = *tcxt;
       U32 i = p0 & 1023, pr = p0 >> 12; // count, prediction
-      p0 += ( i < TOLIMIT_2b );
+      p0 += static_cast<unsigned int>( i < TOLIMIT_2b );
       p0 += ( ( y20 - ( int ) pr ) * dta[i] + 0x180 ) & 0xfffffc00;
       *tcxt = p0;
     }
@@ -747,7 +747,7 @@ public:
     int v1 = *( tcx + 1 );
     pr = v0 >> 12;
     v1 = ( ( U32 ) v1 >> 12 ) - pr;
-    pr = v1 * wt + v0 >> 20;
+    pr = (v1 * wt + v0) >> 20;
     tcxt = tcx + ( wt >> 11 );
     return pr;
   }
@@ -1159,11 +1159,11 @@ inline int mm_p() {
     }
     l = 0, len = l;
   }
-  if( *cp[2] ) {
+  if( *cp[2] != 0u ) {
     l = MI * 8;
-    if( *cp[3] ) {
+    if( *cp[3] != 0u ) {
       l = 2 * MI * 8;
-      if( *cp[4] )
+      if( *cp[4] != 0u )
         l = 3 * MI * 8;
     }
   }
@@ -1184,11 +1184,11 @@ inline int mm_p7() {
     goto mm_e;
   }
   cxt = c0;
-  if( *cp[2] ) {
+  if( *cp[2] != 0u ) {
     l = MI * 8;
-    if( *cp[3] ) {
+    if( *cp[3] != 0u ) {
       l = 2 * MI * 8;
-      if( *cp[4] )
+      if( *cp[4] != 0u )
         l = 3 * MI * 8;
     }
   }
@@ -1349,8 +1349,8 @@ public:
     pr = m_p + 2047;
     int xx = a1.p1( pr, c2 + c0 );
     mxr_pr = xx, pr = squash( pr - 2047 ) + 7 * xx >> 3;
-    pr = pr * 3 + 5 * a2.p2( stretch_t2[xx], fails * 8 + bcount ) + 4 >> 3;
-    return pr + ( pr < 2048 );
+    pr = (pr * 3 + 5 * a2.p2( stretch_t2[xx], fails * 8 + bcount ) + 4) >> 3;
+    return pr + static_cast<int>( pr < 2048 );
   }
 
   U32 Predict_not32() {
@@ -1367,8 +1367,8 @@ public:
     pr = m_p + 2047;
     int xx = a1.p1( pr, c2 + c0 );
     mxr_pr = squash( pr - 2047 ) + 15 * xx >> 4;
-    pr = mxr_pr + 7 * a2.p2( stretch_t2[xx], fails * 8 + bcount ) + 4 >> 3;
-    return pr + ( pr < 2048 );
+    pr = (mxr_pr + 7 * a2.p2( stretch_t2[xx], fails * 8 + bcount ) + 4) >> 3;
+    return pr + static_cast<int>( pr < 2048 );
   }
 
   U32 Predict_was32s() {
@@ -1388,8 +1388,8 @@ public:
     mxr_pr = squash( pr - 2047 ) + 7 * xx >> 3;
     pr = a2.p2( stretch_t2[xx], fails * 8 + 7 );
     pr = pr * 2 + pr;
-    pr = mxr_pr + pr >> 2;
-    return pr + ( pr < 2048 );
+    pr = (mxr_pr + pr) >> 2;
+    return pr + static_cast<int>( pr < 2048 );
   }
 
   U32 Predict_not32s() {
@@ -1410,8 +1410,8 @@ public:
     mxr_pr = squash( pr - 2047 ) + 7 * xx >> 3;
     pr = a2.p2( stretch_t2[xx], fails * 8 + 7 );
     pr = pr * 2 + pr;
-    pr = mxr_pr + pr >> 2;
-    return pr + ( pr < 2048 );
+    pr = (mxr_pr + pr) >> 2;
+    return pr + static_cast<int>( pr < 2048 );
   }
 
   void pass_bytes_enc( void ) {
@@ -1594,7 +1594,7 @@ Encoder::Encoder( Mode m, FILE *f ) {
     pi = i + 1;
   }
   stretch_t2[4095] = 4094 * ( APMw - 1 );
-  for( i = 5; i; --i )
+  for( i = 5; i != 0; --i )
     stretch_t[i] = -1696, stretch_t[4090 + i] = 1696;
   stretch_t[0] = -1696;
 
@@ -1667,12 +1667,12 @@ Encoder::Encoder( Mode m, FILE *f ) {
     len2cxt[i * 2 + 126] = -j * 20;
     len2cxt[i * 2 + 127] = j * 20;
 
-    if( c )
+    if( c != 0 )
       for( j = 255; j >= 0; --j )
         smt[256 * 11 + c + j] = k, smt[256 * 12 + c + j] = 0xfffff ^ k;
-    k = ( 4 + ( i >= 11 ) + ( i >= 13 ) + ( i >= 16 ) + ( i > 51 ) ) * MI * 8;
-    len2order[i] = k + ( i >= 23 ) * MI * 8;
-    len2order7[i] = k + ( i >= 29 ) * MI * 8;
+    k = ( 4 + static_cast<int>( i >= 11 ) + static_cast<int>( i >= 13 ) + static_cast<int>( i >= 16 ) + static_cast<int>( i > 51 ) ) * MI * 8;
+    len2order[i] = k + static_cast<int>( i >= 23 ) * MI * 8;
+    len2order7[i] = k + static_cast<int>( i >= 29 ) * MI * 8;
   }
 
   i = MEM / 2;
@@ -1760,7 +1760,7 @@ void Encoder::flush() {
 
 int main( int argc, char **argv ) {
   // Check arguments
-  if( argc != 4 || !isdigit( argv[1][0] ) && argv[1][0] != 'd' ) {
+  if( argc != 4 || ((isdigit( argv[1][0] ) == 0) && argv[1][0] != 'd') ) {
     printf( "lpaq9m file compressor (C) 2007-2009, Matt Mahoney, Alexander Ratushnyak\n"
             "Licensed under GPL, http://www.gnu.org/copyleft/gpl.html\n"
             "\n"
@@ -1774,11 +1774,11 @@ int main( int argc, char **argv ) {
 
   // Open input file
   FILE *in = fopen( argv[2], "rb" ), *out = 0;
-  if( !in )
+  if( in == nullptr )
     perror( argv[2] ), exit( 1 );
 
   // Compress
-  if( isdigit( argv[1][0] ) ) {
+  if( isdigit( argv[1][0] ) != 0 ) {
 #ifndef WITHOUT_COMPRESSOR
     MEM = 1 << ( argv[1][0] - '0' + 20 );
 
@@ -1799,9 +1799,9 @@ int main( int argc, char **argv ) {
 
     // Encode header: version 17, memory option, file size
     out = fopen( argv[3], "wb" );
-    if( !out )
+    if( out == nullptr )
       perror( argv[3] ), exit( 1 );
-    fprintf( out, "pQ%c%c%c%c%c%c%c", 17, argv[1][0], size >> 24, size >> 16, size >> 8, size, method );
+    fprintf( out, "pQ%c%c%ld%ld%ld%ld%c", 17, argv[1][0], size >> 24, size >> 16, size >> 8, size, method );
 
     // Compress
     Encoder e( COMPRESS, out );
@@ -1842,7 +1842,7 @@ int main( int argc, char **argv ) {
 
     // Decompress
     out = fopen( argv[3], "wb" );
-    if( !out )
+    if( out == nullptr )
       perror( argv[3] ), exit( 1 );
     Encoder e( DECOMPRESS, in );
 

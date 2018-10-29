@@ -42,7 +42,7 @@ public:
   }
 
   inline void update( int y ) {
-    if( y ) {
+    if( y != 0 ) {
       p[cxt] += ( ( ( 3 << PSCALE ) - 24 - p[cxt] * 3 ) >> 7 );
       cxt += cxt + 1;
     } else {
@@ -101,7 +101,7 @@ inline void Encoder::encode( int y ) {
   int p = predictor.P();
   const U32 xmid = CALC_XMID;
   assert( xmid >= x1 && xmid < x2 );
-  if( y )
+  if( y != 0 )
     x2 = xmid;
   else
     x1 = xmid + 1;
@@ -164,10 +164,10 @@ int main( int argc, char **argv ) {
 
   // Open files
   FILE *in = fopen( argv[2], "rb" );
-  if( !in )
+  if( in == nullptr )
     perror( argv[2] ), exit( 1 );
   FILE *out = fopen( argv[3], "wb" );
-  if( !out )
+  if( out == nullptr )
     perror( argv[3] ), exit( 1 );
   unsigned long len;
 
@@ -192,7 +192,7 @@ int main( int argc, char **argv ) {
   else {
     fread( &len, sizeof( len ), 1, in );
     Encoder e( DECOMPRESS, in );
-    while( len-- ) {
+    while( (len--) != 0u ) {
       int c = 1;
       while( c < 256 )
         c += c + e.decode();

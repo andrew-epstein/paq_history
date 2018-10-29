@@ -70,8 +70,8 @@ public:
   }
 
   void update( int y ) {
-    if( y )
-      t[cxt] += 65536 - t[cxt] >> 5;
+    if( y != 0 )
+      t[cxt] += (65536 - t[cxt]) >> 5;
     else
       t[cxt] -= t[cxt] >> 5;
     if( ( cxt += cxt + y ) >= 512 )
@@ -332,7 +332,7 @@ Encoder::Encoder( Mode m, FILE *f ) : mode( m ), archive( f ), x( 1 << N ), n( 0
     alloc( ins, B );
     alloc( outs, BO );
     for( int i = 1; i < 1 << N; ++i ) {
-      qinv[i * 2 + 1] = qinv[( 2 << N ) - 2 * i] = ( 1ull << 32 + N ) / i;
+      qinv[i * 2 + 1] = qinv[( 2 << N ) - 2 * i] = ( 1ull << (32 + N) ) / i;
       ++qinv[i * 2 + 1];
     }
   }
@@ -349,7 +349,7 @@ inline int Encoder::decode() {
     x = getc( archive );
     x = x * 256 + getc( archive );
     x = x * 256 + getc( archive );
-    if( x & 1 << 23 ) { // if bit 23 is 0, n defaults to B
+    if( (x & 1 << 23) != 0u ) { // if bit 23 is 0, n defaults to B
       x -= 1 << 23;
       n = getc( archive );
       n = n * 256 + getc( archive );
@@ -364,15 +364,15 @@ inline int Encoder::decode() {
 
   // Decode
   unsigned int q = predictor.p();
-  q += q < 2048;
+  q += static_cast<unsigned int>(q < 2048);
   assert( q >= 1 && q < 1 << N );
   unsigned int xq = x * q - 1;
-  int d = ( xq & ( ( 1 << N ) - 1 ) ) >= ( 1 << N ) - q;
+  int d = static_cast<int>(( xq & ( ( 1 << N ) - 1 ) ) >= ( 1 << N ) - q);
   assert( d == 0 || d == 1 );
   predictor.update( d );
   xq = ( xq >> N ) + 1;
   assert( xq > 0 && xq < x );
-  if( d )
+  if( d != 0 )
     x = xq;
   else
     x -= xq;
@@ -388,7 +388,7 @@ inline void Encoder::encode( int d ) {
   if( n >= B )
     flush(); // sets n=0;
   int q = predictor.p();
-  q += q < 2048;
+  q += static_cast<int>(q < 2048);
   ins[n++] = q * 2 + d;
   predictor.update( d );
 }
@@ -400,11 +400,11 @@ void Encoder::flush() {
 
   // Encode input stack to output stack
   int ni = n;
-  while( n && p > outs + 10 ) {
+  while( (n != 0) && p > outs + 10 ) {
     int q = ins[--n];
     assert( q >= 2 && q < 2 << N );
-    while( 1 ) {
-      x = ( 1 - ( q & 1 ) + w ) * qinv[q] - 1 >> 32;
+    while( true ) {
+      x = (( 1 - ( q & 1 ) + w ) * qinv[q] - 1) >> 32;
       if( x < 256 << N )
         break;
       assert( p > outs + 6 && p <= outs + BO );
@@ -450,10 +450,10 @@ int main( int argc, char **argv ) {
 
   // Open files
   FILE *in = fopen( argv[2], "rb" );
-  if( !in )
+  if( in == nullptr )
     perror( argv[2] ), exit( 1 );
   FILE *out = fopen( argv[3], "wb" );
-  if( !out )
+  if( out == nullptr )
     perror( argv[3] ), exit( 1 );
   int c;
 
@@ -472,7 +472,7 @@ int main( int argc, char **argv ) {
   // Decompress
   else {
     Encoder e( DECOMPRESS, in );
-    while( !e.decode() ) {
+    while( e.decode() == 0 ) {
       int c = 1;
       while( c < 256 )
         c += c + e.decode();

@@ -29,12 +29,12 @@ void update( int y ) {
   buf[rc[y]] += 8;
   if( buf[rc[y]] > 247 ) {
     buf[rc[y]] >>= 1;
-    buf[rc[!y]] >>= 1;
+    buf[rc[y == 0]] >>= 1;
   }
 
   rc[y] >>= 1;          //
   rc[y] += ( 1 << 27 ); // old 28 state of     y [0001...................01] count
-  rc[!y] >>= 1;         // old 28 state of not y [1110...................10] count
+  rc[y == 0] >>= 1;         // old 28 state of not y [1110...................10] count
 }
 
 //////////////////////////// Encoder ////////////////////////////
@@ -73,9 +73,9 @@ public:
 inline void Encoder::bit_plus_follow( int bit ) {
   bits_to_follow++;
   for( int notb = bit ^ 1; bits_to_follow > 0; bits_to_follow--, bit = notb ) {
-    if( bit )
+    if( bit != 0 )
       bout |= bptr;
-    if( !( bptr >>= 1 ) ) {
+    if( ( bptr >>= 1 ) == 0u ) {
       putc( bout, archive );
       bptr = 128;
       bout = 0;
@@ -83,7 +83,7 @@ inline void Encoder::bit_plus_follow( int bit ) {
   }
 }
 inline int Encoder::input_bit( void ) {
-  if( !( bptrin >>= 1 ) ) {
+  if( ( bptrin >>= 1 ) == 0u ) {
     pos++;
     bin = getc( archive );
     if( bin == EOF ) {
@@ -92,7 +92,7 @@ inline int Encoder::input_bit( void ) {
     }
     bptrin = 128;
   }
-  return ( ( bin & bptrin ) != 0 );
+  return static_cast<int>( ( bin & bptrin ) != 0 );
 }
 
 // Constructor
@@ -123,7 +123,7 @@ inline void Encoder::encode( int y ) {
   U32 xmid;
   xmid = x1 + ( ( x2 - x1 ) >> 12 ) * p();
   assert( xmid >= x1 && xmid < x2 );
-  if( y )
+  if( y != 0 )
     x2 = xmid;
   else
     x1 = xmid + 1;
@@ -225,7 +225,7 @@ void Encoder::flush() {
     bit_plus_follow( 1 );
     bit_plus_follow( 1 );
   }
-  if( bout )
+  if( bout != 0u )
     putc( bout, archive );
 }
 
@@ -244,10 +244,10 @@ int main( int argc, char **argv ) {
 
   // Open files
   FILE *in = fopen( argv[2], "rb" );
-  if( !in )
+  if( in == nullptr )
     perror( argv[2] ), exit( 1 );
   FILE *out = fopen( argv[3], "wb" );
-  if( !out )
+  if( out == nullptr )
     perror( argv[3] ), exit( 1 );
   int c;
 

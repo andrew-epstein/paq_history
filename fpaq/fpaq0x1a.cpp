@@ -102,7 +102,7 @@ inline void Encoder::encode( int y ) {
   // Update the range
   const U32 xmid = x1 + ( ( x2 - x1 ) >> 12 ) * p();
   assert( xmid >= x1 && xmid < x2 );
-  if( y ) {
+  if( y != 0 ) {
     x2 = xmid;
   } else {
     x1 = xmid + 1;
@@ -186,10 +186,10 @@ int main( int argc, char **argv ) {
 
   // Open files
   FILE *in = fopen( argv[2], "rb" );
-  if( !in )
+  if( in == nullptr )
     perror( argv[2] ), exit( 1 );
   FILE *out = fopen( argv[3], "wb" );
-  if( !out )
+  if( out == nullptr )
     perror( argv[3] ), exit( 1 );
   int c;
   cxt = 1;
@@ -225,7 +225,7 @@ int main( int argc, char **argv ) {
   // Decompress
   else {
     Encoder e( DECOMPRESS, in );
-    while( !e.decode() ) {
+    while( e.decode() == 0 ) {
       unsigned int c = 1;
       while( c < 256 )
         c += c + e.decode();

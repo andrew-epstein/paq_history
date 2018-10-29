@@ -509,7 +509,7 @@ void quit( const char *message = 0 ) {
 // strings are equal ignoring case?
 int equals( const char *a, const char *b ) {
   assert( a && b );
-  while( *a && *b ) {
+  while( (*a != 0) && (*b != 0) ) {
     int c1 = *a;
     if( c1 >= 'A' && c1 <= 'Z' )
       c1 += 'a' - 'A';
@@ -521,7 +521,7 @@ int equals( const char *a, const char *b ) {
     ++a;
     ++b;
   }
-  return *a == *b;
+  return static_cast<int>(*a == *b);
 }
 
 typedef enum { DEFAULT, JPEG, EXE, BINTEXT, TEXT } Filetype;
@@ -657,9 +657,9 @@ void Array<T, ALIGN>::create( int i ) {
   const int sz = ALIGN + n * sizeof( T );
   programChecker.alloc( sz );
   ptr = ( char * ) calloc( sz, 1 );
-  if( !ptr )
+  if( ptr == nullptr )
     quit( "Out of memory" );
-  data = ( ALIGN ? ( T * ) ( ptr + ALIGN - ( ( ( long ) ptr ) & ( ALIGN - 1 ) ) ) : ( T * ) ptr );
+  data = ( ALIGN != 0 ? ( T * ) ( ptr + ALIGN - ( ( ( long ) ptr ) & ( ALIGN - 1 ) ) ) : ( T * ) ptr );
   assert( ( char * ) data >= ptr && ( char * ) data <= ptr + ALIGN );
 }
 
@@ -696,7 +696,7 @@ public:
   void operator+=( const char *s ) {
     assert( s );
     pop_back();
-    while( *s )
+    while( *s != 0 )
       push_back( *s++ );
     push_back( 0 );
   }
@@ -740,7 +740,7 @@ class Buf {
 public:
   Buf( int i = 0 ) : b( i ) {}
   void setsize( int i ) {
-    if( !i )
+    if( i == 0 )
       return;
     assert( i > 0 && ( i & ( i - 1 ) ) == 0 );
     b.resize( i );
@@ -1169,9 +1169,9 @@ public:
 
   // predict next bit
   int p() {
-    while( nx & 7 )
+    while( (nx & 7) != 0 )
       tx[nx++] = 0; // pad
-    if( mp ) {      // combine outputs
+    if( mp != nullptr ) {      // combine outputs
       mp->update();
       for( int i = 0; i < ncxt; ++i ) {
         pr[i] = squash( dot_product( &tx[0], &wx[cxt[i] * N], nx ) >> 5 );
@@ -1233,11 +1233,11 @@ public:
     assert( pr >= 0 && pr < 4096 && cxt >= 0 && cxt < N && rate > 0 && rate < 32 );
     pr = stretch( pr );
     int g = ( y << 16 ) + ( y << rate ) - y - y;
-    t[index] += g - t[index] >> rate;
-    t[index + 1] += g - t[index + 1] >> rate;
+    t[index] += (g - t[index]) >> rate;
+    t[index + 1] += (g - t[index + 1]) >> rate;
     const int w = pr & 127; // interpolation weight (33 points)
-    index = ( pr + 2048 >> 7 ) + cxt * 33;
-    return t[index] * ( 128 - w ) + t[index + 1] * w >> 11;
+    index = ( (pr + 2048) >> 7 ) + cxt * 33;
+    return (t[index] * ( 128 - w ) + t[index + 1] * w) >> 11;
   }
 };
 
@@ -1265,7 +1265,7 @@ public:
   StateMap();
   int p( int cx ) {
     assert( cx >= 0 && cx < t.size() );
-    t[cxt] += ( y << 16 ) - t[cxt] + 128 >> 8;
+    t[cxt] += (( y << 16 ) - t[cxt] + 128) >> 8;
     return t[cxt = cx] >> 4;
   }
 };
@@ -1393,10 +1393,10 @@ inline int mix2( Mixer &m, int s, StateMap &sm ) {
   p1 >>= 4;
   int p0 = 255 - p1;
   m.add( p1 - p0 );
-  m.add( st * ( !n0 - !n1 ) );
-  m.add( ( p1 & -!n0 ) - ( p0 & -!n1 ) );
-  m.add( ( p1 & -!n1 ) - ( p0 & -!n0 ) );
-  return s > 0;
+  m.add( st * static_cast<int>( static_cast<int>(static_cast<int>(n0) == 0 - static_cast<int>(n1)) == 0 ) );
+  m.add( ( (p1 & (static_cast<int>(-static_cast<int>(n0)) == 0)) ) - ( (p0 & (static_cast<int>(-static_cast<int>(n1)) == 0)) ) );
+  m.add( ( (p1 & (static_cast<int>(-static_cast<int>(n1)) == 0)) ) - ( (p0 & (static_cast<int>(-static_cast<int>(n0)) == 0)) ) );
+  return static_cast<int>(s > 0);
 }
 
 // A RunContextMap maps a context into the next byte and a repeat
@@ -1417,14 +1417,14 @@ public:
     cp = t[cx] + 1;
   }
   int p() { // predict next bit
-    if( cp[1] + 256 >> 8 - bpos == c0 )
-      return ( ( cp[1] >> 7 - bpos & 1 ) * 2 - 1 ) * ilog( cp[0] + 1 ) * 8;
+    if( (cp[1] + 256) >> (8 - bpos) == c0 )
+      return ( ( cp[1] >> (7 - bpos) & 1 ) * 2 - 1 ) * ilog( cp[0] + 1 ) * 8;
     else
       return 0;
   }
   int mix( Mixer &m ) { // return run length
     m.add( p() );
-    return cp[0] != 0;
+    return static_cast<int>(cp[0] != 0);
   }
 };
 
@@ -1446,7 +1446,7 @@ public:
     cxt = cx * 256 & t.size() - 256;
   }
   void mix( Mixer &m, int rate = 7 ) {
-    *cp += ( y << 16 ) - *cp + ( 1 << rate - 1 ) >> rate;
+    *cp += (( y << 16 ) - *cp + ( 1 << (rate - 1) )) >> rate;
     cp = &t[cxt + c0];
     m.add( stretch( *cp >> 4 ) );
   }
@@ -1568,11 +1568,11 @@ int ContextMap::mix1( Mixer &m, int cc, int bp, int c1, int y1 ) {
   // Update model with y
   int result = 0;
   for( int i = 0; i < cn; ++i ) {
-    if( cp[i] ) {
+    if( cp[i] != nullptr ) {
       assert( cp[i] >= &t[0].bh[0][0] && cp[i] <= &t[t.size() - 1].bh[6][6] );
       assert( ( long( cp[i] ) & 63 ) >= 15 );
       int ns = nex( *cp[i], y1 );
-      if( ns >= 204 && rnd() << ( 452 - ns >> 3 ) )
+      if( ns >= 204 && ((rnd() << ( (452 - ns) >> 3 )) != 0u) )
         ns -= 4; // probabilistic increment
       *cp[i] = ns;
     }
@@ -1614,15 +1614,15 @@ int ContextMap::mix1( Mixer &m, int cc, int bp, int c1, int y1 ) {
 
     // predict from last byte in context
     int rc = runp[i][0]; // count*2, +1 if 2 different bytes seen
-    if( runp[i][1] + 256 >> 8 - bp == cc ) {
-      int b = ( runp[i][1] >> 7 - bp & 1 ) * 2 - 1; // predicted bit + for 1, - for 0
-      int c = ilog( rc + 1 ) << 2 + ( ~rc & 1 );
+    if( (runp[i][1] + 256) >> (8 - bp) == cc ) {
+      int b = ( runp[i][1] >> (7 - bp) & 1 ) * 2 - 1; // predicted bit + for 1, - for 0
+      int c = ilog( rc + 1 ) << (2 + ( ~rc & 1 ));
       m.add( b * c );
     } else
       m.add( 0 );
 
     // predict from bit context
-    result += mix2( m, cp[i] ? *cp[i] : 0, sm[i] );
+    result += mix2( m, cp[i] != nullptr ? *cp[i] : 0, sm[i] );
   }
   if( bp == 7 )
     cn = 0;
@@ -1646,13 +1646,13 @@ int matchModel( Mixer &m ) {
   static int len = 0;             // length of match, or 0 if no match
   static int result = 0;
 
-  if( !bpos ) {
+  if( bpos == 0 ) {
     h = h * 997 * 8 + buf( 1 ) + 1 & t.size() - 1; // update context hash
-    if( len )
+    if( len != 0 )
       ++len, ++ptr;
     else { // find match
       ptr = t[h];
-      if( ptr && pos - ptr < buf.size() )
+      if( (ptr != 0) && pos - ptr < buf.size() )
         while( buf( len + 1 ) == buf[ptr - len - 1] && len < MAXLEN )
           ++len;
     }
@@ -1665,8 +1665,8 @@ int matchModel( Mixer &m ) {
   if( len > MAXLEN )
     len = MAXLEN;
   int sgn;
-  if( len && buf( 1 ) == buf[ptr - 1] && c0 == buf[ptr] + 256 >> 8 - bpos ) {
-    if( buf[ptr] >> 7 - bpos & 1 )
+  if( (len != 0) && buf( 1 ) == buf[ptr - 1] && c0 == (buf[ptr] + 256) >> (8 - bpos) ) {
+    if( (buf[ptr] >> (7 - bpos) & 1) != 0 )
       sgn = 1;
     else
       sgn = -1;
@@ -1726,10 +1726,10 @@ void wordModel( Mixer &m ) {
     int c = c4 & 255;
     if( c >= 'A' && c <= 'Z' )
       c += 'a' - 'A';
-    if( c >= 'a' && c <= 'z' || c >= 128 ) {
+    if( (c >= 'a' && c <= 'z') || c >= 128 ) {
       word0 = word0 * 263 * 32 + c;
       text0 = text0 * 997 * 16 + c;
-    } else if( word0 ) {
+    } else if( word0 != 0u ) {
       word4 = word3 * 19;
       word3 = word2 * 17;
       word2 = word1 * 13;
@@ -1787,12 +1787,12 @@ void recordModel( Mixer &m ) {
   static ContextMap cm( MEM * 4, 6 );
 
   // Find record length
-  if( !bpos ) {
+  if( bpos == 0 ) {
     int c = buf( 1 );
     int w = c4 & 0xffff;
     int r = pos - cpos1[c];
     if( r > 1 && r == cpos1[c] - cpos2[c] && r == cpos2[c] - cpos3[c] && r == cpos3[c] - cpos4[c]
-        && ( r > 15 || ( c == buf( r * 5 + 1 ) ) && c == buf( r * 6 + 1 ) ) ) {
+        && ( r > 15 || (( c == buf( r * 5 + 1 ) ) && c == buf( r * 6 + 1 )) ) ) {
       if( r == rlen1 )
         ++rcount1;
       else if( r == rlen2 )
@@ -2404,7 +2404,7 @@ void indirectModel( Mixer &m ) {
   static U32 t1[256];
   static U16 t2[0x10000];
 
-  if( !bpos ) {
+  if( bpos == 0 ) {
     U32 &r1 = t1[buf( 2 )];
     r1 = r1 << 8 | buf( 1 );
     U16 &r2 = t2[buf( 3 ) << 8 | buf( 2 )];
@@ -2504,7 +2504,7 @@ int contextModel2() {
   }
   //m.set(buf(1)+8, 264);
   //m.set(c0, 256);
-  m.set( order + 8 * ( c4 >> 5 & 7 ) + 64 * ( buf( 1 ) == buf( 2 ) ), 128 ); /////+128*(filetype==EXE), 256);
+  m.set( order + 8 * ( c4 >> 5 & 7 ) + 64 * static_cast<int>( buf( 1 ) == buf( 2 ) ), 128 ); /////+128*(filetype==EXE), 256);
                                                                              //m.set(buf(2), 256);
 
   U32 c1 = buf( 1 ), c2 = buf( 2 ), c3 = buf( 3 ), c = c2 / 64;
@@ -2523,7 +2523,7 @@ int contextModel2() {
   m.set( c, 256 );
 
   c = c3;
-  if( bpos )
+  if( bpos != 0 )
     c = c0 << ( 8 - bpos );
   if( bpos == 1 )
     c += c3 / 2;
@@ -2571,11 +2571,11 @@ void Predictor::update() {
 
   // Filter the context model with APMs
   pr = contextModel2();
-  pr = a1.p( pr, c0 ) * 3 + pr >> 2;
+  pr = (a1.p( pr, c0 ) * 3 + pr) >> 2;
   int pr2 = a2.p( pr, c0 + 256 * buf( 1 ) );
-  int pr3 = a3.p( pr, c0 ^ hash( buf( 1 ), buf( 2 ) ) & 0xffff );
-  int pr4 = a4.p( pr, c0 ^ hash( buf( 1 ), buf( 2 ), buf( 3 ) ) & 0xffff );
-  pr = pr2 + pr3 * 2 + pr4 + 2 >> 2;
+  int pr3 = a3.p( pr, c0 ^ (hash( buf( 1 ), buf( 2 ) ) & 0xffff) );
+  int pr4 = a4.p( pr, c0 ^ (hash( buf( 1 ), buf( 2 ), buf( 3 ) ) & 0xffff) );
+  pr = (pr2 + pr3 * 2 + pr4 + 2) >> 2;
 }
 
 //////////////////////////// Encoder ////////////////////////////
@@ -2611,14 +2611,14 @@ private:
   int code( int i = 0 ) {
     int p = predictor.p();
     assert( p >= 0 && p < 4096 );
-    p += p < 2048;
-    U32 xmid = x1 + ( x2 - x1 >> 12 ) * p + ( ( x2 - x1 & 0xfff ) * p >> 12 );
+    p += static_cast<int>(p < 2048);
+    U32 xmid = x1 + ( (x2 - x1) >> 12 ) * p + ( ( x2 - x1 & 0xfff ) * p >> 12 );
     assert( xmid >= x1 && xmid < x2 );
     if( mode == DECOMPRESS )
-      y = x <= xmid;
+      y = static_cast<int>(x <= xmid);
     else
       y = i;
-    y ? ( x2 = xmid ) : ( x1 = xmid + 1 );
+    y != 0 ? ( x2 = xmid ) : ( x1 = xmid + 1 );
     predictor.update();
     while( ( ( x1 ^ x2 ) & 0xff000000 ) == 0 ) { // pass equal leading bytes of range
       if( mode == COMPRESS )
@@ -2778,7 +2778,7 @@ protected:
   Filter( const Filter * );                  // copying not allowed
   Filter &operator=( const Filter & );       // assignment not allowed
   static void printStatus( int n ) {         // print progress
-    if( n > 0 && !( n & 0x3fff ) )
+    if( n > 0 && (( n & 0x3fff ) == 0) )
       printf( "%10d \b\b\b\b\b\b\b\b\b\b\b", n ), fflush( stdout );
   }
 
@@ -2791,7 +2791,7 @@ public:
   void compress( FILE *f, int n );
   static Filter *make( const char *filename, Encoder *e );
   int read() {
-    return ++reads, tmp ? getc( tmp ) : en->decompress();
+    return ++reads, tmp != nullptr ? getc( tmp ) : en->decompress();
   }
   int reads; // number of calls to read()
 };
@@ -2832,7 +2832,7 @@ void Filter::skip( int n ) {
 // Compress n bytes of f. If filetype > 0 then transform
 void Filter::compress( FILE *f, int n ) {
   // No transform
-  if( !filetype ) {
+  if( filetype == 0 ) {
     en->compress( 0 );
     for( int i = 0; i < n; ++i ) {
       printStatus( i );
@@ -2843,7 +2843,7 @@ void Filter::compress( FILE *f, int n ) {
 
   // Try transform
   tmp = tmpfile();
-  if( !tmp )
+  if( tmp == nullptr )
     perror( "tmpfile" ), exit( 1 );
   encode( f, n );
 
@@ -2903,7 +2903,7 @@ public:
 
 protected:
   void encode( FILE *f, int n ) { // not executed if filetype is 0
-    while( n-- )
+    while( (n--) != 0 )
       putc( getc( f ), tmp );
   }
   int decode() {
@@ -3032,7 +3032,7 @@ public:
   void reset() {
     first = true;
     wrt.WRT_prepare_decoding();
-    if( dtmp )
+    if( dtmp != nullptr )
       fclose( dtmp );
   };
 };
@@ -3044,12 +3044,12 @@ void TextFilter::encode( FILE *f, int n ) {
 
 int TextFilter::decode() {
   if( first ) {
-    if( !tmp ) {
-      if( dtmp )
+    if( tmp == nullptr ) {
+      if( dtmp != nullptr )
         fclose( dtmp );
 
       dtmp = tmpfile();
-      if( !dtmp )
+      if( dtmp == nullptr )
         perror( "WRT tmpfile" ), exit( 1 );
 
       unsigned int size = 0, i;
@@ -3083,18 +3083,18 @@ int TextFilter::decode() {
 // of filetype.
 
 Filter *Filter::make( const char *filename, Encoder *e ) {
-  if( filename ) {
+  if( filename != nullptr ) {
     filetype = 0;
     const char *ext = strrchr( filename, '.' );
 
     FILE *file = fopen( filename, "rb" );
-    if( file ) {
+    if( file != nullptr ) {
       if( fgetc( file ) == 'M' && fgetc( file ) == 'Z' )
         filetype = EXE;
-      else if( !ext
-               || ( !equals( ext, ".dbf" ) && !equals( ext, ".mdb" ) && !equals( ext, ".tar" ) && !equals( ext, ".c" )
-                    && !equals( ext, ".cpp" ) && !equals( ext, ".h" ) && !equals( ext, ".hpp" ) && !equals( ext, ".ps" )
-                    && !equals( ext, ".hlp" ) && !equals( ext, ".ini" ) && !equals( ext, ".inf" ) ) ) {
+      else if( (ext == nullptr)
+               || ( (equals( ext, ".dbf" ) == 0) && (equals( ext, ".mdb" ) == 0) && (equals( ext, ".tar" ) == 0) && (equals( ext, ".c" ) == 0)
+                    && (equals( ext, ".cpp" ) == 0) && (equals( ext, ".h" ) == 0) && (equals( ext, ".hpp" ) == 0) && (equals( ext, ".ps" ) == 0)
+                    && (equals( ext, ".hlp" ) == 0) && (equals( ext, ".ini" ) == 0) && (equals( ext, ".inf" ) == 0) ) ) {
         // fseek(file, 0, SEEK_SET ); <- unnecessary for WRT
         wrt.defaultSettings( 0, NULL );
         int recordLen;                                   // unused in PAQ
@@ -3109,7 +3109,7 @@ Filter *Filter::make( const char *filename, Encoder *e ) {
       fclose( file );
     }
   }
-  if( e ) {
+  if( e != nullptr ) {
     if( filetype == EXE )
       return new ExeFilter( e );
     else if( filetype == TEXT || filetype == BINTEXT )
@@ -3143,13 +3143,13 @@ char *getline( FILE *f = stdin ) {
 // Test if files exist and get their sizes, store in archive header
 void store_in_header( FILE *f, char *filename, long &total_size ) {
   FILE *fi = fopen( filename, "rb" );
-  if( !fi )
+  if( fi == nullptr )
     perror( filename );
   else {
     fseek( fi, 0, SEEK_END ); // get size
     long size = ftell( fi );
     total_size += size;
-    if( ( size & ~0x7fffffffL ) || ( total_size & ~0x7fffffffL ) ) {
+    if( (( size & ~0x7fffffffL ) != 0) || (( total_size & ~0x7fffffffL ) != 0) ) {
       fprintf( stderr, "File sizes must total less than 2 gigabytes\n" );
       fprintf( f, "-1\tError: over 2 GB\r\n" );
       exit( 1 );
@@ -3217,11 +3217,11 @@ int main( int argc, char **argv ) {
   // and ending with \r\n.  The last entry is followed by ^Z
   Mode mode = DECOMPRESS;
   FILE *f = fopen( argv[1], "rb" );
-  if( !f ) {
+  if( f == nullptr ) {
     mode = COMPRESS;
 
     f = fopen( argv[1], "wb" );
-    if( !f )
+    if( f == nullptr )
       perror( argv[1] ), exit( 1 );
     fprintf( f, "%s -%c\r\n", PROGNAME, option );
 
@@ -3237,7 +3237,7 @@ int main( int argc, char **argv ) {
     while( true ) {
       if( argc == 2 ) {
         filename = getline();
-        if( !filename || !filename[0] )
+        if( (filename == nullptr) || (filename[0] == 0) )
           break;
       } else {
         if( i == argc )
@@ -3249,7 +3249,7 @@ int main( int argc, char **argv ) {
 
     for( i = 0; i < filenames.size(); i++ ) {
       Filter::make( filenames[i].c_str(), NULL );
-      std::pair<int, std::string> p( ( 1 << 31 - 1 )
+      std::pair<int, std::string> p( ( 1 << (31 - 1) )
                                          - ( filetype * 8 * 16 * 2048 + preprocFlag + ( wrt.longDict + 1 ) * 16 * 2048
                                              + ( wrt.shortDict + 1 ) * 2048 ),
                                      filenames[i] );
@@ -3270,11 +3270,11 @@ int main( int argc, char **argv ) {
     f = fopen( argv[1], "r+b" );
   else
     f = fopen( argv[1], "rb" );
-  if( !f )
+  if( f == nullptr )
     perror( argv[1] ), exit( 1 );
   long header, body;             // file positions in header, body
   char *filename = getline( f ); // check header
-  if( !filename || strncmp( filename, PROGNAME " -", strlen( PROGNAME ) + 2 ) )
+  if( (filename == nullptr) || (strncmp( filename, PROGNAME " -", strlen( PROGNAME ) + 2 ) != 0) )
     fprintf( stderr, "%s: not a " PROGNAME " file\n", argv[1] ), exit( 1 );
   option = filename[strlen( filename ) - 1];
   level = option - '0';
@@ -3303,7 +3303,7 @@ int main( int argc, char **argv ) {
   while( ( filename = getline( f ) ) != 0 ) {
     size = atol( filename ); // parse size and filename, separated by tab
     total_size += size;
-    while( *filename && *filename != '\t' )
+    while( (*filename != 0) && *filename != '\t' )
       ++filename;
     if( *filename == '\t' )
       ++filename;
@@ -3323,7 +3323,7 @@ int main( int argc, char **argv ) {
     // If file exists in COMPRESS mode, compare, else compress/decompress
     FILE *fi = fopen( filename, "rb" );
     if( mode == COMPRESS ) {
-      if( !fi )
+      if( fi == nullptr )
         perror( filename ), exit( 1 );
       filetype = 0;
       Filter *fp = Filter::make( filename, &en ); // sets filetype
@@ -3334,11 +3334,11 @@ int main( int argc, char **argv ) {
       filetype = 0;
       filetype = en.decompress();
       Filter *fp = Filter::make( 0, &en );
-      if( fi )
+      if( fi != nullptr )
         fp->compare( fi, size );
       else { // extract
         fi = fopen( filename, "wb" );
-        if( fi )
+        if( fi != nullptr )
           fp->decompress( fi, size );
         else {
           perror( filename );
@@ -3347,7 +3347,7 @@ int main( int argc, char **argv ) {
       }
       delete fp;
     }
-    if( fi )
+    if( fi != nullptr )
       fclose( fi );
     body = ftell( f );
     fseek( f, header, SEEK_SET );
@@ -3356,7 +3356,7 @@ int main( int argc, char **argv ) {
   en.flush();
 
   // Print stats
-  if( f ) {
+  if( f != nullptr ) {
     if( mode == DECOMPRESS && filenum < argc - 1 )
       printf( "No more files to extract\n" );
     fseek( f, 0, SEEK_END );

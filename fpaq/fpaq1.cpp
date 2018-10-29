@@ -99,8 +99,8 @@ inline int Encoder::code( int y = 0 ) {
   U64 mid = low + ( ( high - low ) >> 32 ) * p;
   assert( mid >= low && mid < high );
   if( mode == DECOMPRESS )
-    y = x <= mid;
-  if( y )
+    y = static_cast<int>(x <= mid);
+  if( y != 0 )
     high = mid;
   else
     low = mid + 1;
@@ -142,10 +142,10 @@ int main( int argc, char **argv ) {
 
   // Open files
   FILE *in = fopen( argv[2], "rb" );
-  if( !in )
+  if( in == nullptr )
     perror( argv[2] ), exit( 1 );
   FILE *out = fopen( argv[3], "wb" );
-  if( !out )
+  if( out == nullptr )
     perror( argv[3] ), exit( 1 );
   int c;
 
@@ -164,7 +164,7 @@ int main( int argc, char **argv ) {
   // Decompress
   else {
     Encoder e( DECOMPRESS, in );
-    while( !e.code() ) {
+    while( e.code() == 0 ) {
       int c = 1;
       while( c < 256 )
         c += c + e.code();

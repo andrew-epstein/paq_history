@@ -411,7 +411,7 @@ public:
       RetVal = 0xffff;
       Summ = ( RetVal ) << ( Shift - 4 );
     }
-    return RetVal + ( RetVal == 0 );
+    return RetVal + static_cast<unsigned int>( RetVal == 0 );
   }
   void update() {
     if( Shift < MaxShift && --Count == 0 ) {
@@ -435,7 +435,7 @@ public:
     return ch;
   } // Collision if not matched
   int priority() const {
-    return ch != 0;
+    return static_cast<int>(ch != 0);
   } // Override: lowest replaced first
 };
 
@@ -494,7 +494,7 @@ public:
     return state;
   }
   void add( int y ) {
-    if( y ) {
+    if( y != 0 ) {
       if( state < 94 || rnd() < table[state].p1 )
         state = table[state].s11;
       else
@@ -848,7 +848,7 @@ void NonstationaryPPM::predict( int &n0, int &n1 ) const {
 void NonstationaryPPM::update( int y ) {
   // Count y by context
   for( int i = 0; i < N; ++i )
-    if( cp[i] )
+    if( cp[i] != nullptr )
       cp[i]->add( y );
 
   // Store bit y
@@ -887,13 +887,13 @@ class MatchModel : public Model {
 public:
   MatchModel() : buf( 0x400000 ), ptr( 0x100000 ), hash( 0 ), pos( 0 ), bpos( 0 ), begin( 0 ), end( 0 ) {}
   void predict( int &n0, int &n1 ) const {
-    if( end ) {
+    if( end != 0 ) {
       int wt = end - begin;
       if( wt > 1000 )
         wt = 3000000;
       else
         wt *= wt * 3;
-      if( ( buf[end] >> ( 7 - bpos ) ) & 1 )
+      if( (( buf[end] >> ( 7 - bpos ) ) & 1) != 0 )
         n1 += wt;
       else
         n0 += wt;
@@ -906,14 +906,14 @@ public:
   void update( int y ) {
     ( buf[pos] <<= 1 ) += y; // Store bit
     ++bpos;
-    if( end && ( buf[end] >> ( 8 - bpos ) ) != buf[pos] ) // Does it match?
+    if( (end != 0) && ( buf[end] >> ( 8 - bpos ) ) != buf[pos] ) // Does it match?
       begin = end = 0;                                    // no
     if( bpos == 8 ) {                                     // New byte
       bpos = 0;
       hash = hash * ( 16 * 123456791 ) + buf[pos] + 1;
       if( ++pos == int( buf.size() ) )
         pos = 0;
-      if( end )
+      if( end != 0 )
         ++end;
       else { // If no match, search for one
         U32 h = ( hash ^ ( hash >> 16 ) ) & ( ptr.size() - 1 );
@@ -969,11 +969,11 @@ public:
       c0h -= 59;
     if( c0 >= 256 ) {
       c0 -= 256;
-      if( isalpha( c0 ) ) {
+      if( isalpha( c0 ) != 0 ) {
         word0 = ( word0 + tolower( c0 ) + 1 ) * 234577751 * 16;
         if( ++ww0 > 8 )
           ww0 = 8;
-      } else if( word0 ) {
+      } else if( word0 != 0u ) {
         ww1 = ww0;
         ww0 = 0;
         word1 = word0;
@@ -1203,23 +1203,23 @@ int Encoder::encode( int y, int pi ) {
   // Make additional flags for SSE
   int ww = 1, ww1 = 1;
   predictor.m2.predict( ww, ww1 );
-  c0 = c0 * 4 + ( ( ww * 3 > ww1 ) + ( ww > ww1 ) + ( ww > 3 * ww1 ) );
+  c0 = c0 * 4 + ( static_cast<int>( ww * 3 > ww1 ) + static_cast<int>( ww > ww1 ) + static_cast<int>( ww > 3 * ww1 ) );
 
   ww = 1, ww1 = 1;
   predictor.m3.predict( ww, ww1 );
   predictor.m4.predict( ww, ww1 );
-  c0 = c0 * 4 + ( ( ww * 3 > ww1 ) + ( ww > ww1 ) + ( ww > 3 * ww1 ) );
+  c0 = c0 * 4 + ( static_cast<int>( ww * 3 > ww1 ) + static_cast<int>( ww > ww1 ) + static_cast<int>( ww > 3 * ww1 ) );
 
   int sse_p = sse[c0][q2].getMean();
   // Update neighbour SSE contexts
-  if( q2 )
-    sse[c0][q2 - 1].Summ -= ( sse[c0][q2 - 1].Summ >> sse[c0][q2 - 1].Shift + 1 );
+  if( q2 != 0u )
+    sse[c0][q2 - 1].Summ -= ( sse[c0][q2 - 1].Summ >> (sse[c0][q2 - 1].Shift + 1) );
   if( q2 > 1 )
-    sse[c0][q2 - 2].Summ -= ( sse[c0][q2 - 2].Summ >> sse[c0][q2 - 2].Shift + 1 );
+    sse[c0][q2 - 2].Summ -= ( sse[c0][q2 - 2].Summ >> (sse[c0][q2 - 2].Shift + 1) );
   if( q2 < 63 )
-    sse[c0][q2 + 1].Summ -= ( sse[c0][q2 + 1].Summ >> sse[c0][q2 + 1].Shift + 1 );
+    sse[c0][q2 + 1].Summ -= ( sse[c0][q2 + 1].Summ >> (sse[c0][q2 + 1].Shift + 1) );
   if( q2 < 62 )
-    sse[c0][q2 + 2].Summ -= ( sse[c0][q2 + 2].Summ >> sse[c0][q2 + 2].Shift + 1 );
+    sse[c0][q2 + 2].Summ -= ( sse[c0][q2 + 2].Summ >> (sse[c0][q2 + 2].Shift + 1) );
 
   /*
     This mixing works good.
@@ -1241,7 +1241,7 @@ int Encoder::encode( int y, int pi ) {
 
   // Update the range
   if( mode == COMPRESS ) {
-    if( y )
+    if( y != 0 )
       x1 = xmid + 1;
     else
       x2 = xmid;
@@ -1257,9 +1257,9 @@ int Encoder::encode( int y, int pi ) {
 
   predictor.update( y );
   // Update all touched SSE contexts
-  if( !y ) {
+  if( y == 0 ) {
     sse[c0][q2].Summ += 0x1000;
-    if( q2 )
+    if( q2 != 0u )
       sse[c0][q2 - 1].Summ += 0x800;
     if( q2 > 1 )
       sse[c0][q2 - 2].Summ += 0x800;
@@ -1341,7 +1341,7 @@ int decompress( Encoder &e ) { // Decompress 8 bits, MSB first
 // Write one byte c to encoder e
 void compress( Encoder &e, int c ) {
   for( int i = 0; i < 8; ++i ) { // Compress 8 bits, MSB first
-    e.encode( ( c & 128 ) ? 1 : 0, i );
+    e.encode( ( c & 128 ) != 0 ? 1 : 0, i );
     c <<= 1;
   }
 }
@@ -1389,7 +1389,7 @@ int main( int argc, char **argv ) {
 
   // Extract files
   FILE *archive = fopen( argv[1], "rb" );
-  if( archive ) {
+  if( archive != nullptr ) {
     if( argc > 2 ) {
       printf( "File %s already exists\n", argv[1] );
       return 1;
@@ -1429,7 +1429,7 @@ int main( int argc, char **argv ) {
       // Compare with existing file
       FILE *f = fopen( filename[i].c_str(), "rb" );
       const long size = filesize[i];
-      if( f ) {
+      if( f != nullptr ) {
         bool different = false;
         for( long j = 0; j < size; ++j ) {
           int c1 = decompress( e );
@@ -1447,14 +1447,14 @@ int main( int argc, char **argv ) {
       // Extract to new file
       else {
         f = fopen( filename[i].c_str(), "wb" );
-        if( !f )
+        if( f == nullptr )
           printf( "cannot create, skipping...\n" );
         for( long j = 0; j < size; ++j ) {
           int c = decompress( e );
-          if( f )
+          if( f != nullptr )
             putc( c, f );
         }
-        if( f ) {
+        if( f != nullptr ) {
           printf( "extracted\n" );
           fclose( f );
         }
@@ -1482,7 +1482,7 @@ int main( int argc, char **argv ) {
     // Get file sizes
     for( int i = 0; i < int( filename.size() ); ++i ) {
       FILE *f = fopen( filename[i].c_str(), "rb" );
-      if( !f ) {
+      if( f == nullptr ) {
         printf( "File not found, skipping: %s\n", filename[i].c_str() );
         filesize.push_back( -1 );
       } else {
@@ -1498,7 +1498,7 @@ int main( int argc, char **argv ) {
 
     // Write header
     archive = fopen( argv[1], "wb" );
-    if( !archive ) {
+    if( archive == nullptr ) {
       printf( "Cannot create archive: %s\n", argv[1] );
       return 1;
     }
@@ -1520,13 +1520,13 @@ int main( int argc, char **argv ) {
         FILE *f = fopen( filename[i].c_str(), "rb" );
         int c;
         for( long j = 0; j < size; ++j ) {
-          if( f )
+          if( f != nullptr )
             c = getc( f );
           else
             c = 0;
           compress( e, c );
         }
-        if( f ) {
+        if( f != nullptr ) {
           fclose( f );
           e.print();
         }

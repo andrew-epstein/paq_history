@@ -87,9 +87,9 @@ public:
 inline void Encoder::bit_plus_follow( int bit ) {
   bits_to_follow++;
   for( int notb = bit ^ 1; bits_to_follow > 0; bits_to_follow--, bit = notb ) {
-    if( bit )
+    if( bit != 0 )
       bout |= bptr;
-    if( !( bptr >>= 1 ) ) {
+    if( ( bptr >>= 1 ) == 0u ) {
       putc( bout, archive );
       bptr = 128;
       bout = 0;
@@ -97,13 +97,13 @@ inline void Encoder::bit_plus_follow( int bit ) {
   }
 }
 inline int Encoder::input_bit( void ) {
-  if( !( bptrin >>= 1 ) ) {
+  if( ( bptrin >>= 1 ) == 0u ) {
     bin = getc( archive );
     if( bin == EOF )
       bin = 0;
     bptrin = 128;
   }
-  return ( ( bin & bptrin ) != 0 );
+  return static_cast<int>( ( bin & bptrin ) != 0 );
 }
 
 // Constructor
@@ -135,7 +135,7 @@ inline void Encoder::encode( int y ) {
   // Update the range
   const U32 xmid = x1 + ( ( x2 - x1 ) >> 12 ) * predictor.p();
   assert( xmid >= x1 && xmid < x2 );
-  if( y )
+  if( y != 0 )
     x2 = xmid;
   else
     x1 = xmid + 1;
@@ -205,7 +205,7 @@ void Encoder::flush() {
       bit_plus_follow( 0 );
     else
       bit_plus_follow( 1 );
-    if( bout )
+    if( bout != 0u )
       putc( bout, archive );
   }
 }
@@ -225,10 +225,10 @@ int main( int argc, char **argv ) {
 
   // Open files
   FILE *in = fopen( argv[2], "rb" );
-  if( !in )
+  if( in == nullptr )
     perror( argv[2] ), exit( 1 );
   FILE *out = fopen( argv[3], "wb" );
-  if( !out )
+  if( out == nullptr )
     perror( argv[3] ), exit( 1 );
   int c;
 
@@ -247,7 +247,7 @@ int main( int argc, char **argv ) {
   // Decompress
   else {
     Encoder e( DECOMPRESS, in );
-    while( !e.decode() ) {
+    while( e.decode() == 0 ) {
       int c = 1;
       while( c < 256 )
         c += c + e.decode();

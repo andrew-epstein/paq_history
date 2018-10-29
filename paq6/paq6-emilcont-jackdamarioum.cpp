@@ -619,7 +619,7 @@ public:
     return get0() + get1();
   }
   void add( int y ) {
-    if( y ) {
+    if( y != 0 ) {
       if( state < 75 || rnd() < table[state].p1 ) //						emilcont
         state = table[state].s11;
       else
@@ -947,7 +947,7 @@ Hashtable<T>::Hashtable( U32 n ) : N( n - 4 ) {
 
   // Align the hash table on a 64 byte cache page boundary
   char *p = ( char * ) malloc( ( 16 << N ) + 64 );
-  if( !p )
+  if( p == nullptr )
     handler();
   memset( p, 0, ( 16 << N ) + 64 );
   char *q = ( char * ) ( ( unsigned long ) ( p + 63 ) & -64 ); // Aligned
@@ -1033,11 +1033,11 @@ void Mixer::update( int y ) {
   }
   if( s0 > 0 && s1 > 0 ) {
     const U32 s = s0 + s1;
-    const U32 sy = y ? s1 : s0;
-    const U32 sy1 = 0xffffffff / sy + ( rnd() & 1023 ) >> 10;
-    const U32 s1 = 0xffffffff / s + ( rnd() & 1023 ) >> 10;
+    const U32 sy = y != 0 ? s1 : s0;
+    const U32 sy1 = (0xffffffff / sy + ( rnd() & 1023 )) >> 10;
+    const U32 s1 = (0xffffffff / s + ( rnd() & 1023 )) >> 10;
     for( int i = 0; i < n; ++i ) {
-      const int dw = int( ( y ? bc1[i] : bc0[i] ) * sy1 - ( bc0[i] + bc1[i] ) * s1 + ( rnd() & 255 ) ) >> 8;
+      const int dw = int( ( y != 0 ? bc1[i] : bc0[i] ) * sy1 - ( bc0[i] + bc1[i] ) * s1 + ( rnd() & 255 ) ) >> 8;
       wt[c][i] = min( 65535, max( 1, int( wt[c][i] + dw ) ) );
     }
   }
@@ -1144,11 +1144,11 @@ public:
         t[cxt].n = 1;
       }
     }
-    cxt = h >> 32 - N;
+    cxt = h >> (32 - N);
   }
   void add() {
-    if( ( U32 )( ( t[cxt].c + 256 ) >> 8 - ch.bpos() ) == ch() ) {
-      if( ( t[cxt].c >> 7 - ch.bpos() ) & 1 )
+    if( ( U32 )( ( t[cxt].c + 256 ) >> (8 - ch.bpos()) ) == ch() ) {
+      if( (( t[cxt].c >> (7 - ch.bpos()) ) & 1) != 0 )
         mixer.add( 0, t[cxt].n );
       else
         mixer.add( t[cxt].n, 0 );
@@ -1200,7 +1200,7 @@ void CounterMap2::update( U32 h ) {
 
   // Update the secondary context
   for( int i = 0; i < 8; ++i ) {
-    if( cp[i] ) {
+    if( cp[i] != nullptr ) {
       cp[i]->add( ( c >> ( 7 - i ) ) & 1 );
       cp[i] = 0;
     }
@@ -1287,7 +1287,7 @@ public:
 // Update with bit y, put array of 0 counts in n0 and 1 counts in n1
 inline void CharModel::model() {
   // Update models
-  int y = ch( ch.bpos() == 0 ) & 1; // last input bit
+  int y = ch( static_cast<int>(ch.bpos() == 0) ) & 1; // last input bit
   cp0->add( y );
   cp1->add( y );
 
@@ -1348,11 +1348,11 @@ inline void MatchModel::model() {
     if( ( hash[0] >> 28 ) == 0 )
       h = hash[1] >> ( 18 - MEM ); // 1/16 of 8-contexts are hashed to 32 bytes
     for( int i = 0; i < M; ++i ) {
-      if( end[i] && ch( 1 ) == ch[end[i]] )
+      if( (end[i] != 0u) && ch( 1 ) == ch[end[i]] )
         ++end[i];
     }
     for( int i = 0; i < M; ++i ) {
-      if( !end[i] ) { // Search for a matching context
+      if( end[i] == 0u ) { // Search for a matching context
         int j;
         for( j = 0; j < M; ++j ) // Search for duplicate match
           if( ptr[h] == end[j] )
@@ -1378,20 +1378,20 @@ inline void MatchModel::model() {
 
   // Test whether the current context is valid in the last 0-7 bits
   for( int i = 0; i < M; ++i ) {
-    if( end[i] && ( ( ch[end[i]] + 256 ) >> ( 8 - ch.bpos() ) ) != ch() )
+    if( (end[i] != 0u) && ( ( ch[end[i]] + 256 ) >> ( 8 - ch.bpos() ) ) != ch() )
       begin[i] = end[i] = 0;
   }
 
   // Predict the bit found in the matching contexts
   int n0 = 0, n1 = 0;
   for( int i = 0; i < M; ++i ) {
-    if( end ) {
+    if( end != nullptr ) {
       U32 wt = ( end[i] - begin[i] );
       wt = wt * wt / 4;
       if( wt > 511 )
         wt = 511;
       int y = ( ch[end[i]] >> ( 7 - ch.bpos() ) ) & 1;
-      if( y )
+      if( y != 0 )
         n1 += wt;
       else
         n0 += wt;
@@ -1550,7 +1550,7 @@ public:
       int c = ch( 1 );
       if( c > 32 ) {
         cxt[0] ^= hash( cxt[0], c );
-      } else if( cxt[0] ) {
+      } else if( cxt[0] != 0u ) {
         for( int i = N - 1; i > 0; --i )
           cxt[i] = cxt[i - 1];
         cxt[0] = 0;
@@ -1608,7 +1608,7 @@ class Predictor {
       return PSCALE * ( c1 * 64 + 1 ) / ( n * 64 + 2 );
     }
     void update( int y ) {
-      if( y )
+      if( y != 0 )
         ++c1;
       if( ++n > 254 ) { // Roll over count overflows
         c1 /= 2;
@@ -1750,7 +1750,7 @@ inline void Encoder::encode( int y ) {
     xmid += ( xdiff * p ) >> 12;
 
   // Update the range
-  if( y )
+  if( y != 0 )
     x2 = xmid;
   else
     x1 = xmid + 1;
@@ -1864,7 +1864,7 @@ int main( int argc, char **argv ) {
 
   // Extract files
   FILE *archive = fopen( argv[1], "rb" );
-  if( archive ) {
+  if( archive != nullptr ) {
     if( argc > 2 ) {
       printf( "File %s already exists\n", argv[1] );
       return 1;
@@ -1909,7 +1909,7 @@ int main( int argc, char **argv ) {
       FILE *f = fopen( filename[i].c_str(), "rb" );
       const long size = filesize[i];
       uncompressed_bytes += size;
-      if( f ) {
+      if( f != nullptr ) {
         bool different = false;
         for( long j = 0; j < size; ++j ) {
           int c1 = decompress( e );
@@ -1927,14 +1927,14 @@ int main( int argc, char **argv ) {
       // Extract to new file
       else {
         f = fopen( filename[i].c_str(), "wb" );
-        if( !f )
+        if( f == nullptr )
           printf( "cannot create, skipping...\n" );
         for( long j = 0; j < size; ++j ) {
           int c = decompress( e );
-          if( f )
+          if( f != nullptr )
             putc( c, f );
         }
-        if( f ) {
+        if( f != nullptr ) {
           printf( "extracted\n" );
           fclose( f );
         }
@@ -1964,7 +1964,7 @@ int main( int argc, char **argv ) {
     // Get file sizes
     for( int i = 0; i < int( filename.size() ); ++i ) {
       FILE *f = fopen( filename[i].c_str(), "rb" );
-      if( !f ) {
+      if( f == nullptr ) {
         printf( "File not found, skipping: %s\n", filename[i].c_str() );
         filesize.push_back( -1 );
       } else {
@@ -1980,7 +1980,7 @@ int main( int argc, char **argv ) {
 
     // Write header
     archive = fopen( argv[1], "wb" );
-    if( !archive ) {
+    if( archive == nullptr ) {
       printf( "Cannot create archive: %s\n", argv[1] );
       return 1;
     }
@@ -2004,13 +2004,13 @@ int main( int argc, char **argv ) {
         FILE *f = fopen( filename[i].c_str(), "rb" );
         int c;
         for( long j = 0; j < size; ++j ) {
-          if( f )
+          if( f != nullptr )
             c = getc( f );
           else
             c = 0;
           compress( e, c );
         }
-        if( f )
+        if( f != nullptr )
           fclose( f );
         printf( "%ld\n", ftell( archive ) - file_start );
         file_start = ftell( archive );
