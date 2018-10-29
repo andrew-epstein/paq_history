@@ -435,7 +435,7 @@ public:
     return ch;
   } // Collision if not matched
   int priority() const {
-    return static_cast<int>(ch != 0);
+    return static_cast<int>( ch != 0 );
   } // Override: lowest replaced first
 };
 
@@ -893,7 +893,7 @@ public:
         wt = 3000000;
       else
         wt *= wt * 3;
-      if( (( buf[end] >> ( 7 - bpos ) ) & 1) != 0 )
+      if( ( ( buf[end] >> ( 7 - bpos ) ) & 1 ) != 0 )
         n1 += wt;
       else
         n0 += wt;
@@ -906,9 +906,9 @@ public:
   void update( int y ) {
     ( buf[pos] <<= 1 ) += y; // Store bit
     ++bpos;
-    if( (end != 0) && ( buf[end] >> ( 8 - bpos ) ) != buf[pos] ) // Does it match?
-      begin = end = 0;                                    // no
-    if( bpos == 8 ) {                                     // New byte
+    if( ( end != 0 ) && ( buf[end] >> ( 8 - bpos ) ) != buf[pos] ) // Does it match?
+      begin = end = 0;                                             // no
+    if( bpos == 8 ) {                                              // New byte
       bpos = 0;
       hash = hash * ( 16 * 123456791 ) + buf[pos] + 1;
       if( ++pos == int( buf.size() ) )
@@ -1213,13 +1213,13 @@ int Encoder::encode( int y, int pi ) {
   int sse_p = sse[c0][q2].getMean();
   // Update neighbour SSE contexts
   if( q2 != 0u )
-    sse[c0][q2 - 1].Summ -= ( sse[c0][q2 - 1].Summ >> (sse[c0][q2 - 1].Shift + 1) );
+    sse[c0][q2 - 1].Summ -= ( sse[c0][q2 - 1].Summ >> ( sse[c0][q2 - 1].Shift + 1 ) );
   if( q2 > 1 )
-    sse[c0][q2 - 2].Summ -= ( sse[c0][q2 - 2].Summ >> (sse[c0][q2 - 2].Shift + 1) );
+    sse[c0][q2 - 2].Summ -= ( sse[c0][q2 - 2].Summ >> ( sse[c0][q2 - 2].Shift + 1 ) );
   if( q2 < 63 )
-    sse[c0][q2 + 1].Summ -= ( sse[c0][q2 + 1].Summ >> (sse[c0][q2 + 1].Shift + 1) );
+    sse[c0][q2 + 1].Summ -= ( sse[c0][q2 + 1].Summ >> ( sse[c0][q2 + 1].Shift + 1 ) );
   if( q2 < 62 )
-    sse[c0][q2 + 2].Summ -= ( sse[c0][q2 + 2].Summ >> (sse[c0][q2 + 2].Shift + 1) );
+    sse[c0][q2 + 2].Summ -= ( sse[c0][q2 + 2].Summ >> ( sse[c0][q2 + 2].Shift + 1 ) );
 
   /*
     This mixing works good.

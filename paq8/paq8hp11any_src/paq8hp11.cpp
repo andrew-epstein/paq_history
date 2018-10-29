@@ -1186,9 +1186,9 @@ public:
 
   // predict next bit
   int p() {
-    while( (nx & 7) != 0 )
-      tx[nx++] = 0; // pad
-    if( mp != nullptr ) {      // combine outputs
+    while( ( nx & 7 ) != 0 )
+      tx[nx++] = 0;       // pad
+    if( mp != nullptr ) { // combine outputs
       mp->update2();
       for( int i = 0; i < ncxt; ++i ) {
         int dp = dot_product( &tx[0], &wx[cxt[i] * N], nx );
@@ -1253,11 +1253,11 @@ public:
     assert( pr >= 0 && pr < 4096 && cxt >= 0 && cxt < N && rate > 0 && rate < 32 );
     pr = stretch( pr );
     int g = ( y << 16 ) + ( y << rate ) - y * 2;
-    t[index] += (g - t[index]) >> rate;
-    t[index + 1] += (g - t[index + 1]) >> rate;
+    t[index] += ( g - t[index] ) >> rate;
+    t[index + 1] += ( g - t[index + 1] ) >> rate;
     const int w = pr & 127; // interpolation weight (33 points)
-    index = ( (pr + 2048) >> 7 ) + cxt * 33;
-    return (t[index] * ( 128 - w ) + t[index + 1] * w) >> 11;
+    index = ( ( pr + 2048 ) >> 7 ) + cxt * 33;
+    return ( t[index] * ( 128 - w ) + t[index + 1] * w ) >> 11;
   }
 };
 
@@ -1286,7 +1286,7 @@ public:
   int p( int cx ) {
     assert( cx >= 0 && cx < t.size() );
     int q = t[cxt];
-    t[cxt] = q + ( (sm_add_y - q) >> sm_shft );
+    t[cxt] = q + ( ( sm_add_y - q ) >> sm_shft );
     return t[cxt = cx] >> 4;
   }
 };
@@ -1427,8 +1427,8 @@ inline U8 *BH<B>::operator[]( U32 i ) {
 // a probability.
 inline int mix2( Mixer &m, int s, StateMap &sm ) {
   int p1 = sm.p( s );
-  int n0 = -static_cast<int>(!nex( s, 2 ));
-  int n1 = -static_cast<int>(!nex( s, 3 ));
+  int n0 = -static_cast<int>( !nex( s, 2 ) );
+  int n1 = -static_cast<int>( !nex( s, 3 ) );
   int st = stretch( p1 );
   if( cxtfl != 0 ) {
     m.add( st / 4 ); //firm
@@ -1437,14 +1437,14 @@ inline int mix2( Mixer &m, int s, StateMap &sm ) {
     m.add( st * ( n1 - n0 ) * 3 / 16 );              //f
     m.add( ( ( p1 & n0 ) - ( p0 & n1 ) ) / 16 );     //	3/64-net, 5/64-net
     m.add( ( ( p0 & n0 ) - ( p1 & n1 ) ) * 7 / 64 ); //	6/64~=7/64
-    return static_cast<int>(s > 0);
+    return static_cast<int>( s > 0 );
   }
   m.add( st * 9 / 32 );               //	11/32 - net
   m.add( st * ( n1 - n0 ) * 3 / 16 ); //f
   int p0 = 4095 - p1;
   m.add( ( ( p1 & n0 ) - ( p0 & n1 ) ) / 16 );     //	3/64-net, 5/64-net
   m.add( ( ( p0 & n0 ) - ( p1 & n1 ) ) * 7 / 64 ); //	6/64~=7/64
-  return static_cast<int>(s > 0);
+  return static_cast<int>( s > 0 );
 }
 
 // A RunContextMap maps a context into the next byte and a repeat
@@ -1466,14 +1466,14 @@ public:
     cp = t[cx] + 2;
   }
   int p() { // predict next bit
-    if( (cp[1] + 256) >> (8 - bpos) == c0 )
-      return ( ( cp[1] >> (7 - bpos) & 1 ) * 2 - 1 ) * ilog( cp[0] + 1 ) * mulc;
+    if( ( cp[1] + 256 ) >> ( 8 - bpos ) == c0 )
+      return ( ( cp[1] >> ( 7 - bpos ) & 1 ) * 2 - 1 ) * ilog( cp[0] + 1 ) * mulc;
     else
       return 0;
   }
   int mix( Mixer &m ) { // return run length
     m.add( p() );
-    return static_cast<int>(cp[0] != 0);
+    return static_cast<int>( cp[0] != 0 );
   }
 };
 
@@ -1496,7 +1496,7 @@ public:
   }
   void mix( Mixer &m /*, int rate=7*/ ) {
 #if 1
-    *cp += (( y << 16 ) - *cp + ( 1 << 8 )) >> 9;
+    *cp += ( ( y << 16 ) - *cp + ( 1 << 8 ) ) >> 9;
 #else
     int q = *cp;
     if( y )
@@ -1559,15 +1559,15 @@ class ContextMap {
     U16 chk[7];    // byte context checksums
     U8 last;       // last 2 accesses (0-6) in low, high nibble
   public:
-    U8 bh[7][7]; // byte context, 3-bit context -> bit history state
-        // bh[][0] = 1st bit, bh[][1,2] = 2nd bit, bh[][3..6] = 3rd bit
-        // bh[][0] is also a replacement priority, 0 = empty
+    U8 bh[7][7];               // byte context, 3-bit context -> bit history state
+                               // bh[][0] = 1st bit, bh[][1,2] = 2nd bit, bh[][3..6] = 3rd bit
+                               // bh[][0] is also a replacement priority, 0 = empty
     U8 *get( U16 chk, int i ); // Find element (0-6) matching checksum.
                                // If not found, insert or replace lowest priority (not last).
   };
-  Array<E, 64> t; // bit histories for bits 0-1, 2-4, 5-7
-      // For 0-1, also contains a run count in bh[][4] and value in bh[][5]
-      // and pending update count in bh[7]
+  Array<E, 64> t;               // bit histories for bits 0-1, 2-4, 5-7
+                                // For 0-1, also contains a run count in bh[][4] and value in bh[][5]
+                                // and pending update count in bh[7]
   Array<U8 *> cp;               // C pointers to current bit history
   Array<U8 *> cp0;              // First element of 7 element array containing cp[i]
   Array<U32> cxt;               // C whole byte contexts (hashes)
@@ -1640,7 +1640,7 @@ int ContextMap::mix1( Mixer &m, int cc, int c1, int y1 ) {
       assert( cpi >= &t[0].bh[0][0] && cpi <= &t[Sz].bh[6][6] );
       assert( ( long( cpi ) & 63 ) >= 15 );
       int ns = nex( *cpi, y1 );
-      if( ns >= 204 && ((rnd() << ( (452 - ns) >> 3 )) != 0u) )
+      if( ns >= 204 && ( ( rnd() << ( ( 452 - ns ) >> 3 ) ) != 0u ) )
         ns -= 4; // probabilistic increment
       *cpi = ns;
     }
@@ -1685,10 +1685,10 @@ int ContextMap::mix1( Mixer &m, int cc, int c1, int y1 ) {
 
     // predict from last byte in context
     int rc = runp[i][0]; // count*2, +1 if 2 different bytes seen
-    if( (runp[i][1] + 256) >> (8 - bpos) == cc ) {
-      int b = ( runp[i][1] >> (7 - bpos) & 1 ) * 2 - 1; // predicted bit + for 1, - for 0
+    if( ( runp[i][1] + 256 ) >> ( 8 - bpos ) == cc ) {
+      int b = ( runp[i][1] >> ( 7 - bpos ) & 1 ) * 2 - 1; // predicted bit + for 1, - for 0
       int c = ilog( rc + 1 );
-      if( (rc & 1) != 0 )
+      if( ( rc & 1 ) != 0 )
         c = ( c * 15 ) / 4;
       else
         c *= 13;
@@ -1728,7 +1728,7 @@ int matchModel( Mixer &m ) {
       ++len, ++ptr;
     else { // find match
       ptr = t[h];
-      if( (ptr != 0) && pos - ptr < buf.size() )
+      if( ( ptr != 0 ) && pos - ptr < buf.size() )
         while( buf( len + 1 ) == buf[ptr - len - 1] && len < MAXLEN )
           ++len;
     }
@@ -1741,8 +1741,8 @@ int matchModel( Mixer &m ) {
   if( len > MAXLEN )
     len = MAXLEN;
   int sgn;
-  if( (len != 0) && b1 == buf[ptr - 1] && c0 == (buf[ptr] + 256) >> (8 - bpos) ) {
-    if( (buf[ptr] >> (7 - bpos) & 1) != 0 )
+  if( ( len != 0 ) && b1 == buf[ptr - 1] && c0 == ( buf[ptr] + 256 ) >> ( 8 - bpos ) ) {
+    if( ( buf[ptr] >> ( 7 - bpos ) & 1 ) != 0 )
       sgn = 8;
     else
       sgn = -8;
@@ -1806,9 +1806,9 @@ void wordModel( Mixer &m ) {
     //    if ( (c-'A') <= ('Z'-'A') )
     //      c+='a'-'A';
 
-    if( (spaces & 0x80000000) != 0u )
+    if( ( spaces & 0x80000000 ) != 0u )
       --spacecount;
-    if( (words & 0x80000000) != 0u )
+    if( ( words & 0x80000000 ) != 0u )
       --wordcount;
     spaces = spaces * 2;
     words = words * 2;
@@ -2804,7 +2804,7 @@ void Predictor::update() {
   }
   bpos = ( bpos + 1 ) & 7;
 
-  if( (fails & 0x00000080) != 0u )
+  if( ( fails & 0x00000080 ) != 0u )
     --failcount;
   fails = fails * 2;
   failz = failz * 2;
@@ -2819,24 +2819,24 @@ void Predictor::update() {
   pr = contextModel2();
 
   int rate = 6 + static_cast<int>( pos > 14 * 256 * 1024 ) + static_cast<int>( pos > 28 * 512 * 1024 );
-  int pt, pu = (a1.p( pr, c0, 3 ) + 7 * pr + 4) >> 3, pv, pz = failcount + 1;
+  int pt, pu = ( a1.p( pr, c0, 3 ) + 7 * pr + 4 ) >> 3, pv, pz = failcount + 1;
   pz += tri[( fails >> 5 ) & 3];
   pz += trj[( fails >> 3 ) & 3];
   pz += trj[( fails >> 1 ) & 3];
-  if( (fails & 1) != 0u )
+  if( ( fails & 1 ) != 0u )
     pz += 8;
   pz = pz / 2;
 
-  pu = a4.p( pu, ( c0 * 2 ) ^ (hash( b1, ( x5 >> 8 ) & 255, ( x5 >> 16 ) & 0x80ff ) & 0x1ffff), rate );
-  pv = a2.p( pr, ( c0 * 8 ) ^ (hash( 29, failz & 2047 ) & 0x7fff), rate + 1 );
+  pu = a4.p( pu, ( c0 * 2 ) ^ ( hash( b1, ( x5 >> 8 ) & 255, ( x5 >> 16 ) & 0x80ff ) & 0x1ffff ), rate );
+  pv = a2.p( pr, ( c0 * 8 ) ^ ( hash( 29, failz & 2047 ) & 0x7fff ), rate + 1 );
   pv = a5.p( pv, hash( c0, w5 & 0xfffff ) & 0xffff, rate );
-  pt = a3.p( pr, ( c0 * 32 ) ^ (hash( 19, x5 & 0x80ffff ) & 0x7fff), rate );
-  pz = a6.p( pu, ( c0 * 4 ) ^ (hash( min( 9, pz ), x5 & 0x80ff ) & 0xffff), rate );
+  pt = a3.p( pr, ( c0 * 32 ) ^ ( hash( 19, x5 & 0x80ffff ) & 0x7fff ), rate );
+  pz = a6.p( pu, ( c0 * 4 ) ^ ( hash( min( 9, pz ), x5 & 0x80ff ) & 0xffff ), rate );
 
-  if( (fails & 255) != 0u )
-    pr = (pt * 6 + pu + pv * 11 + pz * 14 + 16) >> 5;
+  if( ( fails & 255 ) != 0u )
+    pr = ( pt * 6 + pu + pv * 11 + pz * 14 + 16 ) >> 5;
   else
-    pr = (pt * 4 + pu * 5 + pv * 12 + pz * 11 + 16) >> 5;
+    pr = ( pt * 4 + pu * 5 + pv * 12 + pz * 11 + 16 ) >> 5;
 }
 
 //////////////////////////// Encoder ////////////////////////////
@@ -2872,11 +2872,11 @@ private:
   int code( int i = 0 ) {
     int p = predictor.p();
     assert( p >= 0 && p < 4096 );
-    p += static_cast<int>(p < 2048);
-    U32 xmid = x1 + ( (x2 - x1) >> 12 ) * p + ( ( x2 - x1 & 0xfff ) * p >> 12 );
+    p += static_cast<int>( p < 2048 );
+    U32 xmid = x1 + ( ( x2 - x1 ) >> 12 ) * p + ( ( x2 - x1 & 0xfff ) * p >> 12 );
     assert( xmid >= x1 && xmid < x2 );
     if( mode == DECOMPRESS )
-      y = static_cast<int>(x <= xmid);
+      y = static_cast<int>( x <= xmid );
     else
       y = i;
     y != 0 ? ( x2 = xmid, p = sm_add ) : ( x1 = xmid + 1, p = 0 );
@@ -3050,7 +3050,7 @@ protected:
   Filter( const Filter * );                  // copying not allowed
   Filter &operator=( const Filter & );       // assignment not allowed
   static void printStatus( int n ) {         // print progress
-    if( n > 0 && (( n & 0x3fff ) == 0) )
+    if( n > 0 && ( ( n & 0x3fff ) == 0 ) )
       printf( "%10d \b\b\b\b\b\b\b\b\b\b\b", n ), fflush( stdout );
   }
 
@@ -3179,7 +3179,7 @@ public:
 
 protected:
   void encode( FILE *f, int n ) { // not executed if filetype is 0
-    while( (n--) != 0 )
+    while( ( n-- ) != 0 )
       putc( getc( f ), tmp );
   }
   int decode() {
@@ -3426,7 +3426,7 @@ void store_in_header( FILE *f, char *filename, long &total_size ) {
     fseek( fi, 0, SEEK_END ); // get size
     long size = ftell( fi );
     total_size += size;
-    if( (( size & ~0x7fffffffL ) != 0) || (( total_size & ~0x7fffffffL ) != 0) ) {
+    if( ( ( size & ~0x7fffffffL ) != 0 ) || ( ( total_size & ~0x7fffffffL ) != 0 ) ) {
       fprintf( stderr, "File sizes must total less than 2 gigabytes\n" );
       fprintf( f, "-1\tError: over 2 GB\r\n" );
       exit( 1 );
@@ -3519,7 +3519,7 @@ int main( int argc, char **argv ) {
 #ifndef SHORTEN_CODE
       if( argc == 2 ) {
         filename = getline();
-        if( (filename == nullptr) || (filename[0] == 0) )
+        if( ( filename == nullptr ) || ( filename[0] == 0 ) )
           break;
       } else
 #endif
@@ -3533,7 +3533,7 @@ int main( int argc, char **argv ) {
 
     for( i = 0; i < filenames.size(); i++ ) {
       Filter::make( filenames[i].c_str(), NULL );
-      std::pair<int, std::string> p( ( 1 << (31 - 1) )
+      std::pair<int, std::string> p( ( 1 << ( 31 - 1 ) )
                                          - ( filetype * 8 * 16 * 2048 + preprocFlag + ( wrt.longDict + 1 ) * 16 * 2048
                                              + ( wrt.shortDict + 1 ) * 2048 ),
                                      filenames[i] );
@@ -3555,7 +3555,7 @@ int main( int argc, char **argv ) {
   // current filename and current position in the compressed data.
   long header, body;             // file positions in header, body
   char *filename = getline( f ); // check header
-  if( (filename == nullptr) || (strncmp( filename, PROGNAME " -", strlen( PROGNAME ) + 2 ) != 0) )
+  if( ( filename == nullptr ) || ( strncmp( filename, PROGNAME " -", strlen( PROGNAME ) + 2 ) != 0 ) )
     fprintf( stderr, "%s: not a " PROGNAME " file\n", argv[1] ), exit( 1 );
   option = filename[strlen( filename ) - 1];
   level = option - '0';
@@ -3596,7 +3596,7 @@ int main( int argc, char **argv ) {
       break;
     size = atol( filename ); // parse size and filename, separated by tab
     total_size += size;
-    while( (*filename != 0) && *filename != '\t' )
+    while( ( *filename != 0 ) && *filename != '\t' )
       ++filename;
     if( *filename == '\t' )
       ++filename;

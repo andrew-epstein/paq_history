@@ -213,7 +213,7 @@ inline void Encoder::encode( int y ) {
   const U32 p = predictor.p();
   assert( p <= 0xffff );
   assert( y == 0 || y == 1 );
-  const U32 xmid = x1 + ( (x2 - x1) >> 16 ) * p + ( ( x2 - x1 & 0xffff ) * p >> 16 );
+  const U32 xmid = x1 + ( ( x2 - x1 ) >> 16 ) * p + ( ( x2 - x1 & 0xffff ) * p >> 16 );
   assert( xmid >= x1 && xmid < x2 );
   if( y != 0 )
     x2 = xmid;
@@ -236,7 +236,7 @@ inline int Encoder::decode() {
   // Update the range
   const U32 p = predictor.p();
   assert( p <= 0xffff );
-  const U32 xmid = x1 + ( (x2 - x1) >> 16 ) * p + ( ( x2 - x1 & 0xffff ) * p >> 16 );
+  const U32 xmid = x1 + ( ( x2 - x1 ) >> 16 ) * p + ( ( x2 - x1 & 0xffff ) * p >> 16 );
   assert( xmid >= x1 && xmid < x2 );
   int y = 0;
   if( x <= xmid ) {

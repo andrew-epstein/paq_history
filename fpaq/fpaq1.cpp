@@ -99,7 +99,7 @@ inline int Encoder::code( int y = 0 ) {
   U64 mid = low + ( ( high - low ) >> 32 ) * p;
   assert( mid >= low && mid < high );
   if( mode == DECOMPRESS )
-    y = static_cast<int>(x <= mid);
+    y = static_cast<int>( x <= mid );
   if( y != 0 )
     high = mid;
   else

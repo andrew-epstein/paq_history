@@ -567,7 +567,7 @@ public:
     int wt = pr & 0xfff; // interpolation weight of next element
     cx = cx * 24 + ( pr >> 12 );
     cxt = cx + ( wt >> 11 );
-    pr = (( t[cx] >> 13 ) * ( 0x1000 - wt ) + ( t[cx + 1] >> 13 ) * wt) >> 19;
+    pr = ( ( t[cx] >> 13 ) * ( 0x1000 - wt ) + ( t[cx + 1] >> 13 ) * wt ) >> 19;
     return pr;
   }
 
@@ -585,7 +585,7 @@ public:
     int wt = pr & 0xfff; // interpolation weight of next element
     cx = cx * 24 + ( pr >> 12 );
     cxt = cx + ( wt >> 11 );
-    pr = (( t[cx] >> 13 ) * ( 0x1000 - wt ) + ( t[cx + 1] >> 13 ) * wt) >> 19;
+    pr = ( ( t[cx] >> 13 ) * ( 0x1000 - wt ) + ( t[cx + 1] >> 13 ) * wt ) >> 19;
     return pr;
   }
 };
@@ -647,14 +647,14 @@ inline int dot_product() {
 inline void train( int err ) {
   int *w = mxr_cxt;
   assert( err >= -32768 && err < 32768 );
-  w[0] += (mxr_tx[0] * err + 0x2000) >> 14;
-  w[1] += (mxr_tx[1] * err + 0x2000) >> 14;
-  w[2] += (mxr_tx[2] * err + 0x2000) >> 14;
-  w[3] += (mxr_tx[3] * err + 0x2000) >> 14;
-  w[4] += (mxr_tx[4] * err + 0x2000) >> 14;
-  w[5] += (mxr_tx[5] * err + 0x2000) >> 14;
-  w[6] += (mxr_tx[6] * err + 0x2000) >> 14;
-  w[7] += (err + 0x20) >> 6;
+  w[0] += ( mxr_tx[0] * err + 0x2000 ) >> 14;
+  w[1] += ( mxr_tx[1] * err + 0x2000 ) >> 14;
+  w[2] += ( mxr_tx[2] * err + 0x2000 ) >> 14;
+  w[3] += ( mxr_tx[3] * err + 0x2000 ) >> 14;
+  w[4] += ( mxr_tx[4] * err + 0x2000 ) >> 14;
+  w[5] += ( mxr_tx[5] * err + 0x2000 ) >> 14;
+  w[6] += ( mxr_tx[6] * err + 0x2000 ) >> 14;
+  w[7] += ( err + 0x20 ) >> 6;
 }
 inline int dot_product() {
   int *w = mxr_cxt;
@@ -1121,7 +1121,9 @@ public:
     // predict
     int len = mm.p(), pr;
     if( len == 0 )
-      len = ( static_cast<int>( *cp[1] != 0 ) + static_cast<int>( *cp[2] != 0 ) + static_cast<int>( *cp[3] != 0 ) + static_cast<int>( *cp[4] != 0 ) ) * MI;
+      len = ( static_cast<int>( *cp[1] != 0 ) + static_cast<int>( *cp[2] != 0 ) + static_cast<int>( *cp[3] != 0 )
+              + static_cast<int>( *cp[4] != 0 ) )
+            * MI;
     else
       len = len2order[len];
     mxr_cxt = add2order + len;
@@ -1145,7 +1147,7 @@ public:
     pr = m_p;
     pr = squash( pr ) + 3 * a1.p1( ( pr + 2047 ) * 23, h[0] + c0 ) >> 2;
     mxr_pr = pr;
-    pr = (pr * 3 + 5 * a2.p2( stretch_t2[pr], fails + prevfail ) + 4) >> 3;
+    pr = ( pr * 3 + 5 * a2.p2( stretch_t2[pr], fails + prevfail ) + 4 ) >> 3;
 #endif
     return pr + static_cast<int>( pr < 2048 );
   }
@@ -1362,9 +1364,9 @@ Encoder::Encoder( Mode m, FILE *f ) :
 
   for( i = 0; i < 256; ++i ) {
     pi = ( i & 1 ) << 10;
-    if( (i & 6) != 0 )
+    if( ( i & 6 ) != 0 )
       pi += 512;
-    if( (i & 248) != 0 )
+    if( ( i & 248 ) != 0 )
       pi += 256;
     calcprevfail[i] = pi;
   }
@@ -1391,7 +1393,9 @@ Encoder::Encoder( Mode m, FILE *f ) :
     len2cxt[i] = c;
     len2cxt[i - 1] = c - 256;
     c = i >> 1;
-    len2order[c] = ( 5 + static_cast<int>( c >= 8 ) + static_cast<int>( c >= 12 ) + static_cast<int>( c >= 16 ) + static_cast<int>( c >= 32 ) ) * MI;
+    len2order[c] = ( 5 + static_cast<int>( c >= 8 ) + static_cast<int>( c >= 12 ) + static_cast<int>( c >= 16 )
+                     + static_cast<int>( c >= 32 ) )
+                   * MI;
   }
 
   alloc( mxr_wx, MI * MC );
@@ -1410,7 +1414,7 @@ void Encoder::flush() {
 
 int main( int argc, char **argv ) {
   // Check arguments
-  if( argc != 4 || ((isdigit( argv[1][0] ) == 0) && argv[1][0] != 'd') ) {
+  if( argc != 4 || ( ( isdigit( argv[1][0] ) == 0 ) && argv[1][0] != 'd' ) ) {
     printf( "lpaq6 file compressor (C) 2007, Matt Mahoney\n"
             "Licensed under GPL, http://www.gnu.org/copyleft/gpl.html\n"
             "\n"

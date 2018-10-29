@@ -543,9 +543,9 @@ public:
 void MatchModel::model( int y, int *n0, int *n1 ) {
   buf[pos] += buf[pos] + y; // Store bit
   ++bpos;
-  if( (end != 0) && ( buf[end] >> ( 8 - bpos ) ) != buf[pos] ) // Does it match?
-    begin = end = 0;                                    // no
-  if( bpos == 8 ) {                                     // New byte
+  if( ( end != 0 ) && ( buf[end] >> ( 8 - bpos ) ) != buf[pos] ) // Does it match?
+    begin = end = 0;                                             // no
+  if( bpos == 8 ) {                                              // New byte
     bpos = 0;
     hash[0] = hash[0] * ( 16 * 56797157 ) + buf[pos] + 1; // Hash last 8 bytes
     hash[1] = hash[1] * ( 2 * 45684217 ) + buf[pos] + 1;  // Hash last 32 bytes
@@ -802,8 +802,8 @@ void MixModel::model( int y, int &pr ) {
     if( s0 > 0 && s1 > 0 ) {
       const int s = s0 + s1;
       const int sy = y != 0 ? s1 : s0;
-      const int sy1 = (0xffffffff / sy + ( rnd() & 1023 )) >> 10;
-      const int s1 = (0xffffffff / s + ( rnd() & 1023 )) >> 10;
+      const int sy1 = ( 0xffffffff / sy + ( rnd() & 1023 ) ) >> 10;
+      const int s1 = ( 0xffffffff / s + ( rnd() & 1023 ) ) >> 10;
       for( int i = 0; i < N; ++i ) {
         const int dw = int( ( y != 0 ? bc1[i] : bc0[i] ) * sy1 - ( bc0[i] + bc1[i] ) * s1 + ( rnd() & 255 ) ) >> 8;
         wt[cn + i] = min( 65535, max( 1, wt[cn + i] + dw ) );

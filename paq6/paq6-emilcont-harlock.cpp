@@ -1617,7 +1617,7 @@ public:
 // Update with bit y, put array of 0 counts in n0 and 1 counts in n1
 inline void CharModel::model() {
   // Update models
-  int y = ch( static_cast<int>(ch.bpos() == 0) ) & 1; // last input bit
+  int y = ch( static_cast<int>( ch.bpos() == 0 ) ) & 1; // last input bit
   cp0->add( y );
   cp1->add( y );
 
@@ -1627,7 +1627,8 @@ inline void CharModel::model() {
     for( int i = N - 1; i > 0; --i )
       cxt[i] = cxt[i - 1]
                ^ hash( ch( 1 ), i,
-                       static_cast<U8>( _wlen == i && ch.pos( 0, 3 ) < ch.pos( 32, 3 ) && ch.pos( 255, 3 ) < ch.pos( 32, 3 ) ) );
+                       static_cast<U8>( _wlen == i && ch.pos( 0, 3 ) < ch.pos( 32, 3 )
+                                        && ch.pos( 255, 3 ) < ch.pos( 32, 3 ) ) );
     t2.update( cxt[2] );
     t3.update( cxt[3] );
     t4.update( cxt[4] );
@@ -1699,7 +1700,7 @@ inline void MatchModel::model() {
       h = hash[1] >> ( 32 - N ); // 1/16 of 8-contexts are hashed to 32 bytes
     int i;
     for( i = 0; i < M; ++i ) {
-      if( (end[i] != 0u) && ch( 1 ) == ch[end[i]] )
+      if( ( end[i] != 0u ) && ch( 1 ) == ch[end[i]] )
         ++end[i];
     }
     for( i = 0; i < M; ++i ) {
@@ -1740,7 +1741,7 @@ inline void MatchModel::model() {
           wt = 2048;   //512
         else
           wt = wt * wt >> 2;
-        if( (d & 1) != 0u )
+        if( ( d & 1 ) != 0u )
           n1 += wt;
         else
           n0 += wt;
@@ -2022,7 +2023,8 @@ inline void SparseModel::model() {
   if( ch.bpos() == 0 ) {
     const int g = min( 32, int( ch.pos() - ch.pos( ch( 1 ), 1 ) ) );  // gap to prior ch1
     const int g2 = min( 32, int( ch.pos() - ch.pos( ch( 2 ), 1 ) ) ); // gap to prior ch2
-    char k = static_cast<int>( ch.pos( 0, 3 ) < ch.pos( 32, 3 ) ) * ( _wlen + 1 ) * static_cast<int>( ch.pos( 255, 3 ) < ch.pos( 32, 3 ) );
+    char k = static_cast<int>( ch.pos( 0, 3 ) < ch.pos( 32, 3 ) ) * ( _wlen + 1 )
+             * static_cast<int>( ch.pos( 255, 3 ) < ch.pos( 32, 3 ) );
     t0.update( hash( ch( 1 ), ch( 3 ), k ) );
     t1.update( hash( ch( 1 ), ch( 4 ), k ) );
     t2.update( hash( ch( 1 ), ch( 5 ), k ) );
@@ -2051,7 +2053,13 @@ class SparseModel2 : public Model {
   enum { N = 4 };                // Number of models
   CounterMap t0, t1, t2, t3, t4; // Sparse models
 public:
-  SparseModel2() : SIZE( static_cast<int>( MEM >= 0 ) * ( MEM + 14 ) ), t0( SIZE ), t1( SIZE ), t2( SIZE ), t3( SIZE ), t4( SIZE ) {}
+  SparseModel2() :
+      SIZE( static_cast<int>( MEM >= 0 ) * ( MEM + 14 ) ),
+      t0( SIZE ),
+      t1( SIZE ),
+      t2( SIZE ),
+      t3( SIZE ),
+      t4( SIZE ) {}
   void model(); // Update and predict
 };
 
@@ -2155,7 +2163,7 @@ public:
         cxt[0] = 0;
         _clen = 0;
       }
-      if( (isalpha( c ) != 0) || c >= 192 ) {
+      if( ( isalpha( c ) != 0 ) || c >= 192 ) {
         word[0] ^= hash( word[0], tolower( c ) );
         _wlen++;
       } else {
@@ -2417,8 +2425,8 @@ inline void Predictor::update( int y ) {
 
   // Get final probability, interpolate SSE and average with original
   if( MEM >= 1 ) {
-    context =
-        ch( 0 ) * 8 + ( ch( 1 ) / 64 ) * 2 + static_cast<int>( ch.pos( 0, 3 ) < ch.pos( 32, 3 ) ) * static_cast<int>( _wlen == _clen ); // for SSE 64
+    context = ch( 0 ) * 8 + ( ch( 1 ) / 64 ) * 2
+              + static_cast<int>( ch.pos( 0, 3 ) < ch.pos( 32, 3 ) ) * static_cast<int>( _wlen == _clen ); // for SSE 64
     ssep = ssemap( nextp );
     U32 wt = ssep % SSESCALE;
     U32 i = ssep / SSESCALE;
@@ -2693,7 +2701,7 @@ int main( int argc, char **argv ) {
 
   // Read and remove -MEM option
   if( argc > 1 && argv[1][0] == '-' ) {
-    if( (isdigit( argv[1][1] ) != 0) && argv[1][2] == 0 ) {
+    if( ( isdigit( argv[1][1] ) != 0 ) && argv[1][2] == 0 ) {
       MEM = argv[1][1] - '0';
     } else
       printf( "Option %s ignored\n", argv[1] );

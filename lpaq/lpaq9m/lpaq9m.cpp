@@ -725,7 +725,7 @@ public:
     int v1 = *( tcx + 1 );
     pr = v0 >> 12;
     v1 = ( ( U32 ) v1 >> 12 ) - pr;
-    pr = (v1 * wt + v0) >> 20;
+    pr = ( v1 * wt + v0 ) >> 20;
     tcxt = tcx + ( wt >> 11 );
     return pr;
   }
@@ -747,7 +747,7 @@ public:
     int v1 = *( tcx + 1 );
     pr = v0 >> 12;
     v1 = ( ( U32 ) v1 >> 12 ) - pr;
-    pr = (v1 * wt + v0) >> 20;
+    pr = ( v1 * wt + v0 ) >> 20;
     tcxt = tcx + ( wt >> 11 );
     return pr;
   }
@@ -1349,7 +1349,7 @@ public:
     pr = m_p + 2047;
     int xx = a1.p1( pr, c2 + c0 );
     mxr_pr = xx, pr = squash( pr - 2047 ) + 7 * xx >> 3;
-    pr = (pr * 3 + 5 * a2.p2( stretch_t2[xx], fails * 8 + bcount ) + 4) >> 3;
+    pr = ( pr * 3 + 5 * a2.p2( stretch_t2[xx], fails * 8 + bcount ) + 4 ) >> 3;
     return pr + static_cast<int>( pr < 2048 );
   }
 
@@ -1367,7 +1367,7 @@ public:
     pr = m_p + 2047;
     int xx = a1.p1( pr, c2 + c0 );
     mxr_pr = squash( pr - 2047 ) + 15 * xx >> 4;
-    pr = (mxr_pr + 7 * a2.p2( stretch_t2[xx], fails * 8 + bcount ) + 4) >> 3;
+    pr = ( mxr_pr + 7 * a2.p2( stretch_t2[xx], fails * 8 + bcount ) + 4 ) >> 3;
     return pr + static_cast<int>( pr < 2048 );
   }
 
@@ -1388,7 +1388,7 @@ public:
     mxr_pr = squash( pr - 2047 ) + 7 * xx >> 3;
     pr = a2.p2( stretch_t2[xx], fails * 8 + 7 );
     pr = pr * 2 + pr;
-    pr = (mxr_pr + pr) >> 2;
+    pr = ( mxr_pr + pr ) >> 2;
     return pr + static_cast<int>( pr < 2048 );
   }
 
@@ -1410,7 +1410,7 @@ public:
     mxr_pr = squash( pr - 2047 ) + 7 * xx >> 3;
     pr = a2.p2( stretch_t2[xx], fails * 8 + 7 );
     pr = pr * 2 + pr;
-    pr = (mxr_pr + pr) >> 2;
+    pr = ( mxr_pr + pr ) >> 2;
     return pr + static_cast<int>( pr < 2048 );
   }
 
@@ -1670,7 +1670,9 @@ Encoder::Encoder( Mode m, FILE *f ) {
     if( c != 0 )
       for( j = 255; j >= 0; --j )
         smt[256 * 11 + c + j] = k, smt[256 * 12 + c + j] = 0xfffff ^ k;
-    k = ( 4 + static_cast<int>( i >= 11 ) + static_cast<int>( i >= 13 ) + static_cast<int>( i >= 16 ) + static_cast<int>( i > 51 ) ) * MI * 8;
+    k = ( 4 + static_cast<int>( i >= 11 ) + static_cast<int>( i >= 13 ) + static_cast<int>( i >= 16 )
+          + static_cast<int>( i > 51 ) )
+        * MI * 8;
     len2order[i] = k + static_cast<int>( i >= 23 ) * MI * 8;
     len2order7[i] = k + static_cast<int>( i >= 29 ) * MI * 8;
   }
@@ -1760,7 +1762,7 @@ void Encoder::flush() {
 
 int main( int argc, char **argv ) {
   // Check arguments
-  if( argc != 4 || ((isdigit( argv[1][0] ) == 0) && argv[1][0] != 'd') ) {
+  if( argc != 4 || ( ( isdigit( argv[1][0] ) == 0 ) && argv[1][0] != 'd' ) ) {
     printf( "lpaq9m file compressor (C) 2007-2009, Matt Mahoney, Alexander Ratushnyak\n"
             "Licensed under GPL, http://www.gnu.org/copyleft/gpl.html\n"
             "\n"

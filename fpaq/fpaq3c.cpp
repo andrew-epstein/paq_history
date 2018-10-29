@@ -42,7 +42,7 @@ void update( int y ) {
     }
     rc[y] >>= 1;          //
     rc[y] += ( 1 << 27 ); // old 28 state of     y [0001...................01] count
-    rc[y == 0] >>= 1;         // old 28 state of not y [1110...................10] count
+    rc[y == 0] >>= 1;     // old 28 state of not y [1110...................10] count
   } else {
     cuf[cc[y]] += 8;
     if( cuf[cc[y]] > 247 ) {
@@ -51,7 +51,7 @@ void update( int y ) {
     }
     cc[y] >>= 1;          //
     cc[y] += ( 1 << 22 ); // old 28 state of     y [0001...................01] count
-    cc[y == 0] >>= 1;         // old 28 state of not y [1110...................10] count
+    cc[y == 0] >>= 1;     // old 28 state of not y [1110...................10] count
   }
 }
 

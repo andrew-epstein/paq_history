@@ -509,7 +509,7 @@ void quit( const char *message = 0 ) {
 // strings are equal ignoring case?
 int equals( const char *a, const char *b ) {
   assert( a && b );
-  while( (*a != 0) && (*b != 0) ) {
+  while( ( *a != 0 ) && ( *b != 0 ) ) {
     int c1 = *a;
     if( c1 >= 'A' && c1 <= 'Z' )
       c1 += 'a' - 'A';
@@ -521,7 +521,7 @@ int equals( const char *a, const char *b ) {
     ++a;
     ++b;
   }
-  return static_cast<int>(*a == *b);
+  return static_cast<int>( *a == *b );
 }
 
 typedef enum { DEFAULT, JPEG, EXE, BINTEXT, TEXT } Filetype;
@@ -1169,9 +1169,9 @@ public:
 
   // predict next bit
   int p() {
-    while( (nx & 7) != 0 )
-      tx[nx++] = 0; // pad
-    if( mp != nullptr ) {      // combine outputs
+    while( ( nx & 7 ) != 0 )
+      tx[nx++] = 0;       // pad
+    if( mp != nullptr ) { // combine outputs
       mp->update();
       for( int i = 0; i < ncxt; ++i ) {
         pr[i] = squash( dot_product( &tx[0], &wx[cxt[i] * N], nx ) >> 5 );
@@ -1233,11 +1233,11 @@ public:
     assert( pr >= 0 && pr < 4096 && cxt >= 0 && cxt < N && rate > 0 && rate < 32 );
     pr = stretch( pr );
     int g = ( y << 16 ) + ( y << rate ) - y - y;
-    t[index] += (g - t[index]) >> rate;
-    t[index + 1] += (g - t[index + 1]) >> rate;
+    t[index] += ( g - t[index] ) >> rate;
+    t[index + 1] += ( g - t[index + 1] ) >> rate;
     const int w = pr & 127; // interpolation weight (33 points)
-    index = ( (pr + 2048) >> 7 ) + cxt * 33;
-    return (t[index] * ( 128 - w ) + t[index + 1] * w) >> 11;
+    index = ( ( pr + 2048 ) >> 7 ) + cxt * 33;
+    return ( t[index] * ( 128 - w ) + t[index + 1] * w ) >> 11;
   }
 };
 
@@ -1265,7 +1265,7 @@ public:
   StateMap();
   int p( int cx ) {
     assert( cx >= 0 && cx < t.size() );
-    t[cxt] += (( y << 16 ) - t[cxt] + 128) >> 8;
+    t[cxt] += ( ( y << 16 ) - t[cxt] + 128 ) >> 8;
     return t[cxt = cx] >> 4;
   }
 };
@@ -1401,10 +1401,12 @@ inline int mix2( Mixer &m, int s, StateMap &sm ) {
   p1 >>= 4;
   int p0 = 255 - p1;
   m.add( p1 - p0 );
-  m.add( st * static_cast<int>( static_cast<int>(static_cast<int>(n0) == 0 - static_cast<int>(n1)) == 0 ) );
-  m.add( ( (p1 & (static_cast<int>(-static_cast<int>(n0)) == 0)) ) - ( (p0 & (static_cast<int>(-static_cast<int>(n1)) == 0)) ) );
-  m.add( ( (p1 & (static_cast<int>(-static_cast<int>(n1)) == 0)) ) - ( (p0 & (static_cast<int>(-static_cast<int>(n0)) == 0)) ) );
-  return static_cast<int>(s > 0);
+  m.add( st * static_cast<int>( static_cast<int>( static_cast<int>( n0 ) == 0 - static_cast<int>( n1 ) ) == 0 ) );
+  m.add( ( ( p1 & ( static_cast<int>( -static_cast<int>( n0 ) ) == 0 ) ) )
+         - ( ( p0 & ( static_cast<int>( -static_cast<int>( n1 ) ) == 0 ) ) ) );
+  m.add( ( ( p1 & ( static_cast<int>( -static_cast<int>( n1 ) ) == 0 ) ) )
+         - ( ( p0 & ( static_cast<int>( -static_cast<int>( n0 ) ) == 0 ) ) ) );
+  return static_cast<int>( s > 0 );
 }
 
 // A RunContextMap maps a context into the next byte and a repeat
@@ -1425,14 +1427,14 @@ public:
     cp = t[cx] + 1;
   }
   int p() { // predict next bit
-    if( (cp[1] + 256) >> (8 - bpos) == c0 )
-      return ( ( cp[1] >> (7 - bpos) & 1 ) * 2 - 1 ) * ilog( cp[0] + 1 ) * 8;
+    if( ( cp[1] + 256 ) >> ( 8 - bpos ) == c0 )
+      return ( ( cp[1] >> ( 7 - bpos ) & 1 ) * 2 - 1 ) * ilog( cp[0] + 1 ) * 8;
     else
       return 0;
   }
   int mix( Mixer &m ) { // return run length
     m.add( p() );
-    return static_cast<int>(cp[0] != 0);
+    return static_cast<int>( cp[0] != 0 );
   }
 };
 
@@ -1454,7 +1456,7 @@ public:
     cxt = cx * 256 & t.size() - 256;
   }
   void mix( Mixer &m, int rate = 7 ) {
-    *cp += (( y << 16 ) - *cp + ( 1 << (rate - 1) )) >> rate;
+    *cp += ( ( y << 16 ) - *cp + ( 1 << ( rate - 1 ) ) ) >> rate;
     cp = &t[cxt + c0];
     m.add( stretch( *cp >> 4 ) );
   }
@@ -1509,15 +1511,15 @@ class ContextMap {
     U16 chk[7]; // byte context checksums
     U8 last;    // last 2 accesses (0-6) in low, high nibble
   public:
-    U8 bh[7][7]; // byte context, 3-bit context -> bit history state
-        // bh[][0] = 1st bit, bh[][1,2] = 2nd bit, bh[][3..6] = 3rd bit
-        // bh[][0] is also a replacement priority, 0 = empty
+    U8 bh[7][7];        // byte context, 3-bit context -> bit history state
+                        // bh[][0] = 1st bit, bh[][1,2] = 2nd bit, bh[][3..6] = 3rd bit
+                        // bh[][0] is also a replacement priority, 0 = empty
     U8 *get( U16 chk ); // Find element (0-6) matching checksum.
                         // If not found, insert or replace lowest priority (not last).
   };
-  Array<E, 64> t; // bit histories for bits 0-1, 2-4, 5-7
-      // For 0-1, also contains a run count in bh[][4] and value in bh[][5]
-      // and pending update count in bh[7]
+  Array<E, 64> t;               // bit histories for bits 0-1, 2-4, 5-7
+                                // For 0-1, also contains a run count in bh[][4] and value in bh[][5]
+                                // and pending update count in bh[7]
   Array<U8 *> cp;               // C pointers to current bit history
   Array<U8 *> cp0;              // First element of 7 element array containing cp[i]
   Array<U32> cxt;               // C whole byte contexts (hashes)
@@ -1580,7 +1582,7 @@ int ContextMap::mix1( Mixer &m, int cc, int bp, int c1, int y1 ) {
       assert( cp[i] >= &t[0].bh[0][0] && cp[i] <= &t[t.size() - 1].bh[6][6] );
       assert( ( long( cp[i] ) & 63 ) >= 15 );
       int ns = nex( *cp[i], y1 );
-      if( ns >= 204 && ((rnd() << ( (452 - ns) >> 3 )) != 0u) )
+      if( ns >= 204 && ( ( rnd() << ( ( 452 - ns ) >> 3 ) ) != 0u ) )
         ns -= 4; // probabilistic increment
       *cp[i] = ns;
     }
@@ -1622,9 +1624,9 @@ int ContextMap::mix1( Mixer &m, int cc, int bp, int c1, int y1 ) {
 
     // predict from last byte in context
     int rc = runp[i][0]; // count*2, +1 if 2 different bytes seen
-    if( (runp[i][1] + 256) >> (8 - bp) == cc ) {
-      int b = ( runp[i][1] >> (7 - bp) & 1 ) * 2 - 1; // predicted bit + for 1, - for 0
-      int c = ilog( rc + 1 ) << (2 + ( ~rc & 1 ));
+    if( ( runp[i][1] + 256 ) >> ( 8 - bp ) == cc ) {
+      int b = ( runp[i][1] >> ( 7 - bp ) & 1 ) * 2 - 1; // predicted bit + for 1, - for 0
+      int c = ilog( rc + 1 ) << ( 2 + ( ~rc & 1 ) );
       m.add( b * c );
     } else
       m.add( 0 );
@@ -1660,7 +1662,7 @@ int matchModel( Mixer &m ) {
       ++len, ++ptr;
     else { // find match
       ptr = t[h];
-      if( (ptr != 0) && pos - ptr < buf.size() )
+      if( ( ptr != 0 ) && pos - ptr < buf.size() )
         while( buf( len + 1 ) == buf[ptr - len - 1] && len < MAXLEN )
           ++len;
     }
@@ -1673,8 +1675,8 @@ int matchModel( Mixer &m ) {
   if( len > MAXLEN )
     len = MAXLEN;
   int sgn;
-  if( (len != 0) && buf( 1 ) == buf[ptr - 1] && c0 == (buf[ptr] + 256) >> (8 - bpos) ) {
-    if( (buf[ptr] >> (7 - bpos) & 1) != 0 )
+  if( ( len != 0 ) && buf( 1 ) == buf[ptr - 1] && c0 == ( buf[ptr] + 256 ) >> ( 8 - bpos ) ) {
+    if( ( buf[ptr] >> ( 7 - bpos ) & 1 ) != 0 )
       sgn = 1;
     else
       sgn = -1;
@@ -1734,7 +1736,7 @@ void wordModel( Mixer &m ) {
     int c = c4 & 255;
     if( c >= 'A' && c <= 'Z' )
       c += 'a' - 'A';
-    if( (c >= 'a' && c <= 'z') || c >= 128 ) {
+    if( ( c >= 'a' && c <= 'z' ) || c >= 128 ) {
       word0 = word0 * 263 * 32 + c;
       text0 = text0 * 997 * 16 + c;
     } else if( word0 != 0u ) {
@@ -2510,8 +2512,9 @@ int contextModel2() {
   }
   //m.set(buf(1)+8, 264);
   //m.set(c0, 256);
-  m.set( order + 8 * ( c4 >> 5 & 7 ) + 64 * static_cast<int>( buf( 1 ) == buf( 2 ) ), 128 ); /////+128*(filetype==EXE), 256);
-                                                                             //m.set(buf(2), 256);
+  m.set( order + 8 * ( c4 >> 5 & 7 ) + 64 * static_cast<int>( buf( 1 ) == buf( 2 ) ),
+         128 ); /////+128*(filetype==EXE), 256);
+                //m.set(buf(2), 256);
 
   U32 c1 = buf( 1 ), c2 = buf( 2 ), c3 = buf( 3 ), c = c2 / 64;
   if( bpos > 1 )
@@ -2577,12 +2580,12 @@ void Predictor::update() {
 
   // Filter the context model with APMs
   pr = contextModel2();
-  int pr1 = (a1.p( pr, c0 ) * 3 + 5 * pr + 4) >> 3;
+  int pr1 = ( a1.p( pr, c0 ) * 3 + 5 * pr + 4 ) >> 3;
   int pr2 = a2.p( pr1, c0 + 256 * buf( 1 ) );
-  int pr3 = a3.p( pr1, c0 ^ (hash( buf( 1 ), buf( 2 ) ) & 0xffff) );
-  int pr4 = a4.p( pr1, c0 ^ (hash( buf( 1 ), buf( 2 ), buf( 3 ) ) & 0xffff) );
-  int pr5 = a5.p( pr1, ( c0 * 16 ) ^ (hash( buf( 3 ) >> 4, buf( 1 ) & 0xfc, buf( 2 ) & 0xf8 ) & 0xffff) );
-  pr = (pr2 * 3 + pr3 * 6 + pr4 * 4 + pr5 * 3 + 8) >> 4;
+  int pr3 = a3.p( pr1, c0 ^ ( hash( buf( 1 ), buf( 2 ) ) & 0xffff ) );
+  int pr4 = a4.p( pr1, c0 ^ ( hash( buf( 1 ), buf( 2 ), buf( 3 ) ) & 0xffff ) );
+  int pr5 = a5.p( pr1, ( c0 * 16 ) ^ ( hash( buf( 3 ) >> 4, buf( 1 ) & 0xfc, buf( 2 ) & 0xf8 ) & 0xffff ) );
+  pr = ( pr2 * 3 + pr3 * 6 + pr4 * 4 + pr5 * 3 + 8 ) >> 4;
 }
 
 //////////////////////////// Encoder ////////////////////////////
@@ -2618,11 +2621,11 @@ private:
   int code( int i = 0 ) {
     int p = predictor.p();
     assert( p >= 0 && p < 4096 );
-    p += static_cast<int>(p < 2048);
-    U32 xmid = x1 + ( (x2 - x1) >> 12 ) * p + ( ( x2 - x1 & 0xfff ) * p >> 12 );
+    p += static_cast<int>( p < 2048 );
+    U32 xmid = x1 + ( ( x2 - x1 ) >> 12 ) * p + ( ( x2 - x1 & 0xfff ) * p >> 12 );
     assert( xmid >= x1 && xmid < x2 );
     if( mode == DECOMPRESS )
-      y = static_cast<int>(x <= xmid);
+      y = static_cast<int>( x <= xmid );
     else
       y = i;
     y != 0 ? ( x2 = xmid ) : ( x1 = xmid + 1 );
@@ -2785,7 +2788,7 @@ protected:
   Filter( const Filter * );                  // copying not allowed
   Filter &operator=( const Filter & );       // assignment not allowed
   static void printStatus( int n ) {         // print progress
-    if( n > 0 && (( n & 0x3fff ) == 0) )
+    if( n > 0 && ( ( n & 0x3fff ) == 0 ) )
       printf( "%10d \b\b\b\b\b\b\b\b\b\b\b", n ), fflush( stdout );
   }
 
@@ -2910,7 +2913,7 @@ public:
 
 protected:
   void encode( FILE *f, int n ) { // not executed if filetype is 0
-    while( (n--) != 0 )
+    while( ( n-- ) != 0 )
       putc( getc( f ), tmp );
   }
   int decode() {
@@ -3098,10 +3101,11 @@ Filter *Filter::make( const char *filename, Encoder *e ) {
     if( file != nullptr ) {
       if( fgetc( file ) == 'M' && fgetc( file ) == 'Z' )
         filetype = EXE;
-      else if( (ext == nullptr)
-               || ( (equals( ext, ".dbf" ) == 0) && (equals( ext, ".mdb" ) == 0) && (equals( ext, ".tar" ) == 0) && (equals( ext, ".c" ) == 0)
-                    && (equals( ext, ".cpp" ) == 0) && (equals( ext, ".h" ) == 0) && (equals( ext, ".hpp" ) == 0) && (equals( ext, ".ps" ) == 0)
-                    && (equals( ext, ".hlp" ) == 0) && (equals( ext, ".ini" ) == 0) && (equals( ext, ".inf" ) == 0) ) ) {
+      else if( ( ext == nullptr )
+               || ( ( equals( ext, ".dbf" ) == 0 ) && ( equals( ext, ".mdb" ) == 0 ) && ( equals( ext, ".tar" ) == 0 )
+                    && ( equals( ext, ".c" ) == 0 ) && ( equals( ext, ".cpp" ) == 0 ) && ( equals( ext, ".h" ) == 0 )
+                    && ( equals( ext, ".hpp" ) == 0 ) && ( equals( ext, ".ps" ) == 0 ) && ( equals( ext, ".hlp" ) == 0 )
+                    && ( equals( ext, ".ini" ) == 0 ) && ( equals( ext, ".inf" ) == 0 ) ) ) {
         // fseek(file, 0, SEEK_SET ); <- unnecessary for WRT
         wrt.defaultSettings( 0, NULL );
         int recordLen;                                   // unused in PAQ
@@ -3156,7 +3160,7 @@ void store_in_header( FILE *f, char *filename, long &total_size ) {
     fseek( fi, 0, SEEK_END ); // get size
     long size = ftell( fi );
     total_size += size;
-    if( (( size & ~0x7fffffffL ) != 0) || (( total_size & ~0x7fffffffL ) != 0) ) {
+    if( ( ( size & ~0x7fffffffL ) != 0 ) || ( ( total_size & ~0x7fffffffL ) != 0 ) ) {
       fprintf( stderr, "File sizes must total less than 2 gigabytes\n" );
       fprintf( f, "-1\tError: over 2 GB\r\n" );
       exit( 1 );
@@ -3244,7 +3248,7 @@ int main( int argc, char **argv ) {
     while( true ) {
       if( argc == 2 ) {
         filename = getline();
-        if( (filename == nullptr) || (filename[0] == 0) )
+        if( ( filename == nullptr ) || ( filename[0] == 0 ) )
           break;
       } else {
         if( i == argc )
@@ -3256,7 +3260,7 @@ int main( int argc, char **argv ) {
 
     for( i = 0; i < filenames.size(); i++ ) {
       Filter::make( filenames[i].c_str(), NULL );
-      std::pair<int, std::string> p( ( 1 << (31 - 1) )
+      std::pair<int, std::string> p( ( 1 << ( 31 - 1 ) )
                                          - ( filetype * 8 * 16 * 2048 + preprocFlag + ( wrt.longDict + 1 ) * 16 * 2048
                                              + ( wrt.shortDict + 1 ) * 2048 ),
                                      filenames[i] );
@@ -3281,7 +3285,7 @@ int main( int argc, char **argv ) {
     perror( argv[1] ), exit( 1 );
   long header, body;             // file positions in header, body
   char *filename = getline( f ); // check header
-  if( (filename == nullptr) || (strncmp( filename, PROGNAME " -", strlen( PROGNAME ) + 2 ) != 0) )
+  if( ( filename == nullptr ) || ( strncmp( filename, PROGNAME " -", strlen( PROGNAME ) + 2 ) != 0 ) )
     fprintf( stderr, "%s: not a " PROGNAME " file\n", argv[1] ), exit( 1 );
   option = filename[strlen( filename ) - 1];
   level = option - '0';
@@ -3310,7 +3314,7 @@ int main( int argc, char **argv ) {
   while( ( filename = getline( f ) ) != 0 ) {
     size = atol( filename ); // parse size and filename, separated by tab
     total_size += size;
-    while( (*filename != 0) && *filename != '\t' )
+    while( ( *filename != 0 ) && *filename != '\t' )
       ++filename;
     if( *filename == '\t' )
       ++filename;

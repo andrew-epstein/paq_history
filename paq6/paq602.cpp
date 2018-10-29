@@ -1020,7 +1020,7 @@ public:
     memset( lidx, 0, 256 * sizeof( U32 ) );
   }
   void init() {
-    N = 1 << (19 + MEM - static_cast<int>( MEM >= 6 ));
+    N = 1 << ( 19 + MEM - static_cast<int>( MEM >= 6 ) );
     N1 = N - 1;
     buf = ( U8 * ) calloc( N, 1 );
     if( buf == nullptr )
@@ -1375,21 +1375,21 @@ public:
         cxt->n = 1;
       }
     }
-    cxt = t + ( h >> (32 - N) );
+    cxt = t + ( h >> ( 32 - N ) );
   }
   void add() {
-    U32 d = ( (cxt->c + 256) >> (7 - ch.bpos()) );
+    U32 d = ( ( cxt->c + 256 ) >> ( 7 - ch.bpos() ) );
     if( d >> 1 == ch() ) {
-      if( (d & 1) != 0u )
+      if( ( d & 1 ) != 0u )
         mixer.add( 0, cxt->n );
       else
         mixer.add( cxt->n, 0 );
     }
   }
   void write() {
-    U32 d = ( (cxt->c + 256) >> (7 - ch.bpos()) );
+    U32 d = ( ( cxt->c + 256 ) >> ( 7 - ch.bpos() ) );
     if( d >> 1 == ch() ) {
-      if( (d & 1) != 0u )
+      if( ( d & 1 ) != 0u )
         mixer.write( 0, cxt->n );
       else
         mixer.write( cxt->n, 0 );
@@ -1538,7 +1538,7 @@ public:
 // Update with bit y, put array of 0 counts in n0 and 1 counts in n1
 inline void CharModel::model() {
   // Update models
-  int y = ch( static_cast<int>(ch.bpos() == 0) ) & 1; // last input bit
+  int y = ch( static_cast<int>( ch.bpos() == 0 ) ) & 1; // last input bit
   cp0->add( y );
   cp1->add( y );
 
@@ -1615,7 +1615,7 @@ inline void MatchModel::model() {
       h = hash[1] >> ( 32 - N ); // 1/16 of 8-contexts are hashed to 32 bytes
     int i;
     for( i = 0; i < M; ++i ) {
-      if( (end[i] != 0u) && ch( 1 ) == ch[end[i]] )
+      if( ( end[i] != 0u ) && ch( 1 ) == ch[end[i]] )
         ++end[i];
     }
     for( i = 0; i < M; ++i ) {
@@ -1656,7 +1656,7 @@ inline void MatchModel::model() {
           wt = 511;
         else
           wt = wt * wt >> 2;
-        if( (d & 1) != 0u )
+        if( ( d & 1 ) != 0u )
           n1 += wt;
         else
           n0 += wt;
@@ -1858,7 +1858,7 @@ public:
           cxt[i] = cxt[i - 1];
         cxt[0] = 0;
       }
-      if( (isalpha( c ) != 0) || c >= 192 )
+      if( ( isalpha( c ) != 0 ) || c >= 192 )
         word[0] ^= hash( word[0], tolower( c ) ) + 0x12345678;
       else {
         for( int i = N - 1; i > 0; i-- )
@@ -2351,7 +2351,7 @@ int main( int argc, char **argv ) {
 
   // Read and remove -MEM option
   if( argc > 1 && argv[1][0] == '-' ) {
-    if( (isdigit( argv[1][1] ) != 0) && argv[1][2] == 0 ) {
+    if( ( isdigit( argv[1][1] ) != 0 ) && argv[1][2] == 0 ) {
       MEM = argv[1][1] - '0';
     } else
       printf( "Option %s ignored\n", argv[1] );

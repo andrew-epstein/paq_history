@@ -1945,15 +1945,15 @@ class ContextMap {
     U16 chk[7]; // byte context checksums
     U8 last;    // last 2 accesses (0-6) in low, high nibble
   public:
-    U8 bh[7][7]; // byte context, 3-bit context -> bit history state
-        // bh[][0] = 1st bit, bh[][1,2] = 2nd bit, bh[][3..6] = 3rd bit
-        // bh[][0] is also a replacement priority, 0 = empty
+    U8 bh[7][7];        // byte context, 3-bit context -> bit history state
+                        // bh[][0] = 1st bit, bh[][1,2] = 2nd bit, bh[][3..6] = 3rd bit
+                        // bh[][0] is also a replacement priority, 0 = empty
     U8 *get( U16 chk ); // Find element (0-6) matching checksum.
                         // If not found, insert or replace lowest priority (not last).
   };
-  Array<E, 64> t; // bit histories for bits 0-1, 2-4, 5-7
-      // For 0-1, also contains a run count in bh[][4] and value in bh[][5]
-      // and pending update count in bh[7]
+  Array<E, 64> t;               // bit histories for bits 0-1, 2-4, 5-7
+                                // For 0-1, also contains a run count in bh[][4] and value in bh[][5]
+                                // and pending update count in bh[7]
   Array<U8 *> cp;               // C pointers to current bit history
   Array<U8 *> cp0;              // First element of 7 element array containing cp[i]
   Array<U32> cxt;               // C whole byte contexts (hashes)
@@ -1967,7 +1967,7 @@ public:
   ContextMap( int m, int c = 1 ); // m = memory in bytes, a power of 2, C = c
   ~ContextMap();
   void set( U32 cx, int next = -1 ); // set next whole byte context to cx
-      // if next is 0 then set order does not matter
+                                     // if next is 0 then set order does not matter
   int mix( Mixer &m ) {
     return mix1( m, c0, bpos, buf( 1 ), y );
   }

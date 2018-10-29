@@ -651,7 +651,7 @@ public:
     int wt = pr & 0xfff; // interpolation weight of next element
     cx = cx * 24 + ( pr >> 12 );
     cxt = cx + ( wt >> 11 );
-    pr = (( t[cx] >> 13 ) * ( 0x1000 - wt ) + ( t[cx + 1] >> 13 ) * wt) >> 19;
+    pr = ( ( t[cx] >> 13 ) * ( 0x1000 - wt ) + ( t[cx + 1] >> 13 ) * wt ) >> 19;
     return pr;
   }
 
@@ -669,7 +669,7 @@ public:
     int wt = pr & 0xfff; // interpolation weight of next element
     cx = cx * 24 + ( pr >> 12 );
     cxt = cx + ( wt >> 11 );
-    pr = (( t[cx] >> 13 ) * ( 0x1000 - wt ) + ( t[cx + 1] >> 13 ) * wt) >> 19;
+    pr = ( ( t[cx] >> 13 ) * ( 0x1000 - wt ) + ( t[cx + 1] >> 13 ) * wt ) >> 19;
     return pr;
   }
 };
@@ -742,14 +742,14 @@ inline void train( int err ) {
   w[6] += mxr_tx[6] * err + 0x2000 >> 14;
   w[7] += err + 0x20 >> 6;
 #  else
-  w[0] += (mxr_tx[0] * err + 0x0800) >> 12;
-  w[1] += (mxr_tx[1] * err + 0x0800) >> 12;
-  w[2] += (mxr_tx[2] * err + 0x1000) >> 13;
-  w[3] += (mxr_tx[3] * err + 0x0800) >> 12;
-  w[4] += (mxr_tx[4] * err + 0x0800) >> 12;
-  w[5] += (mxr_tx[5] * err + 0x0800) >> 12;
-  w[6] += (mxr_tx[6] * err + 0x0800) >> 12;
-  w[7] += (err + 4) >> 3;
+  w[0] += ( mxr_tx[0] * err + 0x0800 ) >> 12;
+  w[1] += ( mxr_tx[1] * err + 0x0800 ) >> 12;
+  w[2] += ( mxr_tx[2] * err + 0x1000 ) >> 13;
+  w[3] += ( mxr_tx[3] * err + 0x0800 ) >> 12;
+  w[4] += ( mxr_tx[4] * err + 0x0800 ) >> 12;
+  w[5] += ( mxr_tx[5] * err + 0x0800 ) >> 12;
+  w[6] += ( mxr_tx[6] * err + 0x0800 ) >> 12;
+  w[7] += ( err + 4 ) >> 3;
 #  endif
 }
 inline int dot_product() {
@@ -1345,7 +1345,7 @@ public:
     pr = m_p + 2047;
     pr = squash( pr - 2047 ) + 3 * a1.p1( pr * 23, h[0] + c0 ) >> 2;
     mxr_pr = pr;
-    pr = (pr * 5 + 11 * a2.p2( stretch_t2[pr], fails + prevfail ) + 8) >> 4;
+    pr = ( pr * 5 + 11 * a2.p2( stretch_t2[pr], fails + prevfail ) + 8 ) >> 4;
 #endif
     return pr + static_cast<int>( pr < 2048 );
   }
@@ -1557,11 +1557,11 @@ Encoder::Encoder( Mode m, FILE *f ) :
 
   for( i = 0; i < 256; ++i ) {
     pi = 0;
-    if( (i & 3) != 0 )
+    if( ( i & 3 ) != 0 )
       pi += 1024;
-    if( (i & 28) != 0 )
+    if( ( i & 28 ) != 0 )
       pi += 512;
-    if( (i & 224) != 0 )
+    if( ( i & 224 ) != 0 )
       pi += 256;
     calcprevfail[i] = pi;
   }
@@ -1598,9 +1598,13 @@ Encoder::Encoder( Mode m, FILE *f ) :
     len2order[c] = ( 5 + ( c >= 10 ) + ( c >= 14 ) + ( c >= 18 ) + ( c > 26 ) ) * MI;
 #else
     if( method == TEXT )
-      len2order[c] = ( 5 + static_cast<int>( c >= 10 ) + static_cast<int>( c >= 14 ) + static_cast<int>( c >= 19 ) + static_cast<int>( c > 28 ) ) * MI;
+      len2order[c] = ( 5 + static_cast<int>( c >= 10 ) + static_cast<int>( c >= 14 ) + static_cast<int>( c >= 19 )
+                       + static_cast<int>( c > 28 ) )
+                     * MI;
     else
-      len2order[c] = ( 5 + static_cast<int>( c >= 8 ) + static_cast<int>( c >= 12 ) + static_cast<int>( c >= 18 ) + static_cast<int>( c == MAXLEN ) ) * MI;
+      len2order[c] = ( 5 + static_cast<int>( c >= 8 ) + static_cast<int>( c >= 12 ) + static_cast<int>( c >= 18 )
+                       + static_cast<int>( c == MAXLEN ) )
+                     * MI;
 #endif
   }
 
@@ -1621,7 +1625,7 @@ void Encoder::flush() {
 
 int main( int argc, char **argv ) {
   // Check arguments
-  if( argc != 4 || ((isdigit( argv[1][0] ) == 0) && argv[1][0] != 'd') ) {
+  if( argc != 4 || ( ( isdigit( argv[1][0] ) == 0 ) && argv[1][0] != 'd' ) ) {
     printf( "lpaq8 file compressor (C) 2007, Matt Mahoney\n"
             "Licensed under GPL, http://www.gnu.org/copyleft/gpl.html\n"
             "\n"

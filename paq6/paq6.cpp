@@ -1013,7 +1013,7 @@ public:
     memset( lpos, 0, 256 * 4 * sizeof( U32 ) );
   }
   void init() {
-    N = 1 << (19 + MEM - static_cast<int>( MEM >= 6 ));
+    N = 1 << ( 19 + MEM - static_cast<int>( MEM >= 6 ) );
     buf = ( U8 * ) calloc( N, 1 );
     if( buf == nullptr )
       handler();
@@ -1233,8 +1233,8 @@ void Mixer::update( int y ) {
   if( s0 > 0 && s1 > 0 ) {
     const U32 s = s0 + s1;
     const U32 sy = y != 0 ? s1 : s0;
-    const U32 sy1 = (0xffffffff / sy + ( rnd() & 1023 )) >> 10;
-    const U32 s1 = (0xffffffff / s + ( rnd() & 1023 )) >> 10;
+    const U32 sy1 = ( 0xffffffff / sy + ( rnd() & 1023 ) ) >> 10;
+    const U32 s1 = ( 0xffffffff / s + ( rnd() & 1023 ) ) >> 10;
     for( int i = 0; i < n; ++i ) {
       const int dw = int( ( y != 0 ? bc1[i] : bc0[i] ) * sy1 - ( bc0[i] + bc1[i] ) * s1 + ( rnd() & 255 ) ) >> 8;
       wt[c][i] = min( 65535, max( 1, int( wt[c][i] + dw ) ) );
@@ -1358,11 +1358,11 @@ public:
         t[cxt].n = 1;
       }
     }
-    cxt = h >> (32 - N);
+    cxt = h >> ( 32 - N );
   }
   void add() {
-    if( ( U32 )( ( t[cxt].c + 256 ) >> (8 - ch.bpos()) ) == ch() ) {
-      if( (( t[cxt].c >> (7 - ch.bpos()) ) & 1) != 0 )
+    if( ( U32 )( ( t[cxt].c + 256 ) >> ( 8 - ch.bpos() ) ) == ch() ) {
+      if( ( ( t[cxt].c >> ( 7 - ch.bpos() ) ) & 1 ) != 0 )
         mixer.add( 0, t[cxt].n );
       else
         mixer.add( t[cxt].n, 0 );
@@ -1507,7 +1507,7 @@ public:
 // Update with bit y, put array of 0 counts in n0 and 1 counts in n1
 inline void CharModel::model() {
   // Update models
-  int y = ch( static_cast<int>(ch.bpos() == 0) ) & 1; // last input bit
+  int y = ch( static_cast<int>( ch.bpos() == 0 ) ) & 1; // last input bit
   cp0->add( y );
   cp1->add( y );
 
@@ -1583,7 +1583,7 @@ inline void MatchModel::model() {
     if( ( hash[0] >> 28 ) == 0 )
       h = hash[1] >> ( 32 - N ); // 1/16 of 8-contexts are hashed to 32 bytes
     for( int i = 0; i < M; ++i ) {
-      if( (end[i] != 0u) && ch( 1 ) == ch[end[i]] )
+      if( ( end[i] != 0u ) && ch( 1 ) == ch[end[i]] )
         ++end[i];
     }
     for( int i = 0; i < M; ++i ) {
@@ -1613,7 +1613,7 @@ inline void MatchModel::model() {
 
   // Test whether the current context is valid in the last 0-7 bits
   for( int i = 0; i < M; ++i ) {
-    if( (end[i] != 0u) && ( ( ch[end[i]] + 256 ) >> ( 8 - ch.bpos() ) ) != ch() )
+    if( ( end[i] != 0u ) && ( ( ch[end[i]] + 256 ) >> ( 8 - ch.bpos() ) ) != ch() )
       begin[i] = end[i] = 0;
   }
 
@@ -1827,7 +1827,7 @@ public:
           cxt[i] = cxt[i - 1];
         cxt[0] = 0;
       }
-      if( (isalpha( c ) != 0) || c >= 192 )
+      if( ( isalpha( c ) != 0 ) || c >= 192 )
         word[0] ^= hash( word[0], tolower( c ), 1 );
       else {
         for( int i = N - 1; i > 0; --i )
@@ -2073,7 +2073,8 @@ inline void Predictor::update( int y ) {
 
   // Get final probability, interpolate SSE and average with original
   if( MEM >= 1 ) {
-    context = ( ch( 0 ) * 4 + ch( 1 ) / 64 ) * 2 + static_cast<unsigned int>( ch.pos( 0, 3 ) < ch.pos( 32, 3 ) ); // for SSE
+    context =
+        ( ch( 0 ) * 4 + ch( 1 ) / 64 ) * 2 + static_cast<unsigned int>( ch.pos( 0, 3 ) < ch.pos( 32, 3 ) ); // for SSE
     ssep = ssemap( nextp );
     U32 wt = ssep % SSESCALE;
     U32 i = ssep / SSESCALE;
@@ -2280,7 +2281,7 @@ int main( int argc, char **argv ) {
 
   // Read and remove -MEM option
   if( argc > 1 && argv[1][0] == '-' ) {
-    if( (isdigit( argv[1][1] ) != 0) && argv[1][2] == 0 ) {
+    if( ( isdigit( argv[1][1] ) != 0 ) && argv[1][2] == 0 ) {
       MEM = argv[1][1] - '0';
     } else
       printf( "Option %s ignored\n", argv[1] );

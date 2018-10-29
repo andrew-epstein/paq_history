@@ -119,7 +119,7 @@ public:
 
   void update( int y ) {
     if( y != 0 )
-      t[cxt] += (65536 - t[cxt]) >> 5;
+      t[cxt] += ( 65536 - t[cxt] ) >> 5;
     else
       t[cxt] -= t[cxt] >> 5;
     if( ( cxt += cxt + y ) >= 512 )
@@ -424,22 +424,22 @@ public:
 Encoder::Encoder( Mode m, FILE *f ) : mode( m ), archive( f ), x( 0 ), n( 0 ), enc( 0 ), dec( 0 ), ins( 0 ), ch( 0 ) {
   alloc( qr, 4096 );
   if( mode == COMPRESS )
-    alloc( enc, 2 << (N + R) );
+    alloc( enc, 2 << ( N + R ) );
   else
-    alloc( dec, 1 << (N + R) );
+    alloc( dec, 1 << ( N + R ) );
 
   // Init qr[q] = r (r*2 in COMPRESS mode)
   int qinv[256]; // r -> q
   for( int i = 0; i < 256; ++i ) {
-    int mn = 1 << (12 - N); // min distance from 0 or 4096
-    qinv[i] = squash( ( i << (12 - R) ) - 2048 + ( 1 << (11 - R) ) ) & -mn;
+    int mn = 1 << ( 12 - N ); // min distance from 0 or 4096
+    qinv[i] = squash( ( i << ( 12 - R ) ) - 2048 + ( 1 << ( 11 - R ) ) ) & -mn;
     if( qinv[i] < mn )
       qinv[i] = mn;
     if( qinv[i] > 4096 - mn )
       qinv[i] = 4096 - mn;
   }
   for( int i = 0; i < 4096; ++i ) {
-    qr[i] = (stretch( i ) + 2048) >> (12 - R);
+    qr[i] = ( stretch( i ) + 2048 ) >> ( 12 - R );
     if( mode == COMPRESS )
       qr[i] *= 2;
   }
@@ -452,7 +452,7 @@ Encoder::Encoder( Mode m, FILE *f ) : mode( m ), archive( f ), x( 0 ), n( 0 ), e
       for( int j = 0; j < 1 << N; ++j ) {
         int r = i >> 1;
         int d = i & 1;
-        int q = qinv[r] >> (12 - N);
+        int q = qinv[r] >> ( 12 - N );
         int k = 0;
         int w = j + ( 1 << N ), x1 = 0;
         while( k < 15 ) {
@@ -461,7 +461,7 @@ Encoder::Encoder( Mode m, FILE *f ) : mode( m ), archive( f ), x( 0 ), n( 0 ), e
           if( d != 0 )
             x1 = ( w << N ) / q;
           else
-            x1 = ( ( (w + 1) << N ) - 1 ) / ( ( 1 << N ) - q );
+            x1 = ( ( ( w + 1 ) << N ) - 1 ) / ( ( 1 << N ) - q );
           if( x1 < ( 2 << N ) )
             break;
           else
@@ -475,12 +475,12 @@ Encoder::Encoder( Mode m, FILE *f ) : mode( m ), archive( f ), x( 0 ), n( 0 ), e
   // Init dec[r][x-(1<<N)] = d,x (d in bit 15, x in bits 0..N)
   if( dec != nullptr ) {
     for( int i = 0; i < 1 << R; ++i ) {
-      int q = qinv[i] >> (12 - N);
+      int q = qinv[i] >> ( 12 - N );
       for( int j = 0; j < 1 << N; ++j ) {
         int x1 = j + ( 1 << N );
-        int d = ( (( x1 + 1 ) * q - 1) >> N ) - ( (x1 * q - 1) >> N );
+        int d = ( ( ( x1 + 1 ) * q - 1 ) >> N ) - ( ( x1 * q - 1 ) >> N );
         assert( d == 0 || d == 1 );
-        int xq = ( (x1 * q - 1) >> N ) + 1;
+        int xq = ( ( x1 * q - 1 ) >> N ) + 1;
         assert( xq >= 0 && xq <= x1 );
         dec[i][j] = d != 0 ? 0x8000 + xq : x1 - xq;
       }
@@ -535,7 +535,7 @@ inline int Encoder::decode() {
   // Decode
   int r = qr[predictor.p()];
   x = dec[r][x];
-  int d = static_cast<int>(x < 0);
+  int d = static_cast<int>( x < 0 );
   predictor.update( d );
   x &= 0x7fff;
   while( x < 1 << N ) {

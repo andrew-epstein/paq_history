@@ -50,7 +50,7 @@ void update( int y ) {
   }
   rc[y] >>= 1;            //
   rc[y] += ( 1 << mbit ); // old 28 state of     y [0001...................01] count
-  rc[y == 0] >>= 1;           // old 28 state of not y [1110...................10] count
+  rc[y == 0] >>= 1;       // old 28 state of not y [1110...................10] count
 }
 
 //////////////////////////// Encoder ////////////////////////////

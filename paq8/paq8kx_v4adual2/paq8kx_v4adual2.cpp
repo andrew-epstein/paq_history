@@ -1711,15 +1711,15 @@ class ContextMap {
     U16 chk[7]; // byte context checksums
     U8 last;    // last 2 accesses (0-6) in low, high nibble
   public:
-    U8 bh[7][7]; // byte context, 3-bit context -> bit history state
-        // bh[][0] = 1st bit, bh[][1,2] = 2nd bit, bh[][3..6] = 3rd bit
-        // bh[][0] is also a replacement priority, 0 = empty
+    U8 bh[7][7];        // byte context, 3-bit context -> bit history state
+                        // bh[][0] = 1st bit, bh[][1,2] = 2nd bit, bh[][3..6] = 3rd bit
+                        // bh[][0] is also a replacement priority, 0 = empty
     U8 *get( U16 chk ); // Find element (0-6) matching checksum.
                         // If not found, insert or replace lowest priority (not last).
   };
-  Array<E, 64> t; // bit histories for bits 0-1, 2-4, 5-7
-      // For 0-1, also contains a run count in bh[][4] and value in bh[][5]
-      // and pending update count in bh[7]
+  Array<E, 64> t;               // bit histories for bits 0-1, 2-4, 5-7
+                                // For 0-1, also contains a run count in bh[][4] and value in bh[][5]
+                                // and pending update count in bh[7]
   Array<U8 *> cp;               // C pointers to current bit history
   Array<U8 *> cp0;              // First element of 7 element array containing cp[i]
   Array<U32> cxt;               // C whole byte contexts (hashes)
@@ -1733,7 +1733,7 @@ public:
   ContextMap( int m, int c = 1 ); // m = memory in bytes, a power of 2, C = c
   ~ContextMap();
   void set( U32 cx, int next = -1 ); // set next whole byte context to cx
-      // if next is 0 then set order does not matter
+                                     // if next is 0 then set order does not matter
   int mix( Mixer &m ) {
     return mix1( m, c0, bpos, buf( 1 ), y );
   }
@@ -2406,12 +2406,12 @@ int jpegModel( Mixer &m ) {
   static int huffbits = 0; // Number of valid bits in huffcode
   static int huffsize = 0; // Number of bits without extra bits
   static int rs = -1;      // Decoded huffcode without extra bits.  It represents
-      // 2 packed 4-bit numbers, r=run of zeros, s=number of extra bits for
-      // first nonzero code.  huffcode is complete when rs >= 0.
-      // rs is -1 prior to decoding incomplete huffcode.
-  static int mcupos = 0; // position in MCU (0-639).  The low 6 bits mark
-      // the coefficient in zigzag scan order (0=DC, 1-63=AC).  The high
-      // bits mark the block within the MCU, used to select Huffman tables.
+                           // 2 packed 4-bit numbers, r=run of zeros, s=number of extra bits for
+                           // first nonzero code.  huffcode is complete when rs >= 0.
+                           // rs is -1 prior to decoding incomplete huffcode.
+  static int mcupos = 0;   // position in MCU (0-639).  The low 6 bits mark
+                           // the coefficient in zigzag scan order (0=DC, 1-63=AC).  The high
+                           // bits mark the block within the MCU, used to select Huffman tables.
 
   // Decoding tables
   static Array<HUF> huf( 128 );  // Tc*64+Th*16+m -> min, max, val
@@ -2427,14 +2427,14 @@ int jpegModel( Mixer &m ) {
   static int width = 0;           // Image width in MCU
   static int row = 0, column = 0; // in MCU (column 0 to width-1)
   static Buf cbuf( 0x20000 );     // Rotating buffer of coefficients, coded as:
-      // DC: level shifted absolute value, low 4 bits discarded, i.e.
-      //   [-1023...1024] -> [0...255].
-      // AC: as an RS code: a run of R (0-15) zeros followed by an S (0-15)
-      //   bit number, or 00 for end of block (in zigzag order).
-      //   However if R=0, then the format is ssss11xx where ssss is S,
-      //   xx is the first 2 extra bits, and the last 2 bits are 1 (since
-      //   this never occurs in a valid RS code).
-  static int cpos = 0;                                   // position in cbuf
+                                  // DC: level shifted absolute value, low 4 bits discarded, i.e.
+                                  //   [-1023...1024] -> [0...255].
+                                  // AC: as an RS code: a run of R (0-15) zeros followed by an S (0-15)
+                                  //   bit number, or 00 for end of block (in zigzag order).
+                                  //   However if R=0, then the format is ssss11xx where ssss is S,
+                                  //   xx is the first 2 extra bits, and the last 2 bits are 1 (since
+                                  //   this never occurs in a valid RS code).
+  static int cpos = 0;            // position in cbuf
   static U32 huff1 = 0, huff2 = 0, huff3 = 0, huff4 = 0; // hashes of last codes
   static int rs1, rs2, rs3, rs4;                         // last 4 RS codes
   static int ssum = 0, ssum1 = 0, ssum2 = 0, ssum3 = 0;
@@ -2823,11 +2823,11 @@ int jpegModel( Mixer &m ) {
   }
 
   // Context model
-  const int N = 28;      // size of t, number of contexts
-  static BH<9> t( MEM ); // context hash -> bit history
-      // As a cache optimization, the context does not include the last 1-2
-      // bits of huffcode if the length (huffbits) is not a multiple of 3.
-      // The 7 mapped values are for context+{"", 0, 00, 01, 1, 10, 11}.
+  const int N = 28;           // size of t, number of contexts
+  static BH<9> t( MEM );      // context hash -> bit history
+                              // As a cache optimization, the context does not include the last 1-2
+                              // bits of huffcode if the length (huffbits) is not a multiple of 3.
+                              // The 7 mapped values are for context+{"", 0, 00, 01, 1, 10, 11}.
   static Array<U32> cxt( N ); // context hashes
   static Array<U8 *> cp( N ); // context pointers
   static StateMap sm[N];
