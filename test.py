@@ -15,12 +15,14 @@ query = '''
 INSERT INTO compression_result (
   command, input_file, input_file_hash, input_file_size,
   output_file, output_file_hash, output_file_size,
-  time_started, time_finished, duration, compression_ratio, mb_per_second, bits_per_byte
+  time_started, time_finished, duration, compression_ratio, kb_per_second, bits_per_byte,
+  decompression_command, decompression_duration, decompression_kb_per_second
 )
 VALUES (
   '{}', '{}', '{}', {} :: BIGINT,
   '{}', '{}', {} :: BIGINT,
-  to_timestamp({} / 1000), to_timestamp({} / 1000), {} :: DOUBLE PRECISION, {} :: DOUBLE PRECISION, {} :: DOUBLE PRECISION, {} :: DOUBLE PRECISION
+  to_timestamp({} / 1000), to_timestamp({} / 1000), {} :: DOUBLE PRECISION, {} :: DOUBLE PRECISION, {} :: DOUBLE PRECISION, {} :: DOUBLE PRECISION,
+  '', 0, 0
 );
 '''
 

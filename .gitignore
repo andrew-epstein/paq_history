@@ -8,3 +8,5 @@ logfile.log
 paq8hp_tmp_file.dic
 tmp_paq8hp10tmp.dic
 paqar11tmp.tmp
+out/
+bin/
