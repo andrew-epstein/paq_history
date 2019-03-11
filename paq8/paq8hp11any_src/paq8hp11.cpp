@@ -1245,14 +1245,14 @@ Mixer::Mixer( int n, int m, int s, int w ) :
 
 class APM {
   int index;    // last p, context
-                //const int N;   // number of contexts
+  const int N;  // number of contexts
   Array<U16> t; // [N][33]:  p, context -> p
 public:
   APM( int n );
   int p( int pr = 2048, int cxt = 0, int rate = 8 ) {
     assert( pr >= 0 && pr < 4096 && cxt >= 0 && cxt < N && rate > 0 && rate < 32 );
     pr = stretch( pr );
-    int g = ( y << 16 ) + ( y << rate ) - y * 2;
+    int g = ( y << 16 ) + ( y << rate ) - y - y;
     t[index] += ( g - t[index] ) >> rate;
     t[index + 1] += ( g - t[index + 1] ) >> rate;
     const int w = pr & 127; // interpolation weight (33 points)
@@ -1262,10 +1262,10 @@ public:
 };
 
 // maps p, cxt -> p initially
-APM::APM( int n ) : index( 0 ), t( n * 33 ) {
-  for( int j = 0; j < 33; ++j )
-    t[j] = squash( ( j - 16 ) * 128 ) * 16;
-  memcpy( &t[33], &t[0], ( n - 1 ) * 66 );
+APM::APM( int n ) : index( 0 ), N( n ), t( n * 33 ) {
+  for( int i = 0; i < N; ++i )
+    for( int j = 0; j < 33; ++j )
+      t[i * 33 + j] = i == 0 ? squash( ( j - 16 ) * 128 ) * 16 : t[j];
 }
 
 //////////////////////////// StateMap //////////////////////////
@@ -1284,7 +1284,7 @@ protected:
 public:
   StateMap();
   int p( int cx ) {
-    assert( cx >= 0 && cx < t.size() );
+    assert( cx >= 0 && cx < 256 );
     int q = t[cxt];
     t[cxt] = q + ( ( sm_add_y - q ) >> sm_shft );
     return t[cxt = cx] >> 4;

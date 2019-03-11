@@ -13,20 +13,21 @@ import glob
 
 query = '''
 INSERT INTO compression_result (
-  command, input_file, input_file_hash, input_file_size,
-  output_file, output_file_hash, output_file_size,
+  command, compression_program_id, input_file, input_file_hash,
+  input_file_size, output_file, output_file_hash, output_file_size,
   time_started, time_finished, duration, compression_ratio, kb_per_second, bits_per_byte,
   decompression_command, decompression_duration, decompression_kb_per_second
 )
 VALUES (
-  '{}', '{}', '{}', {} :: BIGINT,
+  '{}', {}, '{}', '{}', {} :: BIGINT,
   '{}', '{}', {} :: BIGINT,
   to_timestamp({} / 1000), to_timestamp({} / 1000), {} :: DOUBLE PRECISION, {} :: DOUBLE PRECISION, {} :: DOUBLE PRECISION, {} :: DOUBLE PRECISION,
   '', 0, 0
 );
 '''
 
-conn = psycopg2.connect("dbname=epsteina user=epsteina host=localhost port=5432")
+conn = psycopg2.connect(
+    "dbname=epsteina user=epsteina host=localhost port=5432")
 conn.set_session(readonly=False, autocommit=True)
 cursor = conn.cursor()
 colorama.init()
@@ -68,7 +69,8 @@ def get_size(filename):
 
 
 def get_hash(filename):
-    p = subprocess.run('shasum {}'.format(filename), stdout=subprocess.PIPE, shell=True)
+    p = subprocess.run('shasum {}'.format(filename),
+                       stdout=subprocess.PIPE, shell=True)
     return p.stdout.split()[0].decode('ascii')
 
 
@@ -82,7 +84,8 @@ def make_outfilename():
 
 the_queue = multiprocessing.Queue()
 
-def evaluate_one_command_one_file(command, outfile, infile):
+
+def evaluate_one_command_one_file(command, outfile, infile, program_id):
     original_size = get_size(infile)
     original_hash = get_hash(infile)
     start_time = get_milli()
@@ -92,7 +95,8 @@ def evaluate_one_command_one_file(command, outfile, infile):
     try:
         outfiles = glob.glob(outfile + '*')
         if len(outfiles) != 1:
-            print(colorama.Fore.RED + command + ' # BAD OUTFILE(S)' + colorama.Fore.RESET)
+            print(colorama.Fore.RED + command +
+                  ' # BAD OUTFILE(S)' + colorama.Fore.RESET)
             return False
         outfile = outfiles[0]
         new_size = get_size(outfile)
@@ -101,9 +105,11 @@ def evaluate_one_command_one_file(command, outfile, infile):
         bits_per_byte = 8 / ratio
         kb_per_sec = original_size / duration / 1024
         print(colorama.Fore.GREEN + command + colorama.Fore.RESET)
-        print('Duration: {:.2f}s, Ratio: {:.2f}, kB/s: {:.2f}, bpb: {:.2f}, ({}/{})'.format(duration, ratio, kb_per_sec, bits_per_byte, new_size, original_size))
+        print('Duration: {:.2f}s, Ratio: {:.2f}, kB/s: {:.2f}, bpb: {:.2f}, ({}/{})'.format(
+            duration, ratio, kb_per_sec, bits_per_byte, new_size, original_size))
         os.remove(outfile)
-        cursor.execute(query.format(command, infile, original_hash, original_size, outfile, new_hash, new_size, start_time, end_time, duration, ratio, kb_per_sec, bits_per_byte))
+        cursor.execute(query.format(command, program_id, infile, original_hash, original_size, outfile,
+                                    new_hash, new_size, start_time, end_time, duration, ratio, kb_per_sec, bits_per_byte))
         return True
     except Exception as e:
         print(colorama.Fore.RED + command + colorama.Fore.RESET)
@@ -111,10 +117,36 @@ def evaluate_one_command_one_file(command, outfile, infile):
         return False
 
 
+def insert_program(executable, program_hash):
+    """ Create a row in `compression_program` for this executable
+    if one doesn't yet exist.
+    Returns the id of the row.
+    """
+    select_query = '''
+    SELECT id
+      FROM compression_program
+      WHERE program_hash = '{}';
+    '''
+    insert_query = '''
+    INSERT INTO compression_program
+      (program_name, program_hash
+    )
+      VALUES ('{}', '{}')
+    RETURNING id;
+    '''
+
+    cursor.execute(select_query.format(program_hash))
+    if cursor.rowcount == 0:
+        cursor.execute(insert_query.format(executable, program_hash))
+
+    program_id = cursor.fetchone()[0]
+    return program_id
+
+
 def worker_main(queue):
     while True:
-        command, outfile, infile = queue.get(True)
-        evaluate_one_command_one_file(command, outfile, infile)
+        command, outfile, infile, program_id = queue.get(True)
+        evaluate_one_command_one_file(command, outfile, infile, program_id)
 
 
 testfiles = get_test_files()
@@ -122,36 +154,45 @@ executables = get_executables()
 the_pool = multiprocessing.Pool(6, worker_main, (the_queue,))
 
 for executable in executables:
-    p = subprocess.run(executable, input='\n', stdout=subprocess.PIPE, universal_newlines=True)
+    program_hash = get_hash(executable)
+    program_id = insert_program(executable, program_hash)
+
+    p = subprocess.run(executable, input='\n',
+                       stdout=subprocess.PIPE, universal_newlines=True)
     min_level, max_level = get_levels(p.stdout)
     for testfile in testfiles:
         if 'fpaq3d' in executable:
             min_level, max_level = 0, 7
             for level in range(min_level, max_level + 1):
                 outfile = make_outfilename()
-                the_queue.put(('{} c {} {} out/{}'.format(executable, level, testfile, outfile), 'out/{}'.format(outfile), testfile))
+                the_queue.put(('{} c {} {} out/{}'.format(executable, level,
+                                                          testfile, outfile), 'out/{}'.format(outfile), testfile, program_id))
         elif 'fpaq' in executable:
             outfile = make_outfilename()
-            the_queue.put(('{} c {} out/{}'.format(executable, testfile, outfile), 'out/{}'.format(outfile), testfile))
+            the_queue.put(('{} c {} out/{}'.format(executable, testfile,
+                                                   outfile), 'out/{}'.format(outfile), testfile,program_id))
         elif 'lpaq' in executable:
             min_level, max_level = 0, 9
             for level in range(min_level, max_level + 1):
+                outfile = make_outfilename()
                 if 'lpaq1b' in executable or 'lpaq1c' in executable:
-                    outfile = make_outfilename()
-                    the_queue.put(('{} {} 12346wma {} out/{}'.format(executable, level, testfile, outfile), 'out/{}'.format(outfile), testfile))
+                    the_queue.put(('{} {} 12346wma {} out/{}'.format(executable,
+                                                                     level, testfile, outfile), 'out/{}'.format(outfile), testfile, program_id))
                 else:
-                    outfile = make_outfilename()
-                    the_queue.put(('{} {} {} out/{}'.format(executable, level, testfile, outfile), 'out/{}'.format(outfile), testfile))
+                    the_queue.put(('{} {} {} out/{}'.format(executable, level,
+                                                            testfile, outfile), 'out/{}'.format(outfile), testfile, program_id))
         elif 'paq8pxd' in executable:
             continue
         else:
             if min_level is None:
                 outfile = make_outfilename()
-                the_queue.put(('{} out/{} {}'.format(executable, outfile, testfile), 'out/{}'.format(outfile), testfile))
+                the_queue.put(('{} out/{} {}'.format(executable, outfile,
+                                                     testfile), 'out/{}'.format(outfile), testfile, program_id))
             else:
                 for level in range(min_level, max_level + 1):
                     outfile = make_outfilename()
-                    the_queue.put(('{} -{} out/{} {}'.format(executable, level, outfile, testfile), 'out/{}'.format(outfile), testfile))
+                    the_queue.put(('{} -{} out/{} {}'.format(executable, level,
+                                                             outfile, testfile), 'out/{}'.format(outfile), testfile, program_id))
 
 while not the_queue.empty():
     time.sleep(1)

@@ -23,4 +23,4 @@ while IFS= read -r -d '' D; do
 	((i = i % N))
 	((i++ == 0)) && wait
 	task "$D" &
-done < <(fd -e cpp paq -0)
+done < <(fd -e cpp 'paq|fp8' -0)
