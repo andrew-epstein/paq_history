@@ -103,11 +103,11 @@ Stretch::Stretch() {
 
 class Predictor {
 private:
-  int cxt{ 1 };             // Context: last 0-8 bits with a leading 1
+  int cxt{1};          // Context: last 0-8 bits with a leading 1
   unsigned int t[512]; // Probability of 1
 
 public:
-  Predictor()  {
+  Predictor() {
     for( int i = 0; i < 512; i++ )
       t[i] = 32768;
   }
@@ -465,8 +465,8 @@ Encoder::Encoder( Mode m, FILE *f ) : mode( m ), archive( f ), x( 0 ), n( 0 ), e
             x1 = ( ( ( w + 1 ) << N ) - 1 ) / ( ( 1 << N ) - q );
           if( x1 < ( 2 << N ) )
             break;
-          
-            w >>= 1, ++k;
+
+          w >>= 1, ++k;
         }
         enc[i][j] = k << 12 | x1 - ( 1 << N );
       }

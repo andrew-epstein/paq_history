@@ -96,7 +96,7 @@ static const U8 State_table[256][2] = {
 class StateMap {
 protected:
   const int N;        // Number of contexts
-  int cxt{ 0 };            // Context of last prediction
+  int cxt{0};         // Context of last prediction
   U32 *t;             // cxt -> prediction in high 23 bits, count in low 9 bits
   static int dt[512]; // reciprocal table: i -> 16K/(i+2.5)
 public:
@@ -143,12 +143,12 @@ StateMap::StateMap( int n ) : N( n ) {
 */
 
 class Predictor {
-  int cxt{ 0 }; // Context: last 0-8 bits with a leading 1
+  int cxt{0}; // Context: last 0-8 bits with a leading 1
   StateMap sm;
   U8 *state;
 
 public:
-  Predictor() :  sm( 0x10000 ) {
+  Predictor() : sm( 0x10000 ) {
     alloc( state, 0x10000 );
   }
 
@@ -193,7 +193,7 @@ public:
 };
 
 // Constructor
-Encoder::Encoder( Mode m, FILE *f ) :  mode( m ), archive( f ), x1( 0 ), x2( 0xffffffff ), x( 0 ) {
+Encoder::Encoder( Mode m, FILE *f ) : mode( m ), archive( f ), x1( 0 ), x2( 0xffffffff ), x( 0 ) {
   // In DECOMPRESS mode, initialize x to the first 4 bytes of the archive
   if( mode == DECOMPRESS ) {
     for( int i = 0; i < 4; ++i ) {

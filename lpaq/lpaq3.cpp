@@ -685,7 +685,7 @@ int MatchModel::p() {
 int MEM = 0; // Global memory usage = 3*MEM bytes (1<<20 .. 1<<29)
 
 class Predictor {
-  int pr{ 2048 }; // next prediction
+  int pr{2048}; // next prediction
   int *add2order;
 
 public:
@@ -697,7 +697,7 @@ public:
   void update( int y );
 };
 
-Predictor::Predictor()  {
+Predictor::Predictor() {
   alloc( mxr_wx, MI * MC );
   for( int i = 0; i < MI * MC; ++i )
     mxr_wx[i] = ( 1 << ( DP_SHIFT - 2 ) );
@@ -716,7 +716,7 @@ void Predictor::update( int y ) {
   static HashTable<16> t3( MEM / 2 ); // cxt -> state
   static HashTable<16> t2( MEM );     // cxt -> state
 #endif
-  static U8 t0[0x10000];                                   // order 1 cxt -> state
+  static U8 t0[0x10000]; // order 1 cxt -> state
   static U8 *t0c1 = t0;
   static U8 *cp[6] = {t0, t0, t0, t0, t0, t0}; // pointer to bit history
   static StateMap sm[6];

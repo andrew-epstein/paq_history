@@ -1358,7 +1358,7 @@ public:
         smzr( 2, cxt2, 7 * 256, 10, 1, 0 ) smzr( 3, cxt3, 9 * 256, 11, 1, 0 ) smzr( 4, cxt4, 11 * 256, 10, 1, 0 )
 
             int len = mm_p();
-            int pr;
+    int pr;
     mxr_cxt = add2order + len;
     smp0w( *( t0c1 + c0 ) + 256 );
     pr = m_p + 2047;
@@ -1376,7 +1376,7 @@ public:
         smzr( 2, cxt2, 6 * 256, 9, 1, 0 ) smzr( 3, cxt3, 8 * 256, 10, 1, 0 ) smzr( 4, cxt4, 10 * 256, 10, 1, 0 )
 
             int len = mm_p();
-            int pr;
+    int pr;
     mxr_cxt = add2order + len;
     smp0n( *( t0c1 + c0 ) + bc4cp0 );
     pr = m_p + 2047;

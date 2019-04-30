@@ -31,10 +31,10 @@ int EOS = 0; /* for terminating compression */
 */
 
 class Predictor {
-  U32 cxt{ 1 };        // Context: last 0-8 bits with a leading 1
+  U32 cxt{1};     // Context: last 0-8 bits with a leading 1
   U32 ct[256][2]; // 0 and 1 counts in context cxt
 public:
-  Predictor()  {
+  Predictor() {
     memset( ct, 0, sizeof( ct ) );
   }
 
@@ -114,7 +114,7 @@ inline int Encoder::input_bit( void ) {
 
 // Constructor
 Encoder::Encoder( Mode m, FILE *f ) :
-    
+
     mode( m ),
     archive( f ),
     lower( LOWEST ),

@@ -954,9 +954,8 @@ inline int llog( U32 x ) {
   }
   if( x >= 0x10000 ) {
     return 128 + ilog( x >> 8 );
-  } 
-    return ilog( x );
-  
+  }
+  return ilog( x );
 }
 
 ///////////////////////// state table ////////////////////////
@@ -1982,15 +1981,15 @@ int jpegModel( Mixer &m ) {
     APP0 = 0xe0,
     COM = 0xfe,
     FF
-  };                                     // Second byte of 2 byte codes
-  static int jpeg = 0;                   // 1 if JPEG is header detected, 2 if image data
-  static int next_jpeg = 0;              // updated with jpeg on next byte boundary
-  static int app;                        // Bytes remaining to skip in APPx or COM field
+  };                        // Second byte of 2 byte codes
+  static int jpeg = 0;      // 1 if JPEG is header detected, 2 if image data
+  static int next_jpeg = 0; // updated with jpeg on next byte boundary
+  static int app;           // Bytes remaining to skip in APPx or COM field
   static int sof = 0;
   static int sos = 0;
-  static int data = 0; // pointers to buf
-  static Array<int> ht( 8 );             // pointers to Huffman table headers
-  static int htsize = 0;                 // number of pointers in ht
+  static int data = 0;       // pointers to buf
+  static Array<int> ht( 8 ); // pointers to Huffman table headers
+  static int htsize = 0;     // number of pointers in ht
 
   // Huffman decode state
   static U32 huffcode = 0; // Current Huffman code including extra bits
@@ -2012,21 +2011,21 @@ int jpegModel( Mixer &m ) {
   static Array<U8> hbuf( 2048 ); // Tc*1024+Th*256+hufcode -> RS
 
   // Image state
-  static Array<int> color( 10 );  // block -> component (0-3)
-  static Array<int> pred( 4 );    // component -> last DC value
-  static int dc = 0;              // DC value of the current block
-  static int width = 0;           // Image width in MCU
+  static Array<int> color( 10 ); // block -> component (0-3)
+  static Array<int> pred( 4 );   // component -> last DC value
+  static int dc = 0;             // DC value of the current block
+  static int width = 0;          // Image width in MCU
   static int row = 0;
-  static int column = 0; // in MCU (column 0 to width-1)
-  static Buf cbuf( 0x20000 );     // Rotating buffer of coefficients, coded as:
-                                  // DC: level shifted absolute value, low 4 bits discarded, i.e.
-                                  //   [-1023...1024] -> [0...255].
-                                  // AC: as an RS code: a run of R (0-15) zeros followed by an S (0-15)
-                                  //   bit number, or 00 for end of block (in zigzag order).
-                                  //   However if R=0, then the format is ssss11xx where ssss is S,
-                                  //   xx is the first 2 extra bits, and the last 2 bits are 1 (since
-                                  //   this never occurs in a valid RS code).
-  static int cpos = 0;            // position in cbuf
+  static int column = 0;      // in MCU (column 0 to width-1)
+  static Buf cbuf( 0x20000 ); // Rotating buffer of coefficients, coded as:
+                              // DC: level shifted absolute value, low 4 bits discarded, i.e.
+                              //   [-1023...1024] -> [0...255].
+                              // AC: as an RS code: a run of R (0-15) zeros followed by an S (0-15)
+                              //   bit number, or 00 for end of block (in zigzag order).
+                              //   However if R=0, then the format is ssss11xx where ssss is S,
+                              //   xx is the first 2 extra bits, and the last 2 bits are 1 (since
+                              //   this never occurs in a valid RS code).
+  static int cpos = 0;        // position in cbuf
   static U32 huff1 = 0;
   static U32 huff2 = 0;
   static U32 huff3 = 0;
@@ -2034,7 +2033,7 @@ int jpegModel( Mixer &m ) {
   static int rs1;
   static int rs2;
   static int rs3;
-  static int rs4;                         // last 4 RS codes
+  static int rs4; // last 4 RS codes
   static int ssum = 0;
   static int ssum1 = 0;
   static int ssum2 = 0;
@@ -3015,7 +3014,7 @@ void im1bitModel( Mixer &m, int w ) {
   static U32 r0;
   static U32 r1;
   static U32 r2;
-  static U32 r3;           // last 4 rows, bit 8 is over current pixel
+  static U32 r3;                       // last 4 rows, bit 8 is over current pixel
   static Array<U8> t( 0x10200 );       // model: cxt -> state
   const int N = 4 + 1 + 1 + 1 + 1 + 1; // number of contexts
   static int cxt[N];                   // contexts
@@ -3037,12 +3036,13 @@ void im1bitModel( Mixer &m, int w ) {
   cxt[2] = 0x200 + ( ( r0 & 0x3f ) ^ ( r1 & 0x3ffe ) ^ ( r2 << 2 & 0x7f00 ) ^ ( r3 << 5 & 0xf800 ) );
   cxt[3] = 0x400 + ( ( r0 & 0x3e ) ^ ( r1 & 0x0c0c ) ^ ( r2 & 0xc800 ) );
   cxt[4] = 0x800 + ( ( ( r1 & 0x30 ) ^ ( r3 & 0x0c0c ) ) | ( r0 & 3 ) );
-  cxt[5] =
-      0x1000 + ( ( static_cast<int>( static_cast<int>(( ( r0 ) ) == 0U) & 0x444 ) ) | ( r1 & 0xC0C ) | ( r2 & 0xAE3 ) | ( r3 & 0x51C ) );
+  cxt[5] = 0x1000
+           + ( ( static_cast<int>( static_cast<int>( ( ( r0 ) ) == 0U ) & 0x444 ) ) | ( r1 & 0xC0C ) | ( r2 & 0xAE3 )
+               | ( r3 & 0x51C ) );
   cxt[6] = 0x2000 + ( ( r0 & 1 ) | ( r1 >> 4 & 0x1d ) | ( r2 >> 1 & 0x60 ) | ( r3 & 0xC0 ) );
-  cxt[7] =
-      0x4000
-      + ( ( r0 >> 4 & 0x2AC ) | ( r1 & 0xA4 ) | ( r2 & 0x349 ) | ( static_cast<int>( static_cast<int>(( ( r3 ) ) == 0U) & 0x14D ) ) );
+  cxt[7] = 0x4000
+           + ( ( r0 >> 4 & 0x2AC ) | ( r1 & 0xA4 ) | ( r2 & 0x349 )
+               | ( static_cast<int>( static_cast<int>( ( ( r3 ) ) == 0U ) & 0x14D ) ) );
 
   // predict
   for( i = 0; i < N; ++i ) {
@@ -3074,7 +3074,7 @@ struct DMCNode {                 // 12 bytes
 
 void dmcModel( Mixer &m ) {
   static int top = 0;
-  static int curr = 0;       // allocated, current node
+  static int curr = 0;                // allocated, current node
   static Array<DMCNode> t( MEM * 2 ); // state graph
   static StateMap sm;
   static int threshold = 256;
@@ -3465,13 +3465,12 @@ public:
     }
     if( level == 0 ) {
       return getc( archive );
-    } 
-      int c = 0;
-      for( int i = 0; i < 8; ++i ) {
-        c += c + code();
-      }
-      return c;
-    
+    }
+    int c = 0;
+    for( int i = 0; i < 8; ++i ) {
+      c += c + code();
+    }
+    return c;
   }
 };
 
@@ -3685,9 +3684,8 @@ int expand_cd_sector( U8 *data, int a, int test ) {
   for( int i = 0; i < 2352; i++ ) {
     if( d2[i] != data[i] && ( test != 0 ) ) {
       return 0;
-    } 
-      data[i] = d2[i];
-    
+    }
+    data[i] = d2[i];
   }
   return mode + form - 1;
 }
@@ -3700,16 +3698,16 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
 
   // For EXE detection
   Array<int> abspos( 256 );
-  Array<int> // CALL/JMP abs. addr. low byte -> last offset
-      relpos( 256 );        // CALL/JMP relative addr. low byte -> last offset
-  int e8e9count = 0;        // number of consecutive CALL/JMPs
-  int e8e9pos = 0;          // offset of first CALL or JMP instruction
-  int e8e9last = 0;         // offset of most recent CALL or JMP
+  Array<int>         // CALL/JMP abs. addr. low byte -> last offset
+      relpos( 256 ); // CALL/JMP relative addr. low byte -> last offset
+  int e8e9count = 0; // number of consecutive CALL/JMPs
+  int e8e9pos = 0;   // offset of first CALL or JMP instruction
+  int e8e9last = 0;  // offset of most recent CALL or JMP
 
   int soi = 0;
   int sof = 0;
   int sos = 0;
-  int app = 0;                     // For JPEG detection - position where found
+  int app = 0; // For JPEG detection - position where found
   int wavi = 0;
   int wavsize = 0;
   int wavch = 0;
@@ -3717,23 +3715,23 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
   int wavm = 0; // For WAVE detection
   int aiff = 0;
   int aiffm = 0;
-  int aiffs = 0;                         // For AIFF detection
+  int aiffs = 0; // For AIFF detection
   int s3mi = 0;
   int s3mno = 0;
-  int s3mni = 0;                         // For S3M detection
+  int s3mni = 0; // For S3M detection
   int bmp = 0;
   int imgbpp = 0;
   int bmpx = 0;
   int bmpy = 0;
-  int bmpof = 0;     // For BMP detection
+  int bmpof = 0; // For BMP detection
   int rgbi = 0;
   int rgbx = 0;
-  int rgby = 0;                           // For RGB detection
+  int rgby = 0; // For RGB detection
   int tga = 0;
   int tgax = 0;
   int tgay = 0;
   int tgaz = 0;
-  int tgat = 0;        // For TGA detection
+  int tgat = 0; // For TGA detection
   int pgm = 0;
   int pgmcomment = 0;
   int pgmw = 0;
@@ -3749,8 +3747,8 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
 
   // For image detection
   static int deth = 0;
-  static int detd = 0; // detected header/data size in bytes
-  static Filetype dett;          // detected block type
+  static int detd = 0;  // detected header/data size in bytes
+  static Filetype dett; // detected block type
   if( deth != 0 ) {
     return fseek( in, start + deth, SEEK_SET ), deth = 0, dett;
   }
@@ -3986,7 +3984,8 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
           }
           if( imgbpp == 8 ) {
             IMG_DET( IMAGE8, bmp - 1, bmpof, ( bmpx + 3 ) & -4, bmpy );
-          } if( imgbpp == 24 ) {
+          }
+          if( imgbpp == 24 ) {
             IMG_DET( IMAGE24, bmp - 1, bmpof, ( ( bmpx * 3 ) + 3 ) & -4, bmpy );
           }
         }
@@ -4135,7 +4134,8 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
           }
           if( tifz == 1 && tifzb == 8 ) {
             IMG_DET( IMAGE8, i - 7, tifofs, tifx, tify );
-          } if( tifz == 3 && tifzb == 8 ) {
+          }
+          if( tifz == 3 && tifzb == 8 ) {
             IMG_DET( IMAGE24, i - 7, tifofs, tifx * 3, tify );
           }
         }
@@ -4161,7 +4161,8 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
           }
           if( tgat == 2 ) {
             IMG_DET( IMAGE24, tga - 7, 18, tgax * 3, tgay );
-          } if( tgat == 3 ) {
+          }
+          if( tgat == 3 ) {
             IMG_DET( IMAGE8, tga - 7, 18, tgax, tgay );
           }
         }
@@ -4942,7 +4943,7 @@ int main( int argc, char **argv ) {
         i++;
       }
       header[i] = 0;
-      if( static_cast<int>(strncmp( header.c_str(), PROGNAME "\0", strlen( PROGNAME ) + 1 ) != 0) != 0 ) {
+      if( static_cast<int>( strncmp( header.c_str(), PROGNAME "\0", strlen( PROGNAME ) + 1 ) != 0 ) != 0 ) {
         printf( "%s: not a %s file\n", archiveName.c_str(), PROGNAME ), quit();
       }
       level = header[strlen( PROGNAME ) + 1] - '0';

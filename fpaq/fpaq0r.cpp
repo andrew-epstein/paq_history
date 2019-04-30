@@ -29,9 +29,9 @@ private:
   int p[256]; // Probability of 1
 
 public:
-  int cxt{ 1 }; // Context: last 0-7 bits with a leading 1
+  int cxt{1}; // Context: last 0-7 bits with a leading 1
 
-  Predictor()  {
+  Predictor() {
     for( int i = 0; i < 256; i++ )
       p[i] = 1 << ( PSCALE - 1 );
   }

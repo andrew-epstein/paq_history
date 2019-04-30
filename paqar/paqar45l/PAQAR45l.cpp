@@ -1518,7 +1518,7 @@ public:
 #endif
 
   void model() {
-    int y = ch( static_cast<int>(static_cast<int>(bp) == 0) ) & 1;
+    int y = ch( static_cast<int>( static_cast<int>( bp ) == 0 ) ) & 1;
     cp0->add( y );
     cp1->add( y );
     if( bp == 0 ) {
@@ -1590,7 +1590,7 @@ public:
       if( ( h >> 17 ) == 0U )
         h = hash[1] >> 11;
       for( i = 0; i < 4; i++ )
-        if( (end[i] != 0U) && ch( 1 ) == ch[end[i]] )
+        if( ( end[i] != 0U ) && ch( 1 ) == ch[end[i]] )
           ++end[i];
       for( i = 0; i < 4; i++ ) {
         if( end[i] == 0U ) {
@@ -1604,7 +1604,7 @@ public:
           if( end[i] != 0U ) {
             U32 p = po;
             begin[i] = end[i];
-            while( (begin[i] != 0U) && (p != 0U) && begin[i] != p + 1 && ch[begin[i] - 1] == ch[--p] )
+            while( ( begin[i] != 0U ) && ( p != 0U ) && begin[i] != p + 1 && ch[begin[i] - 1] == ch[--p] )
               --begin[i];
           }
           if( end[i] == begin[i] )
@@ -1624,7 +1624,7 @@ public:
         else {
           U32 wt = end[i] - begin[i];
           wt = min( int( wt * wt / ( 8 - tf * 4 ) ), 1020 );
-          if( (d & 1) != 0U )
+          if( ( d & 1 ) != 0U )
             n1 += wt;
           else
             n0 += wt;
@@ -2382,7 +2382,7 @@ public:
     else
       tf = 0;
 #else
-    tf = static_cast<int>(ch.pos( 0, 0 ) < ch.pos( 32, 3 ) && ch.pos( 255, 0 ) < ch.pos( 32, 3 ));
+    tf = static_cast<int>( ch.pos( 0, 0 ) < ch.pos( 32, 3 ) && ch.pos( 255, 0 ) < ch.pos( 32, 3 ) );
 #endif
     mixer.upd( y );
 
@@ -2437,7 +2437,7 @@ public:
     c3 = bp * 256 + ch( 1 ) / 32 + 8 * ( ch( 2 ) / 32 ) + ( ch( 3 ) & 192 );
     c4 = ch( 1 ) * 8 + ch( 2 ) / 32;
     c5 = ch( 2 ) * 8 + ch( 1 ) / 32;
-    if( (tf != 0) || fsize == 513216 )
+    if( ( tf != 0 ) || fsize == 513216 )
       c5 = l8 * 8 + ch( 1 ) / 32;
     U32 p1 = sse[c1][ssep].p() * ( 32 - wt ) + sse[c1][ssep + 1].p() * wt;
     U32 p2 = ss2[c2][ssep].p() * ( 32 - wt ) + ss2[c2][ssep + 1].p() * wt;
@@ -2467,12 +2467,12 @@ typedef enum { COMPRESS, DECOMPRESS } Mode;
 class Encoder {
 private:
   Predictor predictor;
-  Mode mode;     // Compress or decompress?
-  FILE *archive; // Compressed data file
-  U32 x1{ 0 }, x2{ 0xffffffff };    // Range, initially [0, 1), scaled by 2^32
-  U32 x{ 0 };         // Last 4 input bytes of archive.
-  U32 bits_to_follow{ 0 };
-  U8 bptr{ 128 }, bout{ 0 }, bptrin{ 1 };
+  Mode mode;                 // Compress or decompress?
+  FILE *archive;             // Compressed data file
+  U32 x1{0}, x2{0xffffffff}; // Range, initially [0, 1), scaled by 2^32
+  U32 x{0};                  // Last 4 input bytes of archive.
+  U32 bits_to_follow{0};
+  U8 bptr{128}, bout{0}, bptrin{1};
   int bin;
 
 public:
@@ -2525,7 +2525,7 @@ inline int Encoder::input_bit( void ) {
 }
 
 // Constructor
-Encoder::Encoder()  {}
+Encoder::Encoder() {}
 
 Encoder::~Encoder(){};
 
@@ -2756,7 +2756,7 @@ int exe_preprocess( FILE *f, FILE *fw, int type ) // 3=compress, 4=decompress
 
   if( data2write[0] != 0 )
     size += data2write[0], fwrite( ( char * ) data2write[1], 1, data2write[0], fw );
-  if( (data2write[2] != 0) && type < 4 )
+  if( ( data2write[2] != 0 ) && type < 4 )
     size += data2write[2], fwrite( ( char * ) data2write[3], 1, data2write[2], fw );
   free( st0 );
 
@@ -2884,8 +2884,8 @@ int main( int argc, char **argv ) {
   }
 
   // File names and sizes from input or archive
-  vector<string> filename;                          // List of names
-  vector<long> filesize;                            // Size or -1 if error
+  vector<string> filename; // List of names
+  vector<long> filesize;   // Size or -1 if error
   int uncompressed_bytes = 0;
   int compressed_bytes = 0; // Input, output sizes
   FILE *archive = fopen( argv[1], "rbe" );
@@ -2951,7 +2951,7 @@ int main( int argc, char **argv ) {
         if( tab != s.end() )
           filename.emplace_back( tab + 1, s.end() );
         else
-          filename.emplace_back("" );
+          filename.emplace_back( "" );
       } else
         break;
     }
@@ -3017,20 +3017,20 @@ int main( int argc, char **argv ) {
         fsize = size;
         setWeight();
 
-        if( (f != nullptr) && size > 0 ) {
+        if( ( f != nullptr ) && size > 0 ) {
           if( fsize == FILE_PIC ) {
             picModel = new PicModel();
             if( picModel == nullptr )
               handler();
           }
 
-          if( (exe != 0) && size >= 3 ) {
+          if( ( exe != 0 ) && size >= 3 ) {
             b = e->decode();
             putc( b, f );
 
             if( b != 0 ) {
               b -= 23;
-              if( ( b < 0 && (( ( b + 8 ) & 1 ) != 0) ) || ( b >= 0 && (( ( b + 2 ) & 1 ) != 0) ) ) {
+              if( ( b < 0 && ( ( ( b + 8 ) & 1 ) != 0 ) ) || ( b >= 0 && ( ( ( b + 2 ) & 1 ) != 0 ) ) ) {
                 c = e->decode();
                 d = e->decode();
                 putc( c, f );
@@ -3053,11 +3053,11 @@ int main( int argc, char **argv ) {
         }
 
         if( f != nullptr ) {
-          if( (exe != 0) && size >= 3 ) {
+          if( ( exe != 0 ) && size >= 3 ) {
             fclose( f );
             f = fopen( filename[i].c_str(), "rbe" );
             FILE *fw = fopen( PAQ_TEMP, "wbe" );
-            if( (f == nullptr) || (fw == nullptr) )
+            if( ( f == nullptr ) || ( fw == nullptr ) )
               handler();
 
             exe_preprocess( f, fw, 4 );
@@ -3083,15 +3083,15 @@ int main( int argc, char **argv ) {
     // Read file names from command line or input
     if( argc > 2 )
       for( int i = 2; i < argc; ++i )
-        filename.emplace_back(argv[i] );
+        filename.emplace_back( argv[i] );
     else {
       printf( "Enter names of files to compress, followed by blank line or EOF.\n" );
       while( true ) {
         string s = getline( stdin );
         if( s == "" )
           break;
-        
-          filename.push_back( s );
+
+        filename.push_back( s );
       }
     }
 
@@ -3184,7 +3184,7 @@ int main( int argc, char **argv ) {
         fsize = size;
         setWeight();
 
-        if( (f != nullptr) && (exe != 0) && size >= 3 ) {
+        if( ( f != nullptr ) && ( exe != 0 ) && size >= 3 ) {
           FILE *fw = fopen( PAQ_TEMP, "wbe" );
           if( fw == nullptr )
             handler();
@@ -3201,7 +3201,7 @@ int main( int argc, char **argv ) {
           size--;
           if( b != 0 ) {
             b -= 23;
-            if( ( b < 0 && (( ( b + 8 ) & 1 ) != 0) ) || ( b >= 0 && (( ( b + 2 ) & 1 ) != 0) ) ) {
+            if( ( b < 0 && ( ( ( b + 8 ) & 1 ) != 0 ) ) || ( b >= 0 && ( ( ( b + 2 ) & 1 ) != 0 ) ) ) {
               e->encode( getc( f ) );
               e->encode( getc( f ) );
               size -= 2;
@@ -3210,7 +3210,7 @@ int main( int argc, char **argv ) {
         }
 
         //  printf("ft=%d ",filetype[i]);
-        if( (f != nullptr) && size > 0 ) {
+        if( ( f != nullptr ) && size > 0 ) {
           if( fsize == FILE_PIC ) {
             picModel = new PicModel();
             if( picModel == nullptr )
@@ -3233,7 +3233,7 @@ int main( int argc, char **argv ) {
 
         if( f != nullptr )
           fclose( f );
-        if( (f != nullptr) && (exe != 0) && size > 0 )
+        if( ( f != nullptr ) && ( exe != 0 ) && size > 0 )
           remove( PAQ_TEMP );
 
         int EOLlen = coder.EOLstreamLen();

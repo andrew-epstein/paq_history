@@ -29,8 +29,8 @@ void Pokeb( unsigned char *memory, unsigned char value ) {
 int p() {
   if( epix == 7 )
     return 4096 * ( cuf[cc[1]] + 1 ) / ( cuf[cc[1]] + cuf[cc[0]] + 2 );
-  
-    return 4096 * ( buf[rc[1]] + 1 ) / ( buf[rc[1]] + buf[rc[0]] + 2 );
+
+  return 4096 * ( buf[rc[1]] + 1 ) / ( buf[rc[1]] + buf[rc[0]] + 2 );
 }
 
 void update( int y ) {

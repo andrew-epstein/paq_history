@@ -486,7 +486,7 @@ Replaced 'inline' by 'static' so that the compiler can inline code where possibl
 #endif
 
 // 8, 16, 32 bit unsigned types (adjust as appropriate)
-using sint8 = char;          ///<                signed  8 bits integer
+using sint8 = char;   ///<                signed  8 bits integer
 using sint16 = short; ///<       signed 16 bits integer
 using sint32 = int;   ///<         signed 32 bits integer
 
@@ -544,16 +544,16 @@ long size;
 
 // Track time and memory used
 class ProgramChecker {
-  int memused{ 0 };        // bytes allocated by Array<T> now
+  int memused{0};     // bytes allocated by Array<T> now
   clock_t start_time; // in ticks
 public:
-  int maxmem{ 0 };           // most bytes allocated ever
+  int maxmem{0};        // most bytes allocated ever
   void alloc( int n ) { // report memory allocated, may be negative
     memused += n;
     if( memused > maxmem )
       maxmem = memused;
   }
-  ProgramChecker()  {
+  ProgramChecker() {
     start_time = clock();
     assert( sizeof( uint8 ) == 1 );
     assert( sizeof( uint16 ) == 2 );
@@ -786,8 +786,8 @@ int llog( uint32 x ) {
     return 256 + ilog( x >> 16 );
   if( x >= 0x10000 )
     return 128 + ilog( x >> 8 );
-  
-    return ilog( x );
+
+  return ilog( x );
 }
 
 ///////////////////////// state table ////////////////////////
@@ -1302,10 +1302,9 @@ public:
       }
       return mp->p();
     } // S=1 context
-      int z = dot_product( &tx[0], &wx[0], nx );
-      base = squash( ( z * 15 ) >> 13 );
-      return squash( z >> 9 );
-    
+    int z = dot_product( &tx[0], &wx[0], nx );
+    base = squash( ( z * 15 ) >> 13 );
+    return squash( z >> 9 );
   }
 };
 
@@ -1354,10 +1353,10 @@ public:
 // Counter state -> probability * 256
 class StateMap {
 protected:
-  int cxt{ 0 };       // context
+  int cxt{0};    // context
   uint16 t[256]; // 256 states -> probability * 64K
 public:
-  StateMap()  {
+  StateMap() {
     for( int i = 0; i < 256; ++i ) {
       int n0 = nex( i, 2 );
       int n1 = nex( i, 3 );
@@ -1532,8 +1531,8 @@ public:
   int p() { // predict next bit
     if( ( cp[1] + 256 ) >> ( 8 - bpos ) == c0 )
       return ( ( cp[1] >> ( 7 - bpos ) & 1 ) * 2 - 1 ) * ilog( cp[0] + 1 ) * mulc;
-    
-      return 0;
+
+    return 0;
   }
   int mix( Mixer &m ) { // return run length
     m.add( p() );
@@ -2203,7 +2202,7 @@ static int contextModel2() {
 // update(y) trains the predictor with the actual bit (0 or 1).
 
 class Predictor {
-  int pr{ 2048 }; // next prediction
+  int pr{2048}; // next prediction
 public:
   Predictor();
   int p() const {
@@ -2213,7 +2212,7 @@ public:
   void update();
 };
 
-Predictor::Predictor()  {}
+Predictor::Predictor() {}
 
 void Predictor::update() {
   static APM a1( 256 );
@@ -2380,22 +2379,22 @@ public:
     if( mode == COMPRESS ) {
       assert( alt );
       return getc( alt );
-    } if( level == 0 )
+    }
+    if( level == 0 )
       return getc( archive );
-    
-      int c = 0;
-      for( int i = 8; i != 0; --i )
-        c += c + code();
-      if( c >= '{' && c < 127 )
-        c += 'P' - '{';
-      else if( c >= 'P' && c < 'T' )
-        c -= 'P' - '{';
-      else if( ( c >= ':' && c <= '?' ) || ( c >= 'J' && c <= 'O' ) )
-        c ^= 0x70;
-      if( c == 'X' || c == '`' )
-        c ^= 'X' ^ '`';
-      return c;
-    
+
+    int c = 0;
+    for( int i = 8; i != 0; --i )
+      c += c + code();
+    if( c >= '{' && c < 127 )
+      c += 'P' - '{';
+    else if( c >= 'P' && c < 'T' )
+      c -= 'P' - '{';
+    else if( ( c >= ':' && c <= '?' ) || ( c >= 'J' && c <= 'O' ) )
+      c ^= 0x70;
+    if( c == 'X' || c == '`' )
+      c ^= 'X' ^ '`';
+    return c;
   }
 
   void flush() {
@@ -2757,8 +2756,8 @@ Filter *Filter::make( const char *filename, Encoder *e ) {
     ///else
     if( filetype == TEXT || filetype == BINTEXT )
       return new TextFilter( e );
-    
-      return new DefaultFilter( e );
+
+    return new DefaultFilter( e );
   }
   return NULL;
 }
@@ -2892,7 +2891,7 @@ int main( int argc, char **argv ) {
           break;
         filename = argv[i++];
       }
-      filenames.emplace_back(filename );
+      filenames.emplace_back( filename );
     } // for
 
     for( i = 0; i < filenames.size(); i++ ) {
@@ -2918,7 +2917,7 @@ int main( int argc, char **argv ) {
   // Read existing archive. Two pointers (header and body) track the
   // current filename and current position in the compressed data.
   long header;
-  long body;             // file positions in header, body
+  long body;                     // file positions in header, body
   char *filename = getline( f ); // check header
   if( ( filename == nullptr ) || ( strncmp( filename, PROGNAME " -", strlen( PROGNAME ) + 2 ) != 0 ) )
     fprintf( stderr, "%s: not a " PROGNAME " file\n", argv[1] ), exit( 1 );

@@ -218,7 +218,7 @@ public:
 // 32-bit random number generator based on r(i) = r(i-24) ^ r(i-55)
 class Random {
   U32 table[55]; // Last 55 random values
-  int i{ 0 };         // Index of current random value in table
+  int i{0};      // Index of current random value in table
 public:
   Random();
   U32 operator()() { // Return 32-bit random number
@@ -226,12 +226,12 @@ public:
       i = 0;
     if( i >= 24 )
       return table[i] ^= table[i - 24];
-    
-      return table[i] ^= table[i + 31];
+
+    return table[i] ^= table[i + 31];
   }
 } rnd;
 
-Random::Random()  { // Seed the table
+Random::Random() { // Seed the table
   table[0] = 123456789;
   table[1] = 987654321;
   for( int j = 2; j < 55; ++j )
@@ -273,7 +273,7 @@ Although it uses 1/3 less memory, it is 8% slower and gives 0.05% worse
 compression than the 3 byte counter. */
 
 class Counter2 {
-  U8 state{ 0 };
+  U8 state{0};
   struct E {     // State table entry
     U16 n0, n1;  // Counts represented by state
     U8 s00, s01; // Next state on input 0 without/with probabilistic incr.
@@ -282,7 +282,7 @@ class Counter2 {
   };
   static E table[244]; // State table
 public:
-  Counter2()  {}
+  Counter2() {}
   int get0() const {
     return table[state].n0;
   }
@@ -622,10 +622,10 @@ class MatchModel {
   vector<U8> buf;  // Input buffer, wraps at end
   vector<U24> ptr; // Hash table of pointers
   U32 hash[2];     // Hashes of current context up to pos-1
-  int pos{ 0 };         // Element of buf where next bit will be stored
-  int bpos{ 0 };        // Number of bits (0-7) stored at buf[pos]
-  int begin{ 0 };       // Points to first matching byte (does not wrap)
-  int end{ 0 };         // Points to last matching byte + 1, 0 if no match
+  int pos{0};      // Element of buf where next bit will be stored
+  int bpos{0};     // Number of bits (0-7) stored at buf[pos]
+  int begin{0};    // Points to first matching byte (does not wrap)
+  int end{0};      // Points to last matching byte + 1, 0 if no match
 public:
   MatchModel() : buf( 0x10000 << MEM ), ptr( 0x4000 << MEM ) {
     hash[0] = hash[1] = 0;
@@ -689,9 +689,9 @@ class RecordModel {
   static int lpos[256][4];        // Position of last 4 bytes
   vector<U8> buf;                 // Rotating history [4K]
   Hashtable<Counter, 15 + MEM> t; // Model
-  int pos{ 0 };                        // Byte counter
-  int c0{ 1 };                         // Leading 1 and 0-7 bits
-  int repeat{ 1 };                     // Cycle length
+  int pos{0};                     // Byte counter
+  int c0{1};                      // Leading 1 and 0-7 bits
+  int repeat{1};                  // Cycle length
   int hash[N];                    // of c0, context and repeat
   Counter *cp[N];                 // Pointer to current counter
 public:
@@ -753,15 +753,15 @@ void RecordModel::model( int y, int *n0, int *n1 ) {
 and several order-2 sparse models which skip over parts of the context. */
 
 class CharModel {
-  enum { N = 16 };                 // Number of models
-  vector<Counter> t0;              // Order 0 counts [256]
-  vector<Counter> t1;              // Order 1 counts [64K]
-  Hashtable<Counter, MEM + 16> t2; // Sparse models
-  Hashtable<Counter, MEM + 19> t;  // Order 2-7 models
-  int c0{ 1 };                          // Current partial byte with leading 1 bit
-  int c1{ 0 }, c2{ 0 }, c3{ 0 }, c4{ 0 }, c5{ 0 }, c6{ 0 }, c7{ 0 };  // Previous bytes
-  vector<U32> cxt;                 // Context hashes [N]
-  vector<Counter *> cp;            // Pointers to current counts [N]
+  enum { N = 16 };                                     // Number of models
+  vector<Counter> t0;                                  // Order 0 counts [256]
+  vector<Counter> t1;                                  // Order 1 counts [64K]
+  Hashtable<Counter, MEM + 16> t2;                     // Sparse models
+  Hashtable<Counter, MEM + 19> t;                      // Order 2-7 models
+  int c0{1};                                           // Current partial byte with leading 1 bit
+  int c1{0}, c2{0}, c3{0}, c4{0}, c5{0}, c6{0}, c7{0}; // Previous bytes
+  vector<U32> cxt;                                     // Context hashes [N]
+  vector<Counter *> cp;                                // Pointers to current counts [N]
 public:
   CharModel();
   void model( const int y, int *n0, int *n1 ); // Update and predict
@@ -779,8 +779,7 @@ public:
 CharModel::CharModel() :
     t0( 256 ),
     t1( 65536 ),
-    
-    
+
     cxt( N ),
     cp( N ) {
   for( int i = 0; i < N; ++i )
@@ -846,7 +845,7 @@ class MixModel {
   enum { N = 19, C = 8 }; // Number of models, number of weight contexts
   vector<int> wt;         // Context weights [C, N]
   int bc0[N], bc1[N];     // Bit counts concatenated from various models
-  int cxt2{ 0 };               // Secondary context to select a weight vector
+  int cxt2{0};            // Secondary context to select a weight vector
 public:
   MixModel();
   ~MixModel();
@@ -957,7 +956,7 @@ class Predictor {
 
   // Secondary source encoder element
   struct SSEContext {
-    U8 c1{ 0 }, n{ 0 }; // Count of 1's, count of bits
+    U8 c1{0}, n{0}; // Count of 1's, count of bits
     int p() const {
       return PSCALE * ( c1 * 64 + 1 ) / ( n * 64 + 2 );
     }
@@ -969,13 +968,13 @@ class Predictor {
         n /= 2;
       }
     }
-    SSEContext()  {}
+    SSEContext() {}
   };
 
   vector<vector<SSEContext>> sse; // [SSE1][SSE2+1] context, mapped prob
   int nextp;                      // p()
-  int ssep{ 512 };                       // Output of sse
-  int context{ 0 };                    // SSE context
+  int ssep{512};                  // Output of sse
+  int context{0};                 // SSE context
 public:
   Predictor();
   int p() const {
@@ -1240,7 +1239,7 @@ int main( int argc, char **argv ) {
         if( tab != s.end() )
           filename.emplace_back( tab + 1, s.end() );
         else
-          filename.emplace_back("" );
+          filename.emplace_back( "" );
       } else
         break;
     }
@@ -1304,15 +1303,15 @@ int main( int argc, char **argv ) {
     // Read file names from command line or input
     if( argc > 2 )
       for( int i = 2; i < argc; ++i )
-        filename.emplace_back(argv[i] );
+        filename.emplace_back( argv[i] );
     else {
       printf( "Enter names of files to compress, followed by blank line or EOF.\n" );
       while( true ) {
         string s = getline( stdin );
         if( s.empty() )
           break;
-        
-          filename.push_back( s );
+
+        filename.push_back( s );
       }
     }
 

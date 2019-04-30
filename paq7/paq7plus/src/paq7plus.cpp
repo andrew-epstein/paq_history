@@ -409,13 +409,13 @@ inline T min( const T &a, const T &b ) {
 //////////////////////// Program Checker /////////////////////
 
 class ProgramChecker {
-  int memused{ 0 };        // bytes allocated by Array<T>
+  int memused{0};     // bytes allocated by Array<T>
   clock_t start_time; // in ticks
 public:
   void alloc( int n ) {
     memused += n;
   } // report memory allocated
-  ProgramChecker()  {
+  ProgramChecker() {
     start_time = clock();
     assert( sizeof( U8 ) == 1 );
     assert( sizeof( U16 ) == 2 );
@@ -544,8 +544,8 @@ inline int llog( U32 x ) {
     return 256 + ilog( x >> 16 );
   if( x >= 0x10000 )
     return 128 + ilog( x >> 8 );
-  
-    return ilog( x );
+
+  return ilog( x );
 }
 
 ///////////////////////// state table ////////////////////////
@@ -921,8 +921,7 @@ public:
       mp->set( 0, 1 );
       return mp->p();
     } // S=1 context
-      return pr[0] = squash( dot_product( &tx[0], &wx[0], nx ) >> 8 );
-    
+    return pr[0] = squash( dot_product( &tx[0], &wx[0], nx ) >> 8 );
   }
 };
 
@@ -999,12 +998,12 @@ APM::APM( int n ) : ProbMap( n ) {
 
 // Counter state -> probability * 256
 class StateMap {
-  int cxt{ 0 };
+  int cxt{0};
 
 protected:
   Array<U16> t; // 256 states -> probability * 64K
 public:
-  StateMap() :  t( 256 ) {
+  StateMap() : t( 256 ) {
     for( int i = 0; i < 256; ++i )
       t[i] = 65536 * ( nex( i, 3 ) + 1 ) / ( nex( i, 2 ) + nex( i, 3 ) + 2 );
   }
@@ -1219,8 +1218,8 @@ public:
   int p() { // predict next bit
     if( ( cp[1] + 256 ) >> ( 8 - bpos ) == c0 )
       return ( ( cp[1] >> ( 7 - bpos ) & 1 ) * 2 - 1 ) * ilog( cp[0] + 1 ) * 8;
-    
-      return 0;
+
+    return 0;
   }
   int mix( Mixer &m ) { // return run length
     m.add( p() );
@@ -1347,7 +1346,7 @@ void picModel( Mixer &m ) {
   static U32 r0;
   static U32 r1;
   static U32 r2;
-  static U32 r3;     // last 5 rows, bit 8 is over current pixel
+  static U32 r3;                 // last 5 rows, bit 8 is over current pixel
   static Array<U8> t( 0x10200 ); // model: cxt -> state
   const int N = 3;               // number of contexts
   static int cxt[N];             // contexts
@@ -1395,7 +1394,7 @@ void wordModel( Mixer &m ) {
   static NonstationaryContextMap lcm3( MEM );
   static Array<int> wpos( MEM ); // last position of word
   static int nl1 = -3;
-  static int nl = -2;  // previous, current newline position
+  static int nl = -2; // previous, current newline position
 
   // Update word hashes
   if( bpos == 0 ) {
@@ -1457,12 +1456,12 @@ void wordModel( Mixer &m ) {
 
 void recordModel( Mixer &m ) {
   const int MAXRUN = 1024;
-  static Array<U8> run( MAXRUN );               // candidate record lengths
+  static Array<U8> run( MAXRUN ); // candidate record lengths
   static Array<int> cpos1( 256 );
-  static Array<int> cpos2( 256 ); // buf(1) -> last 2 positions
-  static Array<int> wpos1( 0x10000 );           // last position of order 2 context
-  static Array<int> wpos3( MEM );               // last position of order 3 hash
-  static int rlen = 2;                          // current, previous run length
+  static Array<int> cpos2( 256 );     // buf(1) -> last 2 positions
+  static Array<int> wpos1( 0x10000 ); // last position of order 2 context
+  static Array<int> wpos3( MEM );     // last position of order 3 hash
+  static int rlen = 2;                // current, previous run length
   static ContextMap cm1( MEM );
   static ContextMap cm2( MEM );
   static ContextMap cm3( MEM );
@@ -1584,9 +1583,9 @@ inline int sqrbuf( int i ) {
 
 int bmpModel( Mixer &m ) {
   static int width = 0;
-  static int w = 0; // width of image in pixels, bytes
-  static int eoi = 0;          // end of image
-  static U32 tiff = 0;         // offset of tif header
+  static int w = 0;    // width of image in pixels, bytes
+  static int eoi = 0;  // end of image
+  static U32 tiff = 0; // offset of tif header
   const int SC = 0x20000;
   static SmallStationaryContextMap scm1( SC );
   static SmallStationaryContextMap scm2( SC );
@@ -1751,15 +1750,15 @@ int jpegModel( Mixer &m ) {
     APP0 = 0xe0,
     COM = 0xfe,
     FF
-  };                                     // Second byte of 2 byte codes
-  static int jpeg = 0;                   // 1 if JPEG is detected
-  static int next_jpeg = 0;              // updated with jpeg on next byte boundary
-  static int app;                        // Bytes remaining to skip in APPx or COM field
+  };                        // Second byte of 2 byte codes
+  static int jpeg = 0;      // 1 if JPEG is detected
+  static int next_jpeg = 0; // updated with jpeg on next byte boundary
+  static int app;           // Bytes remaining to skip in APPx or COM field
   static int sof = 0;
   static int sos = 0;
-  static int data = 0; // pointers to buf
-  static Array<int> ht( 8 );             // pointers to Huffman table headers
-  static int htsize = 0;                 // number of pointers in ht
+  static int data = 0;       // pointers to buf
+  static Array<int> ht( 8 ); // pointers to Huffman table headers
+  static int htsize = 0;     // number of pointers in ht
 
   // Huffman decode state
   static U32 huffcode = 0; // Current Huffman code including extra bits
@@ -1780,21 +1779,21 @@ int jpegModel( Mixer &m ) {
   static int hufsel[2][10];     // DC/AC, mcupos/64 -> huf decode table
 
   // Image state
-  static Array<int> color( 10 );  // block -> component (0-3)
-  static Array<int> pred( 4 );    // component -> last DC value
-  static int dc = 0;              // DC value of the current block
-  static int width = 0;           // Image width in MCU
+  static Array<int> color( 10 ); // block -> component (0-3)
+  static Array<int> pred( 4 );   // component -> last DC value
+  static int dc = 0;             // DC value of the current block
+  static int width = 0;          // Image width in MCU
   static int row = 0;
-  static int column = 0; // in MCU (column 0 to width-1)
-  static Buf cbuf( 0x20000 );     // Rotating buffer of coefficients, coded as:
-                                  // DC: level shifted absolute value, low 4 bits discarded, i.e.
-                                  //   [-1023...1024] -> [0...255].
-                                  // AC: as an RS code: a run of R (0-15) zeros followed by an S (0-15)
-                                  //   bit number, or 00 for end of block (in zigzag order).
-                                  //   However if R=0, then the format is ssss11xx where ssss is S,
-                                  //   xx is the first 2 extra bits, and the last 2 bits are 1 (since
-                                  //   this never occurs in a valid RS code).
-  static int cpos = 0;            // position in cbuf
+  static int column = 0;      // in MCU (column 0 to width-1)
+  static Buf cbuf( 0x20000 ); // Rotating buffer of coefficients, coded as:
+                              // DC: level shifted absolute value, low 4 bits discarded, i.e.
+                              //   [-1023...1024] -> [0...255].
+                              // AC: as an RS code: a run of R (0-15) zeros followed by an S (0-15)
+                              //   bit number, or 00 for end of block (in zigzag order).
+                              //   However if R=0, then the format is ssss11xx where ssss is S,
+                              //   xx is the first 2 extra bits, and the last 2 bits are 1 (since
+                              //   this never occurs in a valid RS code).
+  static int cpos = 0;        // position in cbuf
   static U32 huff1 = 0;
   static U32 huff2 = 0;
   static U32 huff3 = 0;
@@ -1802,7 +1801,7 @@ int jpegModel( Mixer &m ) {
   static int rs1;
   static int rs2;
   static int rs3;
-  static int rs4;                         // last 4 RS codes
+  static int rs4; // last 4 RS codes
   static int ssum = 0;
   static int ssum1 = 0;
   static int ssum2 = 0;
@@ -2083,7 +2082,8 @@ int jpegModel( Mixer &m ) {
   const int coef = ( mcupos & 63 ) | color[mcupos >> 6] << 6;
   jassert( coef >= 0 && coef < 256 );
   if( hbcount == 0 ) {
-    const int mpos = ( mcupos >> 4 | static_cast<int>( static_cast<int>( static_cast<int>( ( mcupos & -64 ) ) ) == 0 << 7 ) );
+    const int mpos =
+        ( mcupos >> 4 | static_cast<int>( static_cast<int>( static_cast<int>( ( mcupos & -64 ) ) ) == 0 << 7 ) );
     int n = 0;
     cxt[0] = hash( ++n, hc, mcupos >> 2, min( 3, mcupos & 63 ) );
     cxt[1] = hash( ++n, hc, mpos >> 4, cbuf[cpos - mcusize] );
@@ -2153,12 +2153,14 @@ int contextModel2() {
   if( ismatch > 400 ) {          // Model long matches directly
     m.set( 0, 8 );
     return m.p();
-  } if( isjpeg != 0 ) {
+  }
+  if( isjpeg != 0 ) {
     m.set( 1, 8 );
     m.set( c0, 256 );
     m.set( buf( 1 ), 256 );
     return m.p();
-  } if( isbmp != 0 ) {
+  }
+  if( isbmp != 0 ) {
     static int col = 0;
     if( ++col >= 24 )
       col = 0;
@@ -2220,7 +2222,7 @@ int contextModel2() {
 // update(y) trains the predictor with the actual bit (0 or 1).
 
 class Predictor {
-  int pr{ 2048 }; // next prediction
+  int pr{2048}; // next prediction
 public:
   Predictor();
   int p() const {
@@ -2230,7 +2232,7 @@ public:
   void upd();
 };
 
-Predictor::Predictor()  {}
+Predictor::Predictor() {}
 
 void Predictor::upd() {
   static APM a1( 256 );
@@ -2332,13 +2334,13 @@ typedef enum { COMPRESS, DECOMPRESS } Mode;
 class Encoder {
 private:
   Predictor predictor;
-  Mode mode;     // Compress or decompress?
-  FILE *archive; // Compressed data file
-  U32 x1{ 0 }, x2{ 0xffffffff };    // Range, initially [0, 1), scaled by 2^32
-  U32 x{ 0 };         // Last 4 input bytes of archive.
+  Mode mode;                 // Compress or decompress?
+  FILE *archive;             // Compressed data file
+  U32 x1{0}, x2{0xffffffff}; // Range, initially [0, 1), scaled by 2^32
+  U32 x{0};                  // Last 4 input bytes of archive.
   int LPS;
-  U32 bits_to_follow{ 0 };
-  U8 bptr{ 128 }, bout{ 0 }, bptrin{ 1 };
+  U32 bits_to_follow{0};
+  U8 bptr{128}, bout{0}, bptrin{1};
   int bin;
 
 public:
@@ -2382,7 +2384,7 @@ inline int Encoder::input_bit( void ) {
 }
 
 // Constructor
-Encoder::Encoder()  {}
+Encoder::Encoder() {}
 
 Encoder::~Encoder(){};
 
@@ -2684,8 +2686,8 @@ int main( int argc, char **argv ) {
   }
 
   // File names and sizes from input or archive
-  vector<string> filename;                          // List of names
-  vector<long> filesize;                            // Size or -1 if error
+  vector<string> filename; // List of names
+  vector<long> filesize;   // Size or -1 if error
   int uncompressed_bytes = 0;
   int compressed_bytes = 0; // Input, output sizes
   FILE *archive = fopen( argv[1], "rbe" );
@@ -2751,7 +2753,7 @@ int main( int argc, char **argv ) {
         if( tab != s.end() )
           filename.emplace_back( tab + 1, s.end() );
         else
-          filename.emplace_back("" );
+          filename.emplace_back( "" );
       } else
         break;
     }
@@ -2854,15 +2856,15 @@ int main( int argc, char **argv ) {
     // Read file names from command line or input
     if( argc > 2 )
       for( int i = 2; i < argc; ++i )
-        filename.emplace_back(argv[i] );
+        filename.emplace_back( argv[i] );
     else {
       printf( "Enter names of files to compress, followed by blank line or EOF.\n" );
       while( true ) {
         string s = getline( stdin );
         if( s == "" )
           break;
-        
-          filename.push_back( s );
+
+        filename.push_back( s );
       }
     }
 

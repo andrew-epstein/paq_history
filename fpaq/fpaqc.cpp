@@ -55,11 +55,11 @@ void alloc( T *&p, int n ) {
 
 class Predictor {
 private:
-  int cxt{ 1 };             // Context: last 0-8 bits with a leading 1
+  int cxt{1};          // Context: last 0-8 bits with a leading 1
   unsigned int t[512]; // Probability of 1
 
 public:
-  Predictor()  {
+  Predictor() {
     for( int i = 0; i < 512; i++ )
       t[i] = 32768;
   }

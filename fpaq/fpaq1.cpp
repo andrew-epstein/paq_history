@@ -23,10 +23,10 @@ using U64 = unsigned long long;
 */
 
 class Predictor {
-  int cxt{ 1 };        // Context: last 0-8 bits with a leading 1
+  int cxt{1};     // Context: last 0-8 bits with a leading 1
   int ct[512][2]; // 0 and 1 counts in context cxt
 public:
-  Predictor()  {
+  Predictor() {
     memset( ct, 0, sizeof( ct ) );
   }
 
@@ -72,7 +72,7 @@ public:
 
 // Constructor
 Encoder::Encoder( Mode m, FILE *f ) :
-    
+
     mode( m ),
     archive( f ),
     low( 0 ),

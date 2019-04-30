@@ -748,8 +748,8 @@ public:
   U32 hi() {
     if( bp > 3 )
       return buf[po & N] & 15;
-    
-      return buf[( po - 1 ) & N] / 16;
+
+    return buf[( po - 1 ) & N] / 16;
   }
 } ch;
 
@@ -1215,7 +1215,7 @@ public:
     memset( cxt, 0, 44 );
   }
   void model() {
-    int y = ch( static_cast<int>(static_cast<int>(bp) == 0) ) & 1;
+    int y = ch( static_cast<int>( static_cast<int>( bp ) == 0 ) ) & 1;
     cp0->add( y );
     cp1->add( y );
     if( bp == 0 ) {
@@ -1282,7 +1282,7 @@ public:
       if( ( h >> 17 ) == 0U )
         h = hash[1] >> 11;
       for( int i = 0; i < 4; i++ )
-        if( (end[i] != 0U) && ch( 1 ) == ch[end[i]] )
+        if( ( end[i] != 0U ) && ch( 1 ) == ch[end[i]] )
           ++end[i];
       for( int i = 0; i < 4; i++ ) {
         if( end[i] == 0U ) {
@@ -1296,7 +1296,7 @@ public:
           if( end[i] != 0U ) {
             U32 p = po;
             begin[i] = end[i];
-            while( (begin[i] != 0U) && (p != 0U) && begin[i] != p + 1 && ch[begin[i] - 1] == ch[--p] )
+            while( ( begin[i] != 0U ) && ( p != 0U ) && begin[i] != p + 1 && ch[begin[i] - 1] == ch[--p] )
               --begin[i];
           }
           if( end[i] == begin[i] )
@@ -1316,7 +1316,7 @@ public:
         else {
           U32 wt = end[i] - begin[i];
           wt = min( int( wt * wt / 4 ), 1020 );
-          if( (d & 1) != 0U )
+          if( ( d & 1 ) != 0U )
             n1 += wt;
           else
             n0 += wt;
@@ -1340,7 +1340,7 @@ class RecordModel {
   enum { SIZE = 20 };
   CounterMap3 t0, t1, t3, t4, t5, t6, t7, t8, t9, ta, tb;
   CounterMap2 t2;
-  int r1{ 2 }, r2{ 3 }, r3{ 2 }, r4{ 3 }, c1{ 0 }, c2{ 0 };
+  int r1{2}, r2{3}, r3{2}, r4{3}, c1{0}, c2{0};
 
 public:
   RecordModel() :
@@ -1355,8 +1355,7 @@ public:
       t7( SIZE ),
       t8( SIZE ),
       t9( SIZE ),
-      ta( SIZE )
-      {}
+      ta( SIZE ) {}
   void model() {
     if( bp == 0 ) {
       int c = ch( 1 );
@@ -1788,7 +1787,7 @@ public:
     ss3[c3][ssep].upd( y );
     ss4[c4][ssep].upd( y );
     ch.upd( y );
-    tf = static_cast<int>(ch.pos( 0, 0 ) < ch.pos( 32, 3 ) && ch.pos( 255, 0 ) < ch.pos( 32, 3 ));
+    tf = static_cast<int>( ch.pos( 0, 0 ) < ch.pos( 32, 3 ) && ch.pos( 255, 0 ) < ch.pos( 32, 3 ) );
     mixer.upd( y );
     charModel.model();
     recordModel.model();
@@ -1885,7 +1884,7 @@ inline int Encoder::input_bit( void ) {
 
 // Constructor
 Encoder::Encoder( Mode m, FILE *f ) :
-    
+
     mode( m ),
     archive( f ),
     x1( 0 ),
@@ -2108,8 +2107,8 @@ int main( int argc, char **argv ) {
   }
 
   // File names and sizes from input or archive
-  vector<string> filename;                          // List of names
-  vector<long> filesize;                            // Size or -1 if error
+  vector<string> filename; // List of names
+  vector<long> filesize;   // Size or -1 if error
   int uncompressed_bytes = 0;
   int compressed_bytes = 0; // Input, output sizes
   FILE *archive = fopen( argv[1], "rbe" );
@@ -2158,7 +2157,7 @@ int main( int argc, char **argv ) {
         if( tab != s.end() )
           filename.emplace_back( tab + 1, s.end() );
         else
-          filename.emplace_back("" );
+          filename.emplace_back( "" );
       } else
         break;
     }
@@ -2205,13 +2204,13 @@ int main( int argc, char **argv ) {
         if( f == nullptr )
           printf( "cannot create, skipping...\n" );
         fsize = size - 513216;
-        if( (exe != 0) && size > 0 ) {
+        if( ( exe != 0 ) && size > 0 ) {
           int c = e.decode();
           if( f != nullptr )
             putc( c, f );
           if( c != 0 ) {
             c -= 23;
-            if( ( c < 0 && (( ( c + 8 ) & 1 ) != 0) ) || ( c >= 0 && (( ( c + 2 ) & 1 ) != 0) ) ) {
+            if( ( c < 0 && ( ( ( c + 8 ) & 1 ) != 0 ) ) || ( c >= 0 && ( ( ( c + 2 ) & 1 ) != 0 ) ) ) {
               int c = e.decode();
               if( f != nullptr )
                 putc( c, f );
@@ -2234,7 +2233,7 @@ int main( int argc, char **argv ) {
         }
         if( f != nullptr ) {
           printf( "extracted\n" );
-          if( (exe != 0) && size > 0 ) {
+          if( ( exe != 0 ) && size > 0 ) {
             int data2write[4] = {0, 0, 0, 0};
 
             fclose( f );
@@ -2269,15 +2268,15 @@ int main( int argc, char **argv ) {
     // Read file names from command line or input
     if( argc > 2 )
       for( int i = 2; i < argc; ++i )
-        filename.emplace_back(argv[i] );
+        filename.emplace_back( argv[i] );
     else {
       printf( "Enter names of files to compress, followed by blank line or EOF.\n" );
       while( true ) {
         string s = getline( stdin );
         if( s == "" )
           break;
-        
-          filename.push_back( s );
+
+        filename.push_back( s );
       }
     }
 
@@ -2328,7 +2327,7 @@ int main( int argc, char **argv ) {
         FILE *f = fopen( filename[i].c_str(), "rbe" );
         fsize = size - 513216;
 
-        if( (f != nullptr) && (exe != 0) && size > 0 ) {
+        if( ( f != nullptr ) && ( exe != 0 ) && size > 0 ) {
           int data2write[4] = {0, 0, 0, 0};
           FILE *fw = fopen( "paqar11tmp.tmp", "wbe" );
 
@@ -2365,7 +2364,7 @@ int main( int argc, char **argv ) {
         }
         if( f != nullptr )
           fclose( f );
-        if( (f != nullptr) && (exe != 0) && size > 0 )
+        if( ( f != nullptr ) && ( exe != 0 ) && size > 0 )
           remove( "paqar11tmp.tmp" );
         printf( "%ld\n", ftell( archive ) - file_start );
         file_start = ftell( archive );

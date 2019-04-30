@@ -69,7 +69,7 @@ public:
 // 32-bit random number generator based on r(i) = r(i-24) ^ r(i-55)
 class Random {
   U32 table[55]; // Last 55 random values
-  int i{ 0 };         // Index of current random value in table
+  int i{0};      // Index of current random value in table
 public:
   Random();
   U32 operator()() { // Return 32-bit random number
@@ -77,12 +77,12 @@ public:
       i = 0;
     if( i >= 24 )
       return table[i] ^= table[i - 24];
-    
-      return table[i] ^= table[i + 31];
+
+    return table[i] ^= table[i + 31];
   }
 } rnd;
 
-Random::Random()  {
+Random::Random() {
   for( int j = 0; j < 55; ++j )
     table[j] = 314159265 * j;
   for( int j = 0; j < 10000; ++j )
@@ -157,7 +157,7 @@ Although it uses 1/3 less memory, it is 8% slower and gives 0.05% worse
 compression than the 3 byte counter. */
 
 class Counter : public HashElement {
-  U8 state{ 0 };
+  U8 state{0};
   struct E {     // State table entry
     U16 n0, n1;  // Counts represented by state
     U8 s00, s01; // Next state on input 0 without/with probabilistic incr.
@@ -498,9 +498,9 @@ contexts.  */
 
 class NonstationaryPPM : public Model {
   enum { N = 8 };           // Number of contexts
-  int c0{ 1 };                   // Current 0-7 bits of input with a leading 1
-  int c1{ 0 };                   // Previous whole byte
-  int cn{ 1 };                   // c0 mod 53 (low bits of hash)
+  int c0{1};                // Current 0-7 bits of input with a leading 1
+  int c1{0};                // Previous whole byte
+  int cn{1};                // c0 mod 53 (low bits of hash)
   vector<Counter> counter0; // Counters for context lengths 0 and 1
   vector<Counter> counter1;
   Hashtable<Counter, 18 + MEM> counter2; // for lengths 2 to N-1
@@ -515,7 +515,7 @@ public:
   }
 };
 
-NonstationaryPPM::NonstationaryPPM() :  counter0( 256 ), counter1( 65536 ) {
+NonstationaryPPM::NonstationaryPPM() : counter0( 256 ), counter1( 65536 ) {
   for( int i = 0; i < N; ++i ) {
     cp[i] = &counter0[0];
     hash[i] = 0;
@@ -569,16 +569,13 @@ buffer using a 1M hash table of pointers. */
 class MatchModel : public Model {
   vector<U8> buf;  // Input buffer, wraps at end
   vector<U24> ptr; // Hash table of pointers
-  U32 hash{ 0 };        // Hash of current context up to pos-1
-  int pos{ 0 };         // Element of buf where next bit will be stored
-  int bpos{ 0 };        // Number of bits (0-7) stored at buf[pos]
-  int begin{ 0 };       // Points to first matching byte (does not wrap)
-  int end{ 0 };         // Points to last matching byte + 1, 0 if no match
+  U32 hash{0};     // Hash of current context up to pos-1
+  int pos{0};      // Element of buf where next bit will be stored
+  int bpos{0};     // Number of bits (0-7) stored at buf[pos]
+  int begin{0};    // Points to first matching byte (does not wrap)
+  int end{0};      // Points to last matching byte + 1, 0 if no match
 public:
-  MatchModel() :
-      buf( 0x10000 * ( 1 << MEM ) ),
-      ptr( 0x4000 * ( 1 << MEM ) )
-      {}
+  MatchModel() : buf( 0x10000 * ( 1 << MEM ) ), ptr( 0x4000 * ( 1 << MEM ) ) {}
   void predict( int &n0, int &n1 ) const {
     if( end != 0 ) {
       int wt = end - begin;
@@ -632,21 +629,20 @@ insensitive) using a trigram model. */
 
 class WordModel {
 private:
-  U32 word1{ 0 }, word0{ 0 };                // Hash of previous and current word
-  int ww1{ 0 }, ww0{ 0 };                    // Word weights (lengths)
+  U32 word1{0}, word0{0};          // Hash of previous and current word
+  int ww1{0}, ww0{0};              // Word weights (lengths)
   Hashtable<Counter, 16 + MEM> t1; // Model
-  int c1{ 0 };                          // Previous char, lower case
-  int c0{ 1 };                          // 0-7 bits of current char with leading 1 bit
-  int c0h{ 1 };                         // Small hash of c0
+  int c1{0};                       // Previous char, lower case
+  int c0{1};                       // 0-7 bits of current char with leading 1 bit
+  int c0h{1};                      // Small hash of c0
   Counter *cp0, *cp1;              // Points into t1 current context
-  int lettercount{ 0 };                 // For detecting English
+  int lettercount{0};              // For detecting English
   enum { THRESHOLD = 5 };          // lettercount threshold for English
 public:
   WordModel() :
-      
+
       cp0( &t1[0] ),
-      cp1( &t1[0] )
-      {}
+      cp1( &t1[0] ) {}
 
   void predict( int &n0, int &n1 ) const {
     if( lettercount >= THRESHOLD ) {
@@ -710,22 +706,22 @@ as were in the table. */
 
 class CyclicModel : public Model {
   struct E {
-    int p{ 0 }, n{ 0 }, r{ 0 }; // Position of last match, number of matches, interval
-    E()  {}
+    int p{0}, n{0}, r{0}; // Position of last match, number of matches, interval
+    E() {}
   };
   vector<E> cpos;           // Table of repeat patterns by char
-  int pos{ 0 };                  // Current bit position in input
-  int c0{ 1 };                   // Last 8 bits
-  int cycle{ 0 };                // Most likely number of columns
-  int column{ 0 };               // Column number, 0 to cycle-1
-  int size{ 0 };                 // Number of bits before the table expires, 0 to 3*cycle
+  int pos{0};               // Current bit position in input
+  int c0{1};                // Last 8 bits
+  int cycle{0};             // Most likely number of columns
+  int column{0};            // Column number, 0 to cycle-1
+  int size{0};              // Number of bits before the table expires, 0 to 3*cycle
   Hashtable<Counter, 15> t; // Context is last 8 bits in column
   vector<Counter> t1;       // Context is the column number only
   Counter *cp, *cp1;        // Points to t, t1
 public:
   CyclicModel() :
       cpos( 256 ),
-      
+
       t1( 2048 ),
       cp( &t[0] ),
       cp1( &t1[0] ) {}
@@ -1095,7 +1091,7 @@ int main( int argc, char **argv ) {
         if( tab != s.end() )
           filename.emplace_back( tab + 1, s.end() );
         else
-          filename.emplace_back("" );
+          filename.emplace_back( "" );
       } else
         break;
     }
@@ -1159,15 +1155,15 @@ int main( int argc, char **argv ) {
     // Read file names from command line or input
     if( argc > 2 )
       for( int i = 2; i < argc; ++i )
-        filename.emplace_back(argv[i] );
+        filename.emplace_back( argv[i] );
     else {
       printf( "Enter names of files to compress, followed by blank line or EOF.\n" );
       while( true ) {
         string s = getline( stdin );
         if( s.empty() )
           break;
-        
-          filename.push_back( s );
+
+        filename.push_back( s );
       }
     }
 

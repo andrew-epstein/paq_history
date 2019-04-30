@@ -309,7 +309,7 @@ static const U8 State_table[256][2] = {
 class StateMap {
 protected:
   const int N;         // Number of contexts
-  int cxt{ 0 };             // Context of last prediction
+  int cxt{0};          // Context of last prediction
   U32 *t;              // cxt -> prediction in high 22 bits, count in low 10 bits
   static int dt[1024]; // i -> 16K/(i+3)
   void update( int y, int limit ) {
@@ -620,7 +620,7 @@ int MatchModel::p( int y, Mixer &m ) {
 int MEM = 0; // Global memory usage = 3*MEM bytes (1<<20 .. 1<<29)
 
 class Predictor {
-  int pr{ 2048 }; // next prediction
+  int pr{2048}; // next prediction
 public:
   Predictor();
   int p() const {
@@ -630,7 +630,7 @@ public:
   void update( int y );
 };
 
-Predictor::Predictor()  {}
+Predictor::Predictor() {}
 
 void Predictor::update( int y ) {
   static U8 t0[0x10000];                       // order 1 cxt -> state

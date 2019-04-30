@@ -21,10 +21,10 @@ using U32 = unsigned int; // 32 bit type
 */
 
 class Predictor {
-  int cxt{ 1 };        // Context: last 0-8 bits with a leading 1
+  int cxt{1};     // Context: last 0-8 bits with a leading 1
   int ct[512][2]; // 0 and 1 counts in context cxt
 public:
-  Predictor()  {
+  Predictor() {
     memset( ct, 0, sizeof( ct ) );
   }
 
@@ -71,7 +71,7 @@ public:
 };
 
 // Constructor
-Encoder::Encoder( Mode m, FILE *f ) :  mode( m ), archive( f ), x1( 0 ), x2( 0xffffffff ), x( 0 ) {
+Encoder::Encoder( Mode m, FILE *f ) : mode( m ), archive( f ), x1( 0 ), x2( 0xffffffff ), x( 0 ) {
   // In DECOMPRESS mode, initialize x to the first 4 bytes of the archive
   if( mode == DECOMPRESS ) {
     for( int i = 0; i < 4; ++i ) {
