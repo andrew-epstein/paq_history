@@ -2002,7 +2002,7 @@ StateTable::StateTable() : ns( 1024 ) {
       }
     } else {
       for( int i = 0; i < N; ++i )
-        t[i] = ( 1u << 31 ) + 0; //initial p=0.5, initial count=0
+        t[i] = ( 1U << 31 ) + 0; //initial p=0.5, initial count=0
     }
   }
 
@@ -2380,7 +2380,7 @@ Uses (2^(BitsOfContext+1))*((2^InputBits)-1) bytes of memory.
 
   public:
     SmallStationaryContextMap( int BitsOfContext, int InputBits = 8 ) :
-        Data( ( 1ull << BitsOfContext ) * ( ( 1ull << InputBits ) - 1 ) ),
+        Data( ( 1ULL << BitsOfContext ) * ( ( 1ULL << InputBits ) - 1 ) ),
         Context( 0 ),
         Mask( ( 1 << BitsOfContext ) - 1 ),
         Stride( ( 1 << InputBits ) - 1 ),
@@ -2436,7 +2436,7 @@ Uses (2^(BitsOfContext+1))*((2^InputBits)-1) bytes of memory.
 
   public:
     StationaryMap( int BitsOfContext, int InputBits = 8, int Rate = 0 ) :
-        Data( ( 1ull << BitsOfContext ) * ( ( 1ull << InputBits ) - 1 ) ),
+        Data( ( 1ULL << BitsOfContext ) * ( ( 1ULL << InputBits ) - 1 ) ),
         mask( ( 1 << BitsOfContext ) - 1 ),
         maskbits( BitsOfContext ),
         stride( ( 1 << InputBits ) - 1 ),
@@ -2490,7 +2490,7 @@ Uses (2^(BitsOfContext+1))*((2^InputBits)-1) bytes of memory.
 
   public:
     IndirectMap( int BitsOfContext, int InputBits = 8 ) :
-        Data( ( 1ull << BitsOfContext ) * ( ( 1ull << InputBits ) - 1 ) ),
+        Data( ( 1ULL << BitsOfContext ) * ( ( 1ULL << InputBits ) - 1 ) ),
         mask( ( 1 << BitsOfContext ) - 1 ),
         maskbits( BitsOfContext ),
         stride( ( 1 << InputBits ) - 1 ),
@@ -2729,7 +2729,7 @@ Uses (2^(BitsOfContext+1))*((2^InputBits)-1) bytes of memory.
         assert( cp[i] >= &t[0].bh[0][0] && cp[i] <= &t[t.size() - 1].bh[6][6] );
         assert( ( uintptr_t( cp[i] ) & 63 ) >= 15 );
         int ns = nex( *cp[i], y );
-        if( ns >= 204 && ((rnd() << ( ( 452 - ns ) >> 3 )) != 0u) )
+        if( ns >= 204 && ((rnd() << ( ( 452 - ns ) >> 3 )) != 0U) )
           ns -= 4; // probabilistic increment
         *cp[i] = ns;
       }
@@ -3180,10 +3180,10 @@ states to provide additional states that are then mapped to predictions.
 
   public:
     IndirectContext( const int BitsPerContext, const int InputBits = 8 ) :
-        data( 1ull << BitsPerContext ),
+        data( 1ULL << BitsPerContext ),
         ctx( &data[0] ),
-        ctxMask( ( 1ul << BitsPerContext ) - 1 ),
-        inputMask( ( 1ul << InputBits ) - 1 ),
+        ctxMask( ( 1UL << BitsPerContext ) - 1 ),
+        inputMask( ( 1UL << InputBits ) - 1 ),
         inputBits( InputBits ) {
       assert( BitsPerContext > 0 && BitsPerContext <= 20 );
       assert( InputBits > 0 && InputBits <= 8 );
@@ -4170,7 +4170,7 @@ states to provide additional states that are then mapped to predictions.
         if( W->Letters[i] == 'Y' )
           W->Letters[i] = 'y';
       }
-      if( (W->Type == 0u) || W->Type == English::Plural ) {
+      if( (W->Type == 0U) || W->Type == English::Plural ) {
         if( W->MatchesAny( MaleWords, NUM_MALE_WORDS ) )
           res = true, W->Type |= English::Male;
         else if( W->MatchesAny( FemaleWords, NUM_FEMALE_WORDS ) )
@@ -5631,7 +5631,7 @@ states to provide additional states that are then mapped to predictions.
         hashes[i] = finalize64( hash, hashbits );
       }
       // extend current match, if available
-      if( length != 0u ) {
+      if( length != 0U ) {
         index++;
         if( length < MaxLen )
           length++;
@@ -5796,7 +5796,7 @@ states to provide additional states that are then mapped to predictions.
         hashes[i] = finalize64( hash, hashbits );
       }
       // extend current match, if available
-      if( length != 0u ) {
+      if( length != 0U ) {
         index++;
         if( length < MaxLen )
           length++;
@@ -5963,9 +5963,9 @@ states to provide additional states that are then mapped to predictions.
     if( bpos == 0 ) {
       bool end_of_sentence = false;
 
-      if( (spaces & 0x80000000) != 0u )
+      if( (spaces & 0x80000000) != 0U )
         --spacecount;
-      if( (words & 0x80000000) != 0u )
+      if( (words & 0x80000000) != 0U )
         --wordcount;
       spaces <<= 1;
       words <<= 1;
@@ -6023,7 +6023,7 @@ states to provide additional states that are then mapped to predictions.
         } else
           wrdhsh = wrdhsh * 11 * 32 + c;
       } else {
-        if( word0 != 0u ) {
+        if( word0 != 0U ) {
           word5 = word4;
           word4 = word3;
           word3 = word2;
@@ -6065,7 +6065,7 @@ states to provide additional states that are then mapped to predictions.
       if( c >= '0' && c <= '9' ) {
         number0 = combine64( number0, c );
         lastDigit = 0;
-      } else if( number0 != 0u ) {
+      } else if( number0 != 0U ) {
         number1 = number0;
         number0 = 0;
         ccword = 0;
@@ -6372,7 +6372,7 @@ states to provide additional states that are then mapped to predictions.
       if( col == 0 )
         nTransition = 0;
       if( ( ( ( c4 >> 8 ) == SPACE * 0x010101 ) && ( c != SPACE ) )
-          || ( (( c4 >> 8 ) == 0u) && (c != 0) && ( ( padding != SPACE ) || ( pos - prevTransition > rlen[0] ) ) ) ) {
+          || ( (( c4 >> 8 ) == 0U) && (c != 0) && ( ( padding != SPACE ) || ( pos - prevTransition > rlen[0] ) ) ) ) {
         prevTransition = pos;
         nTransition += static_cast<int>( nTransition < 31 );
         padding = ( U8 ) d;
@@ -7270,7 +7270,7 @@ states to provide additional states that are then mapped to predictions.
           memset( &jumps[0], 0, sizeof( short ) * jumps.size() );
           if( line > 0 && w > 8 ) {
             U8 bMask = 0xFF - ( ( 1 << gray ) - 1 );
-            U32 pMask = bMask * 0x01010101u;
+            U32 pMask = bMask * 0x01010101U;
             U32 left = 0, right = 0;
             int l = min( w, ( int ) jumps.size() ), end = l - 4;
             do {
@@ -7714,10 +7714,10 @@ states to provide additional states that are then mapped to predictions.
     cxt[1] = 0x100 + ( ( r0 & 1 ) | ( r1 >> 4 & 0x3e ) | ( r2 >> 2 & 0x40 ) | ( r3 >> 1 & 0x80 ) );
     cxt[2] = 0x200 + ( ( r0 & 1 ) | ( r1 >> 4 & 0x1d ) | ( r2 >> 1 & 0x60 ) | ( r3 & 0xC0 ) );
     cxt[3] = 0x300 + ( y | ( ( r0 << 1 ) & 4 ) | ( ( r1 >> 1 ) & 0xF0 ) | ( ( r2 >> 3 ) & 0xA ) );
-    cxt[4] = 0x400 + ( ( r0 >> 4 & 0x2AC ) | ( r1 & 0xA4 ) | ( r2 & 0x349 ) | static_cast<unsigned int>( ( r3 & 0x14D ) == 0u ) );
+    cxt[4] = 0x400 + ( ( r0 >> 4 & 0x2AC ) | ( r1 & 0xA4 ) | ( r2 & 0x349 ) | static_cast<unsigned int>( ( r3 & 0x14D ) == 0U ) );
     cxt[5] = 0x800 + ( y | ( ( r1 >> 4 ) & 0xE ) | ( ( r2 >> 1 ) & 0x70 ) | ( ( r3 << 2 ) & 0x380 ) );
     cxt[6] = 0xC00 + ( ( ( r1 & 0x30 ) ^ ( r3 & 0x0c0c ) ) | ( r0 & 3 ) );
-    cxt[7] = 0x1000 + ( static_cast<unsigned int>( ( r0 & 0x444 ) == 0u ) | ( r1 & 0xC0C ) | ( r2 & 0xAE3 ) | ( r3 & 0x51C ) );
+    cxt[7] = 0x1000 + ( static_cast<unsigned int>( ( r0 & 0x444 ) == 0U ) | ( r1 & 0xC0C ) | ( r2 & 0xAE3 ) | ( r3 & 0x51C ) );
     cxt[8] = 0x2000 + ( ( r0 & 7 ) | ( ( r1 >> 1 ) & 0x3F8 ) | ( ( r2 << 5 ) & 0xC00 ) );
     cxt[9] = 0x3000 + ( ( r0 & 0x3f ) ^ ( r1 & 0x3ffe ) ^ ( r2 << 2 & 0x7f00 ) ^ ( r3 << 5 & 0xf800 ) );
     cxt[10] = 0x13000 + ( ( r0 & 0x3e ) ^ ( r1 & 0x0c0c ) ^ ( r2 & 0xc800 ) );
@@ -7994,7 +7994,7 @@ void dump(const char* msg, int p) {
         // Detect end of JPEG when data contains a marker other than RSTx
         // or byte stuff (00), or if we jumped in position since the last byte seen
         if( (images[idx].jpeg != 0) && (images[idx].data != 0)
-            && ( ( buf( 2 ) == FF && (buf( 1 ) != 0u) && ( buf( 1 ) & 0xf8 ) != RST0 ) || ( pos - lastPos > 1 ) ) ) {
+            && ( ( buf( 2 ) == FF && (buf( 1 ) != 0U) && ( buf( 1 ) & 0xf8 ) != RST0 ) || ( pos - lastPos > 1 ) ) ) {
           jassert( ( buf( 1 ) == EOI ) || ( pos - lastPos > 1 ) );
           finish( true );
         }
@@ -8014,7 +8014,7 @@ void dump(const char* msg, int p) {
         // Save pointers to sof, ht, sos, data,
         if( buf( 5 ) == FF && buf( 4 ) == SOS ) {
           int len = buf( 3 ) * 256 + buf( 2 );
-          if( len == 6 + 2 * buf( 1 ) && (buf( 1 ) != 0u) && buf( 1 ) <= 4 ) // buf(1) is Ns
+          if( len == 6 + 2 * buf( 1 ) && (buf( 1 ) != 0U) && buf( 1 ) <= 4 ) // buf(1) is Ns
             images[idx].sos = pos - 5, images[idx].data = images[idx].sos + len + 2, images[idx].jpeg = 2;
         }
         if( buf( 4 ) == FF && buf( 3 ) == DHT && images[idx].htsize < 8 )
@@ -8316,15 +8316,15 @@ void dump(const char* msg, int p) {
                   // necessarily in this MCU
                   int offset_DC_N = cpos_dc - blockN[acomp];
                   for( int i = 0; i < 64; ++i ) {
-                    sumu[zzu[i]] += ( (zzv[i] & 1) != 0 ? -1 : 1 ) * ( zzv[i] != 0u ? 16 * ( 16 + zzv[i] ) : 185 )
+                    sumu[zzu[i]] += ( (zzv[i] & 1) != 0 ? -1 : 1 ) * ( zzv[i] != 0U ? 16 * ( 16 + zzv[i] ) : 185 )
                                     * ( images[idx].qtab[q + i] + 1 ) * cbuf2[offset_DC_N + i];
-                    sumv[zzv[i]] += ( (zzu[i] & 1) != 0 ? -1 : 1 ) * ( zzu[i] != 0u ? 16 * ( 16 + zzu[i] ) : 185 )
+                    sumv[zzv[i]] += ( (zzu[i] & 1) != 0 ? -1 : 1 ) * ( zzu[i] != 0U ? 16 * ( 16 + zzu[i] ) : 185 )
                                     * ( images[idx].qtab[q + i] + 1 ) * cbuf2[offset_DC_W + i];
                   }
                 } else {
-                  sumu[zzu[zz - 1]] -= ( zzv[zz - 1] != 0u ? 16 * ( 16 + zzv[zz - 1] ) : 185 )
+                  sumu[zzu[zz - 1]] -= ( zzv[zz - 1] != 0U ? 16 * ( 16 + zzv[zz - 1] ) : 185 )
                                        * ( images[idx].qtab[q + zz - 1] + 1 ) * cbuf2[cpos - 1];
-                  sumv[zzv[zz - 1]] -= ( zzu[zz - 1] != 0u ? 16 * ( 16 + zzu[zz - 1] ) : 185 )
+                  sumv[zzv[zz - 1]] -= ( zzu[zz - 1] != 0U ? 16 * ( 16 + zzu[zz - 1] ) : 185 )
                                        * ( images[idx].qtab[q + zz - 1] + 1 ) * cbuf2[cpos - 1];
                 }
 
@@ -10179,7 +10179,7 @@ void dump(const char* msg, int p) {
               + static_cast<int>( Op.Code == REP_N_STR || Op.Code == REP_STR ) * 7;
 
           if( !Op.Decoding ) {
-            TotalOps += static_cast<int>( Op.Data != 0 ) - static_cast<int>( (Cache.Index != 0u) && Cache.Op[Cache.Index & ( CacheSize - 1 )] != 0 );
+            TotalOps += static_cast<int>( Op.Data != 0 ) - static_cast<int>( (Cache.Index != 0U) && Cache.Op[Cache.Index & ( CacheSize - 1 )] != 0 );
             OpMask = ( OpMask << 1 ) | static_cast<unsigned int>( State != Error );
             OpCategMask = ( OpCategMask << CategoryShift ) | ( Op.Category );
             Op.Size = 0;
@@ -10187,7 +10187,7 @@ void dump(const char* msg, int p) {
             Cache.Op[Cache.Index & ( CacheSize - 1 )] = Op.Data;
             Cache.Index++;
 
-            if( Op.Prefix == 0u )
+            if( Op.Prefix == 0U )
               Op.Data = Op.Code << CodeShift;
             else {
               Op.Data = Op.Prefix;
@@ -10199,7 +10199,7 @@ void dump(const char* msg, int p) {
           } else {
             // we only have enough bits for one prefix, so the
             // instruction will be encoded with the last one
-            if( Op.Prefix == 0u ) {
+            if( Op.Prefix == 0U ) {
               Op.Data |= ( Op.Code << CodeShift );
               Op.Decoding = false;
             } else {
@@ -10312,7 +10312,7 @@ void dump(const char* msg, int p) {
           State = Start;
         }
         BrkCtx = hash( 12, State, Op.Flags & fMODE, Op.BytesRead,
-                       ( ( Op.BytesRead > 1 ) ? ( buf( Op.BytesRead ) << 8 ) : 0 ) | ( ( Op.BytesRead ) != 0u ? B : 0 ) );
+                       ( ( Op.BytesRead > 1 ) ? ( buf( Op.BytesRead ) << 8 ) : 0 ) | ( ( Op.BytesRead ) != 0U ? B : 0 ) );
         break;
       }
       case Read8_ModRM: {
@@ -11008,7 +11008,7 @@ void dump(const char* msg, int p) {
       XMLAttribute *Attribute = &( ( *Tag ).Attributes.Items[( *Tag ).Attributes.Index & 3] );
       XMLContent *Content = &( *Tag ).Content;
       pState = State;
-      if( ( B == TAB || B == SPACE ) && ( B == ( U8 )( c4 >> 8 ) || (WhiteSpaceRun == 0u) ) ) {
+      if( ( B == TAB || B == SPACE ) && ( B == ( U8 )( c4 >> 8 ) || (WhiteSpaceRun == 0U) ) ) {
         WhiteSpaceRun++;
         IndentTab = static_cast<U32>( B == TAB );
       } else {
@@ -11746,7 +11746,7 @@ void dump(const char* msg, int p) {
       U64 start = size();
       archive->setend();
       U64 end = size();
-      if( end >= ( 1u << 31 ) )
+      if( end >= ( 1U << 31 ) )
         quit( "Large archives not yet supported." );
       set_status_range( 0.0, ( float ) end );
       archive->setpos( start );
@@ -11834,12 +11834,12 @@ void dump(const char* msg, int p) {
       return;
     U32 i, j, edc;
     for( i = 0; i < 256; i++ ) {
-      j = ( i << 1 ) ^ ( (i & 0x80) != 0u ? 0x11D : 0 );
+      j = ( i << 1 ) ^ ( (i & 0x80) != 0U ? 0x11D : 0 );
       ecc_f_lut[i] = j;
       ecc_b_lut[i ^ j] = i;
       edc = i;
       for( j = 0; j < 8; j++ )
-        edc = ( edc >> 1 ) ^ ( (edc & 1) != 0u ? 0xD8018001 : 0 );
+        edc = ( edc >> 1 ) ^ ( (edc & 1) != 0U ? 0xD8018001 : 0 );
       edc_lut[i] = edc;
     }
     luts_init = 1;
@@ -12555,8 +12555,8 @@ void dump(const char* msg, int p) {
       // Detect .bmp image
       if( !( (bmp != 0) || (hdrless != 0) )
           && ( ( ( buf0 & 0xffff ) == 16973 )
-               || ( (( buf0 & 0xFFFFFF ) == 0u) && ( ( buf0 >> 24 ) == 0x28 ) ) ) ) //possible 'BM' or headerless DIB
-        imgbpp = bmpx = bmpy = 0, hdrless = static_cast<int>(static_cast<int>(( U8 ) buf0) == 0u), bmpof = hdrless * 54, bmp = i - hdrless * 16;
+               || ( (( buf0 & 0xFFFFFF ) == 0U) && ( ( buf0 >> 24 ) == 0x28 ) ) ) ) //possible 'BM' or headerless DIB
+        imgbpp = bmpx = bmpy = 0, hdrless = static_cast<int>(static_cast<int>(( U8 ) buf0) == 0U), bmpof = hdrless * 54, bmp = i - hdrless * 16;
       if( (bmp != 0) || (hdrless != 0) ) {
         const int p = i - bmp;
         if( p == 12 )
@@ -12572,14 +12572,14 @@ void dump(const char* msg, int p) {
           imgbpp = c,
           bmp =
               ( ( imgbpp != 1 && imgbpp != 4 && imgbpp != 8 && imgbpp != 24 && imgbpp != 32 ) ? ( hdrless = 0 ) : bmp );
-        else if( ( p == 31 ) && (buf0 != 0u) )
+        else if( ( p == 31 ) && (buf0 != 0U) )
           bmp = hdrless = 0;
         else if( p == 36 )
           bmps = bswap( buf0 );
         // check number of colors in palette (4 bytes), must be 0 (default) or <= 1<<bpp.
         // also check if image is too small, since it might not be worth it to use the image models
         else if( p == 48 ) {
-          if( ( (buf0 == 0u) || ( ( bswap( buf0 ) <= ( U32 )( 1 << imgbpp ) ) && ( imgbpp <= 8 ) ) )
+          if( ( (buf0 == 0U) || ( ( bswap( buf0 ) <= ( U32 )( 1 << imgbpp ) ) && ( imgbpp <= 8 ) ) )
               && ( ( ( bmpx * bmpy * imgbpp ) >> 3 ) > 64 ) ) {
             // possible icon/cursor?
             if( (hdrless != 0) && ( bmpx * 2 == bmpy ) && imgbpp > 1
@@ -12593,7 +12593,7 @@ void dump(const char* msg, int p) {
 
             // if DIB and not 24bpp, we must calculate the data offset based on BPP or num. of entries in color palette
             if( (hdrless != 0) && ( imgbpp < 24 ) )
-              bmpof += ( ( buf0 ) != 0u ? bswap( buf0 ) * 4 : 4 << imgbpp );
+              bmpof += ( ( buf0 ) != 0U ? bswap( buf0 ) * 4 : 4 << imgbpp );
             bmpof += ( bmp - 1 ) * static_cast<int>( bmp < 1 );
 
             if( (hdrless != 0) && (bmps != 0)
@@ -13064,7 +13064,7 @@ void dump(const char* msg, int p) {
           out->blockwrite( blk, residual );
         else if( mode == FCOMPARE )
           for( int j = 0; j < ( int ) residual; ++j )
-            if( blk[j] != out->getchar() && (diffFound == 0u) )
+            if( blk[j] != out->getchar() && (diffFound == 0U) )
               diffFound = nextblockpos + j + 1;
         return nextblockpos + residual;
       } else if( i == 0 ) { //first sector
@@ -13096,7 +13096,7 @@ void dump(const char* msg, int p) {
         out->blockwrite( blk, BLOCK );
       else if( mode == FCOMPARE )
         for( int j = 0; j < BLOCK; ++j )
-          if( blk[j] != out->getchar() && (diffFound == 0u) )
+          if( blk[j] != out->getchar() && (diffFound == 0U) )
             diffFound = nextblockpos + j + 1;
       nextblockpos += BLOCK;
     }
@@ -13170,11 +13170,11 @@ void dump(const char* msg, int p) {
           if( (j == 0) && (( i & 0xf ) == 0) )
             en.print_status();
         } else if( mode == FCOMPARE ) {
-          if( ( b & 255 ) != out->getchar() && (diffFound == 0u) )
+          if( ( b & 255 ) != out->getchar() && (diffFound == 0U) )
             diffFound = p + 1;
-          if( g != out->getchar() && (diffFound == 0u) )
+          if( g != out->getchar() && (diffFound == 0U) )
             diffFound = p + 2;
-          if( ( r & 255 ) != out->getchar() && (diffFound == 0u) )
+          if( ( r & 255 ) != out->getchar() && (diffFound == 0U) )
             diffFound = p + 3;
           p += 3;
         }
@@ -13183,7 +13183,7 @@ void dump(const char* msg, int p) {
         if( mode == FDECOMPRESS ) {
           out->putchar( en.decompress() );
         } else if( mode == FCOMPARE ) {
-          if( en.decompress() != out->getchar() && (diffFound == 0u) )
+          if( en.decompress() != out->getchar() && (diffFound == 0U) )
             diffFound = p + j + 1;
         }
       }
@@ -13192,7 +13192,7 @@ void dump(const char* msg, int p) {
       if( mode == FDECOMPRESS ) {
         out->putchar( en.decompress() );
       } else if( mode == FCOMPARE ) {
-        if( en.decompress() != out->getchar() && (diffFound == 0u) ) {
+        if( en.decompress() != out->getchar() && (diffFound == 0U) ) {
           diffFound = size - i;
           break;
         }
@@ -13239,13 +13239,13 @@ void dump(const char* msg, int p) {
           if( (j == 0) && (( i & 0xf ) == 0) )
             en.print_status();
         } else if( mode == FCOMPARE ) {
-          if( ( ( (options & OPTION_SKIPRGB) != 0 ? r : b - r ) & 255 ) != out->getchar() && (diffFound == 0u) )
+          if( ( ( (options & OPTION_SKIPRGB) != 0 ? r : b - r ) & 255 ) != out->getchar() && (diffFound == 0U) )
             diffFound = p + 1;
-          if( b != out->getchar() && (diffFound == 0u) )
+          if( b != out->getchar() && (diffFound == 0U) )
             diffFound = p + 2;
-          if( ( ( (options & OPTION_SKIPRGB) != 0 ? g : b - g ) & 255 ) != out->getchar() && (diffFound == 0u) )
+          if( ( ( (options & OPTION_SKIPRGB) != 0 ? g : b - g ) & 255 ) != out->getchar() && (diffFound == 0U) )
             diffFound = p + 3;
-          if( ( ( a ) &255 ) != out->getchar() && (diffFound == 0u) )
+          if( ( ( a ) &255 ) != out->getchar() && (diffFound == 0U) )
             diffFound = p + 4;
           p += 4;
         }
@@ -13254,7 +13254,7 @@ void dump(const char* msg, int p) {
         if( mode == FDECOMPRESS ) {
           out->putchar( en.decompress() );
         } else if( mode == FCOMPARE ) {
-          if( en.decompress() != out->getchar() && (diffFound == 0u) )
+          if( en.decompress() != out->getchar() && (diffFound == 0U) )
             diffFound = p + j + 1;
         }
       }
@@ -13263,7 +13263,7 @@ void dump(const char* msg, int p) {
       if( mode == FDECOMPRESS ) {
         out->putchar( en.decompress() );
       } else if( mode == FCOMPARE ) {
-        if( en.decompress() != out->getchar() && (diffFound == 0u) ) {
+        if( en.decompress() != out->getchar() && (diffFound == 0U) ) {
           diffFound = size - i;
           break;
         }
@@ -13296,7 +13296,7 @@ void dump(const char* msg, int p) {
         if( mode == FDECOMPRESS )
           out->putchar( CARRIAGE_RETURN );
         else if( mode == FCOMPARE ) {
-          if( out->getchar() != CARRIAGE_RETURN && (diffFound == 0u) ) {
+          if( out->getchar() != CARRIAGE_RETURN && (diffFound == 0U) ) {
             diffFound = size - i;
             break;
           }
@@ -13306,7 +13306,7 @@ void dump(const char* msg, int p) {
       if( mode == FDECOMPRESS )
         out->putchar( B );
       else if( mode == FCOMPARE ) {
-        if( B != out->getchar() && (diffFound == 0u) ) {
+        if( B != out->getchar() && (diffFound == 0U) ) {
           diffFound = size - i;
           break;
         }
@@ -13401,7 +13401,7 @@ void dump(const char* msg, int p) {
               loop = 1;
             }
           }
-        } while( loop != 0u );
+        } while( loop != 0U );
       }
 
       U64 length = outPtr - ( U8 * ) ( &outBuffer[0] );
@@ -13409,14 +13409,14 @@ void dump(const char* msg, int p) {
         out->blockwrite( &outBuffer[0], length );
       else if( mode == FCOMPARE ) {
         for( int j = 0; j < ( int ) length; ++j ) {
-          if( outBuffer[j] != out->getchar() && (diffFound == 0u) ) {
+          if( outBuffer[j] != out->getchar() && (diffFound == 0U) ) {
             diffFound = pos + j + 1;
             break;
           }
         }
       }
       pos += length;
-    } while( !in->eof() && (diffFound == 0u) );
+    } while( !in->eof() && (diffFound == 0U) );
     return pos;
   }
 
@@ -13643,7 +13643,7 @@ void dump(const char* msg, int p) {
       }
       if( mode == FDECOMPRESS )
         out->putchar( c[5] );
-      else if( mode == FCOMPARE && c[5] != out->getchar() && (diffFound == 0u) )
+      else if( mode == FCOMPARE && c[5] != out->getchar() && (diffFound == 0U) )
         diffFound = offset - 6 + 1;
       if( mode == FDECOMPRESS && (( offset & 0xfff ) == 0) )
         en.print_status();
@@ -13873,7 +13873,7 @@ void dump(const char* msg, int p) {
           out->blockwrite( &zout[0], have );
         else if( mode == FCOMPARE )
           for( int j = 0; j < have; j++ )
-            if( zout[j] != out->getchar() && (diffFound == 0u) )
+            if( zout[j] != out->getchar() && (diffFound == 0U) )
               diffFound = recpos + j + 1;
         recpos += have;
 
@@ -13883,7 +13883,7 @@ void dump(const char* msg, int p) {
       if( mode == FDECOMPRESS )
         out->putchar( diffByte[diffIndex] );
       else if( mode == FCOMPARE )
-        if( diffByte[diffIndex] != out->getchar() && (diffFound == 0u) )
+        if( diffByte[diffIndex] != out->getchar() && (diffFound == 0U) )
           diffFound = recpos + 1;
       diffIndex++;
       recpos++;
@@ -13958,7 +13958,7 @@ void dump(const char* msg, int p) {
     } else if( mode == FCOMPARE ) {
       for( i = 0; i < outlen; i++ ) {
         U8 b = ptr[i];
-        if( b != out->getchar() && (diffFound == 0u) )
+        if( b != out->getchar() && (diffFound == 0U) )
           diffFound = ( int ) out->curpos();
       }
     }
@@ -14216,7 +14216,7 @@ void dump(const char* msg, int p) {
     if( mode == FDECOMPRESS )
       out->putchar( codesize );
     else if( mode == FCOMPARE )
-      if( codesize != out->getchar() && (diffFound == 0u) )
+      if( codesize != out->getchar() && (diffFound == 0U) )
         diffFound = 1;
     if( diffcount == 0 || diffpos[0] != 0 )
       gif_write_code( 1 << codesize ) else curdiff++;
@@ -14261,7 +14261,7 @@ void dump(const char* msg, int p) {
     if( mode == FDECOMPRESS )
       out->putchar( 0 );
     else if( mode == FCOMPARE )
-      if( 0 != out->getchar() && (diffFound == 0u) )
+      if( 0 != out->getchar() && (diffFound == 0U) )
         diffFound = outsize + 1;
     return outsize + 1;
   }
@@ -14518,7 +14518,7 @@ void dump(const char* msg, int p) {
     in.open( filename, true );
     printf( "Block segmentation:\n" );
     String blstr;
-    compressRecursive( &in, filesize, en, blstr, 0, 0.0f, 1.0f );
+    compressRecursive( &in, filesize, en, blstr, 0, 0.0F, 1.0F );
     in.close();
 
     if( (options & OPTION_MULTIPLE_FILE_MODE) != 0 ) { //multiple file mode
@@ -14558,12 +14558,12 @@ void dump(const char* msg, int p) {
         len = decode_func( type, en, NULL, len, info, out, mode, diffFound );
       } else {
         for( U64 j = 0; j < len; ++j ) {
-          if( ( j & 0xfff ) == 0u )
+          if( ( j & 0xfff ) == 0U )
             en.print_status();
           if( mode == FDECOMPRESS )
             out->putchar( en.decompress() );
           else if( mode == FCOMPARE ) {
-            if( en.decompress() != out->getchar() && (diffFound == 0u) ) {
+            if( en.decompress() != out->getchar() && (diffFound == 0U) ) {
               mode = FDISCARD;
               diffFound = i + j + 1;
             }
@@ -14598,9 +14598,9 @@ void dump(const char* msg, int p) {
 
     // Decompress/Compare
     U64 r = decompressRecursive( &f, filesize, en, fmode, 0 );
-    if( fmode == FCOMPARE && (r == 0u) && f.getchar() != EOF )
+    if( fmode == FCOMPARE && (r == 0U) && f.getchar() != EOF )
       printf( "file is longer\n" );
-    else if( fmode == FCOMPARE && (r != 0u) )
+    else if( fmode == FCOMPARE && (r != 0U) )
       printf( "differ at %" PRIu64 "\n", r - 1 );
     else if( fmode == FCOMPARE )
       printf( "identical\n" );

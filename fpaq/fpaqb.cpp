@@ -332,7 +332,7 @@ Encoder::Encoder( Mode m, FILE *f ) : mode( m ), archive( f ), x( 1 << N ), n( 0
     alloc( ins, B );
     alloc( outs, BO );
     for( int i = 1; i < 1 << N; ++i ) {
-      qinv[i * 2 + 1] = qinv[( 2 << N ) - 2 * i] = ( 1ull << ( 32 + N ) ) / i;
+      qinv[i * 2 + 1] = qinv[( 2 << N ) - 2 * i] = ( 1ULL << ( 32 + N ) ) / i;
       ++qinv[i * 2 + 1];
     }
   }
@@ -349,7 +349,7 @@ inline int Encoder::decode() {
     x = getc( archive );
     x = x * 256 + getc( archive );
     x = x * 256 + getc( archive );
-    if( ( x & 1 << 23 ) != 0u ) { // if bit 23 is 0, n defaults to B
+    if( ( x & 1 << 23 ) != 0U ) { // if bit 23 is 0, n defaults to B
       x -= 1 << 23;
       n = getc( archive );
       n = n * 256 + getc( archive );

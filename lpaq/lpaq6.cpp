@@ -268,7 +268,7 @@ inline int do_getc() {
   fb_stop = fb_len - FB_SIZE;
   if( fb_stop == &file_buf[4] ) {
     fb_len = fb_stop + fread( &file_buf[4], 1, FB_SIZE, uncompressed );
-    if( ExeFlag != 0u )
+    if( ExeFlag != 0U )
       E8E9_encode( fb_pos, fb_len - 8 - fb_pos );
     fb_stop = fb_len;
     if( fb_stop > &file_buf[FB_SIZE] )
@@ -279,7 +279,7 @@ inline int do_getc() {
 
 inline void do_putc( U8 c ) {
   if( fb_pos >= fb_stop ) {
-    if( ExeFlag != 0u )
+    if( ExeFlag != 0U )
       E8E9_decode( &file_buf[FB_SIZE - 1 - 4], FB_SIZE - 4 );
     fwrite( &file_buf[0], 1, FB_SIZE, uncompressed );
 
@@ -291,7 +291,7 @@ inline void do_putc( U8 c ) {
 
 inline void do_putc_end() {
   int LEN = fb_pos - &file_buf[0];
-  if( ExeFlag != 0u )
+  if( ExeFlag != 0U )
     E8E9_decode( &file_buf[LEN - 1 - 4], LEN - 4 );
   fwrite( &file_buf[0], 1, LEN, uncompressed );
 }

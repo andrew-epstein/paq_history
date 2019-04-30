@@ -1019,7 +1019,7 @@ public:
 
 // Hash 2-5 ints.
 inline U32 hash( U32 a, U32 b, U32 c = ~0, U32 d = ~0, U32 e = ~0 ) {
-  U32 h = a * 200002979u + b * 30005491u + c * 50004239u + d * 70004807u + e * 110002499u;
+  U32 h = a * 200002979U + b * 30005491U + c * 50004239U + d * 70004807U + e * 110002499U;
   return h ^ h >> 9 ^ a >> 2 ^ b >> 3 ^ c >> 4 ^ d >> 5 ^ e >> 6;
 }
 
@@ -1386,7 +1386,7 @@ void wordModel( Mixer &m ) {
       c += 'a' - 'A';
     if( ( c >= 'a' && c <= 'z' ) || c > 127 )
       word0 ^= hash( word0, c );
-    else if( word0 != 0u ) {
+    else if( word0 != 0U ) {
       word4 = word3;
       word3 = word2;
       word2 = word1;
@@ -1575,7 +1575,7 @@ int bmpModel( Mixer &m ) {
       tiff = pos; // Intel format only
     if( pos - tiff == 4 && c4 != 0x08000000 )
       tiff = 0;                                 // 8=normal offset to directory
-    if( ( tiff != 0u ) && pos - tiff == 200 ) { // most of directory should be read by now
+    if( ( tiff != 0U ) && pos - tiff == 200 ) { // most of directory should be read by now
       int dirsize = i2( pos - tiff - 4 );       // number of 12-byte directory entries
       width = w = 0;
       int bpp = 0, compression = 0, height = 0;
@@ -2277,7 +2277,7 @@ public:
 void Encoder::bit_plus_follow( int bit ) {
   if( bit != 0 )
     bout |= bptr;
-  if( ( bptr >>= 1 ) == 0u ) {
+  if( ( bptr >>= 1 ) == 0U ) {
     putc( bout, archive );
     bptr = 128;
     bout = 0;
@@ -2286,7 +2286,7 @@ void Encoder::bit_plus_follow( int bit ) {
   for( ; bits_to_follow > 0; bits_to_follow-- ) {
     if( bit != 0 )
       bout |= bptr;
-    if( ( bptr >>= 1 ) == 0u ) {
+    if( ( bptr >>= 1 ) == 0U ) {
       putc( bout, archive );
       bptr = 128;
       bout = 0;
@@ -2294,7 +2294,7 @@ void Encoder::bit_plus_follow( int bit ) {
   }
 }
 inline int Encoder::input_bit( void ) {
-  if( ( bptrin >>= 1 ) == 0u ) {
+  if( ( bptrin >>= 1 ) == 0U ) {
     bin = getc( archive );
     if( bin == EOF )
       bin = 0;
@@ -2422,7 +2422,7 @@ void Encoder::flush() {
       bit_plus_follow( 0 );
     else
       bit_plus_follow( 1 );
-    if( bout != 0u )
+    if( bout != 0U )
       putc( bout, archive );
   }
 }
@@ -2665,9 +2665,9 @@ int main( int argc, char **argv ) {
         filesize.push_back( atol( s.c_str() ) );
         string::iterator tab = find( s.begin(), s.end(), '\t' );
         if( tab != s.end() )
-          filename.push_back( string( tab + 1, s.end() ) );
+          filename.emplace_back( tab + 1, s.end() );
         else
-          filename.push_back( "" );
+          filename.emplace_back("" );
       } else
         break;
     }
@@ -2768,7 +2768,7 @@ int main( int argc, char **argv ) {
     // Read file names from command line or input
     if( argc > 2 )
       for( int i = 2; i < argc; ++i )
-        filename.push_back( argv[i] );
+        filename.emplace_back(argv[i] );
     else {
       printf( "Enter names of files to compress, followed by blank line or EOF.\n" );
       while( true ) {

@@ -1286,7 +1286,7 @@ StateMap::StateMap() :  t( 256 ) {
 
 // Hash 2-5 ints.
 inline U32 hash( U32 a, U32 b, U32 c = 0xffffffff, U32 d = 0xffffffff, U32 e = 0xffffffff ) {
-  U32 h = a * 200002979u + b * 30005491u + c * 50004239u + d * 70004807u + e * 110002499u;
+  U32 h = a * 200002979U + b * 30005491U + c * 50004239U + d * 70004807U + e * 110002499U;
   return h ^ h >> 9 ^ a >> 2 ^ b >> 3 ^ c >> 4 ^ d >> 5 ^ e >> 6;
 }
 
@@ -1574,7 +1574,7 @@ int ContextMap::mix1( Mixer &m, int cc, int bp, int c1, int y1 ) {
       assert( cp[i] >= &t[0].bh[0][0] && cp[i] <= &t[t.size() - 1].bh[6][6] );
       assert( ( long( cp[i] ) & 63 ) >= 15 );
       int ns = nex( *cp[i], y1 );
-      if( ns >= 204 && ( ( rnd() << ( ( 452 - ns ) >> 3 ) ) != 0u ) )
+      if( ns >= 204 && ( ( rnd() << ( ( 452 - ns ) >> 3 ) ) != 0U ) )
         ns -= 4; // probabilistic increment
       *cp[i] = ns;
     }
@@ -1731,7 +1731,7 @@ void wordModel( Mixer &m ) {
     if( ( c >= 'a' && c <= 'z' ) || c >= 128 ) {
       word0 = word0 * 263 * 32 + c;
       text0 = text0 * 997 * 16 + c;
-    } else if( word0 != 0u ) {
+    } else if( word0 != 0U ) {
       word4 = word3 * 19;
       word3 = word2 * 17;
       word2 = word1 * 13;
@@ -3248,7 +3248,7 @@ int main( int argc, char **argv ) {
           break;
         filename = argv[i++];
       }
-      filenames.push_back( filename );
+      filenames.emplace_back(filename );
     } // end while
 
     for( i = 0; i < filenames.size(); i++ ) {

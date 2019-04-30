@@ -724,16 +724,16 @@ void Predictor::update( int y ) {
   int order = 0;
   if( len == 0 ) {
     if( use_order5 )
-      if( *cp[4] != 0u )
+      if( *cp[4] != 0U )
         ++order;
     if( use_order4 )
-      if( *cp[3] != 0u )
+      if( *cp[3] != 0U )
         ++order;
     if( use_order3 )
-      if( *cp[2] != 0u )
+      if( *cp[2] != 0U )
         ++order;
     if( use_order2 )
-      if( *cp[1] != 0u )
+      if( *cp[1] != 0U )
         ++order;
   } else
     order = 5 + static_cast<int>( len >= 8 ) + static_cast<int>( len >= 12 ) + static_cast<int>( len >= 16 )

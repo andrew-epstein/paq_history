@@ -1159,11 +1159,11 @@ inline int mm_p() {
     }
     l = 0, len = l;
   }
-  if( *cp[2] != 0u ) {
+  if( *cp[2] != 0U ) {
     l = MI * 8;
-    if( *cp[3] != 0u ) {
+    if( *cp[3] != 0U ) {
       l = 2 * MI * 8;
-      if( *cp[4] != 0u )
+      if( *cp[4] != 0U )
         l = 3 * MI * 8;
     }
   }
@@ -1184,11 +1184,11 @@ inline int mm_p7() {
     goto mm_e;
   }
   cxt = c0;
-  if( *cp[2] != 0u ) {
+  if( *cp[2] != 0U ) {
     l = MI * 8;
-    if( *cp[3] != 0u ) {
+    if( *cp[3] != 0U ) {
       l = 2 * MI * 8;
-      if( *cp[4] != 0u )
+      if( *cp[4] != 0U )
         l = 3 * MI * 8;
     }
   }

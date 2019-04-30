@@ -961,7 +961,7 @@ public:
 
 // Hash 2-5 ints.
 inline U32 hash( U32 a, U32 b, U32 c = ~0, U32 d = ~0, U32 e = ~0 ) {
-  U32 h = a * 200002979u + b * 30005491u + c * 50004239u + d * 70004807u + e * 110002499u;
+  U32 h = a * 200002979U + b * 30005491U + c * 50004239U + d * 70004807U + e * 110002499U;
   return h ^ h >> 9 ^ a >> 2 ^ b >> 3 ^ c >> 4 ^ c >> 5 ^ e >> 6;
 }
 
@@ -1328,7 +1328,7 @@ void wordModel( Mixer &m ) {
       c += 'a' - 'A';
     if( c >= 'a' && c <= 'z' )
       word0 ^= hash( word0, c );
-    else if( word0 != 0u ) {
+    else if( word0 != 0U ) {
       word4 = word3;
       word3 = word2;
       word2 = word1;
@@ -1517,7 +1517,7 @@ int bmpModel( Mixer &m ) {
       tiff = pos; // Intel format only
     if( pos - tiff == 4 && c4 != 0x08000000 )
       tiff = 0;                                 // 8=normal offset to directory
-    if( ( tiff != 0u ) && pos - tiff == 200 ) { // most of directory should be read by now
+    if( ( tiff != 0U ) && pos - tiff == 200 ) { // most of directory should be read by now
       int dirsize = i2( pos - tiff - 4 );       // number of 12-byte directory entries
       width = w = 0;
       int bpp = 0, compression = 0, height = 0;

@@ -1499,7 +1499,7 @@ APM::APM( int n ) : StateMap( n * 24 ) {
 
 // Hash 2-5 ints.
 static uint32 hash( uint32 a, uint32 b, uint32 c = 0xffffffff, uint32 d = 0xffffffff, uint32 e = 0xffffffff ) {
-  uint32 h = a * 200002979u + b * 30005491u + c * 50004239u + d * 70004807u + e * 110002499u;
+  uint32 h = a * 200002979U + b * 30005491U + c * 50004239U + d * 70004807U + e * 110002499U;
   return h ^ h >> 9 ^ a >> 2 ^ b >> 3 ^ c >> 4 ^ d >> 5 ^ e >> 6;
 }
 
@@ -1793,7 +1793,7 @@ int ContextMap::mix1( Mixer &m, int cc, int bp, int c1, int y1 ) {
       assert( cp[i] >= &t[0].bh[0][0] && cp[i] <= &t[t.size() - 1].bh[6][6] );
       assert( ( sint32( cp[i] ) & 63 ) >= 15 );
       int ns = nex( *cp[i], y1 );
-      if( ns >= 204 && ((rnd() << ( ( 452 - ns ) >> 3 )) != 0u) )
+      if( ns >= 204 && ((rnd() << ( ( 452 - ns ) >> 3 )) != 0U) )
         ns -= 4; // probabilistic increment
       *cp[i] = ns;
     }
@@ -1947,9 +1947,9 @@ static void wordModel( Mixer &m ) {
   // Update word hashes
   if( bpos == 0 ) {
     int c = c4 & 255, f = 0;
-    if( (spaces & 0x80000000) != 0u )
+    if( (spaces & 0x80000000) != 0U )
       --spacecount;
-    if( (words & 0x80000000) != 0u )
+    if( (words & 0x80000000) != 0U )
       --wordcount;
     spaces = spaces * 2;
     words = words * 2;
@@ -1964,7 +1964,7 @@ static void wordModel( Mixer &m ) {
       wordlen = MIN( wordlen, 45 );
       f = 0;
     } else {
-      if( word0 != 0u ) {
+      if( word0 != 0U ) {
         word5 = word4 * 23;
         word4 = word3 * 19;
         word3 = word2 * 17;
@@ -1995,7 +1995,7 @@ static void wordModel( Mixer &m ) {
     }
     if( c >= '0' && c <= '9' ) {
       number0 = number0 * 263 * 32 + c;
-    } else if( number0 != 0u ) {
+    } else if( number0 != 0U ) {
       number1 = number0 * 11;
       number0 = 0, ccword = 0;
     }
@@ -2116,9 +2116,9 @@ static void im1bitModel( Mixer &m, int w ) {
   cxt[2] = 0x200 + ( ( r0 & 0x3f ) ^ ( r1 & 0x3ffe ) ^ ( r2 << 2 & 0x7f00 ) ^ ( r3 << 5 & 0xf800 ) );
   cxt[3] = 0x400 + ( ( r0 & 0x3e ) ^ ( r1 & 0x0c0c ) ^ ( r2 & 0xc800 ) );
   cxt[4] = 0x800 + ( ( ( r1 & 0x30 ) ^ ( r3 & 0x0c0c ) ) | ( r0 & 3 ) );
-  cxt[5] = 0x1000 + ( ( static_cast<int>(static_cast<int>(r0) == 0u) & 0x444 ) | ( r1 & 0xC0C ) | ( r2 & 0xAE3 ) | ( r3 & 0x51C ) );
+  cxt[5] = 0x1000 + ( ( static_cast<int>(static_cast<int>(r0) == 0U) & 0x444 ) | ( r1 & 0xC0C ) | ( r2 & 0xAE3 ) | ( r3 & 0x51C ) );
   cxt[6] = 0x2000 + ( ( r0 & 1 ) | ( r1 >> 4 & 0x1d ) | ( r2 >> 1 & 0x60 ) | ( r3 & 0xC0 ) );
-  cxt[7] = 0x4000 + ( ( r0 >> 4 & 0x2AC ) | ( r1 & 0xA4 ) | ( r2 & 0x349 ) | ( static_cast<int>(static_cast<int>(r3) == 0u) & 0x14D ) );
+  cxt[7] = 0x4000 + ( ( r0 >> 4 & 0x2AC ) | ( r1 & 0xA4 ) | ( r2 & 0x349 ) | ( static_cast<int>(static_cast<int>(r3) == 0U) & 0x14D ) );
 
   // predict
   for( i = 0; i < N; ++i )
@@ -2868,16 +2868,16 @@ static int jpegModel( Mixer &m ) {
               int cpos_dc_ls_acomp = cpos_dc - ls[acomp];
               int cpos_dc_mcusize_width = cpos_dc - mcusize * width;
               for( int i = 0; i < 64; ++i ) {
-                sumu[zzu[i]] += ( (zzv[i] & 1) != 0 ? -1 : 1 ) * ( zzv[i] != 0u ? 16 * ( 16 + zzv[i] ) : 181 ) * ( qtab[q + i] + 1 )
+                sumu[zzu[i]] += ( (zzv[i] & 1) != 0 ? -1 : 1 ) * ( zzv[i] != 0U ? 16 * ( 16 + zzv[i] ) : 181 ) * ( qtab[q + i] + 1 )
                                 * cbuf2[cpos_dc_mcusize_width + i];
-                sumv[zzv[i]] += ( (zzu[i] & 1) != 0 ? -1 : 1 ) * ( zzu[i] != 0u ? 16 * ( 16 + zzu[i] ) : 181 ) * ( qtab[q + i] + 1 )
+                sumv[zzv[i]] += ( (zzu[i] & 1) != 0 ? -1 : 1 ) * ( zzu[i] != 0U ? 16 * ( 16 + zzu[i] ) : 181 ) * ( qtab[q + i] + 1 )
                                 * cbuf2[cpos_dc_ls_acomp + i];
               }
             } else {
               sumu[zzu[zz - 1]] -=
-                  ( zzv[zz - 1] != 0u ? 16 * ( 16 + zzv[zz - 1] ) : 181 ) * ( qtab[q + zz - 1] + 1 ) * cbuf2[cpos - 1];
+                  ( zzv[zz - 1] != 0U ? 16 * ( 16 + zzv[zz - 1] ) : 181 ) * ( qtab[q + zz - 1] + 1 ) * cbuf2[cpos - 1];
               sumv[zzv[zz - 1]] -=
-                  ( zzu[zz - 1] != 0u ? 16 * ( 16 + zzu[zz - 1] ) : 181 ) * ( qtab[q + zz - 1] + 1 ) * cbuf2[cpos - 1];
+                  ( zzu[zz - 1] != 0U ? 16 * ( 16 + zzu[zz - 1] ) : 181 ) * ( qtab[q + zz - 1] + 1 ) * cbuf2[cpos - 1];
             }
 
             for( int i = 0; i < 3; ++i )
@@ -3874,7 +3874,7 @@ void Predictor::update() {
   if( filetype == IMAGE1 || filetype == JPEG || filetype == AUDIO ) {
     pr = pr0;
   } else {
-    if( (fails & 0x00000080) != 0u )
+    if( (fails & 0x00000080) != 0U )
       --failcount;
     fails = fails * 2;
     failz = failz * 2;
@@ -3889,7 +3889,7 @@ void Predictor::update() {
     pz += tri[( fails >> 5 ) & 3];
     pz += trj[( fails >> 3 ) & 3];
     pz += trj[( fails >> 1 ) & 3];
-    if( (fails & 1) != 0u )
+    if( (fails & 1) != 0U )
       pz += 8;
     pz = pz / 2;
 
@@ -3901,7 +3901,7 @@ void Predictor::update() {
     pv = a5.p( pv, hash( c0, w5 & 0xfffff ) & 0xffff, r );
     pt = a3.p( pr0, ( c0 * 32 ) ^ hash( 19, x5 & 0x80ffff ) & 0xffff, r );
     pz = a6.p( pu, ( c0 * 4 ) ^ hash( MIN( 9, pz ), x5 & 0x80ff ) & 0xffff, r );
-    if( (fails & 255) != 0u )
+    if( (fails & 255) != 0U )
       pr = pt * 6 + pu + pv * 11 + pz * 14 + 16 >> 5;
     else
       pr = pt * 4 + pu * 5 + pv * 12 + pz * 11 + 16 >> 5;
@@ -4108,12 +4108,12 @@ static void eccedc_init( void ) {
     return;
   uint32 i, j, edc;
   for( i = 0; i < 256; i++ ) {
-    j = ( i << 1 ) ^ ( (i & 0x80) != 0u ? 0x11D : 0 );
+    j = ( i << 1 ) ^ ( (i & 0x80) != 0U ? 0x11D : 0 );
     ecc_f_lut[i] = j;
     ecc_b_lut[i ^ j] = i;
     edc = i;
     for( j = 0; j < 8; j++ )
-      edc = ( edc >> 1 ) ^ ( (edc & 1) != 0u ? 0xD8018001 : 0 );
+      edc = ( edc >> 1 ) ^ ( (edc & 1) != 0U ? 0xD8018001 : 0 );
     edc_lut[i] = edc;
   }
   luts_init = 1;

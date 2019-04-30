@@ -1494,7 +1494,7 @@ APM::APM( int n ) : StateMap( n * 24 ) {
 
 // Hash 2-5 ints.
 inline U32 hash( U32 a, U32 b, U32 c = 0xffffffff, U32 d = 0xffffffff, U32 e = 0xffffffff ) {
-  U32 h = a * 200002979u + b * 30005491u + c * 50004239u + d * 70004807u + e * 110002499u;
+  U32 h = a * 200002979U + b * 30005491U + c * 50004239U + d * 70004807U + e * 110002499U;
   return h ^ h >> 9 ^ a >> 2 ^ b >> 3 ^ c >> 4 ^ d >> 5 ^ e >> 6;
 }
 
@@ -1787,7 +1787,7 @@ int ContextMap::mix1( Mixer &m, int cc, int bp, int c1, int y1 ) {
       assert( cp[i] >= &t[0].bh[0][0] && cp[i] <= &t[t.size() - 1].bh[6][6] );
       assert( ( long( cp[i] ) & 63 ) >= 15 );
       int ns = nex( *cp[i], y1 );
-      if( ns >= 204 && ((rnd() << ( ( 452 - ns ) >> 3 )) != 0u) )
+      if( ns >= 204 && ((rnd() << ( ( 452 - ns ) >> 3 )) != 0U) )
         ns -= 4; // probabilistic increment
       *cp[i] = ns;
     }
@@ -1938,9 +1938,9 @@ void wordModel( Mixer &m, Filetype filetype ) {
   // Update word hashes
   if( bpos == 0 ) {
     int c = c4 & 255, f = 0;
-    if( (spaces & 0x80000000) != 0u )
+    if( (spaces & 0x80000000) != 0U )
       --spacecount;
-    if( (words & 0x80000000) != 0u )
+    if( (words & 0x80000000) != 0U )
       --wordcount;
     spaces = spaces * 2;
     words = words * 2;
@@ -1955,7 +1955,7 @@ void wordModel( Mixer &m, Filetype filetype ) {
       f = 0;
       w = word0 & ( wpos.size() - 1 );
     } else {
-      if( word0 != 0u ) {
+      if( word0 != 0U ) {
         word5 = word4;
         word4 = word3;
         word3 = word2;
@@ -1989,7 +1989,7 @@ void wordModel( Mixer &m, Filetype filetype ) {
     }
     if( c >= '0' && c <= '9' ) {
       number0 ^= hash( number0, c, 1 );
-    } else if( number0 != 0u ) {
+    } else if( number0 != 0U ) {
       number1 = number0;
       number0 = 0, ccword = 0;
     }
@@ -2203,7 +2203,7 @@ void recordModel( Mixer &m ) {
     */
 
     if( ( ( ( U16 )( c4 >> 8 ) == ( ( SPACE << 8 ) + SPACE ) ) && ( c != SPACE ) )
-        || ( (( c4 >> 8 ) == 0u) && (c != 0) && ( ( padding != SPACE ) || ( pos - prevTransition > rlen[0] ) ) ) ) {
+        || ( (( c4 >> 8 ) == 0U) && (c != 0) && ( ( padding != SPACE ) || ( pos - prevTransition > rlen[0] ) ) ) ) {
       prevTransition = pos;
       padding = ( U8 ) d;
     }
@@ -2621,9 +2621,9 @@ void im1bitModel( Mixer &m, int w ) {
   cxt[2] = 0x200 + ( ( r0 & 0x3f ) ^ ( r1 & 0x3ffe ) ^ ( r2 << 2 & 0x7f00 ) ^ ( r3 << 5 & 0xf800 ) );
   cxt[3] = 0x400 + ( ( r0 & 0x3e ) ^ ( r1 & 0x0c0c ) ^ ( r2 & 0xc800 ) );
   cxt[4] = 0x800 + ( ( ( r1 & 0x30 ) ^ ( r3 & 0x0c0c ) ) | ( r0 & 3 ) );
-  cxt[5] = 0x1000 + ( ( static_cast<int>(static_cast<int>(r0) == 0u) & 0x444 ) | ( r1 & 0xC0C ) | ( r2 & 0xAE3 ) | ( r3 & 0x51C ) );
+  cxt[5] = 0x1000 + ( ( static_cast<int>(static_cast<int>(r0) == 0U) & 0x444 ) | ( r1 & 0xC0C ) | ( r2 & 0xAE3 ) | ( r3 & 0x51C ) );
   cxt[6] = 0x2000 + ( ( r0 & 1 ) | ( r1 >> 4 & 0x1d ) | ( r2 >> 1 & 0x60 ) | ( r3 & 0xC0 ) );
-  cxt[7] = 0x4000 + ( ( r0 >> 4 & 0x2AC ) | ( r1 & 0xA4 ) | ( r2 & 0x349 ) | ( static_cast<int>(static_cast<int>(r3) == 0u) & 0x14D ) );
+  cxt[7] = 0x4000 + ( ( r0 >> 4 & 0x2AC ) | ( r1 & 0xA4 ) | ( r2 & 0x349 ) | ( static_cast<int>(static_cast<int>(r3) == 0U) & 0x14D ) );
 
   // predict
   for( i = 0; i < N; ++i )
@@ -3207,15 +3207,15 @@ int jpegModel( Mixer &m ) {
               // necessarily in this MCU
               int offset_DC_N = cpos_dc - blockN[acomp];
               for( int i = 0; i < 64; ++i ) {
-                sumu[zzu[i]] += ( (zzv[i] & 1) != 0 ? -1 : 1 ) * ( zzv[i] != 0u ? 16 * ( 16 + zzv[i] ) : 181 )
+                sumu[zzu[i]] += ( (zzv[i] & 1) != 0 ? -1 : 1 ) * ( zzv[i] != 0U ? 16 * ( 16 + zzv[i] ) : 181 )
                                 * ( images[idx].qtab[q + i] + 1 ) * cbuf2[offset_DC_N + i];
-                sumv[zzv[i]] += ( (zzu[i] & 1) != 0 ? -1 : 1 ) * ( zzu[i] != 0u ? 16 * ( 16 + zzu[i] ) : 181 )
+                sumv[zzv[i]] += ( (zzu[i] & 1) != 0 ? -1 : 1 ) * ( zzu[i] != 0U ? 16 * ( 16 + zzu[i] ) : 181 )
                                 * ( images[idx].qtab[q + i] + 1 ) * cbuf2[offset_DC_W + i];
               }
             } else {
-              sumu[zzu[zz - 1]] -= ( zzv[zz - 1] != 0u ? 16 * ( 16 + zzv[zz - 1] ) : 181 )
+              sumu[zzu[zz - 1]] -= ( zzv[zz - 1] != 0U ? 16 * ( 16 + zzv[zz - 1] ) : 181 )
                                    * ( images[idx].qtab[q + zz - 1] + 1 ) * cbuf2[cpos - 1];
-              sumv[zzv[zz - 1]] -= ( zzu[zz - 1] != 0u ? 16 * ( 16 + zzu[zz - 1] ) : 181 )
+              sumv[zzv[zz - 1]] -= ( zzu[zz - 1] != 0U ? 16 * ( 16 + zzu[zz - 1] ) : 181 )
                                    * ( images[idx].qtab[q + zz - 1] + 1 ) * cbuf2[cpos - 1];
             }
 
@@ -4296,12 +4296,12 @@ void eccedc_init( void ) {
     return;
   U32 i, j, edc;
   for( i = 0; i < 256; i++ ) {
-    j = ( i << 1 ) ^ ( (i & 0x80) != 0u ? 0x11D : 0 );
+    j = ( i << 1 ) ^ ( (i & 0x80) != 0U ? 0x11D : 0 );
     ecc_f_lut[i] = j;
     ecc_b_lut[i ^ j] = i;
     edc = i;
     for( j = 0; j < 8; j++ )
-      edc = ( edc >> 1 ) ^ ( (edc & 1) != 0u ? 0xD8018001 : 0 );
+      edc = ( edc >> 1 ) ^ ( (edc & 1) != 0U ? 0xD8018001 : 0 );
     edc_lut[i] = edc;
   }
   luts_init = 1;
@@ -4805,8 +4805,8 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
     // Detect .bmp image
     if( (bmp == 0)
         && ( ( ( buf0 & 0xffff ) == 16973 )
-             || ( (( buf0 & 0xFFFFFF ) == 0u) && ( ( buf0 >> 24 ) == 0x28 ) ) ) ) //possible 'BM' or headerless DIB
-      imgbpp = bmpx = bmpy = 0, hdrless = static_cast<int>(static_cast<int>(( U8 ) buf0) == 0u), bmpof = hdrless * 68, bmp = i - hdrless * 16;
+             || ( (( buf0 & 0xFFFFFF ) == 0U) && ( ( buf0 >> 24 ) == 0x28 ) ) ) ) //possible 'BM' or headerless DIB
+      imgbpp = bmpx = bmpy = 0, hdrless = static_cast<int>(static_cast<int>(( U8 ) buf0) == 0U), bmpof = hdrless * 68, bmp = i - hdrless * 16;
     if( bmp != 0 ) {
       const int p = i - bmp;
       if( p == 12 )
@@ -4819,12 +4819,12 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
         bmpy = abs( ( int ) bswap( buf0 ) ), bmp = ( ( bmpy == 0 || bmpy > 0x10000 ) ? 0 : bmp ); //height
       else if( p == 27 )
         imgbpp = c, bmp = ( ( imgbpp != 1 && imgbpp != 8 && imgbpp != 24 && imgbpp != 32 ) ? 0 : bmp );
-      else if( ( p == 31 ) && (buf0 != 0u) )
+      else if( ( p == 31 ) && (buf0 != 0U) )
         bmp = 0;
       // check number of colors in palette (4 bytes), must be 0 (default) or <= 1<<bpp.
       // also check if image is too small, since it might not be worth it to use the image models
       else if( p == 48 ) {
-        if( ( (buf0 == 0u) || ( ( bswap( buf0 ) <= ( U32 )( 1 << imgbpp ) ) && ( imgbpp <= 8 ) ) )
+        if( ( (buf0 == 0U) || ( ( bswap( buf0 ) <= ( U32 )( 1 << imgbpp ) ) && ( imgbpp <= 8 ) ) )
             && ( ( ( bmpx * bmpy * imgbpp ) >> 3 ) > 512 ) ) {
           // possible icon/cursor?
           if( (hdrless != 0) && ( bmpx * 2 == bmpy )
@@ -4836,7 +4836,7 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
 
           // if DIB and not 24bpp, we must calculate the data offset based on BPP or num. of entries in color palette
           if( (hdrless != 0) && ( imgbpp <= 24 ) )
-            bmpof += ( buf0 ) != 0u ? bswap( buf0 ) * 4 : 4 << imgbpp;
+            bmpof += ( buf0 ) != 0U ? bswap( buf0 ) * 4 : 4 << imgbpp;
 
           if( imgbpp == 1 )
             IMG_DET( IMAGE1, bmp - 1, bmpof, ( ( ( bmpx - 1 ) >> 5 ) + 1 ) * 4, bmpy );

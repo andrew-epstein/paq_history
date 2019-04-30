@@ -700,13 +700,13 @@ void Predictor::update( int y ) {
   int len = mm.p( y, m );
   int order = 0;
   if( len == 0 ) {
-    if( *cp[4] != 0u )
+    if( *cp[4] != 0U )
       ++order;
-    if( *cp[3] != 0u )
+    if( *cp[3] != 0U )
       ++order;
-    if( *cp[2] != 0u )
+    if( *cp[2] != 0U )
       ++order;
-    if( *cp[1] != 0u )
+    if( *cp[1] != 0U )
       ++order;
   } else
     order = 5 + static_cast<int>( len >= 8 ) + static_cast<int>( len >= 12 ) + static_cast<int>( len >= 16 )
@@ -782,7 +782,7 @@ Encoder::Encoder( Mode m, FILE *f ) : mode( m ), archive( f ), x( 1 << N ), n( 0
     alloc( ins, B );
     alloc( outs, BO );
     for( int i = 1; i < 1 << N; ++i ) {
-      qinv[i * 2 + 1] = qinv[( 2 << N ) - 2 * i] = ( 1ull << ( 32 + N ) ) / i;
+      qinv[i * 2 + 1] = qinv[( 2 << N ) - 2 * i] = ( 1ULL << ( 32 + N ) ) / i;
       ++qinv[i * 2 + 1];
     }
   }
@@ -799,7 +799,7 @@ inline int Encoder::decode() {
     x = getc( archive );
     x = x * 256 + getc( archive );
     x = x * 256 + getc( archive );
-    if( ( x & 1 << 23 ) != 0u ) { // if bit 23 is 0, n defaults to B
+    if( ( x & 1 << 23 ) != 0U ) { // if bit 23 is 0, n defaults to B
       x -= 1 << 23;
       n = getc( archive );
       n = n * 256 + getc( archive );

@@ -822,7 +822,7 @@ U32 bc0[64], bc1[64];
 struct SSEContext {
   U8 c, n;
   int p() {
-    return 4096 * c / ( n + static_cast<int>( n == 0u ) );
+    return 4096 * c / ( n + static_cast<int>( n == 0U ) );
   }
   void upd( int y ) {
     c += y;
@@ -1047,7 +1047,7 @@ public:
   }
   void add() {
     U32 d = ( cxt->c + 256 ) >> ( 7 - bp );
-    if( ( d ^= ch( 0 ) * 2 ) == 0u )
+    if( ( d ^= ch( 0 ) * 2 ) == 0U )
       mixer.add( cxt->n, 0 );
     else if( d == 1 )
       mixer.add( 0, cxt->n );
@@ -1213,13 +1213,13 @@ public:
       hash[0] = hash[0] * 908754512 + ch( 1 ) + 1;
       hash[1] = hash[1] * 91368434 + ch( 1 ) + 1;
       U32 h = hash[0] >> 11;
-      if( ( h >> 17 ) == 0u )
+      if( ( h >> 17 ) == 0U )
         h = hash[1] >> 11;
       for( int i = 0; i < 4; i++ )
-        if( (end[i] != 0u) && ch( 1 ) == ch[end[i]] )
+        if( (end[i] != 0U) && ch( 1 ) == ch[end[i]] )
           ++end[i];
       for( int i = 0; i < 4; i++ ) {
-        if( end[i] == 0u ) {
+        if( end[i] == 0U ) {
           int j;
           for( j = 0; j < 4; j++ )
             if( end[j] == ptr[h] )
@@ -1227,10 +1227,10 @@ public:
           if( j < 4 )
             break;
           end[i] = ptr[h];
-          if( end[i] != 0u ) {
+          if( end[i] != 0U ) {
             U32 p = po;
             begin[i] = end[i];
-            while( (begin[i] != 0u) && (p != 0u) && begin[i] != p + 1 && ch[begin[i] - 1] == ch[--p] )
+            while( (begin[i] != 0U) && (p != 0U) && begin[i] != p + 1 && ch[begin[i] - 1] == ch[--p] )
               --begin[i];
           }
           if( end[i] == begin[i] )
@@ -1242,14 +1242,14 @@ public:
     }
     int n0 = 0, n1 = 0;
     for( int i = 0; i < 4; i++ )
-      if( end[i] != 0u ) {
+      if( end[i] != 0U ) {
         U32 d = ( ch[end[i]] + 256 ) >> ( 7 - bp );
         if( ( d >> 1 ) != ch( 0 ) )
           begin[i] = end[i] = 0;
         else {
           U32 wt = end[i] - begin[i];
           wt = min( int( wt * wt / 4 ), 1020 );
-          if( (d & 1) != 0u )
+          if( (d & 1) != 0U )
             n1 += wt;
           else
             n0 += wt;
@@ -1603,7 +1603,7 @@ public:
       int c = ch( 1 );
       if( c > 32 )
         cxt[0] ^= hash( cxt[0], cxt[0] >> 8, c, clen++ );
-      else if( cxt[0] != 0u ) {
+      else if( cxt[0] != 0U ) {
         for( int i = 5; i != 0; i-- )
           cxt[i] = cxt[i - 1];
         cxt[0] = 0;
@@ -1790,7 +1790,7 @@ public:
 void Encoder::bit_plus_follow( int bit ) {
   if( bit != 0 )
     bout |= bptr;
-  if( ( bptr >>= 1 ) == 0u ) {
+  if( ( bptr >>= 1 ) == 0U ) {
     putc( bout, archive );
     bptr = 128;
     bout = 0;
@@ -1799,7 +1799,7 @@ void Encoder::bit_plus_follow( int bit ) {
   for( ; bits_to_follow > 0; bits_to_follow-- ) {
     if( bit != 0 )
       bout |= bptr;
-    if( ( bptr >>= 1 ) == 0u ) {
+    if( ( bptr >>= 1 ) == 0U ) {
       putc( bout, archive );
       bptr = 128;
       bout = 0;
@@ -1807,7 +1807,7 @@ void Encoder::bit_plus_follow( int bit ) {
   }
 }
 inline int Encoder::input_bit( void ) {
-  if( ( bptrin >>= 1 ) == 0u ) {
+  if( ( bptrin >>= 1 ) == 0U ) {
     bin = getc( archive );
     if( bin == EOF )
       bin = 0;
@@ -1936,7 +1936,7 @@ void Encoder::flush() {
       bit_plus_follow( 0 );
     else
       bit_plus_follow( 1 );
-    if( bout != 0u )
+    if( bout != 0U )
       putc( bout, archive );
   }
 }
@@ -2085,9 +2085,9 @@ int main( int argc, char **argv ) {
         filesize.push_back( atol( s.c_str() ) );
         string::iterator tab = find( s.begin(), s.end(), '\t' );
         if( tab != s.end() )
-          filename.push_back( string( tab + 1, s.end() ) );
+          filename.emplace_back( tab + 1, s.end() );
         else
-          filename.push_back( "" );
+          filename.emplace_back("" );
       } else
         break;
     }
@@ -2198,7 +2198,7 @@ int main( int argc, char **argv ) {
     // Read file names from command line or input
     if( argc > 2 )
       for( int i = 2; i < argc; ++i )
-        filename.push_back( argv[i] );
+        filename.emplace_back(argv[i] );
     else {
       printf( "Enter names of files to compress, followed by blank line or EOF.\n" );
       while( true ) {

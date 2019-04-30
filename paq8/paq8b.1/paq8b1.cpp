@@ -1173,7 +1173,7 @@ public:
 
 // Hash 2-5 ints.
 inline U32 hash( U32 a, U32 b, U32 c = ~0, U32 d = ~0, U32 e = ~0 ) {
-  U32 h = a * 200002979u + b * 30005491u + c * 50004239u + d * 70004807u + e * 110002499u;
+  U32 h = a * 200002979U + b * 30005491U + c * 50004239U + d * 70004807U + e * 110002499U;
   return h ^ h >> 9 ^ a >> 2 ^ b >> 3 ^ c >> 4 ^ d >> 5 ^ e >> 6;
 }
 
@@ -1472,7 +1472,7 @@ int ContextMap::mix1( Mixer &m, int y1 ) {
     assert( cp[i] >= &t[0].bh[0][0] && cp[i] <= &t[t.size() - 1].bh[6][6] );
     assert( ( long( cp[i] ) & 63 ) >= 15 );
     int ns = nex( *cp[i], y1 );
-    if( ns >= 204 && ( ( rnd() << ( ( 452 - ns ) >> 3 ) ) != 0u ) )
+    if( ns >= 204 && ( ( rnd() << ( ( 452 - ns ) >> 3 ) ) != 0U ) )
       ns -= 4; // probabilistic increment
     *cp[i] = ns;
 
@@ -1608,7 +1608,7 @@ void wordModel( Mixer &m ) {
     if( ( c >= 'a' && c <= 'z' ) || c >= 128 ) {
       word0 = word0 * 263 * 4 + c;
       text0 = text0 * 997 * 16 + c;
-    } else if( word0 != 0u ) {
+    } else if( word0 != 0U ) {
       word4 = word3 * 11;
       word3 = word2 * 7;
       word2 = word1 * 5;
@@ -1761,7 +1761,7 @@ int bmpModel( Mixer &m ) {
       tiff = pos; // Intel format only
     if( pos - tiff == 4 && c4 != 0x08000000 )
       tiff = 0;                                 // 8=normal offset to directory
-    if( ( tiff != 0u ) && pos - tiff == 200 ) { // most of directory should be read by now
+    if( ( tiff != 0U ) && pos - tiff == 200 ) { // most of directory should be read by now
       int dirsize = i2( pos - tiff - 4 );       // number of 12-byte directory entries
       w = 0;
       int bpp = 0, compression = 0, width = 0, height = 0;

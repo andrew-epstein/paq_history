@@ -1299,7 +1299,7 @@ inline U32 hash(U32 a, U32 b, U32 c=0xffffffff, U32 d=0xffffffff,
 }
 #else
 inline U32 hash( U32 a, U32 b, U32 c = 0xffffffff ) {
-  U32 h = a * 110002499u + b * 30005491u + c * 50004239u; //+d*70004807u+e*110002499u;
+  U32 h = a * 110002499U + b * 30005491U + c * 50004239U; //+d*70004807u+e*110002499u;
   return h ^ h >> 9 ^ a >> 2 ^ b >> 3 ^ c >> 4;
 }
 #endif
@@ -1608,7 +1608,7 @@ int ContextMap::mix1( Mixer &m, int cc, int c1, int y1 ) {
       assert( cpi >= &t[0].bh[0][0] && cpi <= &t[t.size() - 1].bh[6][6] );
       assert( ( long( cpi ) & 63 ) >= 15 );
       int ns = nex( *cpi, y1 );
-      if( ns >= 204 && ( ( rnd() << ( ( 452 - ns ) >> 3 ) ) != 0u ) )
+      if( ns >= 204 && ( ( rnd() << ( ( 452 - ns ) >> 3 ) ) != 0U ) )
         ns -= 4; // probabilistic increment
       *cpi = ns;
     }
@@ -1769,9 +1769,9 @@ void wordModel( Mixer &m ) {
     if( ( c - 'A' ) <= ( 'Z' - 'A' ) )
       c += 'a' - 'A';
 
-    if( ( spaces & 0x80000000 ) != 0u )
+    if( ( spaces & 0x80000000 ) != 0U )
       --spacecount;
-    if( ( words & 0x80000000 ) != 0u )
+    if( ( words & 0x80000000 ) != 0U )
       --wordcount;
     spaces = spaces * 2;
     words = words * 2;
@@ -1786,7 +1786,7 @@ void wordModel( Mixer &m ) {
         if( c == 10 )
           nl1 = nl, nl = pos - 1;
       }
-      if( word0 != 0u ) {
+      if( word0 != 0U ) {
         word4 = word3 * 19;
         word3 = word2 * 17;
         word2 = word1 * 13;
@@ -3391,7 +3391,7 @@ int main( int argc, char **argv ) {
           break;
         filename = argv[i++];
       }
-      filenames.push_back( filename );
+      filenames.emplace_back(filename );
     } // end while
 
     for( i = 0; i < filenames.size(); i++ ) {

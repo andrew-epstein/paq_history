@@ -192,7 +192,7 @@ int main( int argc, char **argv ) {
   else {
     fread( &len, sizeof( len ), 1, in );
     Encoder e( DECOMPRESS, in );
-    while( ( len-- ) != 0u ) {
+    while( ( len-- ) != 0U ) {
       int c = 1;
       while( c < 256 )
         c += c + e.decode();

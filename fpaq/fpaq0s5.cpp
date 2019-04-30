@@ -136,7 +136,7 @@ inline void Encoder::bit_plus_follow( int bit ) {
   for( int notb = bit ^ 1; bits_to_follow > 0; bits_to_follow--, bit = notb ) {
     if( bit != 0 )
       bout |= bptr;
-    if( ( bptr >>= 1 ) == 0u ) {
+    if( ( bptr >>= 1 ) == 0U ) {
       Pokeb( bufwri + wri, bout );
       wri++;
       if( wri == ( limwri ) ) {
@@ -149,7 +149,7 @@ inline void Encoder::bit_plus_follow( int bit ) {
   }
 }
 inline int Encoder::input_bit( void ) {
-  if( ( bptrin >>= 1 ) == 0u ) {
+  if( ( bptrin >>= 1 ) == 0U ) {
     bin = getc( archive );
     if( bin == EOF ) {
       bin = 0;
@@ -296,7 +296,7 @@ void Encoder::flush() {
     bit_plus_follow( 1 );
     bit_plus_follow( 1 );
   }
-  if( bout != 0u ) {
+  if( bout != 0U ) {
     Pokeb( bufwri + wri, bout );
     wri++;
     if( wri == ( limwri ) ) {
