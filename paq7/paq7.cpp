@@ -409,13 +409,13 @@ inline T min( const T &a, const T &b ) {
 //////////////////////// Program Checker /////////////////////
 
 class ProgramChecker {
-  int memused;        // bytes allocated by Array<T>
+  int memused{ 0 };        // bytes allocated by Array<T>
   clock_t start_time; // in ticks
 public:
   void alloc( int n ) {
     memused += n;
   } // report memory allocated
-  ProgramChecker() : memused( 0 ) {
+  ProgramChecker()  {
     start_time = clock();
     assert( sizeof( U8 ) == 1 );
     assert( sizeof( U16 ) == 2 );
@@ -941,12 +941,12 @@ APM::APM( int n ) : ProbMap( n ) {
 
 // Counter state -> probability * 256
 class StateMap {
-  int cxt;
+  int cxt{ 0 };
 
 protected:
   Array<U16> t; // 256 states -> probability * 64K
 public:
-  StateMap() : cxt( 0 ), t( 256 ) {
+  StateMap() :  t( 256 ) {
     for( int i = 0; i < 256; ++i )
       t[i] = 65536 * ( nex( i, 3 ) + 1 ) / ( nex( i, 2 ) + nex( i, 3 ) + 2 );
   }
@@ -2087,7 +2087,7 @@ int contextModel2() {
 // update(y) trains the predictor with the actual bit (0 or 1).
 
 class Predictor {
-  int pr; // next prediction
+  int pr{ 2048 }; // next prediction
 public:
   Predictor();
   int p() const {
@@ -2097,7 +2097,7 @@ public:
   void update();
 };
 
-Predictor::Predictor() : pr( 2048 ) {}
+Predictor::Predictor()  {}
 
 void Predictor::update() {
   static APM a1( 256 ), a2( 0x10000 ), a3( 0x10000 ), a4( 0x10000 );
@@ -2263,11 +2263,11 @@ int main( int argc, char **argv ) {
   // file sizes (as decimal numbers) and names, separated by a tab
   // and ending with \r\n.  The last entry is followed by ^Z
   Mode mode = DECOMPRESS;
-  FILE *f = fopen( argv[1], "rb" );
+  FILE *f = fopen( argv[1], "rbe" );
   if( f == nullptr ) {
     mode = COMPRESS;
 
-    f = fopen( argv[1], "wb" );
+    f = fopen( argv[1], "wbe" );
     if( f == nullptr )
       perror( argv[1] ), exit( 1 );
     fprintf( f, "%s -%c\r\n", PROGNAME, option );
@@ -2289,7 +2289,7 @@ int main( int argc, char **argv ) {
       }
 
       // Test if files exist and get their sizes, store in archive header
-      FILE *fi = fopen( filename, "rb" );
+      FILE *fi = fopen( filename, "rbe" );
       if( fi == nullptr )
         perror( filename );
       else {
@@ -2315,9 +2315,9 @@ int main( int argc, char **argv ) {
   // Read existing archive. Two pointers (header and body) track the
   // current filename and current position in the compressed data.
   if( mode == COMPRESS )
-    f = fopen( argv[1], "r+b" );
+    f = fopen( argv[1], "r+be" );
   else
-    f = fopen( argv[1], "rb" );
+    f = fopen( argv[1], "rbe" );
   if( f == nullptr )
     perror( argv[1] ), exit( 1 );
   long header, body;             // file positions in header, body
@@ -2364,7 +2364,7 @@ int main( int argc, char **argv ) {
     fseek( f, body, SEEK_SET );
 
     // If file exists in COMPRESS mode, compare, else compress/decompress
-    FILE *fi = fopen( filename, "rb" );
+    FILE *fi = fopen( filename, "rbe" );
     if( mode == COMPRESS ) {
       if( fi == nullptr )
         perror( filename ), exit( 1 );
@@ -2393,7 +2393,7 @@ int main( int argc, char **argv ) {
             printf( "identical \n" );
         }
       } else { // extract
-        fi = fopen( filename, "wb" );
+        fi = fopen( filename, "wbe" );
         if( fi != nullptr ) {
           for( long i = 0; i < size; ++i ) {
             print_status( i );

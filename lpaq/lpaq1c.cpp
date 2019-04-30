@@ -306,7 +306,7 @@ static const U8 State_table[256][2] = {
 class StateMap {
 protected:
   const int N;         // Number of contexts
-  int cxt;             // Context of last prediction
+  int cxt{ 0 };             // Context of last prediction
   U32 *t;              // cxt -> prediction in high 22 bits, count in low 10 bits
   static int dt[1024]; // i -> 16K/(i+3)
   void update( int y, int limit ) {
@@ -334,7 +334,7 @@ public:
 
 int StateMap::dt[1024] = {0};
 
-StateMap::StateMap( int n ) : N( n ), cxt( 0 ) {
+StateMap::StateMap( int n ) : N( n ) {
   alloc( t, N );
   for( int i = 0; i < N; ++i )
     t[i] = 1 << 31;
@@ -610,7 +610,7 @@ int MatchModel::p( int y, Mixer &m ) {
 int MEM = 0; // Global memory usage = 3*MEM bytes (1<<20 .. 1<<29)
 
 class Predictor {
-  int pr; // next prediction
+  int pr{ 2048 }; // next prediction
 public:
   Predictor();
   int p() const {
@@ -620,7 +620,7 @@ public:
   void update( int y );
 };
 
-Predictor::Predictor() : pr( 2048 ) {}
+Predictor::Predictor()  {}
 
 bool use_order1, use_order2, use_order3, use_order4, use_order5, use_word, use_match, use_apm;
 
@@ -858,7 +858,7 @@ int main( int argc, char **argv ) {
   clock_t start = clock();
 
   // Open input file
-  FILE *in = fopen( argv[3], "rb" );
+  FILE *in = fopen( argv[3], "rbe" );
   if( in == nullptr )
     perror( argv[3] ), exit( 1 );
   FILE *out = 0;
@@ -905,7 +905,7 @@ int main( int argc, char **argv ) {
     if( size < 0 || size >= 0x7FFFFFFF )
       quit( "input file too big" );
     fseek( in, 0, SEEK_SET );
-    out = fopen( argv[4], "wb" );
+    out = fopen( argv[4], "wbe" );
     if( out == nullptr )
       perror( argv[4] ), exit( 1 );
     fprintf( out, "pQ%c%c%ld%ld%ld%ld", 1, argv[1][0], size >> 24, size >> 16, size >> 8, size );
@@ -935,7 +935,7 @@ int main( int argc, char **argv ) {
       quit( "Bad file size" );
 
     // Decompress
-    out = fopen( argv[4], "wb" );
+    out = fopen( argv[4], "wbe" );
     if( out == nullptr )
       perror( argv[4] ), exit( 1 );
     Encoder e( DECOMPRESS, in );

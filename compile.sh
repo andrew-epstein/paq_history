@@ -8,9 +8,8 @@ function task() {
 	FILENAME=$(basename "$1")
 	echo "$FILENAME"
 	FILENAME="${FILENAME%.*}"
-	$CXX -fno-stack-protector -Wall -Weverything $WARN -lz -fno-rtti -std=c++14 -O3 -m64 -march=native -funroll-loops -ftree-vectorize -fdeclspec -DUNIX $1 asm/paq7asm.s -o bin/$FILENAME
-	#$CXX $WARN -lz -std=c++17 -O0 -fdeclspec -DUNIX "$1" asm/paq7asm.s -o "bin/$FILENAME"
-	#clang-tidy -checks=readability-implicit-bool-conversion -fix $1
+	#$CXX -fno-stack-protector -Wall -Weverything $WARN -lz -fno-rtti -std=c++14 -O3 -m64 -march=native -funroll-loops -ftree-vectorize -fdeclspec -DUNIX $1 asm/paq7asm.s -o bin/$FILENAME
+	$CXX $WARN -ferror-limit=1 -lz -std=c++14 -O0 -m64 -fdeclspec -DUNIX "$1" asm/paq7asm.s -o "bin/$FILENAME"
 	if [ $? -ne 0 ]; then
 		echo "$1" >> bad.log
 	fi

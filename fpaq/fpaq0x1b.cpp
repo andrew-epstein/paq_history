@@ -224,10 +224,10 @@ int main( int argc, char **argv ) {
   clock_t start = clock();
 
   // Open files
-  FILE *in = fopen( argv[2], "rb" );
+  FILE *in = fopen( argv[2], "rbe" );
   if( in == nullptr )
     perror( argv[2] ), exit( 1 );
-  FILE *out = fopen( argv[3], "wb" );
+  FILE *out = fopen( argv[3], "wbe" );
   if( out == nullptr )
     perror( argv[3] ), exit( 1 );
   limi = 512000;

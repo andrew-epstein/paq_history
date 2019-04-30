@@ -31,10 +31,10 @@ int EOS = 0; /* for terminating compression */
 */
 
 class Predictor {
-  U32 cxt;        // Context: last 0-8 bits with a leading 1
+  U32 cxt{ 1 };        // Context: last 0-8 bits with a leading 1
   U32 ct[256][2]; // 0 and 1 counts in context cxt
 public:
-  Predictor() : cxt( 1 ) {
+  Predictor()  {
     memset( ct, 0, sizeof( ct ) );
   }
 
@@ -289,10 +289,10 @@ int main( int argc, char **argv ) {
   clock_t start = clock();
 
   // Open files
-  FILE *in = fopen( argv[2], "rb" );
+  FILE *in = fopen( argv[2], "rbe" );
   if( in == nullptr )
     perror( argv[2] ), exit( 1 );
-  FILE *out = fopen( argv[3], "wb" );
+  FILE *out = fopen( argv[3], "wbe" );
   if( out == nullptr )
     perror( argv[3] ), exit( 1 );
   int c;

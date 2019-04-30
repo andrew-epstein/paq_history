@@ -219,7 +219,7 @@ public:
 // 32-bit random number generator based on r(i) = r(i-24) ^ r(i-55)
 class Random {
   U32 table[55]; // Last 55 random values
-  int i;         // Index of current random value in table
+  int i{ 0 };         // Index of current random value in table
 public:
   Random();
   U32 operator()() { // Return 32-bit random number
@@ -232,7 +232,7 @@ public:
   }
 } rnd;
 
-Random::Random() : i( 0 ) { // Seed the table
+Random::Random()  { // Seed the table
   table[0] = 123456789;
   table[1] = 987654321;
   for( int j = 2; j < 55; ++j )
@@ -274,7 +274,7 @@ Although it uses 1/3 less memory, it is 8% slower and gives 0.05% worse
 compression than the 3 byte counter. */
 
 class Counter2 {
-  U8 state;
+  U8 state{ 0 };
   struct E {     // State table entry
     U16 n0, n1;  // Counts represented by state
     U8 s00, s01; // Next state on input 0 without/with probabilistic incr.
@@ -283,7 +283,7 @@ class Counter2 {
   };
   static E table[244]; // State table
 public:
-  Counter2() : state( 0 ) {}
+  Counter2()  {}
   int get0() const {
     return table[state].n0;
   }
@@ -623,12 +623,12 @@ class MatchModel {
   vector<U8> buf;  // Input buffer, wraps at end
   vector<U24> ptr; // Hash table of pointers
   U32 hash[2];     // Hashes of current context up to pos-1
-  int pos;         // Element of buf where next bit will be stored
-  int bpos;        // Number of bits (0-7) stored at buf[pos]
-  int begin;       // Points to first matching byte (does not wrap)
-  int end;         // Points to last matching byte + 1, 0 if no match
+  int pos{ 0 };         // Element of buf where next bit will be stored
+  int bpos{ 0 };        // Number of bits (0-7) stored at buf[pos]
+  int begin{ 0 };       // Points to first matching byte (does not wrap)
+  int end{ 0 };         // Points to last matching byte + 1, 0 if no match
 public:
-  MatchModel() : buf( 0x10000 << MEM ), ptr( 0x4000 << MEM ), pos( 0 ), bpos( 0 ), begin( 0 ), end( 0 ) {
+  MatchModel() : buf( 0x10000 << MEM ), ptr( 0x4000 << MEM ) {
     hash[0] = hash[1] = 0;
   }
   void model( int y, int *n0, int *n1 );
@@ -690,9 +690,9 @@ class RecordModel {
   static int lpos[256][4];        // Position of last 4 bytes
   vector<U8> buf;                 // Rotating history [4K]
   Hashtable<Counter, 15 + MEM> t; // Model
-  int pos;                        // Byte counter
-  int c0;                         // Leading 1 and 0-7 bits
-  int repeat;                     // Cycle length
+  int pos{ 0 };                        // Byte counter
+  int c0{ 1 };                         // Leading 1 and 0-7 bits
+  int repeat{ 1 };                     // Cycle length
   int hash[N];                    // of c0, context and repeat
   Counter *cp[N];                 // Pointer to current counter
 public:
@@ -701,7 +701,7 @@ public:
 } recordModel;
 int RecordModel::lpos[256][4] = {{0}};
 
-RecordModel::RecordModel() : buf( 4096 ), pos( 0 ), c0( 1 ), repeat( 1 ) {
+RecordModel::RecordModel() : buf( 4096 ) {
   hash[0] = hash[1] = 0;
   cp[0] = cp[1] = &t[0];
 }
@@ -759,8 +759,8 @@ class CharModel {
   vector<Counter> t1;              // Order 1 counts [64K]
   Hashtable<Counter, MEM + 16> t2; // Sparse models
   Hashtable<Counter, MEM + 19> t;  // Order 2-7 models
-  int c0;                          // Current partial byte with leading 1 bit
-  int c1, c2, c3, c4, c5, c6, c7;  // Previous bytes
+  int c0{ 1 };                          // Current partial byte with leading 1 bit
+  int c1{ 0 }, c2{ 0 }, c3{ 0 }, c4{ 0 }, c5{ 0 }, c6{ 0 }, c7{ 0 };  // Previous bytes
   vector<U32> cxt;                 // Context hashes [N]
   vector<Counter *> cp;            // Pointers to current counts [N]
 public:
@@ -781,14 +781,7 @@ CharModel::CharModel() :
     t0( 256 ),
     t1( 65536 ),
     t(),
-    c0( 1 ),
-    c1( 0 ),
-    c2( 0 ),
-    c3( 0 ),
-    c4( 0 ),
-    c5( 0 ),
-    c6( 0 ),
-    c7( 0 ),
+    
     cxt( N ),
     cp( N ) {
   for( int i = 0; i < N; ++i )
@@ -854,14 +847,14 @@ class MixModel {
   enum { N = 19, C = 8 }; // Number of models, number of weight contexts
   vector<int> wt;         // Context weights [C, N]
   int bc0[N], bc1[N];     // Bit counts concatenated from various models
-  int cxt2;               // Secondary context to select a weight vector
+  int cxt2{ 0 };               // Secondary context to select a weight vector
 public:
   MixModel();
   ~MixModel();
   void model( int y, int &pr ); // Update with bit y, then put next guess in pr
 } mixModel;
 
-MixModel::MixModel() : wt( C * N ), cxt2( 0 ) {
+MixModel::MixModel() : wt( C * N ) {
   for( int i = 0; i < C * N; ++i )
     wt[i] = 1;
   for( int i = 0; i < N; ++i )
@@ -963,7 +956,7 @@ class Predictor {
 
   // Secondary source encoder element
   struct SSEContext {
-    U8 c1, n; // Count of 1's, count of bits
+    U8 c1{ 0 }, n{ 0 }; // Count of 1's, count of bits
     int p() const {
       return PSCALE * ( c1 * 64 + 1 ) / ( n * 64 + 2 );
     }
@@ -975,13 +968,13 @@ class Predictor {
         n /= 2;
       }
     }
-    SSEContext() : c1( 0 ), n( 0 ) {}
+    SSEContext()  {}
   };
 
   vector<vector<SSEContext>> sse; // [SSE1][SSE2+1] context, mapped prob
   int nextp;                      // p()
-  int ssep;                       // Output of sse
-  int context;                    // SSE context
+  int ssep{ 512 };                       // Output of sse
+  int context{ 0 };                    // SSE context
 public:
   Predictor();
   int p() const {
@@ -1001,7 +994,7 @@ Predictor::SSEMap::SSEMap() {
   }
 }
 
-Predictor::Predictor() : sse( SSE1 ), nextp( PSCALE / 2 ), ssep( 512 ), context( 0 ) {
+Predictor::Predictor() : sse( SSE1 ), nextp( PSCALE / 2 ) {
   // Initialize to sse[context][ssemap(p)] = p
   for( int i = 0; i < SSE1; ++i )
     sse[i].resize( SSE2 + 1 );
@@ -1222,7 +1215,7 @@ int main( int argc, char **argv ) {
   int uncompressed_bytes = 0, compressed_bytes = 0; // Input, output sizes
 
   // Extract files
-  FILE *archive = fopen( argv[1], "rb" );
+  FILE *archive = fopen( argv[1], "rbe" );
   if( archive != nullptr ) {
     if( argc > 2 ) {
       printf( "File %s already exists\n", argv[1] );
@@ -1265,7 +1258,7 @@ int main( int argc, char **argv ) {
       printf( "%10ld %s: ", filesize[i], filename[i].c_str() );
 
       // Compare with existing file
-      FILE *f = fopen( filename[i].c_str(), "rb" );
+      FILE *f = fopen( filename[i].c_str(), "rbe" );
       const long size = filesize[i];
       uncompressed_bytes += size;
       if( f != nullptr ) {
@@ -1285,7 +1278,7 @@ int main( int argc, char **argv ) {
 
       // Extract to new file
       else {
-        f = fopen( filename[i].c_str(), "wb" );
+        f = fopen( filename[i].c_str(), "wbe" );
         if( f == nullptr )
           printf( "cannot create, skipping...\n" );
         for( long j = 0; j < size; ++j ) {
@@ -1322,7 +1315,7 @@ int main( int argc, char **argv ) {
 
     // Get file sizes
     for( int i = 0; i < int( filename.size() ); ++i ) {
-      FILE *f = fopen( filename[i].c_str(), "rb" );
+      FILE *f = fopen( filename[i].c_str(), "rbe" );
       if( f == nullptr ) {
         printf( "File not found, skipping: %s\n", filename[i].c_str() );
         filesize.push_back( -1 );
@@ -1338,7 +1331,7 @@ int main( int argc, char **argv ) {
     }
 
     // Write header
-    archive = fopen( argv[1], "wb" );
+    archive = fopen( argv[1], "wbe" );
     if( archive == nullptr ) {
       printf( "Cannot create archive: %s\n", argv[1] );
       return 1;
@@ -1360,7 +1353,7 @@ int main( int argc, char **argv ) {
       if( size >= 0 ) {
         uncompressed_bytes += size;
         printf( "%-23s %10ld -> ", filename[i].c_str(), size );
-        FILE *f = fopen( filename[i].c_str(), "rb" );
+        FILE *f = fopen( filename[i].c_str(), "rbe" );
         int c;
         for( long j = 0; j < size; ++j ) {
           if( f != nullptr )

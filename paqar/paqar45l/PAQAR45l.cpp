@@ -1513,7 +1513,7 @@ public:
 #endif
 
   void model() {
-    int y = ch( static_cast<int>(bp) == 0 ) & 1;
+    int y = ch( static_cast<int>(static_cast<int>(bp) == 0) ) & 1;
     cp0->add( y );
     cp1->add( y );
     if( bp == 0 ) {
@@ -2459,10 +2459,10 @@ private:
   Predictor predictor;
   Mode mode;     // Compress or decompress?
   FILE *archive; // Compressed data file
-  U32 x1, x2;    // Range, initially [0, 1), scaled by 2^32
-  U32 x;         // Last 4 input bytes of archive.
-  U32 bits_to_follow;
-  U8 bptr, bout, bptrin;
+  U32 x1{ 0 }, x2{ 0xffffffff };    // Range, initially [0, 1), scaled by 2^32
+  U32 x{ 0 };         // Last 4 input bytes of archive.
+  U32 bits_to_follow{ 0 };
+  U8 bptr{ 128 }, bout{ 0 }, bptrin{ 1 };
   int bin;
 
 public:
@@ -2515,7 +2515,7 @@ inline int Encoder::input_bit( void ) {
 }
 
 // Constructor
-Encoder::Encoder() : x1( 0 ), x2( 0xffffffff ), x( 0 ), bits_to_follow( 0 ), bptr( 128 ), bout( 0 ), bptrin( 1 ) {}
+Encoder::Encoder()  {}
 
 Encoder::~Encoder(){};
 
@@ -2872,7 +2872,7 @@ int main( int argc, char **argv ) {
   vector<string> filename;                          // List of names
   vector<long> filesize;                            // Size or -1 if error
   int uncompressed_bytes = 0, compressed_bytes = 0; // Input, output sizes
-  FILE *archive = fopen( argv[1], "rb" );
+  FILE *archive = fopen( argv[1], "rbe" );
 
   // Extract files
   if( archive != nullptr ) {
@@ -2961,7 +2961,7 @@ int main( int argc, char **argv ) {
       printf( "%10ld %s: ", filesize[i], filename[i].c_str() );
 
       // Compare with existing file
-      FILE *f = fopen( filename[i].c_str(), "rb" );
+      FILE *f = fopen( filename[i].c_str(), "rbe" );
       long size = filesize[i];
       uncompressed_bytes += size;
 
@@ -2992,7 +2992,7 @@ int main( int argc, char **argv ) {
       }
       // Extract to new file
       else {
-        f = fopen( filename[i].c_str(), "wb" );
+        f = fopen( filename[i].c_str(), "wbe" );
         if( f == nullptr )
           printf( "cannot create, skipping...\n" );
 
@@ -3037,8 +3037,8 @@ int main( int argc, char **argv ) {
         if( f != nullptr ) {
           if( (exe != 0) && size >= 3 ) {
             fclose( f );
-            f = fopen( filename[i].c_str(), "rb" );
-            FILE *fw = fopen( PAQ_TEMP, "wb" );
+            f = fopen( filename[i].c_str(), "rbe" );
+            FILE *fw = fopen( PAQ_TEMP, "wbe" );
             if( (f == nullptr) || (fw == nullptr) )
               handler();
 
@@ -3088,7 +3088,7 @@ int main( int argc, char **argv ) {
 
     // Get file sizes
     for( i = 0; i < int( filename.size() ); ++i ) {
-      FILE *f = fopen( filename[i].c_str(), "rb" );
+      FILE *f = fopen( filename[i].c_str(), "rbe" );
       if( f == nullptr ) {
         printf( "File not found, skipping: %s\n", filename[i].c_str() );
       } else {
@@ -3122,7 +3122,7 @@ int main( int argc, char **argv ) {
     }
 
     // Write header
-    archive = fopen( argv[1], "wb" );
+    archive = fopen( argv[1], "wbe" );
     if( archive == nullptr ) {
       printf( "Cannot create archive: %s\n", argv[1] );
       return 1;
@@ -3161,13 +3161,13 @@ int main( int argc, char **argv ) {
       if( size >= 0 ) {
         uncompressed_bytes += size;
         printf( "%-23s %10ld -> ", filenames[i].c_str(), size );
-        FILE *f = fopen( filenames[i].c_str(), "rb" );
+        FILE *f = fopen( filenames[i].c_str(), "rbe" );
 
         fsize = size;
         setWeight();
 
         if( (f != nullptr) && (exe != 0) && size >= 3 ) {
-          FILE *fw = fopen( PAQ_TEMP, "wb" );
+          FILE *fw = fopen( PAQ_TEMP, "wbe" );
           if( fw == nullptr )
             handler();
 
@@ -3176,7 +3176,7 @@ int main( int argc, char **argv ) {
           fclose( fw );
           fclose( f );
 
-          f = fopen( PAQ_TEMP, "rb" );
+          f = fopen( PAQ_TEMP, "rbe" );
 
           int b = getc( f );
           e->encode( b );

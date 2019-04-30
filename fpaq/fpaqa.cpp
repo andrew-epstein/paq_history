@@ -103,11 +103,11 @@ Stretch::Stretch() {
 
 class Predictor {
 private:
-  int cxt;             // Context: last 0-8 bits with a leading 1
+  int cxt{ 1 };             // Context: last 0-8 bits with a leading 1
   unsigned int t[512]; // Probability of 1
 
 public:
-  Predictor() : cxt( 1 ) {
+  Predictor()  {
     for( int i = 0; i < 512; i++ )
       t[i] = 32768;
   }
@@ -608,10 +608,10 @@ int main( int argc, char **argv ) {
   clock_t start = clock();
 
   // Open files
-  FILE *in = fopen( argv[2], "rb" );
+  FILE *in = fopen( argv[2], "rbe" );
   if( in == nullptr )
     perror( argv[2] ), exit( 1 );
-  FILE *out = fopen( argv[3], "wb" );
+  FILE *out = fopen( argv[3], "wbe" );
   if( out == nullptr )
     perror( argv[3] ), exit( 1 );
   int c;

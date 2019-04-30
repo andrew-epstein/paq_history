@@ -1144,7 +1144,7 @@ public:
     memset( cxt, 0, 44 );
   }
   void model() {
-    int y = ch( static_cast<int>(bp) == 0 ) & 1;
+    int y = ch( static_cast<int>(static_cast<int>(bp) == 0) ) & 1;
     cp0->add( y );
     cp1->add( y );
     if( bp == 0 ) {
@@ -1268,7 +1268,7 @@ class RecordModel {
   enum { SIZE = 20 };
   CounterMap3 t0, t1, t3, t4, t5, t6, t7, t8, t9, ta;
   CounterMap2 t2;
-  int r1, r2, r3, r4, c1, c2;
+  int r1{ 2 }, r2{ 3 }, r3{ 2 }, r4{ 3 }, c1{ 0 }, c2{ 0 };
 
 public:
   RecordModel() :
@@ -1282,13 +1282,8 @@ public:
       t7( SIZE ),
       t8( SIZE ),
       t9( SIZE ),
-      ta( SIZE ),
-      r1( 2 ),
-      r2( 3 ),
-      r3( 2 ),
-      r4( 3 ),
-      c1( 0 ),
-      c2( 0 ) {}
+      ta( SIZE )
+      {}
   void model() {
     if( bp == 0 ) {
       int c = ch( 1 );
@@ -2037,7 +2032,7 @@ int main( int argc, char **argv ) {
   int uncompressed_bytes = 0, compressed_bytes = 0; // Input, output sizes
 
   // Extract files
-  FILE *archive = fopen( argv[1], "rb" );
+  FILE *archive = fopen( argv[1], "rbe" );
   if( archive != nullptr ) {
     if( argc > 2 ) {
       printf( "File %s already exists\n", argv[1] );
@@ -2089,7 +2084,7 @@ int main( int argc, char **argv ) {
       printf( "%10ld %s: ", filesize[i], filename[i].c_str() );
 
       // Compare with existing file
-      FILE *f = fopen( filename[i].c_str(), "rb" );
+      FILE *f = fopen( filename[i].c_str(), "rbe" );
       long size = filesize[i];
       uncompressed_bytes += size;
       if( f != nullptr ) {
@@ -2110,7 +2105,7 @@ int main( int argc, char **argv ) {
 
       // Extract to new file
       else {
-        f = fopen( filename[i].c_str(), "wb" );
+        f = fopen( filename[i].c_str(), "wbe" );
         if( f == nullptr )
           printf( "cannot create, skipping...\n" );
         fsize = size - 513216;
@@ -2128,7 +2123,7 @@ int main( int argc, char **argv ) {
             int data2write[4] = {0, 0, 0, 0};
 
             fclose( f );
-            f = fopen( filename[i].c_str(), "rb" );
+            f = fopen( filename[i].c_str(), "rbe" );
             fseek( f, 0L, SEEK_END );
             long flen = ftell( f );
             fseek( f, 0L, 0 );
@@ -2138,7 +2133,7 @@ int main( int argc, char **argv ) {
             st = st0 + 256 - ( ( long ) st0 & 255 ); // 256-byte-alignment
             flen = fread( st + CONSTA - 32768, 1, flen, f );
             fclose( f );
-            f = fopen( filename[i].c_str(), "wb" );
+            f = fopen( filename[i].c_str(), "wbe" );
 
             if( data2write[0] != 0 )
               fwrite( ( char * ) data2write[1], 1, data2write[0], f );
@@ -2172,7 +2167,7 @@ int main( int argc, char **argv ) {
     // Get file sizes
     int i;
     for( i = 0; i < int( filename.size() ); ++i ) {
-      FILE *f = fopen( filename[i].c_str(), "rb" );
+      FILE *f = fopen( filename[i].c_str(), "rbe" );
       if( f == nullptr ) {
         printf( "File not found, skipping: %s\n", filename[i].c_str() );
         filesize.push_back( -1 );
@@ -2188,7 +2183,7 @@ int main( int argc, char **argv ) {
     }
 
     // Write header
-    archive = fopen( argv[1], "wb" );
+    archive = fopen( argv[1], "wbe" );
     if( archive == nullptr ) {
       printf( "Cannot create archive: %s\n", argv[1] );
       return 1;
@@ -2210,13 +2205,13 @@ int main( int argc, char **argv ) {
       if( size >= 0 ) {
         uncompressed_bytes += size;
         printf( "%-23s %10ld -> ", filename[i].c_str(), size );
-        FILE *f = fopen( filename[i].c_str(), "rb" );
+        FILE *f = fopen( filename[i].c_str(), "rbe" );
         fsize = size - 513216;
 
         if( (f != nullptr) && (exe != 0) && size > 0 ) {
           char *st0, *st;
           int data2write[4] = {0, 0, 0, 0};
-          FILE *fw = fopen( "paqar11tmp.tmp", "wb" );
+          FILE *fw = fopen( "paqar11tmp.tmp", "wbe" );
 
           fseek( f, 0L, SEEK_END );
           long flen = ftell( f );
@@ -2236,7 +2231,7 @@ int main( int argc, char **argv ) {
 
           fclose( fw );
           fclose( f );
-          f = fopen( "paqar11tmp.tmp", "rb" );
+          f = fopen( "paqar11tmp.tmp", "rbe" );
         }
 
         int c;

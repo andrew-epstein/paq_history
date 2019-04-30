@@ -96,7 +96,7 @@ static const U8 State_table[256][2] = {
 class StateMap {
 protected:
   const int N;        // Number of contexts
-  int cxt;            // Context of last prediction
+  int cxt{ 0 };            // Context of last prediction
   U32 *t;             // cxt -> prediction in high 23 bits, count in low 9 bits
   static int dt[512]; // reciprocal table: i -> 16K/(i+2.5)
 public:
@@ -124,7 +124,7 @@ public:
 
 int StateMap::dt[512] = {0};
 
-StateMap::StateMap( int n ) : N( n ), cxt( 0 ) {
+StateMap::StateMap( int n ) : N( n ) {
   alloc( t, N );
   for( int i = 0; i < N; ++i )
     t[i] = 1 << 31;
@@ -142,12 +142,12 @@ StateMap::StateMap( int n ) : N( n ), cxt( 0 ) {
 */
 
 class Predictor {
-  int cxt; // Context: last 0-8 bits with a leading 1
+  int cxt{ 0 }; // Context: last 0-8 bits with a leading 1
   StateMap sm;
   U8 *state;
 
 public:
-  Predictor() : cxt( 0 ), sm( 0x10000 ) {
+  Predictor() :  sm( 0x10000 ) {
     alloc( state, 0x10000 );
   }
 
@@ -285,10 +285,10 @@ int main( int argc, char **argv ) {
   clock_t start = clock();
 
   // Open files
-  FILE *in = fopen( argv[2], "rb" );
+  FILE *in = fopen( argv[2], "rbe" );
   if( in == nullptr )
     perror( argv[2] ), exit( 1 );
-  FILE *out = fopen( argv[3], "wb" );
+  FILE *out = fopen( argv[3], "wbe" );
   if( out == nullptr )
     perror( argv[3] ), exit( 1 );
   int c;

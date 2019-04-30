@@ -637,7 +637,7 @@ public:
 
 class Random {
   U32 table[55]; // Last 55 random values
-  int i;         // Index of current random value in table
+  int i{ 0 };         // Index of current random value in table
 public:
   Random();
   U32 operator()() { // Return 32-bit random number
@@ -650,7 +650,7 @@ public:
   }
 } rnd;
 
-Random::Random() : i( 0 ) { // Seed the table
+Random::Random()  { // Seed the table
   table[0] = 123456789;
   table[1] = 987654321;
   for( int j = 2; j < 55; ++j )
@@ -697,7 +697,7 @@ in a context.
 */
 
 class Counter {
-  U8 state;
+  U8 state{ 0 };
   struct E {     // State table entry
     U16 n0, n1;  // get0(), get1()
     U8 s00, s01; // Next state on input 0 without/with probabilistic incr.
@@ -706,7 +706,7 @@ class Counter {
   };
   static E table[]; // State table
 public:
-  Counter() : state( 0 ) {}
+  Counter()  {}
   int get0() const {
     return table[state].n0;
   }
@@ -1012,17 +1012,17 @@ It stores all the input so far in a rotating buffer of the last N bytes
   ch.pos(c, i) -- Position of the i'th to last occurrence, i = 0 to 3
 */
 class Ch {
-  U32 N;                    // Buffer size
+  U32 N{ 0 };                    // Buffer size
   U32 N1;                   // Buffer size
-  U8 *buf;                  // [N] last N bytes
-  U32 p;                    // pos()
-  U32 bp;                   // bpos()
-  U32 hi_nibble, lo_nibble; // hi(), lo()
+  U8 *buf{ 0 };                  // [N] last N bytes
+  U32 p{ 0 };                    // pos()
+  U32 bp{ 0 };                   // bpos()
+  U32 hi_nibble{ 0 }, lo_nibble{ 1 }; // hi(), lo()
   U32 lpos[256][4];         // pos(c, i)
   U32 lidx[256];
 
 public:
-  Ch() : N( 0 ), buf( 0 ), p( 0 ), bp( 0 ), hi_nibble( 0 ), lo_nibble( 1 ) {
+  Ch()  {
     memset( lpos, 0, 256 * 4 * sizeof( U32 ) );
     memset( lidx, 0, 256 * sizeof( U32 ) );
   }
@@ -1099,9 +1099,9 @@ class Hashtable {
 private:
   const U32 N; // log2 size in bytes
   struct HashElement {
-    U8 checksum; // Checksum of context, used to detect collisions
+    U8 checksum{ 0 }; // Checksum of context, used to detect collisions
     T c[15];     // 1-byte counters in minor context c
-    HashElement() : checksum( 0 ) {}
+    HashElement()  {}
   };
   HashElement *table; // [2^(N-4)]
   U32 cxt;            // major context
@@ -1765,8 +1765,8 @@ class RecordModel : public Model {
   const int SIZE;
   enum { N = 2 };                    // Number of models
   CounterMap t0, t1, t2, t3, t4, t5; // Model
-  int repeat1, repeat2;              // 2 last cycle lengths
-  int _c1, _c2;
+  int repeat1{ 2 }, repeat2{ 3 };              // 2 last cycle lengths
+  int _c1{ 0 }, _c2{ 0 };
 
 public:
   RecordModel() :
@@ -1776,11 +1776,8 @@ public:
       t2( SIZE ),
       t3( SIZE ),
       t4( SIZE ),
-      t5( SIZE ),
-      repeat1( 2 ),
-      repeat2( 3 ),
-      _c1( 0 ),
-      _c2( 0 ) {}
+      t5( SIZE )
+      {}
   void model();
 };
 
@@ -1845,8 +1842,8 @@ class RecordModel2 : public Model {
   const int SIZE;
   enum { N = 2 };                    // Number of models
   CounterMap t0, t1, t2, t3, t4, t5; // Model
-  int repeat1, repeat2;              // 2 last cycle lengths
-  int _c1, _c2;
+  int repeat1{ 2 }, repeat2{ 3 };              // 2 last cycle lengths
+  int _c1{ 0 }, _c2{ 0 };
 
 public:
   RecordModel2() :
@@ -1856,11 +1853,8 @@ public:
       t2( SIZE ),
       t3( SIZE ),
       t4( SIZE ),
-      t5( SIZE ),
-      repeat1( 2 ),
-      repeat2( 3 ),
-      _c1( 0 ),
-      _c2( 0 ) {}
+      t5( SIZE )
+      {}
   void model();
 };
 
@@ -1926,8 +1920,8 @@ class RecordModel3 : public Model {
   const int SIZE;
   enum { N = 2 };                        // Number of models
   CounterMap t0, t1, t2, t3, t4, t5, t6; // Model
-  int repeat1, repeat2;                  // 2 last cycle lengths
-  int _c1, _c2;
+  int repeat1{ 2 }, repeat2{ 3 };                  // 2 last cycle lengths
+  int _c1{ 0 }, _c2{ 0 };
 
 public:
   RecordModel3() :
@@ -1938,11 +1932,8 @@ public:
       t3( SIZE ),
       t4( SIZE ),
       t5( SIZE ),
-      t6( SIZE ),
-      repeat1( 2 ),
-      repeat2( 3 ),
-      _c1( 0 ),
-      _c2( 0 ) {}
+      t6( SIZE )
+      {}
   void model();
 };
 
@@ -2091,7 +2082,7 @@ class AnalogModel : public Model {
   const int SIZE;
   enum { N = 6 };
   CounterMap t0, t1, t2, t3, t4, t5, t6;
-  int pos3; // pos % 3
+  int pos3{ 0 }; // pos % 3
 public:
   AnalogModel() :
       SIZE( static_cast<int>( MEM >= 4 ) * ( MEM + 13 ) ),
@@ -2101,8 +2092,8 @@ public:
       t3( SIZE ),
       t4( SIZE ),
       t5( SIZE ),
-      t6( SIZE ),
-      pos3( 0 ) {}
+      t6( SIZE )
+      {}
   void model() {
     if( ch.bpos() == 0 ) {
       if( ++pos3 == 3 )
@@ -2195,9 +2186,9 @@ public:
 
 class ExeModel {
   struct S {
-    U32 a; // absolute address, indexed on 8 low order bytes
-    U8 n;  // how many times?
-    S() : a( 0 ), n( 0 ) {}
+    U32 a{ 0 }; // absolute address, indexed on 8 low order bytes
+    U8 n{ 0 };  // how many times?
+    S()  {}
   };
   S t[256]; // E8 history indexed on low order byte
 public:
@@ -2326,7 +2317,7 @@ class Predictor {
 
   // Secondary source encoder element
   struct SSEContext {
-    U8 c1, n; // Count of 1's, count of bits
+    U8 c1{ 0 }, n{ 0 }; // Count of 1's, count of bits
     int p() const {
       return PSCALE * ( c1 * 64 + 1 ) / ( n * 64 + 2 );
     }
@@ -2337,13 +2328,13 @@ class Predictor {
         n /= 2;
       }
     }
-    SSEContext() : c1( 0 ), n( 0 ) {}
+    SSEContext()  {}
   };
 
-  SSEContext ( *sse )[SSE2 + 1]; // [SSE1][SSE2+1] context, mapped probability
+  SSEContext ( *sse )[SSE2 + 1]{ 0 }; // [SSE1][SSE2+1] context, mapped probability
   U32 nextp;                     // p()
-  U32 ssep;                      // Output of sse
-  U32 context;                   // SSE context
+  U32 ssep{ 512 };                      // Output of sse
+  U32 context{ 0 };                   // SSE context
 public:
   Predictor();
   int p() const {
@@ -2363,7 +2354,7 @@ Predictor::SSEMap::SSEMap() {
   }
 }
 
-Predictor::Predictor() : sse( 0 ), nextp( PSCALE / 2 ), ssep( 512 ), context( 0 ) {
+Predictor::Predictor() :  nextp( PSCALE / 2 ) {
   ch.init();
 
   // Initialize to sse[context][ssemap(p)] = p
@@ -2715,7 +2706,7 @@ int main( int argc, char **argv ) {
   int uncompressed_bytes = 0, compressed_bytes = 0; // Input, output sizes
 
   // Extract files
-  FILE *archive = fopen( argv[1], "rb" );
+  FILE *archive = fopen( argv[1], "rbe" );
   if( archive != nullptr ) {
     if( argc > 2 ) {
       printf( "File %s already exists\n", argv[1] );
@@ -2766,7 +2757,7 @@ int main( int argc, char **argv ) {
       printf( "%10ld %s: ", filesize[i], filename[i].c_str() );
 
       // Compare with existing file
-      FILE *f = fopen( filename[i].c_str(), "rb" );
+      FILE *f = fopen( filename[i].c_str(), "rbe" );
       const long size = filesize[i];
       uncompressed_bytes += size;
       if( f != nullptr ) {
@@ -2786,7 +2777,7 @@ int main( int argc, char **argv ) {
 
       // Extract to new file
       else {
-        f = fopen( filename[i].c_str(), "wb" );
+        f = fopen( filename[i].c_str(), "wbe" );
         if( f == nullptr )
           printf( "cannot create, skipping...\n" );
         printf( "      " );
@@ -2828,7 +2819,7 @@ int main( int argc, char **argv ) {
     // Get file sizes
     int i;
     for( i = 0; i < int( filename.size() ); ++i ) {
-      FILE *f = fopen( filename[i].c_str(), "rb" );
+      FILE *f = fopen( filename[i].c_str(), "rbe" );
       if( f == nullptr ) {
         printf( "File not found, skipping: %s\n", filename[i].c_str() );
         filesize.push_back( -1 );
@@ -2844,7 +2835,7 @@ int main( int argc, char **argv ) {
     }
 
     // Write header
-    archive = fopen( argv[1], "wb" );
+    archive = fopen( argv[1], "wbe" );
     if( archive == nullptr ) {
       printf( "Cannot create archive: %s\n", argv[1] );
       return 1;
@@ -2866,7 +2857,7 @@ int main( int argc, char **argv ) {
       if( size >= 0 ) {
         uncompressed_bytes += size;
         printf( "%-23s %10ld -> ", filename[i].c_str(), size );
-        FILE *f = fopen( filename[i].c_str(), "rb" );
+        FILE *f = fopen( filename[i].c_str(), "rbe" );
         int c;
         printf( "      " );
         long step = ceil( ( double ) size / 1000 );

@@ -1488,7 +1488,7 @@ int main( int argc, char **argv ) {
   clock_t start = clock();
 
   // Open input file
-  FILE *in = fopen( argv[2], "rb" ), *out = 0;
+  FILE *in = fopen( argv[2], "rbe" ), *out = 0;
   if( in == nullptr )
     perror( argv[2] ), exit( 1 );
 
@@ -1530,7 +1530,7 @@ int main( int argc, char **argv ) {
 #  endif
 
     // Encode header: version 6, memory option, file size
-    out = fopen( argv[3], "wb" );
+    out = fopen( argv[3], "wbe" );
     if( out == nullptr )
       perror( argv[3] ), exit( 1 );
     fprintf( out, "pQ%c%c%ld%ld%ld%ld%c", 6, argv[1][0], size >> 24, size >> 16, size >> 8, size, method );
@@ -1583,7 +1583,7 @@ int main( int argc, char **argv ) {
 #  endif
 
     // Decompress
-    out = fopen( argv[3], "wb" );
+    out = fopen( argv[3], "wbe" );
     if( out == nullptr )
       perror( argv[3] ), exit( 1 );
     Encoder e( DECOMPRESS, in );

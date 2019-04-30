@@ -544,16 +544,16 @@ long size;
 
 // Track time and memory used
 class ProgramChecker {
-  int memused;        // bytes allocated by Array<T> now
+  int memused{ 0 };        // bytes allocated by Array<T> now
   clock_t start_time; // in ticks
 public:
-  int maxmem;           // most bytes allocated ever
+  int maxmem{ 0 };           // most bytes allocated ever
   void alloc( int n ) { // report memory allocated, may be negative
     memused += n;
     if( memused > maxmem )
       maxmem = memused;
   }
-  ProgramChecker() : memused( 0 ), maxmem( 0 ) {
+  ProgramChecker()  {
     start_time = clock();
     assert( sizeof( uint8 ) == 1 );
     assert( sizeof( uint16 ) == 2 );
@@ -1354,10 +1354,10 @@ public:
 // Counter state -> probability * 256
 class StateMap {
 protected:
-  int cxt;       // context
+  int cxt{ 0 };       // context
   uint16 t[256]; // 256 states -> probability * 64K
 public:
-  StateMap() : cxt( 0 ) {
+  StateMap()  {
     for( int i = 0; i < 256; ++i ) {
       int n0 = nex( i, 2 );
       int n1 = nex( i, 3 );
@@ -2177,7 +2177,7 @@ static int contextModel2() {
 // update(y) trains the predictor with the actual bit (0 or 1).
 
 class Predictor {
-  int pr; // next prediction
+  int pr{ 2048 }; // next prediction
 public:
   Predictor();
   int p() const {
@@ -2187,7 +2187,7 @@ public:
   void update();
 };
 
-Predictor::Predictor() : pr( 2048 ) {}
+Predictor::Predictor()  {}
 
 void Predictor::update() {
   static APM a1( 256 ), a2( 0x8000 ), a3( 0x8000 ), a4( 0x20000 ), a5( 0x10000 ), a6( 0x10000 );
@@ -2692,7 +2692,7 @@ Filter *Filter::make( const char *filename, Encoder *e ) {
     filetype = 0;
     const char *ext = strrchr( filename, '.' );
 
-    FILE *file = fopen( filename, "rb" );
+    FILE *file = fopen( filename, "rbe" );
     if( file != nullptr ) {
       if( fgetc( file ) == 'M' && fgetc( file ) == 'Z' )
         filetype = EXE;
@@ -2749,7 +2749,7 @@ static char *getline( FILE *f = stdin ) {
 
 // Test if files exist and get their sizes, store in archive header
 static void store_in_header( FILE *f, char *filename, long &total_size ) {
-  FILE *fi = fopen( filename, "rb" );
+  FILE *fi = fopen( filename, "rbe" );
   if( fi != nullptr ) {
     fseek( fi, 0, SEEK_END ); // get size
     long size = ftell( fi );
@@ -2823,11 +2823,11 @@ int main( int argc, char **argv ) {
   // and ending with \r\n.  The last entry is followed by ^Z
   Mode mode = DECOMPRESS;
 
-  f = fopen( argv[1], "rb" );
+  f = fopen( argv[1], "rbe" );
   if( f == nullptr ) {
     mode = COMPRESS;
 
-    f = fopen( argv[1], "wb" );
+    f = fopen( argv[1], "wbe" );
     if( f == nullptr )
       perror( argv[1] ), exit( 1 );
     fprintf( f, "%s -%c\r\n", PROGNAME, option );
@@ -2874,7 +2874,7 @@ int main( int argc, char **argv ) {
 
     fputc( 26, f ); // EOF
     fclose( f );
-    f = fopen( argv[1], "r+b" );
+    f = fopen( argv[1], "r+be" );
     if( f == nullptr )
       perror( argv[1] ), exit( 1 );
   }
@@ -2892,7 +2892,7 @@ int main( int argc, char **argv ) {
 
   {
     buf.setsize( MEM * 8 );
-    FILE *dictfile = fopen( "./to_train_models.dic", "rb" ), *tmpfi = fopen( "./tmp_tmp_tmp_tmp.dic", "wb" );
+    FILE *dictfile = fopen( "./to_train_models.dic", "rbe" ), *tmpfi = fopen( "./tmp_tmp_tmp_tmp.dic", "wbe" );
     filetype = 0;
     Encoder en( COMPRESS, tmpfi );
     en.compress( 0 );
@@ -2943,7 +2943,7 @@ int main( int argc, char **argv ) {
     fseek( f, body, SEEK_SET );
 
     // If file exists in COMPRESS mode, compare, else compress/decompress
-    FILE *fi = fopen( filename, "rb" );
+    FILE *fi = fopen( filename, "rbe" );
     filetype = 0;
     if( mode == COMPRESS ) {
       if( fi == nullptr )
@@ -2958,7 +2958,7 @@ int main( int argc, char **argv ) {
       if( fi != nullptr )
         fp->compare( fi, size );
       else { // extract
-        fi = fopen( filename, "wb" );
+        fi = fopen( filename, "wbe" );
         if( fi != nullptr )
           fp->decompress( fi, size );
         else {

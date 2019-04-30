@@ -676,8 +676,8 @@ int equals( const char *a, const char *b ) {
 
 // Track time and memory used
 class ProgramChecker {
-  int memused;        // bytes allocated by Array<T> now
-  int maxmem;         // most bytes allocated ever
+  int memused{ 0 };        // bytes allocated by Array<T> now
+  int maxmem{ 0 };         // most bytes allocated ever
   clock_t start_time; // in ticks
 public:
   void alloc( int n ) { // report memory allocated, may be negative
@@ -685,7 +685,7 @@ public:
     if( memused > maxmem )
       maxmem = memused;
   }
-  ProgramChecker() : memused( 0 ), maxmem( 0 ) {
+  ProgramChecker()  {
     start_time = clock();
     assert( sizeof( U8 ) == 1 );
     assert( sizeof( U16 ) == 2 );
@@ -1402,7 +1402,7 @@ static int dt[1024]; // i -> 16K/(i+3)
 class StateMap {
 protected:
   const int N;  // Number of contexts
-  int cxt;      // Context of last prediction
+  int cxt{ 0 };      // Context of last prediction
   Array<U32> t; // cxt -> prediction in high 22 bits, count in low 10 bits
   inline void update( int limit ) {
     assert( cxt >= 0 && cxt < N );
@@ -1429,7 +1429,7 @@ public:
   }
 };
 
-StateMap::StateMap( int n ) : N( n ), cxt( 0 ), t( n ) {
+StateMap::StateMap( int n ) : N( n ),  t( n ) {
   for( int i = 0; i < N; ++i )
     t[i] = 1 << 31;
 }
@@ -2113,18 +2113,18 @@ void sparseModel( Mixer &m, int seenbefore, int howmany ) {
     }
 
     int fl = 0;
-    if( ( ( c4 & static_cast<unsigned int>(( static_cast<unsigned int>( 0xff ) != 0 ) != 0u) ) ) != 0u ) {
+    if( ( ( c4 & static_cast<unsigned int>(static_cast<unsigned int>( static_cast<unsigned int>( 0xff ) != 0 ) != 0u) ) ) != 0u ) {
       if( isalpha( c4 & 0xff ) != 0 )
         fl = 1;
       else if( ispunct( c4 & 0xff ) != 0 )
         fl = 2;
       else if( isspace( c4 & 0xff ) != 0 )
         fl = 3;
-      else if( ( ( c4 & static_cast<unsigned int>(( static_cast<unsigned int>( 0xff ) == 0xff ) != 0u) ) ) != 0u )
+      else if( ( ( c4 & static_cast<unsigned int>(static_cast<unsigned int>( static_cast<unsigned int>( 0xff ) == 0xff ) != 0u) ) ) != 0u )
         fl = 4;
-      else if( ( ( c4 & static_cast<unsigned int>(( static_cast<unsigned int>( 0xff ) < 16 ) != 0u) ) ) != 0u )
+      else if( ( ( c4 & static_cast<unsigned int>(static_cast<unsigned int>( static_cast<unsigned int>( 0xff ) < 16 ) != 0u) ) ) != 0u )
         fl = 5;
-      else if( ( ( c4 & static_cast<unsigned int>(( static_cast<unsigned int>( 0xff ) < 64 ) != 0u) ) ) != 0u )
+      else if( ( ( c4 & static_cast<unsigned int>(static_cast<unsigned int>( static_cast<unsigned int>( 0xff ) < 64 ) != 0u) ) ) != 0u )
         fl = 6;
       else
         fl = 7;
@@ -3522,7 +3522,7 @@ int contextModel2() {
 // update(y) trains the predictor with the actual bit (0 or 1).
 
 class Predictor {
-  int pr; // next prediction
+  int pr{ 2048 }; // next prediction
 public:
   Predictor();
   int p() const {
@@ -3532,7 +3532,7 @@ public:
   void update();
 };
 
-Predictor::Predictor() : pr( 2048 ) {}
+Predictor::Predictor()  {}
 
 void Predictor::update() {
   static APM1 a( 256 ), a1( 0x10000 ), a2( 0x10000 ), a3( 0x10000 ), a4( 0x10000 ), a5( 0x10000 ), a6( 0x10000 );
@@ -3818,7 +3818,7 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
       const int chn =
           ( ( buf0 >> 24 ) == 0x36
                 ? 6
-                : ( ( ( buf0 >> 24 ) == 0x38 || (( ( ( buf0 & static_cast<unsigned int>(( static_cast<unsigned int>( 0xff ) == 0x38 ) != 0u) ) ) ) != 0u) )
+                : ( ( ( buf0 >> 24 ) == 0x38 || (( ( ( buf0 & static_cast<unsigned int>(static_cast<unsigned int>( static_cast<unsigned int>( 0xff ) == 0x38 ) != 0u) ) ) ) != 0u) )
                         ? 8
                         : 4 ) );
       int len = 0;    // total length of samples
@@ -4217,7 +4217,7 @@ void printStatus( int n ) {
 void compress( const char *filename, int size, Encoder &en ) {
   assert( en.getMode() == COMPRESS );
   assert( filename && filename[0] );
-  FILE *f = fopen( filename, "rb" );
+  FILE *f = fopen( filename, "rbe" );
   if( f == nullptr )
     perror( filename ), quit();
   long start = en.size();
@@ -4291,7 +4291,7 @@ void decompress( const char *filename, long filesize, Encoder &en ) {
   assert( filename && filename[0] );
 
   // Test if output file exists.  If so, then compare.
-  FILE *f = fopen( filename, "rb" );
+  FILE *f = fopen( filename, "rbe" );
   if( f != nullptr ) {
     printf( "Comparing %s %ld -> ", filename, filesize );
     bool found = false; // mismatch?
@@ -4313,7 +4313,7 @@ void decompress( const char *filename, long filesize, Encoder &en ) {
 
   // Create file
   else {
-    f = fopen( filename, "wb" );
+    f = fopen( filename, "wbe" );
     if( f == nullptr ) { // Try creating directories in path and try again
       String path( filename );
       for( int i = 0; path[i] != 0; ++i ) {
@@ -4325,7 +4325,7 @@ void decompress( const char *filename, long filesize, Encoder &en ) {
           path[i] = savechar;
         }
       }
-      f = fopen( filename, "wb" );
+      f = fopen( filename, "wbe" );
     }
 
     // Decompress
@@ -4388,7 +4388,7 @@ const char *getline( FILE *f = stdin ) {
 // Same as expand() except fname is an ordinary file
 int putsize( String &archive, String &s, const char *fname, int base ) {
   int result = 0;
-  FILE *f = fopen( fname, "rb" );
+  FILE *f = fopen( fname, "rbe" );
   if( f != nullptr ) {
     fseek( f, 0, SEEK_END );
     long len = ftell( f );
@@ -4585,7 +4585,7 @@ int main( int argc, char **argv ) {
       //      archive=fopen(archiveName.c_str(), "rb");
       //      if (archive)
       //        printf("%s already exists\n", archiveName.c_str()), quit();
-      archive = fopen( archiveName.c_str(), "wb+" );
+      archive = fopen( archiveName.c_str(), "wb+e" );
       if( archive == nullptr )
         perror( archiveName.c_str() ), quit();
       fprintf( archive, PROGNAME " -%d\r\n%s\x1A", level, header_string.c_str() );
@@ -4613,7 +4613,7 @@ int main( int argc, char **argv ) {
 
     // Decompress: open archive for reading and store file names and sizes
     if( mode == DECOMPRESS ) {
-      archive = fopen( archiveName.c_str(), "rb+" );
+      archive = fopen( archiveName.c_str(), "rb+e" );
       if( archive == nullptr )
         perror( archiveName.c_str() ), quit();
 

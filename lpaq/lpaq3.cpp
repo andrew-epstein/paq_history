@@ -679,7 +679,7 @@ int MatchModel::p() {
 int MEM = 0; // Global memory usage = 3*MEM bytes (1<<20 .. 1<<29)
 
 class Predictor {
-  int pr; // next prediction
+  int pr{ 2048 }; // next prediction
   int *add2order;
 
 public:
@@ -691,7 +691,7 @@ public:
   void update( int y );
 };
 
-Predictor::Predictor() : pr( 2048 ) {
+Predictor::Predictor()  {
   alloc( mxr_wx, MI * MC );
   for( int i = 0; i < MI * MC; ++i )
     mxr_wx[i] = ( 1 << ( DP_SHIFT - 2 ) );
@@ -978,7 +978,7 @@ int main( int argc, char **argv ) {
   clock_t start = clock();
 
   // Open input file
-  FILE *in = fopen( argv[2], "rb" ), *out = 0;
+  FILE *in = fopen( argv[2], "rbe" ), *out = 0;
   if( in == nullptr )
     perror( argv[2] ), exit( 1 );
 
@@ -1005,7 +1005,7 @@ int main( int argc, char **argv ) {
       fseek( in, 0, SEEK_SET );
     }
 
-    out = fopen( argv[3], "wb" );
+    out = fopen( argv[3], "wbe" );
     if( out == nullptr )
       perror( argv[3] ), exit( 1 );
     fprintf( out, "pQ%c%c%ld%ld%ld%ld", 3, argv[1][0], size >> 24, size >> 16, size >> 8, size );
@@ -1035,7 +1035,7 @@ int main( int argc, char **argv ) {
       quit( "Bad file size" );
 
     // Decompress
-    out = fopen( argv[3], "wb" );
+    out = fopen( argv[3], "wbe" );
     if( out == nullptr )
       perror( argv[3] ), exit( 1 );
     Encoder e( DECOMPRESS, in );

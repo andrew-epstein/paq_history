@@ -554,8 +554,8 @@ long size;
 
 // Track time and memory used
 class ProgramChecker {
-  int memused;        // bytes allocated by Array<T> now
-  int maxmem;         // most bytes allocated ever
+  int memused{ 0 };        // bytes allocated by Array<T> now
+  int maxmem{ 0 };         // most bytes allocated ever
   clock_t start_time; // in ticks
 public:
   void alloc( int n ) { // report memory allocated, may be negative
@@ -563,7 +563,7 @@ public:
     if( memused > maxmem )
       maxmem = memused;
   }
-  ProgramChecker() : memused( 0 ), maxmem( 0 ) {
+  ProgramChecker()  {
     start_time = clock();
     assert( sizeof( U8 ) == 1 );
     assert( sizeof( U16 ) == 2 );
@@ -1267,7 +1267,7 @@ APM::APM( int n ) : index( 0 ), N( n ), t( n * 33 ) {
 // Counter state -> probability * 256
 class StateMap {
 protected:
-  int cxt;    // context
+  int cxt{ 0 };    // context
   U16 t[256]; // 256 states -> probability * 64K
 public:
   StateMap();
@@ -1283,7 +1283,7 @@ public:
   }
 };
 
-StateMap::StateMap() : cxt( 0 ) {
+StateMap::StateMap()  {
   for( int i = 0; i < 256; ++i ) {
     int n0 = nex( i, 2 );
     int n1 = nex( i, 3 );
@@ -2694,7 +2694,7 @@ int contextModel2() {
 static U32 WRT_mpw[16] = {3, 3, 3, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 0, 0, 0};
 
 class Predictor {
-  int pr; // next prediction
+  int pr{ 2048 }; // next prediction
 public:
   Predictor();
   int p() const {
@@ -2704,7 +2704,7 @@ public:
   void update();
 };
 
-Predictor::Predictor() : pr( 2048 ) {}
+Predictor::Predictor()  {}
 
 void Predictor::update() {
   static APM a1( 256 ), a2( 0x10000 ), a3( 0x10000 ), a4( 0x10000 ), a5( 0x10000 ), a6( 0x10000 );
@@ -3266,7 +3266,7 @@ Filter *Filter::make( const char *filename, Encoder *e ) {
     filetype = 0;
     const char *ext = strrchr( filename, '.' );
 
-    FILE *file = fopen( filename, "rb" );
+    FILE *file = fopen( filename, "rbe" );
     if( file != nullptr ) {
       if( fgetc( file ) == 'M' && fgetc( file ) == 'Z' )
         filetype = EXE;
@@ -3322,7 +3322,7 @@ char *getline( FILE *f = stdin ) {
 
 // Test if files exist and get their sizes, store in archive header
 void store_in_header( FILE *f, char *filename, long &total_size ) {
-  FILE *fi = fopen( filename, "rb" );
+  FILE *fi = fopen( filename, "rbe" );
   if( fi == nullptr )
     perror( filename );
   else {
@@ -3386,7 +3386,7 @@ int main( int argc, char **argv ) {
   if( option < '0' || option > '9' )
     fprintf( stderr, "Bad option -%c (use -0 to -9)\n", option ), exit( 1 );
 
-  FILE *dictfile = fopen( "./temp_HKCC_dict1.dic", "wb" );
+  FILE *dictfile = fopen( "./temp_HKCC_dict1.dic", "wbe" );
   fwrite( &arrdict[0], 1, sizeof( arrdict ), dictfile );
   fclose( dictfile );
   //if (option>='2') return 0;
@@ -3396,11 +3396,11 @@ int main( int argc, char **argv ) {
   // file sizes (as decimal numbers) and names, separated by a tab
   // and ending with \r\n.  The last entry is followed by ^Z
   Mode mode = DECOMPRESS;
-  FILE *f = fopen( argv[1], "rb" );
+  FILE *f = fopen( argv[1], "rbe" );
   if( f == nullptr ) {
     mode = COMPRESS;
 
-    f = fopen( argv[1], "wb" );
+    f = fopen( argv[1], "wbe" );
     if( f == nullptr )
       perror( argv[1] ), exit( 1 );
     fprintf( f, "%s -%c\r\n", PROGNAME, option );
@@ -3447,9 +3447,9 @@ int main( int argc, char **argv ) {
   // Read existing archive. Two pointers (header and body) track the
   // current filename and current position in the compressed data.
   if( mode == COMPRESS )
-    f = fopen( argv[1], "r+b" );
+    f = fopen( argv[1], "r+be" );
   else
-    f = fopen( argv[1], "rb" );
+    f = fopen( argv[1], "rbe" );
   if( f == nullptr )
     perror( argv[1] ), exit( 1 );
   long header, body;             // file positions in header, body
@@ -3501,7 +3501,7 @@ int main( int argc, char **argv ) {
     fseek( f, body, SEEK_SET );
 
     // If file exists in COMPRESS mode, compare, else compress/decompress
-    FILE *fi = fopen( filename, "rb" );
+    FILE *fi = fopen( filename, "rbe" );
     if( mode == COMPRESS ) {
       if( fi == nullptr )
         perror( filename ), exit( 1 );
@@ -3517,7 +3517,7 @@ int main( int argc, char **argv ) {
       if( fi != nullptr )
         fp->compare( fi, size );
       else { // extract
-        fi = fopen( filename, "wb" );
+        fi = fopen( filename, "wbe" );
         if( fi != nullptr )
           fp->decompress( fi, size );
         else {

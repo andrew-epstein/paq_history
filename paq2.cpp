@@ -344,7 +344,7 @@ public:
 // 32-bit random number generator based on r(i) = r(i-24) ^ r(i-55)
 class Random {
   U32 table[55]; // Last 55 random values
-  int i;         // Index of current random value in table
+  int i{ 0 };         // Index of current random value in table
 public:
   Random();
   U32 operator()() { // Return 32-bit random number
@@ -357,7 +357,7 @@ public:
   }
 } rnd;
 
-Random::Random() : i( 0 ) {
+Random::Random()  {
   for( int j = 0; j < 55; ++j )
     table[j] = 314159265 * j;
   for( int j = 0; j < 10000; ++j )
@@ -474,7 +474,7 @@ Although it uses 1/3 less memory, it is 8% slower and gives 0.05% worse
 compression than the 3 byte counter. */
 
 class Counter : public HashElement {
-  U8 state;
+  U8 state{ 0 };
   struct E {     // State table entry
     U16 n0, n1;  // Counts represented by state
     U8 s00, s01; // Next state on input 0 without/with probabilistic incr.
@@ -483,7 +483,7 @@ class Counter : public HashElement {
   };
   static E table[244]; // State table
 public:
-  Counter( int c = 0 ) : HashElement( c ), state( 0 ) {}
+  Counter( int c = 0 ) : HashElement( c ) {}
   int get0() const {
     return table[state].n0;
   }
@@ -815,21 +815,21 @@ contexts.  */
 
 class NonstationaryPPM : public Model {
   enum { N = 9 };           // Number of contexts
-  int c1;                   // Previous whole byte
-  int cn;                   // c0 mod 53 (low bits of hash)
+  int c1{ 0 };                   // Previous whole byte
+  int cn{ 1 };                   // c0 mod 53 (low bits of hash)
   vector<Counter> counter0; // Counters for context lengths 0 and 1
   vector<Counter> counter1;
   Hashtable<Counter, 24> counter2; // for lengths 2 to N-1
   Counter *cp[N];                  // Pointers to current counters
   U32 hash[N];                     // Hashes of last 0 to N-1 bytes
 public:
-  int c0;                                        // Current 0-7 bits of input with a leading 1
+  int c0{ 1 };                                        // Current 0-7 bits of input with a leading 1
   inline void predict( int &c0, int &c1 ) const; // Add to counts of 0s and 1s
   inline void update( int y );                   // Append bit y (0 or 1) to model
   NonstationaryPPM();
 };
 
-NonstationaryPPM::NonstationaryPPM() : c0( 1 ), c1( 0 ), cn( 1 ), counter0( 256 ), counter1( 65536 ) {
+NonstationaryPPM::NonstationaryPPM() :  counter0( 256 ), counter1( 65536 ) {
   for( int i = 0; i < N; ++i ) {
     cp[i] = &counter0[0];
     hash[i] = 0;
@@ -879,13 +879,13 @@ buffer using a 1M hash table of pointers. */
 class MatchModel : public Model {
   vector<U8> buf;  // Input buffer, wraps at end
   vector<U24> ptr; // Hash table of pointers
-  U32 hash;        // Hash of current context up to pos-1
-  int pos;         // Element of buf where next bit will be stored
-  int bpos;        // Number of bits (0-7) stored at buf[pos]
-  int begin;       // Points to first matching byte (does not wrap)
-  int end;         // Points to last matching byte + 1, 0 if no match
+  U32 hash{ 0 };        // Hash of current context up to pos-1
+  int pos{ 0 };         // Element of buf where next bit will be stored
+  int bpos{ 0 };        // Number of bits (0-7) stored at buf[pos]
+  int begin{ 0 };       // Points to first matching byte (does not wrap)
+  int end{ 0 };         // Points to last matching byte + 1, 0 if no match
 public:
-  MatchModel() : buf( 0x400000 ), ptr( 0x100000 ), hash( 0 ), pos( 0 ), bpos( 0 ), begin( 0 ), end( 0 ) {}
+  MatchModel() : buf( 0x400000 ), ptr( 0x100000 ) {}
   void predict( int &n0, int &n1 ) const {
     if( end != 0 ) {
       int wt = end - begin;
@@ -939,15 +939,15 @@ insensitive) using a trigram model. */
 
 class WordModel {
 private:
-  U32 word1, word0;          // Hash of previous and current word
-  int ww1, ww0;              // Word weights (lengths)
+  U32 word1{ 0 }, word0{ 0 };          // Hash of previous and current word
+  int ww1{ 0 }, ww0{ 0 };              // Word weights (lengths)
   Hashtable<Counter, 22> t1; // Model
-  int c1;                    // Previous char, lower case
-  int c0;                    // 0-7 bits of current char with leading 1 bit
-  int c0h;                   // Small hash of c0
+  int c1{ 0 };                    // Previous char, lower case
+  int c0{ 1 };                    // 0-7 bits of current char with leading 1 bit
+  int c0h{ 1 };                   // Small hash of c0
   Counter *cp0, *cp1;        // Points into t1 current context
 public:
-  WordModel() : word1( 0 ), word0( 0 ), ww1( 0 ), ww0( 0 ), c1( 0 ), c0( 1 ), c0h( 1 ), cp0( &t1[0] ), cp1( &t1[0] ) {}
+  WordModel() :  cp0( &t1[0] ), cp1( &t1[0] ) {}
 
   void predict( int &n0, int &n1 ) const {
     const int wt0 = ( ww0 + 1 ) * ( ww0 + 1 );
@@ -1000,26 +1000,22 @@ as were in the table. */
 
 class CyclicModel : public Model {
   struct E {
-    int p, n, r; // Position of last match, number of matches, interval
-    E() : p( 0 ), n( 0 ), r( 0 ) {}
+    int p{ 0 }, n{ 0 }, r{ 0 }; // Position of last match, number of matches, interval
+    E()  {}
   };
   vector<E> cpos;           // Table of repeat patterns by char
-  int pos;                  // Current bit position in input
-  int c0;                   // Last 8 bits
-  int column;               // Column number, 0 to cycle-1
-  int size;                 // Number of bits before the table expires, 0 to 3*cycle
+  int pos{ 0 };                  // Current bit position in input
+  int c0{ 1 };                   // Last 8 bits
+  int column{ 0 };               // Column number, 0 to cycle-1
+  int size{ 0 };                 // Number of bits before the table expires, 0 to 3*cycle
   Hashtable<Counter, 15> t; // Context is last 8 bits in column
   vector<Counter> t1;       // Context is the column number only
   Counter *cp, *cp1;        // Points to t, t1
 public:
-  int cycle; // Most likely number of columns
+  int cycle{ 0 }; // Most likely number of columns
   CyclicModel() :
       cpos( 256 ),
-      pos( 0 ),
-      c0( 1 ),
-      cycle( 0 ),
-      column( 0 ),
-      size( 0 ),
+      
       t1( 2048 ),
       cp( &t[0] ),
       cp1( &t1[0] ) {}
@@ -1388,7 +1384,7 @@ int main( int argc, char **argv ) {
   vector<long> filesize;   // Size or -1 if error
 
   // Extract files
-  FILE *archive = fopen( argv[1], "rb" );
+  FILE *archive = fopen( argv[1], "rbe" );
   if( archive != nullptr ) {
     if( argc > 2 ) {
       printf( "File %s already exists\n", argv[1] );
@@ -1427,7 +1423,7 @@ int main( int argc, char **argv ) {
       printf( "%10ld %s: ", filesize[i], filename[i].c_str() );
 
       // Compare with existing file
-      FILE *f = fopen( filename[i].c_str(), "rb" );
+      FILE *f = fopen( filename[i].c_str(), "rbe" );
       const long size = filesize[i];
       if( f != nullptr ) {
         bool different = false;
@@ -1446,7 +1442,7 @@ int main( int argc, char **argv ) {
 
       // Extract to new file
       else {
-        f = fopen( filename[i].c_str(), "wb" );
+        f = fopen( filename[i].c_str(), "wbe" );
         if( f == nullptr )
           printf( "cannot create, skipping...\n" );
         for( long j = 0; j < size; ++j ) {
@@ -1481,7 +1477,7 @@ int main( int argc, char **argv ) {
 
     // Get file sizes
     for( int i = 0; i < int( filename.size() ); ++i ) {
-      FILE *f = fopen( filename[i].c_str(), "rb" );
+      FILE *f = fopen( filename[i].c_str(), "rbe" );
       if( f == nullptr ) {
         printf( "File not found, skipping: %s\n", filename[i].c_str() );
         filesize.push_back( -1 );
@@ -1497,7 +1493,7 @@ int main( int argc, char **argv ) {
     }
 
     // Write header
-    archive = fopen( argv[1], "wb" );
+    archive = fopen( argv[1], "wbe" );
     if( archive == nullptr ) {
       printf( "Cannot create archive: %s\n", argv[1] );
       return 1;
@@ -1517,7 +1513,7 @@ int main( int argc, char **argv ) {
       const int size = filesize[i];
       if( size >= 0 ) {
         printf( "%s: ", filename[i].c_str() );
-        FILE *f = fopen( filename[i].c_str(), "rb" );
+        FILE *f = fopen( filename[i].c_str(), "rbe" );
         int c;
         for( long j = 0; j < size; ++j ) {
           if( f != nullptr )

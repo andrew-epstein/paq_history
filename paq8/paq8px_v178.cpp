@@ -270,8 +270,8 @@ void quit( const char *const message = 0 ) {
 // Remark: only Array<T> reports its memory usage, we don't know about other types
 class ProgramChecker {
 private:
-  U64 memused;        // Bytes currently in use (all allocated-all freed)
-  U64 maxmem;         // Most bytes allocated ever
+  U64 memused{ 0 };        // Bytes currently in use (all allocated-all freed)
+  U64 maxmem{ 0 };         // Most bytes allocated ever
   clock_t start_time; // in ticks
 public:
   void alloc( U64 n ) {
@@ -283,7 +283,7 @@ public:
     assert( memused >= n );
     memused -= n;
   }
-  ProgramChecker() : memused( 0 ), maxmem( 0 ) {
+  ProgramChecker()  {
     start_time = clock();
     assert( sizeof( U8 ) == 1 );
     assert( sizeof( U16 ) == 2 );
@@ -750,7 +750,7 @@ public:
   }
   bool open( const char *filename, bool must_succeed ) {
     assert( file == 0 );
-    file = fopen( filename, "rb" );
+    file = fopen( filename, "rbe" );
     bool success = ( file != 0 );
     if( !success && must_succeed ) {
       printf( "Unable to open file %s (%s)", filename, strerror( errno ) );
@@ -761,7 +761,7 @@ public:
   void create( const char *filename ) {
     assert( file == 0 );
     makedirectories( filename );
-    file = fopen( filename, "wb+" );
+    file = fopen( filename, "wb+e" );
     if( file == nullptr ) {
       printf( "Unable to create file %s (%s)", filename, strerror( errno ) );
       quit();
@@ -1015,7 +1015,7 @@ public:
   }
 
   static void appendtofile( const char *filename, const char *s ) {
-    FILE *f = fopen( filename, "a" );
+    FILE *f = fopen( filename, "ae" );
     if( f == nullptr )
       printf( "Warning: could not log compression results to %s\n", filename );
     else {
@@ -1957,7 +1957,7 @@ StateTable::StateTable() : ns( 1024 ) {
   class StateMap {
   protected:
     const int N;  // Number of contexts
-    int cxt;      // Context of last prediction
+    int cxt{ 0 };      // Context of last prediction
     Array<U32> t; // cxt -> prediction in high 22 bits, count in low 10 bits
     inline void update( const int limit ) {
       assert( cxt >= 0 && cxt < N );
@@ -1989,7 +1989,7 @@ StateTable::StateTable() : ns( 1024 ) {
     }
   };
 
-  StateMap::StateMap( const int n, const bool init ) : N( n ), cxt( 0 ), t( n ) {
+  StateMap::StateMap( const int n, const bool init ) : N( n ),  t( n ) {
     if( init && ( N == 256 ) ) {
       for( int i = 0; i < N; ++i ) {
         U32 n0 = nex( i, 2 );
@@ -3013,7 +3013,7 @@ states to provide additional states that are then mapped to predictions.
         int p1 = Maps8b[i]->p( state );
         int n0 = nex( state, 2 ), n1 = nex( state, 3 ), k = -~n1;
         k = ( k * 64 ) / ( k - ~n0 );
-        n0 = -static_cast<int>(n0) == 0, n1 = -static_cast<int>(n1) == 0;
+        n0 = static_cast<int>(-static_cast<int>(n0) == 0), n1 = static_cast<int>(-static_cast<int>(n1) == 0);
         // predict from last byte in context
         if( ( U32 )( ( ByteHistory[i][1] + 256 ) >> ( 8 - bitPos ) ) == bits ) {
           int RunStats = ByteHistory[i][0];                               // count*2, +1 if 2 different bytes seen
@@ -4790,7 +4790,7 @@ states to provide additional states that are then mapped to predictions.
     const static int32_t HashSize = 81929;
     Array<Entry> entries;
     Array<int16_t> table;
-    int32_t index;
+    int32_t index{ 0 };
 #  ifndef NVERBOSE
     uint32_t requests, hits;
 #  endif
@@ -4817,7 +4817,7 @@ states to provide additional states that are then mapped to predictions.
     }
 
   public:
-    WordEmbeddingDictionary() : entries( 0x8000 ), table( HashSize ), index( 0 ) {
+    WordEmbeddingDictionary() : entries( 0x8000 ), table( HashSize ) {
       reset();
     }
     ~WordEmbeddingDictionary() {
@@ -6568,10 +6568,10 @@ states to provide additional states that are then mapped to predictions.
 
   class RingBuffer {
     Array<U8> b;
-    U32 offset;
+    U32 offset{ 0 };
 
   public:
-    RingBuffer( const int i = 0 ) : b( i ), offset( 0 ) {}
+    RingBuffer( const int i = 0 ) : b( i ) {}
     void Fill( const U8 B ) {
       memset( &b[0], B, b.size() );
     }
@@ -11258,7 +11258,7 @@ void dump(const char* msg, int p) {
   class ContextModel {
     normalModel normalmodel;
     ExeModel exeModel;
-    JpegModel *jpegModel;
+    JpegModel *jpegModel{ 0 };
     dmcForest dmcforest;
 #ifdef USE_TEXTMODEL
     TextModel textModel;
@@ -11266,30 +11266,23 @@ void dump(const char* msg, int p) {
     MatchModel matchModel;
     SparseMatchModel sparseMatchModel;
     Mixer *m;
-    Blocktype next_blocktype, blocktype;
-    int blocksize, blockinfo, bytesread;
-    bool readsize;
+    Blocktype next_blocktype{ DEFAULT }, blocktype{ DEFAULT };
+    int blocksize{ 0 }, blockinfo{ 0 }, bytesread{ 0 };
+    bool readsize{ false };
 
   public:
-    bool Bypass;
+    bool Bypass{ false };
     ContextModel() :
         normalmodel( MEM * 32 ),
         exeModel( MEM * 4 ),
-        jpegModel( 0 ),
+        
         dmcforest(),
 #ifdef USE_TEXTMODEL
         textModel( MEM * 16 ),
 #endif //USE_TEXTMODEL
         matchModel( MEM * 4, (options & OPTION_FASTMODE) != 0 ),
-        sparseMatchModel( MEM ),
-
-        next_blocktype( DEFAULT ),
-        blocktype( DEFAULT ),
-        blocksize( 0 ),
-        blockinfo( 0 ),
-        bytesread( 0 ),
-        readsize( false ),
-        Bypass( false ) {
+        sparseMatchModel( MEM )
+        {
 #ifdef USE_WORDMODEL
       m = MixerFactory::CreateMixer(
           1257, 4160 + ( 1888 /*recordModel*/ + 27648 /*exeModel*/ + 30720 /*textModel*/ + 8448 /*sparseMatchModel*/ ),
@@ -11454,7 +11447,7 @@ void dump(const char* msg, int p) {
   // update(y) trains the predictor with the actual bit (0 or 1).
 
   class Predictor {
-    int pr; // next prediction
+    int pr{ 2048 }; // next prediction
     ContextModel contextModel;
     struct {
       APM APMs[4];
@@ -11483,7 +11476,7 @@ void dump(const char* msg, int p) {
   };
 
   Predictor::Predictor() :
-      pr( 2048 ),
+      
       Text{{0x10000, 0x10000, 0x10000, 0x10000}, {0x10000, 0x10000, 0x10000}},
       Image{
           {{0x1000, 0x10000, 0x10000, 0x10000}, {0x10000, 0x10000}}, // color
@@ -12563,7 +12556,7 @@ void dump(const char* msg, int p) {
       if( !( (bmp != 0) || (hdrless != 0) )
           && ( ( ( buf0 & 0xffff ) == 16973 )
                || ( (( buf0 & 0xFFFFFF ) == 0u) && ( ( buf0 >> 24 ) == 0x28 ) ) ) ) //possible 'BM' or headerless DIB
-        imgbpp = bmpx = bmpy = 0, hdrless = static_cast<int>(( U8 ) buf0) == 0u, bmpof = hdrless * 54, bmp = i - hdrless * 16;
+        imgbpp = bmpx = bmpy = 0, hdrless = static_cast<int>(static_cast<int>(( U8 ) buf0) == 0u), bmpof = hdrless * 54, bmp = i - hdrless * 16;
       if( (bmp != 0) || (hdrless != 0) ) {
         const int p = i - bmp;
         if( p == 12 )
@@ -13443,8 +13436,8 @@ void dump(const char* msg, int p) {
     uint8_t buffer[4096];
 
   public:
-    int32_t index;
-    LZWDictionary() : index( 0 ) {
+    int32_t index{ 0 };
+    LZWDictionary()  {
       reset();
     }
     void reset() {
@@ -14621,13 +14614,13 @@ void dump(const char* msg, int p) {
   class ListOfFiles {
   private:
     typedef enum { IN_HEADER, FINISHED_A_FILENAME, FINISHED_A_LINE, PROCESSING_FILENAME } STATE;
-    STATE state; //parsing state
+    STATE state{ IN_HEADER }; //parsing state
     FileName basepath;
     String
         list_of_files; //path/file list in first column, columns separated by tabs, rows separated by newlines, with header in 1st row
     Array<FileName *> names; //all filenames parsed from list_of_files
   public:
-    ListOfFiles() : state( IN_HEADER ), names( 0 ) {}
+    ListOfFiles() :  names( 0 ) {}
     ~ListOfFiles() {
       for( int i = 0; i < ( int ) names.size(); i++ )
         delete names[i];

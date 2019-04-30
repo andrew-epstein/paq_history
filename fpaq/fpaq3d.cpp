@@ -239,17 +239,17 @@ int main( int argc, char **argv ) {
       mbit = 30;
       printf( " Memory :  2 Gb\n" );
     }
-    in = fopen( argv[3], "rb" );
+    in = fopen( argv[3], "rbe" );
     if( in == nullptr )
       perror( argv[3] ), exit( 1 );
-    out = fopen( argv[4], "wb" );
+    out = fopen( argv[4], "wbe" );
     if( out == nullptr )
       perror( argv[4] ), exit( 1 );
   } else {
-    in = fopen( argv[2], "rb" );
+    in = fopen( argv[2], "rbe" );
     if( in == nullptr )
       perror( argv[2] ), exit( 1 );
-    out = fopen( argv[3], "wb" );
+    out = fopen( argv[3], "wbe" );
     if( out == nullptr )
       perror( argv[3] ), exit( 1 );
   }

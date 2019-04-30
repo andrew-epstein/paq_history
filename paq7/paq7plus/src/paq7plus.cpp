@@ -409,13 +409,13 @@ inline T min( const T &a, const T &b ) {
 //////////////////////// Program Checker /////////////////////
 
 class ProgramChecker {
-  int memused;        // bytes allocated by Array<T>
+  int memused{ 0 };        // bytes allocated by Array<T>
   clock_t start_time; // in ticks
 public:
   void alloc( int n ) {
     memused += n;
   } // report memory allocated
-  ProgramChecker() : memused( 0 ) {
+  ProgramChecker()  {
     start_time = clock();
     assert( sizeof( U8 ) == 1 );
     assert( sizeof( U16 ) == 2 );
@@ -999,12 +999,12 @@ APM::APM( int n ) : ProbMap( n ) {
 
 // Counter state -> probability * 256
 class StateMap {
-  int cxt;
+  int cxt{ 0 };
 
 protected:
   Array<U16> t; // 256 states -> probability * 64K
 public:
-  StateMap() : cxt( 0 ), t( 256 ) {
+  StateMap() :  t( 256 ) {
     for( int i = 0; i < 256; ++i )
       t[i] = 65536 * ( nex( i, 3 ) + 1 ) / ( nex( i, 2 ) + nex( i, 3 ) + 2 );
   }
@@ -2145,7 +2145,7 @@ int contextModel2() {
 // update(y) trains the predictor with the actual bit (0 or 1).
 
 class Predictor {
-  int pr; // next prediction
+  int pr{ 2048 }; // next prediction
 public:
   Predictor();
   int p() const {
@@ -2155,7 +2155,7 @@ public:
   void upd();
 };
 
-Predictor::Predictor() : pr( 2048 ) {}
+Predictor::Predictor()  {}
 
 void Predictor::upd() {
   static APM a1( 256 ), a2( 0x10000 ), a3( 0x10000 ), a4( 0x10000 );
@@ -2256,11 +2256,11 @@ private:
   Predictor predictor;
   Mode mode;     // Compress or decompress?
   FILE *archive; // Compressed data file
-  U32 x1, x2;    // Range, initially [0, 1), scaled by 2^32
-  U32 x;         // Last 4 input bytes of archive.
+  U32 x1{ 0 }, x2{ 0xffffffff };    // Range, initially [0, 1), scaled by 2^32
+  U32 x{ 0 };         // Last 4 input bytes of archive.
   int LPS;
-  U32 bits_to_follow;
-  U8 bptr, bout, bptrin;
+  U32 bits_to_follow{ 0 };
+  U8 bptr{ 128 }, bout{ 0 }, bptrin{ 1 };
   int bin;
 
 public:
@@ -2304,7 +2304,7 @@ inline int Encoder::input_bit( void ) {
 }
 
 // Constructor
-Encoder::Encoder() : x1( 0 ), x2( 0xffffffff ), x( 0 ), bits_to_follow( 0 ), bptr( 128 ), bout( 0 ), bptrin( 1 ) {}
+Encoder::Encoder()  {}
 
 Encoder::~Encoder(){};
 
@@ -2604,7 +2604,7 @@ int main( int argc, char **argv ) {
   vector<string> filename;                          // List of names
   vector<long> filesize;                            // Size or -1 if error
   int uncompressed_bytes = 0, compressed_bytes = 0; // Input, output sizes
-  FILE *archive = fopen( argv[1], "rb" );
+  FILE *archive = fopen( argv[1], "rbe" );
 
   // Extract files
   if( archive != nullptr ) {
@@ -2693,7 +2693,7 @@ int main( int argc, char **argv ) {
       printf( "%10ld %s: ", filesize[i], filename[i].c_str() );
 
       // Compare with existing file
-      FILE *f = fopen( filename[i].c_str(), "rb" );
+      FILE *f = fopen( filename[i].c_str(), "rbe" );
       long size = filesize[i];
       uncompressed_bytes += size;
 
@@ -2706,7 +2706,7 @@ int main( int argc, char **argv ) {
       }
       // Extract to new file
       else {
-        f = fopen( filename[i].c_str(), "wb" );
+        f = fopen( filename[i].c_str(), "wbe" );
         if( f == nullptr )
           printf( "cannot create, skipping...\n" );
 
@@ -2740,8 +2740,8 @@ int main( int argc, char **argv ) {
         if( f != nullptr ) {
           if( ( exe != 0 ) && size >= 3 ) {
             fclose( f );
-            f = fopen( filename[i].c_str(), "rb" );
-            FILE *fw = fopen( PAQ_TEMP, "wb" );
+            f = fopen( filename[i].c_str(), "rbe" );
+            FILE *fw = fopen( PAQ_TEMP, "wbe" );
             if( ( f == nullptr ) || ( fw == nullptr ) )
               handler();
 
@@ -2791,7 +2791,7 @@ int main( int argc, char **argv ) {
 
     // Get file sizes
     for( i = 0; i < int( filename.size() ); ++i ) {
-      FILE *f = fopen( filename[i].c_str(), "rb" );
+      FILE *f = fopen( filename[i].c_str(), "rbe" );
       if( f == nullptr ) {
         printf( "File not found, skipping: %s\n", filename[i].c_str() );
       } else {
@@ -2825,7 +2825,7 @@ int main( int argc, char **argv ) {
     }
 
     // Write header
-    archive = fopen( argv[1], "wb" );
+    archive = fopen( argv[1], "wbe" );
     if( archive == nullptr ) {
       printf( "Cannot create archive: %s\n", argv[1] );
       return 1;
@@ -2864,13 +2864,13 @@ int main( int argc, char **argv ) {
       if( size >= 0 ) {
         uncompressed_bytes += size;
         printf( "%-23s %10ld -> ", filenames[i].c_str(), size );
-        FILE *f = fopen( filenames[i].c_str(), "rb" );
+        FILE *f = fopen( filenames[i].c_str(), "rbe" );
 
         fsize = size;
         setWeight();
 
         if( ( f != nullptr ) && ( exe != 0 ) && size >= 3 ) {
-          FILE *fw = fopen( PAQ_TEMP, "wb" );
+          FILE *fw = fopen( PAQ_TEMP, "wbe" );
           if( fw == nullptr )
             handler();
 
@@ -2879,7 +2879,7 @@ int main( int argc, char **argv ) {
           fclose( fw );
           fclose( f );
 
-          f = fopen( PAQ_TEMP, "rb" );
+          f = fopen( PAQ_TEMP, "rbe" );
 
           int b = getc( f );
           e->encode( b );
