@@ -929,7 +929,7 @@ inline int llog( U32 x ) {
     return 256 + ilog( x >> 16 );
   if( x >= 0x10000 )
     return 128 + ilog( x >> 8 );
-  else
+  
     return ilog( x );
 }
 
@@ -3393,7 +3393,7 @@ inline int X( int i, int j ) {
       return s2( ( i + j ) << 2 );
     
       return s2( ( ( i + j - S ) << 2 ) - 2 );
-  } else if( wmode == 17 )
+  } if( wmode == 17 )
     return s2( ( i + j ) << 1 );
   else if( wmode == 10 ) {
     if( i <= S )
@@ -4189,12 +4189,12 @@ public:
       return getc( alt );
     } if( level == 0 )
       return getc( archive );
-    else {
+    
       int c = 0;
       for( int i = 0; i < 8; ++i )
         c += c + code();
       return c;
-    }
+    
   }
 };
 

@@ -803,7 +803,7 @@ inline int llog( U32 x ) {
     return 256 + ilog( x >> 16 );
   if( x >= 0x10000 )
     return 128 + ilog( x >> 8 );
-  else
+  
     return ilog( x );
 }
 
@@ -2977,7 +2977,7 @@ public:
       return getc( alt );
     } if( level == 0 )
       return getc( archive );
-    else {
+    
       int c = 0;
       for( int i = 8; i != 0; --i )
         c += c + code();
@@ -2990,7 +2990,7 @@ public:
       if( c == 'X' || c == '`' )
         c ^= 'X' ^ '`';
       return c;
-    }
+    
   }
 
   void flush() {

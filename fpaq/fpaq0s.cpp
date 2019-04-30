@@ -113,7 +113,7 @@ inline int Encoder::input_bit( void ) {
 
 // Constructor
 Encoder::Encoder( Mode m, FILE *f ) :
-    predictor(),
+    
     mode( m ),
     archive( f ),
     x1( 0 ),

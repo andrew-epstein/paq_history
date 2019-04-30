@@ -854,7 +854,7 @@ inline int llog( U32 x ) {
     return 256 + ilog( x >> 16 );
   if( x >= 0x10000 )
     return 128 + ilog( x >> 8 );
-  else
+  
     return ilog( x );
 }
 
@@ -4042,12 +4042,12 @@ public:
       return getc( alt );
     } if( level == 0 )
       return getc( archive );
-    else {
+    
       int c = 0;
       for( int i = 0; i < 8; ++i )
         c += c + code();
       return c;
-    }
+    
   }
 };
 
@@ -4338,7 +4338,7 @@ Filetype detect( FILE *in, int n, Filetype type, int &info, int &info2, int it =
     return fseek( in, start + deth, SEEK_SET ), deth = 0, dett;
   if( deth == -1 )
     return fseek( in, start, SEEK_SET ), deth = 0, dett;
-  else if( detd != 0 )
+  if( detd != 0 )
     return fseek( in, start + detd, SEEK_SET ), detd = 0, DEFAULT;
 
   for( int i = 0; i < n; ++i ) {
@@ -4539,7 +4539,7 @@ Filetype detect( FILE *in, int n, Filetype type, int &info, int &info2, int it =
             IMG_DET( IMAGE1, bmp - 1, bmpof, ( ( ( bmpx - 1 ) >> 5 ) + 1 ) * 4, bmpy );
           if( imgbpp == 4 )
             IMG_DET( IMAGE4, bmp - 1, bmpof, ( ( bmpx >> 1 ) + 3 ) & -4, bmpy );
-          else if( imgbpp == 8 )
+          if( imgbpp == 8 )
             IMG_DET( IMAGE8, bmp - 1, bmpof, ( bmpx + 3 ) & -4, bmpy );
           else if( imgbpp == 24 )
             IMG_DET( IMAGE24, bmp - 1, bmpof, ( ( bmpx * 3 ) + 3 ) & -4, bmpy );
@@ -4670,7 +4670,7 @@ Filetype detect( FILE *in, int n, Filetype type, int &info, int &info2, int it =
             IMG_DET( IMAGE1, i - 7, tifofs, ( ( tifx - 1 ) >> 3 ) + 1, tify );
           if( tifz == 1 && tifzb == 8 )
             IMG_DET( IMAGE8, i - 7, tifofs, tifx, tify );
-          else if( tifz == 3 && tifzb == 8 )
+          if( tifz == 3 && tifzb == 8 )
             IMG_DET( IMAGE24, i - 7, tifofs, tifx * 3, tify );
         }
       }
@@ -4693,7 +4693,7 @@ Filetype detect( FILE *in, int n, Filetype type, int &info, int &info2, int it =
             IMG_DET( IMAGE8, tga - 7, 18 + 256 * 3, tgax, tgay );
           if( tgat == 2 )
             IMG_DET( IMAGE24, tga - 7, 18, tgax * 3, tgay );
-          else if( tgat == 3 )
+          if( tgat == 3 )
             IMG_DET( IMAGE8, tga - 7, 18, tgax, tgay );
         }
         tga = 0;

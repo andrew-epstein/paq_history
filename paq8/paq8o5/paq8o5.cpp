@@ -905,7 +905,7 @@ inline int llog( U32 x ) {
     return 256 + ilog( x >> 16 );
   if( x >= 0x10000 )
     return 128 + ilog( x >> 8 );
-  else
+  
     return ilog( x );
 }
 
@@ -3172,7 +3172,7 @@ int contextModel2() {
     m.set( ( buf( isbmp ) + buf( 3 ) ) >> 4, 32 );
     m.set( c0, 256 );
     return m.p();
-  } else if( ispgm > 0 ) {
+  } if( ispgm > 0 ) {
     static int col = 0;
     if( ++col >= 8 )
       col = 0; // reset after every 24 columns?
@@ -3382,12 +3382,12 @@ public:
       return getc( alt );
     } if( level == 0 )
       return getc( archive );
-    else {
+    
       int c = 0;
       for( int i = 0; i < 8; ++i )
         c += c + code();
       return c;
-    }
+    
   }
 };
 

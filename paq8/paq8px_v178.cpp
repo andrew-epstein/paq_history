@@ -881,7 +881,7 @@ public:
         filepos++;
         return c;
       
-    } else
+    } 
       return file_on_disk->getchar();
   }
   void putchar( U8 c ) {
@@ -1270,7 +1270,7 @@ public:
       return 256 + ilog( U16( x >> 16 ) );
     if( x >= 0x10000 )
       return 128 + ilog( U16( x >> 8 ) );
-    else
+    
       return ilog( U16( x ) );
   }
 
@@ -3655,7 +3655,7 @@ states to provide additional states that are then mapped to predictions.
         return false;
       if( W->End == W->Start + 1 )
         return IsVowel( ( *W )( 1 ) ) && IsConsonant( ( *W )( 0 ) );
-      else
+      
         return ( IsConsonant( ( *W )( 2 ) ) && IsVowel( ( *W )( 1 ) ) && IsConsonant( ( *W )( 0 ) )
                  && IsShortConsonant( ( *W )( 0 ) ) );
     }
@@ -4452,7 +4452,7 @@ states to provide additional states that are then mapped to predictions.
         W->End--, W->Letters[W->End] = 'l';
         W->Type |= French::Plural;
         return true;
-      } else if( W->EndsWith( "amment" ) && SuffixInRn( W, RV, "amment" ) ) {
+      } if( W->EndsWith( "amment" ) && SuffixInRn( W, RV, "amment" ) ) {
         W->ChangeSuffix( "amment", "ant" );
         ( *ForceStep2a ) = true;
         return true;
@@ -11527,7 +11527,7 @@ void dump(const char* msg, int p) {
         normalmodel( MEM * 32 ),
         exeModel( MEM * 4 ),
         
-        dmcforest(),
+        
 #ifdef USE_TEXTMODEL
         textModel( MEM * 16 ),
 #endif //USE_TEXTMODEL
@@ -11953,12 +11953,12 @@ void dump(const char* msg, int p) {
         return alt->getchar();
       } if( level == 0 )
         return archive->getchar();
-      else {
+      
         int c = 0;
         for( int i = 0; i < 8; ++i )
           c += c + code();
         return c;
-      }
+      
     }
 
     void encode_blocksize( U64 blocksize ) {
@@ -13130,7 +13130,7 @@ void dump(const char* msg, int p) {
                 IMG_DET( IMAGE1, i - 7, tifofs, ( ( tifx - 1 ) >> 3 ) + 1, tify );
               if( tifz == 1 && tifzb == 8 )
                 IMG_DET( IMAGE8, i - 7, tifofs, tifx, tify );
-              else if( tifz == 3 && tifzb == 8 )
+              if( tifz == 3 && tifzb == 8 )
                 IMG_DET( IMAGE24, i - 7, tifofs, tifx * 3, tify );
             } else if( tifc == 5 && tifsize > 0 ) {
               tifx = ( ( tifx + 8 - tifzb ) / ( 9 - tifzb ) ) * tifz;
@@ -13166,7 +13166,7 @@ void dump(const char* msg, int p) {
                        tgay );
             } if( tgat == 2 )
               IMG_DET( ( tgaz == 24 ) ? IMAGE24 : IMAGE32, tga - 7, 18 + tgaid, tgax * ( tgaz >> 3 ), tgay );
-            else if( tgat == 3 )
+            if( tgat == 3 )
               IMG_DET( IMAGE8GRAY, tga - 7, 18 + tgaid, tgax, tgay );
             else if( tgat == 9 || tgat == 11 ) {
               const U64 savedpos = in->curpos();
@@ -14714,7 +14714,7 @@ void dump(const char* msg, int p) {
       return decode_bmp( en, len, info, out, mode, diffFound );
     if( type == IMAGE32 )
       return decode_im32( en, len, info, out, mode, diffFound );
-    else if( type == EXE )
+    if( type == EXE )
       return decode_exe( en, len, out, mode, diffFound );
     else if( type == TEXT_EOL )
       return decode_eol( en, len, out, mode, diffFound );

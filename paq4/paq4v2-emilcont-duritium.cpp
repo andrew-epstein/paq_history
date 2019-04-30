@@ -686,7 +686,7 @@ public:
 CharModel::CharModel() :
     t0( 256 ),
     t1( 65536 ),
-    t(),
+    
     
     cxt( N ),
     cp( N ) {

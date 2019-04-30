@@ -80,7 +80,7 @@ public:
 };
 
 // Constructor
-Encoder::Encoder( Mode m, FILE *f ) : mode( m ), archive( f ), x1( 0 ), x2( 0xffffffff ), x( 0 ), predictor() {
+Encoder::Encoder( Mode m, FILE *f ) : mode( m ), archive( f ), x1( 0 ), x2( 0xffffffff ), x( 0 ) {
   // In DECOMPRESS mode, initialize x to the first 4 bytes of the archive
   if( mode == DECOMPRESS ) {
     for( int i = 0; i < 4; ++i ) {

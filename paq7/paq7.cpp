@@ -544,7 +544,7 @@ inline int llog( U32 x ) {
     return 256 + ilog( x >> 16 );
   if( x >= 0x10000 )
     return 128 + ilog( x >> 8 );
-  else
+  
     return ilog( x );
 }
 
@@ -1012,7 +1012,7 @@ public:
         return p; // match
       if( p[1] == 0 )
         return p[0] = chk, p; // empty
-      else if( p[1] < b )
+      if( p[1] < b )
         b = p[1], bi = i ^ j; // best replacement so far
     }
     ++replaced;
@@ -2104,7 +2104,7 @@ int contextModel2() {
     m.set( c0, 256 );
     m.set( buf( 1 ), 256 );
     return m.p();
-  } else if( isbmp != 0 ) {
+  } if( isbmp != 0 ) {
     static int col = 0;
     if( ++col >= 24 )
       col = 0;
