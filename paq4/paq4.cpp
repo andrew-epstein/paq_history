@@ -202,9 +202,9 @@ inline int size( const T &t ) {
 }
 
 // 8-32 bit unsigned types, adjust as appropriate
-typedef unsigned char U8;
-typedef unsigned short U16;
-typedef unsigned int U32;
+using U8 = unsigned char;
+using U16 = unsigned short;
+using U32 = unsigned int;
 
 class U24 {      // 24-bit unsigned int
   U8 b0, b1, b2; // Low, mid, high byte
@@ -557,7 +557,7 @@ Counter2::E Counter2::table[244] = {
 };
 
 // Counter2 (less memory) or Counter3 (faster and better compression)
-typedef Counter2 Counter;
+using Counter = Counter2;
 
 /* Hashtable<T, N> is a hash table of 2^N elements of type T
 with linear search of M=3 elements in case of collision.  If all elements

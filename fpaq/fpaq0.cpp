@@ -10,7 +10,7 @@
 namespace std {} // namespace std
 using namespace std;
 
-typedef unsigned int U32; // 32 bit type
+using U32 = unsigned int; // 32 bit type
 
 //////////////////////////// Predictor /////////////////////////
 

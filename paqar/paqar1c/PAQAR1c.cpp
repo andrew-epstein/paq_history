@@ -547,9 +547,9 @@ inline int size( const T &t ) {
 }
 
 // 8-32 bit unsigned types, adjust as appropriate
-typedef unsigned char U8;
-typedef unsigned short U16;
-typedef unsigned int U32;
+using U8 = unsigned char;
+using U16 = unsigned short;
+using U32 = unsigned int;
 
 #define Top_value U32( 0XFFFFFFFF ) /* Largest code value */
 /* HALF AND QUARTER POINTS IN THE CODE VALUE RANGE. */

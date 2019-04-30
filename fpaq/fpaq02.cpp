@@ -12,9 +12,9 @@
 namespace std {} // namespace std
 using namespace std;
 
-typedef unsigned char U8;
-typedef unsigned int U32;
-typedef unsigned long long U64;
+using U8 = unsigned char;
+using U32 = unsigned int;
+using U64 = unsigned long long;
 
 #define LOWEST 0x0000000000000000LL
 #define FIRST_QUARTER 0x4000000000000000LL

@@ -588,10 +588,10 @@ inline int size( const T &t ) {
 }
 
 // 8-32 bit unsigned types, adjust as appropriate
-typedef unsigned char U8;
-typedef unsigned short U16;
-typedef unsigned int U32;
-typedef unsigned long long U64;
+using U8 = unsigned char;
+using U16 = unsigned short;
+using U32 = unsigned int;
+using U64 = unsigned long long;
 
 // Fail if out of memory
 void handler() {

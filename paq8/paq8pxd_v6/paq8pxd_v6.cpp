@@ -528,13 +528,13 @@ Replaced 'inline' by 'static' so that the compiler can inline code where possibl
 #endif
 
 // 8, 16, 32 bit unsigned types (adjust as appropriate)
-typedef char sint8;          ///<                signed  8 bits integer
-typedef signed short sint16; ///<       signed 16 bits integer
-typedef signed int sint32;   ///<         signed 32 bits integer
+using sint8 = char;          ///<                signed  8 bits integer
+using sint16 = short; ///<       signed 16 bits integer
+using sint32 = int;   ///<         signed 32 bits integer
 
-typedef unsigned char uint8;   ///<       unsigned  8 bits integer
-typedef unsigned short uint16; ///<     unsigned 16 bits integer
-typedef unsigned int uint32;   ///<       unsigned 32 bits integer
+using uint8 = unsigned char;   ///<       unsigned  8 bits integer
+using uint16 = unsigned short; ///<     unsigned 16 bits integer
+using uint32 = unsigned int;   ///<       unsigned 32 bits integer
 
 /** Computes the minimum of \a x and \a y. */
 #if !defined( MIN )

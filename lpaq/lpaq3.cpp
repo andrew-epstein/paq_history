@@ -184,9 +184,9 @@ To compile (g++ 3.4.5, upx 3.00w):
 #include <assert.h>
 
 // 8, 16, 32 bit unsigned types (adjust as appropriate)
-typedef unsigned char U8;
-typedef unsigned short U16;
-typedef unsigned int U32;
+using U8 = unsigned char;
+using U16 = unsigned short;
+using U32 = unsigned int;
 
 // Error handler: print message if any, and exit
 void quit( const char *message = 0 ) {

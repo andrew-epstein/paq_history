@@ -657,9 +657,9 @@ Model long matches directly after normal model (from paq8p3)
 #  define DEFAULT_CMODE 5
 #endif
 // 8, 16, 32 bit unsigned types (adjust as appropriate)
-typedef unsigned char U8;
-typedef unsigned short U16;
-typedef unsigned int U32;
+using U8 = unsigned char;
+using U16 = unsigned short;
+using U32 = unsigned int;
 
 // min, max functions
 #ifndef WINDOWS
@@ -3436,7 +3436,7 @@ typedef enum { DEFAULT, JPEG, HDR, IMAGE1, IMAGE8, IMAGE24, AUDIO, EXE, TEXT } F
 
 int dmodelcount;
 int useSparseModel;
-typedef void ( *modelpointer )( Mixer & );
+using modelpointer = void (*)(Mixer &);
 modelpointer *defaultmodels;
 
 // This combines all the context models with a Mixer.

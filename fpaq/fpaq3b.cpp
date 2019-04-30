@@ -9,8 +9,8 @@
 #include <cassert>
 namespace std {} // namespace std
 using namespace std;
-typedef unsigned char U8;
-typedef unsigned int U32;           // 32 bit type
+using U8 = unsigned char;
+using U32 = unsigned int;           // 32 bit type
 #define Top_value U32( 0XFFFFFFFF ) /* Largest code value */
 /* HALF AND QUARTER POINTS IN THE CODE VALUE RANGE. */
 #define First_qtr U32( Top_value / 4 + 1 )   /* Point after first quarter    */

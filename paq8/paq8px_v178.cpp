@@ -212,10 +212,10 @@ int simd_detect() {
 //////////////////////// Type definitions /////////////////////////////////////////
 
 // shortcuts for unsigned 8, 16, 32 bit integer types
-typedef uint8_t U8;
-typedef uint16_t U16;
-typedef uint32_t U32;
-typedef uint64_t U64;
+using U8 = uint8_t;
+using U16 = uint16_t;
+using U32 = uint32_t;
+using U64 = uint64_t;
 
 //////////////////////// Helper functions /////////////////////////////////////////
 

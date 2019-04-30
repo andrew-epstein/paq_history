@@ -54,9 +54,9 @@ using std::vector;
 const int MEM = 6; // 0-8 = 1M, 2M ... 256M memory model.  6 = 64M
 
 // 8-32 bit unsigned types, adjust as appropriate
-typedef unsigned char U8;
-typedef unsigned short U16;
-typedef unsigned int U32;
+using U8 = unsigned char;
+using U16 = unsigned short;
+using U32 = unsigned int;
 
 class U24 {      // 24-bit unsigned int
   U8 b0, b1, b2; // Low, mid, high byte

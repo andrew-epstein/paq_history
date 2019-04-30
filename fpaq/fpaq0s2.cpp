@@ -11,8 +11,8 @@
 namespace std {} // namespace std
 using namespace std;
 
-typedef unsigned char U8;
-typedef unsigned int U32; // 32 bit type
+using U8 = unsigned char;
+using U32 = unsigned int; // 32 bit type
 int cxt;                  // Context: last 0-8 bits with a leading 1
 int ct[65536][256][2];    // 0 and 1 counts in context cxt [128MB]
 U32 rc, r1, r2;

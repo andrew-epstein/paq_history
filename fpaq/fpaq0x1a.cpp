@@ -13,7 +13,7 @@ namespace std {} // namespace std
 using namespace std;
 int cxt;                           // Context: last 0-8 bits with a leading 1
 unsigned short ct[524288][512][2]; // 0 and 1 counts in context cxt (1 GB of memory)
-typedef unsigned int U32;          // 32 bit type
+using U32 = unsigned int;          // 32 bit type
 
 U32 rc, r1, r2, r3, ry; //  old two bytes
 U32 x1, x2;             // Range, initially [0, 1), scaled by 2^32

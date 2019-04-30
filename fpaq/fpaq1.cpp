@@ -11,8 +11,8 @@
 namespace std {} // namespace std
 using namespace std;
 
-typedef unsigned int U32; // 32, 64 bit unsigned integer types
-typedef unsigned long long U64;
+using U32 = unsigned int; // 32, 64 bit unsigned integer types
+using U64 = unsigned long long;
 
 //////////////////////////// Predictor /////////////////////////
 

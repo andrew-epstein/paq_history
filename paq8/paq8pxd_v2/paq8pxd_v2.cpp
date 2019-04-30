@@ -643,9 +643,9 @@ commented out .pbm .pgm .ppm detection (fails on enwik9, false positive)
 #endif
 
 // 8, 16, 32 bit unsigned types (adjust as appropriate)
-typedef unsigned char U8;
-typedef unsigned short U16;
-typedef unsigned int U32;
+using U8 = unsigned char;
+using U16 = unsigned short;
+using U32 = unsigned int;
 
 // min, max functions
 #ifndef WINDOWS
