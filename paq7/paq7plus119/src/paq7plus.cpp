@@ -1156,8 +1156,8 @@ public:
     int p0 = 255 - p1;
     m.add( p1 - p0 );
     m.add( st * static_cast<int>( static_cast<int>( static_cast<int>( n1 ) == 0 - static_cast<int>( n0 ) ) == 0 ) );
-    m.add( ( ( p0 & ( static_cast<int>( -static_cast<int>( n1 ) ) == 0 ) ) )
-           - ( ( p1 & ( static_cast<int>( -static_cast<int>( n0 ) ) == 0 ) ) ) );
+    m.add( ( ( p0 & static_cast<int>( static_cast<int>( -static_cast<int>( n1 ) ) == 0 ) ) )
+           - ( ( p1 & static_cast<int>( static_cast<int>( -static_cast<int>( n0 ) ) == 0 ) ) ) );
     m.add( ( -static_cast<int>( LB[s] == 1 ) & p1 ) - ( -static_cast<int>( LB[s] == 2 ) & p0 ) );
     return static_cast<int>( s > 0 );
   }
@@ -1195,8 +1195,8 @@ public:
     int p0 = 255 - p1;
     m.add( p1 - p0 );
     m.add( st * static_cast<int>( static_cast<int>( static_cast<int>( n1 ) == 0 - static_cast<int>( n0 ) ) == 0 ) );
-    m.add( ( ( p0 & ( static_cast<int>( -static_cast<int>( n1 ) ) == 0 ) ) )
-           - ( ( p1 & ( static_cast<int>( -static_cast<int>( n0 ) ) == 0 ) ) ) );
+    m.add( ( ( p0 & static_cast<int>( static_cast<int>( -static_cast<int>( n1 ) ) == 0 ) ) )
+           - ( ( p1 & static_cast<int>( static_cast<int>( -static_cast<int>( n0 ) ) == 0 ) ) ) );
     m.add( ( -static_cast<int>( LB[s] == 1 ) & p1 ) - ( -static_cast<int>( LB[s] == 2 ) & p0 ) );
     return static_cast<int>( s > 0 );
   }
@@ -2022,7 +2022,7 @@ int jpegModel( Mixer &m ) {
   const int coef = ( mcupos & 63 ) | color[mcupos >> 6] << 6;
   jassert( coef >= 0 && coef < 256 );
   if( hbcount == 0 ) {
-    const int mpos = ( mcupos >> 4 | ( static_cast<int>( static_cast<int>( ( mcupos & -64 ) ) ) == 0 << 7 ) );
+    const int mpos = ( mcupos >> 4 | static_cast<int>( static_cast<int>( static_cast<int>( ( mcupos & -64 ) ) ) == 0 << 7 ) );
     int n = 0;
     cxt[0] = hash( ++n, hc, mcupos >> 2, min( 3, mcupos & 63 ) );
     cxt[1] = hash( ++n, hc, mpos >> 4, cbuf[cpos - mcusize] );

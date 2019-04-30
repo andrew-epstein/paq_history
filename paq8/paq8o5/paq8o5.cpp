@@ -2038,18 +2038,18 @@ void sparseModel( Mixer &m, int seenbefore, int howmany ) {
     }
 
     int fl = 0;
-    if( ( ( c4 & ( static_cast<unsigned int>( 0xff ) != 0 ) != 0u ) ) ) {
+    if( ( ( c4 & static_cast<unsigned int>(( static_cast<unsigned int>( 0xff ) != 0 ) != 0u) ) ) != 0u ) {
       if( isalpha( c4 & 0xff ) != 0 )
         fl = 1;
       else if( ispunct( c4 & 0xff ) != 0 )
         fl = 2;
       else if( isspace( c4 & 0xff ) != 0 )
         fl = 3;
-      else if( ( ( c4 & ( static_cast<unsigned int>( 0xff ) == 0xff ) != 0u ) ) )
+      else if( ( ( c4 & static_cast<unsigned int>(( static_cast<unsigned int>( 0xff ) == 0xff ) != 0u) ) ) != 0u )
         fl = 4;
-      else if( ( ( c4 & ( static_cast<unsigned int>( 0xff ) < 16 ) != 0u ) ) )
+      else if( ( ( c4 & static_cast<unsigned int>(( static_cast<unsigned int>( 0xff ) < 16 ) != 0u) ) ) != 0u )
         fl = 5;
-      else if( ( ( c4 & ( static_cast<unsigned int>( 0xff ) < 64 ) != 0u ) ) )
+      else if( ( ( c4 & static_cast<unsigned int>(( static_cast<unsigned int>( 0xff ) < 64 ) != 0u) ) ) != 0u )
         fl = 6;
       else
         fl = 7;
@@ -2860,7 +2860,7 @@ int jpegModel( Mixer &m ) {
   jassert( coef >= 0 && coef < 256 );
   const int zu = zzu[mcupos & 63], zv = zzv[mcupos & 63];
   if( hbcount == 0 ) {
-    const int mpos = mcupos >> 4 | static_cast<int>( ( mcupos & -64 ) ) == 0 << 7;
+    const int mpos = mcupos >> 4 | static_cast<int>(static_cast<int>( ( mcupos & -64 ) ) == 0 << 7);
     int n = 0;
     cxt[0] = hash( ++n, hc, mcupos >> 2, min( 3, mcupos & 63 ) );
     cxt[1] = hash( ++n, hc, rs1, comp, adv_pred[2] );

@@ -2147,18 +2147,18 @@ void sparseModel( Mixer &m, int seenbefore, int howmany ) {
     }
 
     int fl = 0;
-    if( ( ( c4 & ( static_cast<unsigned int>( 0xff ) != 0 ) != 0u ) ) ) {
+    if( ( ( c4 & static_cast<unsigned int>(( static_cast<unsigned int>( 0xff ) != 0 ) != 0u) ) ) != 0u ) {
       if( isalpha( c4 & 0xff ) != 0 )
         fl = 1;
       else if( ispunct( c4 & 0xff ) != 0 )
         fl = 2;
       else if( isspace( c4 & 0xff ) != 0 )
         fl = 3;
-      else if( ( ( c4 & ( static_cast<unsigned int>( 0xff ) == 0xff ) != 0u ) ) )
+      else if( ( ( c4 & static_cast<unsigned int>(( static_cast<unsigned int>( 0xff ) == 0xff ) != 0u) ) ) != 0u )
         fl = 4;
-      else if( ( ( c4 & ( static_cast<unsigned int>( 0xff ) < 16 ) != 0u ) ) )
+      else if( ( ( c4 & static_cast<unsigned int>(( static_cast<unsigned int>( 0xff ) < 16 ) != 0u) ) ) != 0u )
         fl = 5;
-      else if( ( ( c4 & ( static_cast<unsigned int>( 0xff ) < 64 ) != 0u ) ) )
+      else if( ( ( c4 & static_cast<unsigned int>(( static_cast<unsigned int>( 0xff ) < 64 ) != 0u) ) ) != 0u )
         fl = 6;
       else
         fl = 7;
@@ -4645,9 +4645,9 @@ Filetype detect( FILE *in, int n, Filetype type ) {
         if( wavsize == 0 )
           wavi = wavdatas = wavsize = 0;
       }
-      if( ( i - wavi ) == 8 && ( static_cast<int>( ( ( buf0 ) ) == 0u == 'WAVE' ) ) )
+      if( ( i - wavi ) == 8 && (( static_cast<int>( static_cast<int>(( ( buf0 ) ) == 0u) == 'WAVE' ) ) != 0) )
         wavi = wavdatas = wavsize = 0; //'WAVE'
-      if( ( i - wavi ) == 12 && ( static_cast<int>( ( ( buf0 ) ) == 0u == 'fmt ' ) ) )
+      if( ( i - wavi ) == 12 && (( static_cast<int>( static_cast<int>(( ( buf0 ) ) == 0u) == 'fmt ' ) ) != 0) )
         wavi = wavdatas = wavsize = 0; //'fmt '
       if( ( i - wavi ) == 16 ) {
         wavchunkSize = bswap( buf0 );
@@ -4660,14 +4660,14 @@ Filetype detect( FILE *in, int n, Filetype type ) {
             wavChannels=(buf0&0xFFFF)>>8;
             if (wavChannels!=1 || wavChannels!=2) wavi=wavdatas=wavsize=0;} // if not mono, stereo
         } */
-      if( ( i - wavi ) == 36 && static_cast<int>( ( ( buf0 ) ) == 0u == 'data' ) )
+      if( ( i - wavi ) == 36 && (static_cast<int>( static_cast<int>(( ( buf0 ) ) == 0u) == 'data' ) != 0) )
         wavi = wavdatas = wavsize = 0; //'data'
       if( ( i - wavi ) == 40 ) {
         wavdatas = bswap( buf0 );
         if( wavdatas == 0 || ( wavsize < ( wavdatas + 0x24 ) ) )
           wavi = wavdatas = wavsize = 0;
       }
-      if( static_cast<int>( ( ( wavsize ) ) == 0 == 0 ) && static_cast<int>( ( ( wavdatas ) ) == 0 == 0 ) ) {
+      if( (static_cast<int>( static_cast<int>(( ( wavsize ) ) == 0) == 0 ) != 0) && (static_cast<int>( static_cast<int>(( ( wavdatas ) ) == 0) == 0 ) != 0) ) {
         if( type == WAVFILE )
           return fseek( in, start + wavsize, SEEK_SET ), DEFAULT;
         return fseek( in, start + wavi - 3, SEEK_SET ), WAVFILE;

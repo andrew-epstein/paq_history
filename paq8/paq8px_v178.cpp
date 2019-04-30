@@ -238,7 +238,7 @@ class IntentionalException : public std::exception {};
 
 // Error handler: print message if any, and exit
 void quit( const char *const message = 0 ) {
-  if( message )
+  if( message != nullptr )
     printf( "\n%s", message );
   printf( "\n" );
   throw IntentionalException();
@@ -641,7 +641,7 @@ static void makedirectories( const char *filename ) {
     start = 2; //skip drive letter (c:)
   if( path[start] == '/' || path[start] == '\\' )
     start++; //skip leading slashes (root dir)
-  for( int i = start; path[i]; ++i ) {
+  for( int i = start; path[i] != 0; ++i ) {
     if( path[i] == '/' || path[i] == '\\' ) {
       char savechar = path[i];
       path[i] = 0;
@@ -696,7 +696,7 @@ public:
   virtual int getchar() = 0;
   virtual void putchar( U8 c ) = 0;
   void append( const char *s ) {
-    for( int i = 0; s[i]; i++ )
+    for( int i = 0; s[i] != 0; i++ )
       putchar( s[i] );
   }
   virtual U64 blockread( U8 *ptr, U64 count ) = 0;
@@ -762,7 +762,7 @@ public:
     assert( file == 0 );
     makedirectories( filename );
     file = fopen( filename, "wb+" );
-    if( !file ) {
+    if( file == nullptr ) {
       printf( "Unable to create file %s (%s)", filename, strerror( errno ) );
       quit();
     }
@@ -770,13 +770,13 @@ public:
   void createtmp() {
     assert( file == 0 );
     file = maketmpfile();
-    if( !file ) {
+    if( file == nullptr ) {
       printf( "Unable to create temporary file (%s)", strerror( errno ) );
       quit();
     }
   }
   void close() {
-    if( file )
+    if( file != nullptr )
       fclose( file );
     file = 0;
   }
@@ -818,7 +818,7 @@ private:
   U64 filepos;
   U64 filesize;
   void forget_content_in_ram() {
-    if( content_in_ram ) {
+    if( content_in_ram != nullptr ) {
       delete content_in_ram;
       content_in_ram = 0;
       filepos = 0;
@@ -828,7 +828,7 @@ private:
   //file on disk
   FileDisk *file_on_disk;
   void forget_file_on_disk() {
-    if( file_on_disk ) {
+    if( file_on_disk != nullptr ) {
       file_on_disk->close();
       delete file_on_disk;
       file_on_disk = 0;
@@ -872,7 +872,7 @@ public:
     forget_file_on_disk();
   }
   int getchar() {
-    if( content_in_ram ) {
+    if( content_in_ram != nullptr ) {
       if( filepos >= filesize )
         return EOF;
       else {
@@ -884,7 +884,7 @@ public:
       return file_on_disk->getchar();
   }
   void putchar( U8 c ) {
-    if( content_in_ram ) {
+    if( content_in_ram != nullptr ) {
       if( filepos < MAX_RAM_FOR_TMP_CONTENT ) {
         if( filepos == filesize ) {
           content_in_ram->push_back( c );
@@ -899,7 +899,7 @@ public:
     file_on_disk->putchar( c );
   }
   U64 blockread( U8 *ptr, U64 count ) {
-    if( content_in_ram ) {
+    if( content_in_ram != nullptr ) {
       U64 available = filesize - filepos;
       if( available < count )
         count = available;
@@ -911,7 +911,7 @@ public:
       return file_on_disk->blockread( ptr, count );
   }
   void blockwrite( U8 *ptr, U64 count ) {
-    if( content_in_ram ) {
+    if( content_in_ram != nullptr ) {
       if( filepos + count <= MAX_RAM_FOR_TMP_CONTENT ) {
         content_in_ram->resize( ( U32 )( filepos + count ) );
         if( count > 0 )
@@ -925,7 +925,7 @@ public:
     file_on_disk->blockwrite( ptr, count );
   }
   void setpos( U64 newpos ) {
-    if( content_in_ram ) {
+    if( content_in_ram != nullptr ) {
       if( newpos > filesize )
         ram_to_disk(); //panic: we don't support seeking past end of file (but stdio does) - let's switch to disk
       else {
@@ -936,19 +936,19 @@ public:
     file_on_disk->setpos( newpos );
   }
   void setend() {
-    if( content_in_ram )
+    if( content_in_ram != nullptr )
       filepos = filesize;
     else
       file_on_disk->setend();
   }
   U64 curpos() {
-    if( content_in_ram )
+    if( content_in_ram != nullptr )
       return filepos;
     else
       return file_on_disk->curpos();
   }
   bool eof() {
-    if( content_in_ram )
+    if( content_in_ram != nullptr )
       return filepos >= filesize;
     else
       return file_on_disk->eof();
@@ -1031,7 +1031,7 @@ public:
     return ( FileType == FILE_TYPE_PIPE ) || ( FileType == FILE_TYPE_DISK );
 #endif
 #ifdef UNIX
-    return !isatty( fileno( stdout ) );
+    return isatty( fileno( stdout ) ) == 0;
 #endif
   }
   static bool to_screen = !isoutputdirected();
@@ -1768,7 +1768,7 @@ StateTable::StateTable() : ns( 1024 ) {
             train_simd_sse2( &tx[0], &wx[cxt[i] * N], nx, err * rates[i] );
           if( simd == SIMD_AVX2 )
             train_simd_avx2( &tx[0], &wx[cxt[i] * N], nx, err * rates[i] );
-          if( options & OPTION_ADAPTIVE ) {
+          if( (options & OPTION_ADAPTIVE) != 0 ) {
             U32 logErr = min( 0xF, ilog2( abs( err ) ) );
             info[i].Sum -= SQR( info[i].Data[1] >> 28 );
             info[i].Data[1] <<= 4;
@@ -1807,7 +1807,7 @@ StateTable::StateTable() : ns( 1024 ) {
       assert( ncxt < S );
       assert( 0 <= cx && cx < range );
       assert( base + range <= M );
-      if( !( options & OPTION_ADAPTIVE ) )
+      if( ( options & OPTION_ADAPTIVE ) == 0 )
         rates[ncxt] = rate;
       cxt[ncxt++] = base + cx;
       base += range;
@@ -2357,7 +2357,7 @@ StateTable::StateTable() : ns( 1024 ) {
         m.add( sign * ( ilog( cp[0] + 1 ) << 3 ) );
       } else
         m.add( 0 ); //p=0.5
-      return cp[0] != 0;
+      return static_cast<int>(cp[0] != 0);
     }
   };
 
@@ -2402,7 +2402,7 @@ Uses (2^(BitsOfContext+1))*((2^InputBits)-1) bytes of memory.
     }
     void mix( Mixer &m, const int rate = 7, const int Multiplier = 1, const int Divisor = 4 ) {
       *cp += ( ( y << 16 ) - ( *cp ) + ( 1 << ( rate - 1 ) ) ) >> rate;
-      B += ( y && B > 0 );
+      B += static_cast<int>( (y != 0) && B > 0 );
       cp = &Data[Context + B];
       int Prediction = ( *cp ) >> 4;
       m.add( ( stretch( Prediction ) * Multiplier ) / Divisor );
@@ -2469,7 +2469,7 @@ Uses (2^(BitsOfContext+1))*((2^InputBits)-1) bytes of memory.
       Prediction = min( 0x3FFFFF, max( 0, Prediction + Error ) );
       *cp = ( Prediction << 10 ) | Count;
       // predict
-      B += ( y && B > 0 );
+      B += static_cast<int>( (y != 0) && B > 0 );
       cp = &Data[Context + B];
       Prediction = ( *cp ) >> 20;
       m.add( ( stretch( Prediction ) * Multiplier ) / Divisor );
@@ -2514,7 +2514,7 @@ Uses (2^(BitsOfContext+1))*((2^InputBits)-1) bytes of memory.
       // update
       *cp = nex( *cp, y );
       // predict
-      B += ( y && B > 0 );
+      B += static_cast<int>( (y != 0) && B > 0 );
       cp = &Data[Context + B];
       const U8 state = *cp;
       const int p1 = Map.p( state, Limit );
@@ -2729,7 +2729,7 @@ Uses (2^(BitsOfContext+1))*((2^InputBits)-1) bytes of memory.
         assert( cp[i] >= &t[0].bh[0][0] && cp[i] <= &t[t.size() - 1].bh[6][6] );
         assert( ( uintptr_t( cp[i] ) & 63 ) >= 15 );
         int ns = nex( *cp[i], y );
-        if( ns >= 204 && rnd() << ( ( 452 - ns ) >> 3 ) )
+        if( ns >= 204 && ((rnd() << ( ( 452 - ns ) >> 3 )) != 0u) )
           ns -= 4; // probabilistic increment
         *cp[i] = ns;
       }
@@ -2805,8 +2805,8 @@ Uses (2^(BitsOfContext+1))*((2^InputBits)-1) bytes of memory.
         m.add( 0 ); //p=0.5
         m.add( 0 ); //p=0.5
       } else {
-        const int n0 = -!nex( s, 2 );
-        const int n1 = -!nex( s, 3 );
+        const int n0 = -static_cast<int>(!nex( s, 2 ));
+        const int n1 = -static_cast<int>(!nex( s, 3 ));
         m.add( st * abs( n1 - n0 ) );
         const int p0 = 4095 - p1;
         m.add( ( ( p1 & n0 ) - ( p0 & n1 ) + ( 1 << 3 ) ) >> 4 );
@@ -2878,7 +2878,7 @@ states to provide additional states that are then mapped to predictions.
     U8 lastByte, lastBit, bitPos;
     inline void Update() {
       for( U32 i = 0; i < index; i++ ) {
-        if( BitState[i] )
+        if( BitState[i] != nullptr )
           *BitState[i] = nex( *BitState[i], lastBit );
 
         if( bitPos > 1 && ByteHistory[i][0] == 0 )
@@ -3013,7 +3013,7 @@ states to provide additional states that are then mapped to predictions.
         int p1 = Maps8b[i]->p( state );
         int n0 = nex( state, 2 ), n1 = nex( state, 3 ), k = -~n1;
         k = ( k * 64 ) / ( k - ~n0 );
-        n0 = -!n0, n1 = -!n1;
+        n0 = -static_cast<int>(n0) == 0, n1 = -static_cast<int>(n1) == 0;
         // predict from last byte in context
         if( ( U32 )( ( ByteHistory[i][1] + 256 ) >> ( 8 - bitPos ) ) == bits ) {
           int RunStats = ByteHistory[i][0];                               // count*2, +1 if 2 different bytes seen
@@ -3288,14 +3288,14 @@ states to provide additional states that are then mapped to predictions.
     }
     bool operator==( const char *s ) const {
       size_t len = strlen( s );
-      return ( ( size_t )( End - Start + ( Letters[Start] != 0 ) ) == len && memcmp( &Letters[Start], s, len ) == 0 );
+      return ( ( size_t )( End - Start + static_cast<int>( Letters[Start] != 0 ) ) == len && memcmp( &Letters[Start], s, len ) == 0 );
     }
     bool operator!=( const char *s ) const {
       return !operator==( s );
     }
     void operator+=( const char c ) {
       if( End < MAX_WORD_SIZE - 1 ) {
-        End += ( Letters[End] > 0 );
+        End += static_cast<int>( Letters[End] > 0 );
         Letters[End] = tolower( c );
       }
     }
@@ -3696,8 +3696,8 @@ states to provide additional states that are then mapped to predictions.
         W->Start += 5, W->Type |= English::PrefixUnder;
       else if( W->StartsWith( "unn" ) && W->Length() > 5 )
         W->Start += 2, W->Type |= English::Negation;
-      else if( W->StartsWith( "non" ) && W->Length() > ( U32 )( 5 + ( ( *W )[3] == '-' ) ) )
-        W->Start += 2 + ( ( *W )[3] == '-' ), W->Type |= English::Negation;
+      else if( W->StartsWith( "non" ) && W->Length() > ( U32 )( 5 + static_cast<int>( ( *W )[3] == '-' ) ) )
+        W->Start += 2 + static_cast<int>( ( *W )[3] == '-' ), W->Type |= English::Negation;
       else
         return false;
       return true;
@@ -3710,10 +3710,10 @@ states to provide additional states that are then mapped to predictions.
 
         if( ( *W )( 0 ) == ( *W )( 1 ) && ( *W )( 0 ) != 'r'
             && !( W->Length() >= 4 && memcmp( "sugg", &W->Letters[W->End - 3], 4 ) == 0 ) ) {
-          W->End -= ( ( ( *W )( 0 ) != 'f' && ( *W )( 0 ) != 'l' && ( *W )( 0 ) != 's' )
+          W->End -= static_cast<int>(( ( ( *W )( 0 ) != 'f' && ( *W )( 0 ) != 'l' && ( *W )( 0 ) != 's' )
                       || ( W->Length() > 4 && ( *W )( 1 ) == 'l'
                            && ( ( *W )( 2 ) == 'u' || ( *W )( 3 ) == 'u' || ( *W )( 3 ) == 'v' ) ) )
-                    && ( !( W->Length() == 3 && ( *W )( 1 ) == 'd' && ( *W )( 2 ) == 'o' ) );
+                    && ( !( W->Length() == 3 && ( *W )( 1 ) == 'd' && ( *W )( 2 ) == 'o' ) ));
           if( W->Length() == 2 && ( ( *W )[0] != 'i' || ( *W )[1] != 'n' ) )
             W->End = i, W->Type &= ~English::AdjectiveSuperlative;
         } else {
@@ -3728,7 +3728,7 @@ states to provide additional states that are then mapped to predictions.
                      && memcmp( "cong", &W->Letters[W->End - 3], 4 ) != 0 ) )
                 W->End = i, W->Type &= ~English::AdjectiveSuperlative;
               else
-                W->End += ( ( *W )( 2 ) == 'a' );
+                W->End += static_cast<int>( ( *W )( 2 ) == 'a' );
               break;
             }
             case 'i': {
@@ -3739,7 +3739,7 @@ states to provide additional states that are then mapped to predictions.
               if( W->End == W->Start + 1 || memcmp( "mo", &W->Letters[W->End - 2], 2 ) == 0 )
                 W->End = i, W->Type &= ~English::AdjectiveSuperlative;
               else
-                W->End += IsConsonant( ( *W )( 1 ) );
+                W->End += static_cast<int>(IsConsonant( ( *W )( 1 ) ));
               break;
             }
             case 'n': {
@@ -3749,7 +3749,7 @@ states to provide additional states that are then mapped to predictions.
             }
             case 'r': {
               if( W->Length() > 3 && IsVowel( ( *W )( 1 ) ) && IsVowel( ( *W )( 2 ) ) )
-                W->End += ( ( *W )( 2 ) == 'u' ) && ( ( *W )( 1 ) == 'a' || ( *W )( 1 ) == 'i' );
+                W->End += static_cast<int>(( ( *W )( 2 ) == 'u' ) && ( ( *W )( 1 ) == 'a' || ( *W )( 1 ) == 'i' ));
               else
                 W->End = i, W->Type &= ~English::AdjectiveSuperlative;
               break;
@@ -3879,23 +3879,23 @@ states to provide additional states that are then mapped to predictions.
                       case 'c':
                       case 's':
                       case 'v': {
-                        W->End += !( W->EndsWith( "ss" ) || W->EndsWith( "ias" ) );
+                        W->End += static_cast<int>(!( W->EndsWith( "ss" ) || W->EndsWith( "ias" ) ));
                         break;
                       }
                       case 'd': {
                         static const char nAllowed[4] = {'a', 'e', 'i', 'o'};
-                        W->End += IsVowel( ( *W )( 1 ) ) && ( !CharInArray( ( *W )( 2 ), nAllowed, 4 ) );
+                        W->End += static_cast<int>(IsVowel( ( *W )( 1 ) ) && ( !CharInArray( ( *W )( 2 ), nAllowed, 4 ) ));
                         break;
                       }
                       case 'k': {
-                        W->End += W->EndsWith( "uak" );
+                        W->End += static_cast<int>(W->EndsWith( "uak" ));
                         break;
                       }
                       case 'l': {
                         static const char Allowed1[10] = {'b', 'c', 'd', 'f', 'g', 'k', 'p', 't', 'y', 'z'};
                         static const char Allowed2[4] = {'a', 'i', 'o', 'u'};
-                        W->End += CharInArray( ( *W )( 1 ), Allowed1, 10 )
-                                  || ( CharInArray( ( *W )( 1 ), Allowed2, 4 ) && IsConsonant( ( *W )( 2 ) ) );
+                        W->End += static_cast<int>(CharInArray( ( *W )( 1 ), Allowed1, 10 )
+                                  || ( CharInArray( ( *W )( 1 ), Allowed2, 4 ) && IsConsonant( ( *W )( 2 ) ) ));
                         break;
                       }
                     }
@@ -4042,7 +4042,7 @@ states to provide additional states that are then mapped to predictions.
             case 'n':
             case 'r':
             case 'w': {
-              if( W->Length() > ( U32 )( 4 + ( ( *W )( 2 ) == 'r' ) ) ) {
+              if( W->Length() > ( U32 )( 4 + static_cast<int>( ( *W )( 2 ) == 'r' ) ) ) {
                 W->End -= 2;
                 W->Type |= English::AdverbOfManner;
                 return true;
@@ -4083,7 +4083,7 @@ states to provide additional states that are then mapped to predictions.
         if( W->EndsWith( SuffixesStep4[i] ) && SuffixInRn( W, R2, SuffixesStep4[i] ) ) {
           W->End -= U8(
               strlen( SuffixesStep4[i] )
-              - ( i
+              - static_cast<unsigned long>( i
                   > 17 ) /*sion, tion*/ ); // remove: al   ance   ence   er   ic   able   ible   ant   ement   ment   ent   ism   ate   iti   ous   ive   ize ; ion -> delete if preceded by s or t
           if( !( i == 10                   /* ent */
                  && ( *W )( 0 ) == 'm' ) ) //exception: no TypesStep4 should be assigned for 'agreement'
@@ -4106,7 +4106,7 @@ states to provide additional states that are then mapped to predictions.
           W->End--; //e -> delete if in R2, or in R1 and not preceded by a short syllable
         else if( SuffixInRn( W, R1, "e" ) ) {
           W->End--; //e -> delete if in R1 and not preceded by a short syllable
-          W->End += EndsInShortSyllable( W );
+          W->End += static_cast<int>(EndsInShortSyllable( W ));
         } else
           return false;
         return true;
@@ -4170,7 +4170,7 @@ states to provide additional states that are then mapped to predictions.
         if( W->Letters[i] == 'Y' )
           W->Letters[i] = 'y';
       }
-      if( !W->Type || W->Type == English::Plural ) {
+      if( (W->Type == 0u) || W->Type == English::Plural ) {
         if( W->MatchesAny( MaleWords, NUM_MALE_WORDS ) )
           res = true, W->Type |= English::Male;
         else if( W->MatchesAny( FemaleWords, NUM_FEMALE_WORDS ) )
@@ -4344,7 +4344,7 @@ states to provide additional states that are then mapped to predictions.
       }
       for( ; i < 25; i++ ) {
         if( W->EndsWith( SuffixesStep1[i] ) && SuffixInRn( W, R2, SuffixesStep1[i] ) ) {
-          W->End -= U8( strlen( SuffixesStep1[i] ) ) - 1 - ( i < 19 ) * 2;
+          W->End -= U8( strlen( SuffixesStep1[i] ) ) - 1 - static_cast<int>( i < 19 ) * 2;
           if( i > 22 ) {
             W->End += 2;
             W->Letters[W->End] = 't';
@@ -4643,7 +4643,7 @@ states to provide additional states that are then mapped to predictions.
           if( i + 1 < MAX_WORD_SIZE ) {
             memmove( &W->Letters[i + 2], &W->Letters[i + 1], MAX_WORD_SIZE - i - 2 );
             W->Letters[i + 1] = 's';
-            W->End += ( W->End < MAX_WORD_SIZE - 1 );
+            W->End += static_cast<int>( W->End < MAX_WORD_SIZE - 1 );
           }
         }
       }
@@ -4699,7 +4699,7 @@ states to provide additional states that are then mapped to predictions.
           W->End -= U8( strlen( SuffixesStep3[i] ) );
           if( W->EndsWith( "ig" ) && ( *W )( 2 ) != 'e' && SuffixInRn( W, R2, "ig" ) )
             W->End -= 2;
-          if( i )
+          if( i != 0 )
             W->Type |= German::Noun;
           return true;
         }
@@ -4813,7 +4813,7 @@ states to provide additional states that are then mapped to predictions.
       entries[index].prefix = prefix;
       entries[index].suffix = suffix;
       table[-offset - 1] = index;
-      index += ( index < 0x8000 );
+      index += static_cast<int>( index < 0x8000 );
     }
 
   public:
@@ -5091,42 +5091,42 @@ states to provide additional states that are then mapped to predictions.
       Map.mix( mixer );
 
       mixer.set(
-          finalize64( hash( ( Lang.Id != Language::Unknown ) ? 1 + Stemmers[Lang.Id - 1]->IsVowel( buffer( 1 ) ) : 0,
+          finalize64( hash( ( Lang.Id != Language::Unknown ) ? 1 + static_cast<int>(Stemmers[Lang.Id - 1]->IsVowel( buffer( 1 ) )) : 0,
                             Info.masks[1] & 0xFF, c0 ),
                       11 ),
           2048 );
       mixer.set( finalize64( hash( ilog2( Info.wordLength[0] + 1 ), c0,
-                                   ( Info.lastDigit < Info.wordLength[0] + Info.wordGap )
-                                       | ( ( Info.lastUpper < Info.lastLetter + Info.wordLength[1] ) << 1 )
-                                       | ( ( Info.lastPunct < Info.wordLength[0] + Info.wordGap ) << 2 )
-                                       | ( ( Info.lastUpper < Info.wordLength[0] ) << 3 ) ),
+                                   static_cast<int>( Info.lastDigit < Info.wordLength[0] + Info.wordGap )
+                                       | ( static_cast<int>( Info.lastUpper < Info.lastLetter + Info.wordLength[1] ) << 1 )
+                                       | ( static_cast<int>( Info.lastPunct < Info.wordLength[0] + Info.wordGap ) << 2 )
+                                       | ( static_cast<int>( Info.lastUpper < Info.wordLength[0] ) << 3 ) ),
                              11 ),
                  2048 );
-      mixer.set( finalize64( hash( Info.masks[1] & 0x3FF, grp[0], Info.lastUpper < Info.wordLength[0],
-                                   Info.lastUpper < Info.lastLetter + Info.wordLength[1] ),
+      mixer.set( finalize64( hash( Info.masks[1] & 0x3FF, grp[0], static_cast<U64>(Info.lastUpper < Info.wordLength[0]),
+                                   static_cast<U64>(Info.lastUpper < Info.lastLetter + Info.wordLength[1]) ),
                              12 ),
                  4096 );
       mixer.set(
           finalize64( hash( Info.spaces & 0x1FF, grp[0],
-                            ( Info.lastUpper < Info.wordLength[0] )
-                                | ( ( Info.lastUpper < Info.lastLetter + Info.wordLength[1] ) << 1 )
-                                | ( ( Info.lastPunct < Info.lastLetter ) << 2 )
-                                | ( ( Info.lastPunct < Info.wordLength[0] + Info.wordGap ) << 3 )
-                                | ( ( Info.lastPunct < Info.lastLetter + Info.wordLength[1] + Info.wordGap ) << 4 ) ),
+                            static_cast<int>( Info.lastUpper < Info.wordLength[0] )
+                                | ( static_cast<int>( Info.lastUpper < Info.lastLetter + Info.wordLength[1] ) << 1 )
+                                | ( static_cast<int>( Info.lastPunct < Info.lastLetter ) << 2 )
+                                | ( static_cast<int>( Info.lastPunct < Info.wordLength[0] + Info.wordGap ) << 3 )
+                                | ( static_cast<int>( Info.lastPunct < Info.lastLetter + Info.wordLength[1] + Info.wordGap ) << 4 ) ),
                       12 ),
           4096 );
       mixer.set(
-          finalize64( hash( Info.firstLetter * ( Info.wordLength[0] < 4 ), min( 6, Info.wordLength[0] ), c0 ), 11 ),
+          finalize64( hash( Info.firstLetter * static_cast<int>( Info.wordLength[0] < 4 ), min( 6, Info.wordLength[0] ), c0 ), 11 ),
           2048 );
       mixer.set( finalize64( hash( ( *pWord )[0], ( *pWord )( 0 ), min( 4, Info.wordLength[0] ),
-                                   Info.lastPunct < Info.lastLetter ),
+                                   static_cast<U64>(Info.lastPunct < Info.lastLetter) ),
                              11 ),
                  2048 );
       mixer.set(
-          finalize64( hash( min( 4, Info.wordLength[0] ), grp[0], Info.lastUpper < Info.wordLength[0],
+          finalize64( hash( min( 4, Info.wordLength[0] ), grp[0], static_cast<U64>(Info.lastUpper < Info.wordLength[0]),
                             ( Info.nestHash > 0 )
                                 ? Info.nestHash & 0xFF
-                                : 0x100 | ( Info.firstLetter * ( Info.wordLength[0] > 0 && Info.wordLength[0] < 4 ) ) ),
+                                : 0x100 | ( Info.firstLetter * static_cast<int>( Info.wordLength[0] > 0 && Info.wordLength[0] < 4 ) ) ),
                       12 ),
           4096 );
       mixer.set( finalize64( hash( grp[0], Info.masks[4] & 0x1F, ( Info.masks[4] >> 5 ) & 0x1F ), 13 ), 8192 );
@@ -5162,7 +5162,7 @@ states to provide additional states that are then mapped to predictions.
     U8 pC = buffer( 2 );
     State = Parse::Unknown;
     ParseCtx =
-        hash( State, pWord->Hash[0], c, ( ilog2( Info.lastNewLine ) + 1 ) * ( Info.lastNewLine * 3 > Info.prevNewLine ),
+        hash( State, pWord->Hash[0], c, ( ilog2( Info.lastNewLine ) + 1 ) * static_cast<unsigned int>( Info.lastNewLine * 3 > Info.prevNewLine ),
               Info.masks[1] & 0xFC );
 
     if( ( c >= 'a' && c <= 'z' ) || c == '\'' || c == '-' || c > 0x7F ) {
@@ -5188,7 +5188,7 @@ states to provide additional states that are then mapped to predictions.
       }
       Info.lastLetter = 0;
       Info.wordLength[0]++;
-      Info.masks[0] += ( Lang.Id != Language::Unknown ) ? 1 + Stemmers[Lang.Id - 1]->IsVowel( c ) : 1, Info.masks[1]++,
+      Info.masks[0] += ( Lang.Id != Language::Unknown ) ? 1 + static_cast<int>(Stemmers[Lang.Id - 1]->IsVowel( c )) : 1, Info.masks[1]++,
           Info.masks[3] += Info.masks[0] & 3;
       if( c == '\'' ) {
         Info.masks[2] += 12;
@@ -5222,7 +5222,7 @@ states to provide additional states that are then mapped to predictions.
         U32 best = MIN_RECOGNIZED_WORDS;
         for( int i = Language::Count - 1; i > Language::Unknown; i-- ) {
           if( Lang.Count[i - 1] >= best ) {
-            best = Lang.Count[i - 1] + ( i == Lang.pId ); //bias to prefer the previously detected language
+            best = Lang.Count[i - 1] + static_cast<unsigned int>( i == Lang.pId ); //bias to prefer the previously detected language
             Lang.Id = i;
           }
           Words[i]++;
@@ -5252,7 +5252,7 @@ states to provide additional states that are then mapped to predictions.
             };
           }
 #  endif
-          if( options & OPTION_TRAINTXT && Dictionaries[Lang.Id - 1] == nullptr ) {
+          if( ((options & OPTION_TRAINTXT) != 0) && Dictionaries[Lang.Id - 1] == nullptr ) {
             switch( Lang.Id ) {
               case Language::English: {
                 Dictionaries[Lang.Id - 1] = new WordEmbeddingDictionary();
@@ -5266,7 +5266,7 @@ states to provide additional states that are then mapped to predictions.
         pWord = &Words[Lang.Id]( 1 );
         cWord = &Words[Lang.Id]( 0 );
         cWord->reset();
-        if( options & OPTION_TRAINTXT ) {
+        if( (options & OPTION_TRAINTXT) != 0 ) {
           if( Lang.Id != Language::Unknown && Dictionaries[Lang.Id - 1] != nullptr )
             Dictionaries[Lang.Id - 1]->getWordEmbedding( pWord );
           WordDistances++;
@@ -5290,7 +5290,7 @@ states to provide additional states that are then mapped to predictions.
           memcpy( &cSentence->FirstWord, pWord, sizeof( Word ) );
         cSentence->WordCount++;
         Info.wordLength[1] = Info.wordLength[0], Info.wordLength[0] = 0;
-        Info.quoteLength += ( Info.quoteLength > 0 );
+        Info.quoteLength += static_cast<unsigned int>( Info.quoteLength > 0 );
         if( Info.quoteLength > 0x1F )
           Info.quoteLength = 0;
         cSentence->VerbIndex++, cSentence->NounIndex++, cSentence->CapitalIndex++;
@@ -5336,7 +5336,7 @@ states to provide additional states that are then mapped to predictions.
             Info.commas++;
             State = Parse::AfterComma;
             ParseCtx = hash( State, ilog2( Info.quoteLength + 1 ), ilog2( Info.lastNewLine ),
-                             Info.lastUpper < Info.lastLetter + Info.wordLength[1] );
+                             static_cast<U64>(Info.lastUpper < Info.lastLetter + Info.wordLength[1]) );
           } else if( c == ':' )
             memcpy( &Info.TopicDescriptor, pWord, sizeof( Word ) );
           if( !skip ) {
@@ -5469,7 +5469,7 @@ states to provide additional states that are then mapped to predictions.
         Info.masks[3] += 7;
       } else if( Info.numbers[0] > 0 ) {
         Info.numMask <<= 2,
-            Info.numMask |= 1 + ( Info.numbers[0] >= Info.numbers[1] ) + ( Info.numbers[0] > Info.numbers[1] );
+            Info.numMask |= 1 + static_cast<int>( Info.numbers[0] >= Info.numbers[1] ) + static_cast<int>( Info.numbers[0] > Info.numbers[1] );
         Info.numDiff <<= 2, Info.numDiff |= min( 3, ilog2( abs( ( int ) ( Info.numbers[0] - Info.numbers[1] ) ) ) );
         Info.numbers[1] = Info.numbers[0], Info.numbers[0] = 0;
         Info.numHashes[1] = Info.numHashes[0], Info.numHashes[0] = 0;
@@ -5490,19 +5490,19 @@ states to provide additional states that are then mapped to predictions.
     else
       Info.UTF8Remaining =
           ( leadingBitsSet != 1 )
-              ? ( c != 0xC0 && c != 0xC1 && c < 0xF5 ) ? ( leadingBitsSet - ( leadingBitsSet > 0 ) ) : -1
+              ? ( c != 0xC0 && c != 0xC1 && c < 0xF5 ) ? ( leadingBitsSet - static_cast<int>( leadingBitsSet > 0 ) ) : -1
               : 0;
-    Info.maskPunct = ( BytePos[','] > BytePos['.'] ) | ( ( BytePos[','] > BytePos['!'] ) << 1 )
-                     | ( ( BytePos[','] > BytePos['?'] ) << 2 ) | ( ( BytePos[','] > BytePos[':'] ) << 3 )
-                     | ( ( BytePos[','] > BytePos[';'] ) << 4 );
+    Info.maskPunct = static_cast<int>( BytePos[','] > BytePos['.'] ) | ( static_cast<int>( BytePos[','] > BytePos['!'] ) << 1 )
+                     | ( static_cast<int>( BytePos[','] > BytePos['?'] ) << 2 ) | ( static_cast<int>( BytePos[','] > BytePos[':'] ) << 3 )
+                     | ( static_cast<int>( BytePos[','] > BytePos[';'] ) << 4 );
 
     Stats->Text.state = State;
     Stats->Text.lastPunct = std::min<U32>( 0x1F, Info.lastPunct );
     Stats->Text.wordLength = std::min<U32>( 0xF, Info.wordLength[0] );
-    Stats->Text.boolmask = ( Info.lastDigit < Info.wordLength[0] + Info.wordGap )
-                           | ( ( Info.lastUpper < Info.lastLetter + Info.wordLength[1] ) << 1 )
-                           | ( ( Info.lastPunct < Info.wordLength[0] + Info.wordGap ) << 2 )
-                           | ( ( Info.lastUpper < Info.wordLength[0] ) << 3 );
+    Stats->Text.boolmask = static_cast<int>( Info.lastDigit < Info.wordLength[0] + Info.wordGap )
+                           | ( static_cast<int>( Info.lastUpper < Info.lastLetter + Info.wordLength[1] ) << 1 )
+                           | ( static_cast<int>( Info.lastPunct < Info.wordLength[0] + Info.wordGap ) << 2 )
+                           | ( static_cast<int>( Info.lastUpper < Info.wordLength[0] ) << 3 );
     Stats->Text.firstLetter = Info.firstLetter;
     Stats->Text.mask = Info.masks[1] & 0xFF;
   }
@@ -5514,14 +5514,14 @@ states to provide additional states that are then mapped to predictions.
 
     Map.set( ParseCtx );
     Map.set( hash( ++i, cWord->Hash[0], pWord->Hash[0],
-                   ( Info.lastUpper < Info.wordLength[0] )
-                       | ( ( Info.lastDigit < Info.wordLength[0] + Info.wordGap ) << 1 ) ) );
+                   static_cast<int>( Info.lastUpper < Info.wordLength[0] )
+                       | ( static_cast<int>( Info.lastDigit < Info.wordLength[0] + Info.wordGap ) << 1 ) ) );
     Map.set( hash( ++i, cWord->Hash[0], Words[Lang.pId]( 2 ).Hash[0], min( 10, ilog2( ( U32 ) Info.numbers[0] ) ),
-                   ( Info.lastUpper < Info.lastLetter + Info.wordLength[1] ) | ( ( Info.lastLetter > 3 ) << 1 )
-                       | ( ( Info.lastLetter > 0 && Info.wordLength[1] < 3 ) << 2 ) ) );
+                   static_cast<int>( Info.lastUpper < Info.lastLetter + Info.wordLength[1] ) | ( static_cast<int>( Info.lastLetter > 3 ) << 1 )
+                       | ( static_cast<int>( Info.lastLetter > 0 && Info.wordLength[1] < 3 ) << 2 ) ) );
     Map.set( hash( ++i, cWord->Hash[0], Info.masks[1] & 0x3FF, Words[Lang.pId]( 3 ).Hash[1],
-                   ( Info.lastDigit < Info.wordLength[0] + Info.wordGap )
-                       | ( ( Info.lastUpper < Info.lastLetter + Info.wordLength[1] ) << 1 )
+                   static_cast<int>( Info.lastDigit < Info.wordLength[0] + Info.wordGap )
+                       | ( static_cast<int>( Info.lastUpper < Info.lastLetter + Info.wordLength[1] ) << 1 )
                        | ( ( Info.spaces & 0x7F ) << 2 ) ) );
     Map.set( hash( ++i, cWord->Hash[0], pWord->Hash[1] ) );
     Map.set( hash( ++i, cWord->Hash[0], pWord->Hash[1], Words[Lang.pId]( 2 ).Hash[1] ) );
@@ -5533,53 +5533,53 @@ states to provide additional states that are then mapped to predictions.
                    min( 3, ilog2( cSegment->WordCount + 1 ) ) ) );
     Map.set( hash( ++i, cWord->Hash[0], c, Segments( 1 ).FirstWord.Hash[1] ) );
     Map.set(
-        hash( ++i, max( 31, lc ), Info.masks[1] & 0xFFC, ( Info.spaces & 0xFE ) | ( Info.lastPunct < Info.lastLetter ),
-              ( Info.maskUpper & 0xFF ) | ( ( ( 0x100 | Info.firstLetter ) * ( Info.wordLength[0] > 1 ) ) << 8 ) ) );
+        hash( ++i, max( 31, lc ), Info.masks[1] & 0xFFC, ( Info.spaces & 0xFE ) | static_cast<unsigned int>( Info.lastPunct < Info.lastLetter ),
+              ( Info.maskUpper & 0xFF ) | ( ( ( 0x100 | Info.firstLetter ) * static_cast<int>( Info.wordLength[0] > 1 ) ) << 8 ) ) );
     Map.set( hash( ++i, column, min( 7, ilog2( Info.lastUpper + 1 ) ), ilog2( Info.lastPunct + 1 ) ) );
     Map.set( hash( ++i, ( column & 0xF8 ) | ( Info.masks[1] & 3 )
-                            | ( ( Info.prevNewLine - Info.lastNewLine > 63 ) << 2 ) | ( min( 3, Info.lastLetter ) << 8 )
-                            | ( Info.firstChar << 10 ) | ( ( Info.commas > 4 ) << 18 )
-                            | ( ( m2 >= 1 && m2 <= 5 ) << 19 ) | ( ( m2 >= 6 && m2 <= 10 ) << 20 )
-                            | ( ( m2 == 11 || m2 == 12 ) << 21 ) | ( ( Info.lastUpper < column ) << 22 )
-                            | ( ( Info.lastDigit < column ) << 23 )
-                            | ( ( column < Info.prevNewLine - Info.lastNewLine ) << 24 ) ) );
+                            | ( static_cast<int>( Info.prevNewLine - Info.lastNewLine > 63 ) << 2 ) | ( min( 3, Info.lastLetter ) << 8 )
+                            | ( Info.firstChar << 10 ) | ( static_cast<int>( Info.commas > 4 ) << 18 )
+                            | ( static_cast<int>( m2 >= 1 && m2 <= 5 ) << 19 ) | ( static_cast<int>( m2 >= 6 && m2 <= 10 ) << 20 )
+                            | ( static_cast<int>( m2 == 11 || m2 == 12 ) << 21 ) | ( static_cast<int>( Info.lastUpper < column ) << 22 )
+                            | ( static_cast<int>( Info.lastDigit < column ) << 23 )
+                            | ( static_cast<int>( column < Info.prevNewLine - Info.lastNewLine ) << 24 ) ) );
     Map.set( hash( ++i, ( 2 * column ) / 3,
-                   min( 13, Info.lastPunct ) + ( Info.lastPunct > 16 ) + ( Info.lastPunct > 32 ) + Info.maskPunct * 16,
+                   min( 13, Info.lastPunct ) + static_cast<int>( Info.lastPunct > 16 ) + static_cast<int>( Info.lastPunct > 32 ) + Info.maskPunct * 16,
                    ilog2( Info.lastUpper + 1 ), ilog2( Info.prevNewLine - Info.lastNewLine ),
-                   ( ( Info.masks[1] & 3 ) == 0 ) | ( ( m2 < 6 ) << 1 ) | ( ( m2 < 11 ) << 2 ) ) );
+                   static_cast<int>( ( Info.masks[1] & 3 ) == 0 ) | ( static_cast<int>( m2 < 6 ) << 1 ) | ( static_cast<int>( m2 < 11 ) << 2 ) ) );
     Map.set( hash( ++i, column >> 1, Info.spaces & 0xF ) );
     Map.set( hash( ++i, Info.masks[3] & 0x3F,
-                   min( ( max( Info.wordLength[0], 3 ) - 2 ) * ( Info.wordLength[0] < 8 ), 3 ),
-                   Info.firstLetter * ( Info.wordLength[0] < 5 ), w,
-                   ( c == buffer( 2 ) ) | ( ( Info.masks[2] > 0 ) << 1 )
-                       | ( ( Info.lastPunct < Info.wordLength[0] + Info.wordGap ) << 2 )
-                       | ( ( Info.lastUpper < Info.wordLength[0] ) << 3 )
-                       | ( ( Info.lastDigit < Info.wordLength[0] + Info.wordGap ) << 4 )
-                       | ( ( Info.lastPunct < 2 + Info.wordLength[0] + Info.wordGap + Info.wordLength[1] ) << 5 ) ) );
+                   min( ( max( Info.wordLength[0], 3 ) - 2 ) * static_cast<int>( Info.wordLength[0] < 8 ), 3 ),
+                   Info.firstLetter * static_cast<int>( Info.wordLength[0] < 5 ), w,
+                   static_cast<int>( c == buffer( 2 ) ) | ( static_cast<int>( Info.masks[2] > 0 ) << 1 )
+                       | ( static_cast<int>( Info.lastPunct < Info.wordLength[0] + Info.wordGap ) << 2 )
+                       | ( static_cast<int>( Info.lastUpper < Info.wordLength[0] ) << 3 )
+                       | ( static_cast<int>( Info.lastDigit < Info.wordLength[0] + Info.wordGap ) << 4 )
+                       | ( static_cast<int>( Info.lastPunct < 2 + Info.wordLength[0] + Info.wordGap + Info.wordLength[1] ) << 5 ) ) );
     Map.set( hash( ++i, w, c, Info.numHashes[1] ) );
     Map.set( hash( ++i, w, c, llog( pos - WordPos[w & ( WordPos.size() - 1 )] ) >> 1 ) );
     Map.set( hash( ++i, w, c, Info.TopicDescriptor.Hash[0] ) );
     Map.set( hash( ++i, Info.numLength[0], c, Info.TopicDescriptor.Hash[0] ) );
     Map.set( hash( ++i, ( Info.lastLetter > 0 ) ? c : 0x100, Info.masks[1] & 0xFFC, Info.nestHash & 0x7FF ) );
     Map.set( hash( ++i, w, c, Info.masks[3] & 0x1FF,
-                   ( ( cSentence->VerbIndex == 0 && cSentence->lastVerb.Length() > 0 ) << 6 )
-                       | ( ( Info.wordLength[1] > 3 ) << 5 ) | ( ( cSegment->WordCount == 0 ) << 4 )
-                       | ( ( cSentence->SegmentCount == 0 && cSentence->WordCount < 2 ) << 3 )
-                       | ( ( Info.lastPunct >= Info.lastLetter + Info.wordLength[1] + Info.wordGap ) << 2 )
-                       | ( ( Info.lastUpper < Info.lastLetter + Info.wordLength[1] ) << 1 )
-                       | ( Info.lastUpper < Info.wordLength[0] + Info.wordGap + Info.wordLength[1] ) ) );
-    Map.set( hash( ++i, c, pWord->Hash[1], Info.firstLetter * ( Info.wordLength[0] < 6 ),
-                   ( ( Info.lastPunct < Info.wordLength[0] + Info.wordGap ) << 1 )
-                       | ( Info.lastPunct >= Info.lastLetter + Info.wordLength[1] + Info.wordGap ) ) );
+                   ( static_cast<int>( cSentence->VerbIndex == 0 && cSentence->lastVerb.Length() > 0 ) << 6 )
+                       | ( static_cast<int>( Info.wordLength[1] > 3 ) << 5 ) | ( static_cast<int>( cSegment->WordCount == 0 ) << 4 )
+                       | ( static_cast<int>( cSentence->SegmentCount == 0 && cSentence->WordCount < 2 ) << 3 )
+                       | ( static_cast<int>( Info.lastPunct >= Info.lastLetter + Info.wordLength[1] + Info.wordGap ) << 2 )
+                       | ( static_cast<int>( Info.lastUpper < Info.lastLetter + Info.wordLength[1] ) << 1 )
+                       | static_cast<int>( Info.lastUpper < Info.wordLength[0] + Info.wordGap + Info.wordLength[1] ) ) );
+    Map.set( hash( ++i, c, pWord->Hash[1], Info.firstLetter * static_cast<int>( Info.wordLength[0] < 6 ),
+                   ( static_cast<int>( Info.lastPunct < Info.wordLength[0] + Info.wordGap ) << 1 )
+                       | static_cast<int>( Info.lastPunct >= Info.lastLetter + Info.wordLength[1] + Info.wordGap ) ) );
     Map.set( hash( ++i, w, c,
-                   Words[Lang.pId]( 1 + ( Info.wordLength[0] == 0 ) )
-                       .Letters[Words[Lang.pId]( 1 + ( Info.wordLength[0] == 0 ) ).Start],
-                   Info.firstLetter * ( Info.wordLength[0] < 7 ) ) );
+                   Words[Lang.pId]( 1 + static_cast<int>( Info.wordLength[0] == 0 ) )
+                       .Letters[Words[Lang.pId]( 1 + static_cast<int>( Info.wordLength[0] == 0 ) ).Start],
+                   Info.firstLetter * static_cast<int>( Info.wordLength[0] < 7 ) ) );
     Map.set( hash( ++i, column, Info.spaces & 7, Info.nestHash & 0x7FF ) );
-    Map.set( hash( ++i, cWord->Hash[0], ( Info.lastUpper < column ) | ( ( Info.lastUpper < Info.wordLength[0] ) << 1 ),
+    Map.set( hash( ++i, cWord->Hash[0], static_cast<int>( Info.lastUpper < column ) | ( static_cast<int>( Info.lastUpper < Info.wordLength[0] ) << 1 ),
                    min( 5, Info.wordLength[0] ) ) );
-    Map.set( hash( ++i, Lang.Id, w, U8( Words[Lang.Id]( 1 + ( State != Parse::ReadingWord ) ).Embedding ),
-                   ( Info.lastUpper < Info.wordLength[0] ) | ( ( cSegment->WordCount == 0 ) << 1 ) ) );
+    Map.set( hash( ++i, Lang.Id, w, U8( Words[Lang.Id]( 1 + static_cast<int>( State != Parse::ReadingWord ) ).Embedding ),
+                   static_cast<int>( Info.lastUpper < Info.wordLength[0] ) | ( static_cast<int>( cSegment->WordCount == 0 ) << 1 ) ) );
   }
 
 #endif //USE_TEXTMODEL
@@ -5631,7 +5631,7 @@ states to provide additional states that are then mapped to predictions.
         hashes[i] = finalize64( hash, hashbits );
       }
       // extend current match, if available
-      if( length ) {
+      if( length != 0u ) {
         index++;
         if( length < MaxLen )
           length++;
@@ -5796,7 +5796,7 @@ states to provide additional states that are then mapped to predictions.
         hashes[i] = finalize64( hash, hashbits );
       }
       // extend current match, if available
-      if( length ) {
+      if( length != 0u ) {
         index++;
         if( length < MaxLen )
           length++;
@@ -5925,7 +5925,7 @@ states to provide additional states that are then mapped to predictions.
         g_ascii_lo |= g;
       }
 
-      U64 i = to_be_collapsed * 8;
+      U64 i = static_cast<int>(to_be_collapsed) * 8;
       cm.set( hash( ( ++i ), g_ascii_lo, g_ascii_hi & 0x00000000ffffffff ) ); // last 12 groups
       cm.set( hash( ( ++i ), g_ascii_lo ) );                                  // last 8 groups
       cm.set( hash( ( ++i ), g_ascii_lo & 0x0000ffffffffffff ) );             // last 6 groups
@@ -5963,9 +5963,9 @@ states to provide additional states that are then mapped to predictions.
     if( bpos == 0 ) {
       bool end_of_sentence = false;
 
-      if( spaces & 0x80000000 )
+      if( (spaces & 0x80000000) != 0u )
         --spacecount;
-      if( words & 0x80000000 )
+      if( (words & 0x80000000) != 0u )
         --wordcount;
       spaces <<= 1;
       words <<= 1;
@@ -6023,7 +6023,7 @@ states to provide additional states that are then mapped to predictions.
         } else
           wrdhsh = wrdhsh * 11 * 32 + c;
       } else {
-        if( word0 ) {
+        if( word0 != 0u ) {
           word5 = word4;
           word4 = word3;
           word3 = word2;
@@ -6065,7 +6065,7 @@ states to provide additional states that are then mapped to predictions.
       if( c >= '0' && c <= '9' ) {
         number0 = combine64( number0, c );
         lastDigit = 0;
-      } else if( number0 ) {
+      } else if( number0 != 0u ) {
         number1 = number0;
         number0 = 0;
         ccword = 0;
@@ -6083,13 +6083,13 @@ states to provide additional states that are then mapped to predictions.
       U64 i = 0;
       cm.set( hash( ++i, spafdo, spaces, ccword ) );
       cm.set( hash( ++i, frstchar, c ) );
-      cm.set( hash( ++i, col, frstchar, ( lastUpper < col ) * 4 + ( mask2 & 3 ) ) );
+      cm.set( hash( ++i, col, frstchar, static_cast<int>( lastUpper < col ) * 4 + ( mask2 & 3 ) ) );
       cm.set( hash( ++i, spaces, words & 255 ) );
       cm.set( hash( ++i, number0, word2 ) );
       cm.set( hash( ++i, number0, word1 ) );
       cm.set( hash( ++i, number1, c, ccword ) );
       cm.set( hash( ++i, number0, number1 ) );
-      cm.set( hash( ++i, word0, number1, lastDigit < wordGap + wordlen ) );
+      cm.set( hash( ++i, word0, number1, static_cast<U64>(lastDigit < wordGap + wordlen) ) );
       cm.set( hash( ++i, wordlen1, col ) );
       cm.set( hash( ++i, c, spacecount / 2 ) );
 
@@ -6130,7 +6130,7 @@ states to provide additional states that are then mapped to predictions.
       cm.set( hash( ++i, col, b1, above ) );
       cm.set( hash( ++i, b1, above ) );
       cm.set( hash( ++i, col, b1 ) );
-      cm.set( hash( ++i, col, c == 32 ) );
+      cm.set( hash( ++i, col, static_cast<U64>(c == 32) ) );
       cm.set( hash( ++i, w, llog( blpos - wpos[w] ) >> 4 ) );
       cm.set( hash( ++i, b1, llog( blpos - wpos[w] ) >> 2 ) );
 
@@ -6143,11 +6143,11 @@ states to provide additional states that are then mapped to predictions.
 
       int fl = 0;
       if( b1 != 0 ) {
-        if( isalpha( b1 ) )
+        if( isalpha( b1 ) != 0 )
           fl = 1;
-        else if( ispunct( b1 ) )
+        else if( ispunct( b1 ) != 0 )
           fl = 2;
-        else if( isspace( b1 ) )
+        else if( isspace( b1 ) != 0 )
           fl = 3;
         else if( ( b1 ) == 0xff )
           fl = 4;
@@ -6168,12 +6168,12 @@ states to provide additional states that are then mapped to predictions.
 
       cm.set( hash(
           ++i, word0, b1, llog( wordGap ), mask & 0x1FF,
-          ( ( wordlen1 > 3 ) << 6 ) | ( ( wordlen > 0 ) << 5 ) | ( ( spafdo == wordlen + 2 ) << 4 )
-              | ( ( spafdo == wordlen + wordlen1 + 3 ) << 3 ) | ( ( spafdo >= lastLetter + wordlen1 + wordGap ) << 2 )
-              | ( ( lastUpper < lastLetter + wordlen1 ) << 1 ) | ( lastUpper < wordlen + wordlen1 + wordGap ) ) );
+          ( static_cast<int>( wordlen1 > 3 ) << 6 ) | ( static_cast<int>( wordlen > 0 ) << 5 ) | ( static_cast<int>( spafdo == wordlen + 2 ) << 4 )
+              | ( static_cast<int>( spafdo == wordlen + wordlen1 + 3 ) << 3 ) | ( static_cast<int>( spafdo >= lastLetter + wordlen1 + wordGap ) << 2 )
+              | ( static_cast<int>( lastUpper < lastLetter + wordlen1 ) << 1 ) | static_cast<int>( lastUpper < wordlen + wordlen1 + wordGap ) ) );
       cm.set( hash( ++i, col, wordlen1, above & 0x5F, c4 & 0x5F ) );
-      cm.set( hash( ++i, mask2 & 0x3F, wrdhsh & 0xFFF, ( 0x100 | firstLetter ) * ( wordlen < 6 ),
-                    ( wordGap > 4 ) * 2 + ( wordlen1 > 5 ) ) );
+      cm.set( hash( ++i, mask2 & 0x3F, wrdhsh & 0xFFF, ( 0x100 | firstLetter ) * static_cast<unsigned int>( wordlen < 6 ),
+                    static_cast<int>( wordGap > 4 ) * 2 + static_cast<int>( wordlen1 > 5 ) ) );
     }
     cm.mix( m );
   }
@@ -6369,12 +6369,12 @@ states to provide additional states that are then mapped to predictions.
     anyway
     */
 
-      if( !col )
+      if( col == 0 )
         nTransition = 0;
       if( ( ( ( c4 >> 8 ) == SPACE * 0x010101 ) && ( c != SPACE ) )
-          || ( !( c4 >> 8 ) && c && ( ( padding != SPACE ) || ( pos - prevTransition > rlen[0] ) ) ) ) {
+          || ( (( c4 >> 8 ) == 0u) && (c != 0) && ( ( padding != SPACE ) || ( pos - prevTransition > rlen[0] ) ) ) ) {
         prevTransition = pos;
-        nTransition += ( nTransition < 31 );
+        nTransition += static_cast<int>( nTransition < 31 );
         padding = ( U8 ) d;
       }
 
@@ -6400,8 +6400,8 @@ states to provide additional states that are then mapped to predictions.
 
       if( rlen[0] > 8 ) {
         cp.set( hash( ++i, min( min( 0xFF, rlen[0] ), pos - prevTransition ), min( 0x3FF, col ),
-                      ( w & 0xF0F0 ) | ( w == ( ( padding << 8 ) | padding ) ), nTransition ) );
-        cp.set( hash( ++i, w, ( buf( rlen[0] + 1 ) == padding && N == padding ), col / max( 1, rlen[0] / 32 ) ) );
+                      ( w & 0xF0F0 ) | static_cast<int>( w == ( ( padding << 8 ) | padding ) ), nTransition ) );
+        cp.set( hash( ++i, w, static_cast<U64>( buf( rlen[0] + 1 ) == padding && N == padding ), col / max( 1, rlen[0] / 32 ) ) );
       } else
         cp.set( 0 ), cp.set( 0 );
 
@@ -6463,7 +6463,7 @@ states to provide additional states that are then mapped to predictions.
     sMap[1].mix( m, 6, 1, 3 );
     sMap[2].mix( m, 5, 1, 2 );
 
-    m.set( ( rlen[0] > 2 ) * ( ( bpos << 7 ) | mxCtx ), 1024 );
+    m.set( static_cast<int>( rlen[0] > 2 ) * ( ( bpos << 7 ) | mxCtx ), 1024 );
     m.set( ( ( N ^ B ) >> 4 ) | ( x << 4 ), 512 );
     m.set( ( grp[0] << 5 ) | x, 11 * 32 );
 
@@ -6683,7 +6683,7 @@ states to provide additional states that are then mapped to predictions.
       }
       lastPos = pos;
 
-      if( x == 1 && isPNG )
+      if( x == 1 && (isPNG != 0) )
         filter = c4 & 0xFF;
       else {
         if( x + padding < w ) {
@@ -6696,34 +6696,34 @@ states to provide additional states that are then mapped to predictions.
           else
             color = 0;
         }
-        if( isPNG ) {
+        if( isPNG != 0 ) {
           U8 B = c4 & 0xFF;
           switch( filter ) {
             case 1: {
-              buffer.Add( ( U8 )( B + buffer( stride ) * ( x > stride + 1 || !x ) ) );
+              buffer.Add( ( U8 )( B + buffer( stride ) * static_cast<int>( x > stride + 1 || (x == 0) ) ) );
               filterOn = x > stride;
               px = buffer( stride );
               break;
             }
             case 2: {
-              buffer.Add( ( U8 )( B + buffer( w ) * ( filterOn = ( line > 0 ) ) ) );
+              buffer.Add( ( U8 )( B + buffer( w ) * static_cast<int>(( filterOn = ( line > 0 ) )) ) );
               px = buffer( w );
               break;
             }
             case 3: {
               buffer.Add(
-                  ( U8 )( B + ( buffer( w ) * ( line > 0 ) + buffer( stride ) * ( x > stride + 1 || !x ) ) / 2 ) );
+                  ( U8 )( B + ( buffer( w ) * static_cast<int>( line > 0 ) + buffer( stride ) * static_cast<int>( x > stride + 1 || (x == 0) ) ) / 2 ) );
               filterOn = ( x > stride || line > 0 );
-              px = ( buffer( stride ) * ( x > stride ) + buffer( w ) * ( line > 0 ) ) / 2;
+              px = ( buffer( stride ) * static_cast<int>( x > stride ) + buffer( w ) * static_cast<int>( line > 0 ) ) / 2;
               break;
             }
             case 4: {
               buffer.Add( ( U8 )( B
-                                  + Paeth( buffer( stride ) * ( x > stride + 1 || !x ), buffer( w ) * ( line > 0 ),
-                                           buffer( w + stride ) * ( line > 0 && ( x > stride + 1 || !x ) ) ) ) );
+                                  + Paeth( buffer( stride ) * static_cast<int>( x > stride + 1 || (x == 0) ), buffer( w ) * static_cast<int>( line > 0 ),
+                                           buffer( w + stride ) * static_cast<int>( line > 0 && ( x > stride + 1 || (x == 0) ) ) ) ) );
               filterOn = ( x > stride || line > 0 );
-              px = Paeth( buffer( stride ) * ( x > stride ), buffer( w ) * ( line > 0 ),
-                          buffer( w + stride ) * ( x > stride && line > 0 ) );
+              px = Paeth( buffer( stride ) * static_cast<int>( x > stride ), buffer( w ) * static_cast<int>( line > 0 ),
+                          buffer( w + stride ) * static_cast<int>( x > stride && line > 0 ) );
               break;
             }
             default:
@@ -6737,7 +6737,7 @@ states to provide additional states that are then mapped to predictions.
           buffer.Add( c4 & 0xFF );
       }
 
-      if( x > 0 || !isPNG ) {
+      if( x > 0 || (isPNG == 0) ) {
         column[0] = ( x - isPNG ) / columns[0];
         column[1] = ( x - isPNG ) / columns[1];
         WWWWWW = buffer( 6 * stride ), WWWWW = buffer( 5 * stride ), WWWW = buffer( 4 * stride ),
@@ -6922,7 +6922,7 @@ states to provide additional states that are then mapped to predictions.
           ols[j][k].Update( p1 );
         }
 
-        if( !isPNG ) {
+        if( isPNG == 0 ) {
           int mean = W + NW + N + NE;
           const int var = ( W * W + NW * NW + N * N + NE * NE - mean * mean / 4 ) >> 2;
           mean >>= 2;
@@ -6985,17 +6985,17 @@ states to provide additional states that are then mapped to predictions.
           cm.set( hash( ++i, color, N + p1 - Np1 ) );
           cm.set( hash( ++i, color, mean, logvar >> 4 ) );
 
-          ctx[0] = ( min( color, stride - 1 ) << 9 ) | ( ( abs( W - N ) > 3 ) << 8 ) | ( ( W > N ) << 7 )
-                   | ( ( W > NW ) << 6 ) | ( ( abs( N - NW ) > 3 ) << 5 ) | ( ( N > NW ) << 4 )
-                   | ( ( abs( N - NE ) > 3 ) << 3 ) | ( ( N > NE ) << 2 ) | ( ( W > WW ) << 1 ) | ( N > NN );
+          ctx[0] = ( min( color, stride - 1 ) << 9 ) | ( static_cast<int>( abs( W - N ) > 3 ) << 8 ) | ( static_cast<int>( W > N ) << 7 )
+                   | ( static_cast<int>( W > NW ) << 6 ) | ( static_cast<int>( abs( N - NW ) > 3 ) << 5 ) | ( static_cast<int>( N > NW ) << 4 )
+                   | ( static_cast<int>( abs( N - NE ) > 3 ) << 3 ) | ( static_cast<int>( N > NE ) << 2 ) | ( static_cast<int>( W > WW ) << 1 ) | static_cast<int>( N > NN );
           ctx[1] = ( ( LogMeanDiffQt( p1, Clip( Np1 + NEp1 - buffer( w * 2 - stride + 1 ) ) ) >> 1 ) << 5 )
                    | ( ( LogMeanDiffQt( Clip( N + NE - NNE ), Clip( N + NW - NNW ) ) >> 1 ) << 2 )
                    | min( color, stride - 1 );
         } else {
           int residuals[5] = {
-              ( ( int8_t ) buf( stride + ( x <= stride ) ) ) + 128, ( ( int8_t ) buf( 1 + ( x < 2 ) ) ) + 128,
-              ( ( int8_t ) buf( stride + 1 + ( x <= stride ) ) ) + 128, ( ( int8_t ) buf( 2 + ( x < 3 ) ) ) + 128,
-              ( ( int8_t ) buf( stride + 2 + ( x <= stride ) ) ) + 128};
+              ( ( int8_t ) buf( stride + static_cast<int>( x <= stride ) ) ) + 128, ( ( int8_t ) buf( 1 + static_cast<int>( x < 2 ) ) ) + 128,
+              ( ( int8_t ) buf( stride + 1 + static_cast<int>( x <= stride ) ) ) + 128, ( ( int8_t ) buf( 2 + static_cast<int>( x < 3 ) ) ) + 128,
+              ( ( int8_t ) buf( stride + 2 + static_cast<int>( x <= stride ) ) ) + 128};
           R1 = ( residuals[1] * residuals[0] ) / max( 1, residuals[2] );
           R2 = ( residuals[3] * residuals[0] ) / max( 1, residuals[4] );
 
@@ -7023,9 +7023,9 @@ states to provide additional states that are then mapped to predictions.
           cm.set( hash( ++i, Clip( NN + W - NNW ) - px, LogMeanDiffQt( N, Clip( NNN + NW - NNNW ) ) ) );
           cm.set( hash( ++i, Clip( W + NEE - NE ) - px, LogMeanDiffQt( W, Clip( WW + NE - N ) ) ) );
           cm.set( hash( ++i, color,
-                        Clip( N + NN - NNN + buffer( 1 + ( !color ) )
-                              - Clip( buffer( w + 1 + ( !color ) ) + buffer( w * 2 + 1 + ( !color ) )
-                                      - buffer( w * 3 + 1 + ( !color ) ) ) )
+                        Clip( N + NN - NNN + buffer( 1 + static_cast<int>( color == 0 ) )
+                              - Clip( buffer( w + 1 + static_cast<int>( color == 0 ) ) + buffer( w * 2 + 1 + static_cast<int>( color == 0 ) )
+                                      - buffer( w * 3 + 1 + static_cast<int>( color == 0 ) ) ) )
                             - px ) );
           cm.set( hash( ++i, Clip( N + NN - NNN ) - px, Clip( 5 * N - 10 * NN + 10 * NNN - 5 * NNNN + NNNNN ) - px ) );
           cm.set( hash( ++i, color, Clip( N * 2 - NN ) - px, LogMeanDiffQt( N, Clip( NN * 2 - NNN ) ) ) );
@@ -7042,12 +7042,12 @@ states to provide additional states that are then mapped to predictions.
           cm.set(
               hash( ++i, color,
                     Clamp4( Clip( W * 2 - WW ) + Clip( N * 2 - NN ) - Clip( NW * 2 - NNWW ), W, NW, N, NE ) - px ) );
-          cm.set( hash( ++i, color, buf( stride + ( x <= stride ) ), buf( 1 + ( x < 2 ) ), buf( 2 + ( x < 3 ) ) ) );
-          cm.set( hash( ++i, color, buf( 1 + ( x < 2 ) ), px ) );
+          cm.set( hash( ++i, color, buf( stride + static_cast<int>( x <= stride ) ), buf( 1 + static_cast<int>( x < 2 ) ), buf( 2 + static_cast<int>( x < 3 ) ) ) );
+          cm.set( hash( ++i, color, buf( 1 + static_cast<int>( x < 2 ) ), px ) );
           cm.set( hash( ++i, buf( w + 1 ), buf( ( w + 1 ) * 2 ), buf( ( w + 1 ) * 3 ), px ) );
 
-          ctx[0] = ( min( color, stride - 1 ) << 9 ) | ( ( abs( W - N ) > 3 ) << 8 ) | ( ( W > N ) << 7 )
-                   | ( ( W > NW ) << 6 ) | ( ( abs( N - NW ) > 3 ) << 5 ) | ( ( N > NW ) << 4 ) | ( ( N > NE ) << 3 )
+          ctx[0] = ( min( color, stride - 1 ) << 9 ) | ( static_cast<int>( abs( W - N ) > 3 ) << 8 ) | ( static_cast<int>( W > N ) << 7 )
+                   | ( static_cast<int>( W > NW ) << 6 ) | ( static_cast<int>( abs( N - NW ) > 3 ) << 5 ) | ( static_cast<int>( N > NW ) << 4 ) | ( static_cast<int>( N > NE ) << 3 )
                    | min( 5, filterOn ? filter + 1 : 0 );
           ctx[1] = ( ( LogMeanDiffQt( p1, Clip( Np1 + NEp1 - buffer( w * 2 - stride + 1 ) ) ) >> 1 ) << 5 )
                    | ( ( LogMeanDiffQt( Clip( N + NE - NNE ), Clip( N + NW - NNW ) ) >> 1 ) << 2 )
@@ -7057,7 +7057,7 @@ states to provide additional states that are then mapped to predictions.
         int i = 0;
         Map[i++].set_direct( ( W & 0xC0 ) | ( ( N & 0xC0 ) >> 2 ) | ( ( WW & 0xC0 ) >> 4 ) | ( NN >> 6 ) );
         Map[i++].set_direct( ( N & 0xC0 ) | ( ( NN & 0xC0 ) >> 2 ) | ( ( NE & 0xC0 ) >> 4 ) | ( NEE >> 6 ) );
-        Map[i++].set_direct( buf( 1 + ( isPNG && x < 2 ) ) );
+        Map[i++].set_direct( buf( 1 + static_cast<int>( (isPNG != 0) && x < 2 ) ) );
         Map[i++].set_direct( min( color, stride - 1 ) );
 
         Stats->Image.plane = std::min<int>( color, stride - 1 );
@@ -7070,7 +7070,7 @@ states to provide additional states that are then mapped to predictions.
         Stats->Image.ctx = ctx[0] >> 3;
       }
     }
-    if( x > 0 || !isPNG ) {
+    if( x > 0 || (isPNG == 0) ) {
       U8 B = ( c0 << ( 8 - bpos ) );
       int i = 5;
 
@@ -7108,7 +7108,7 @@ states to provide additional states that are then mapped to predictions.
     }
 
     // Predict next bit
-    if( x > 0 || !isPNG ) {
+    if( x > 0 || (isPNG == 0) ) {
       cm.mix( m );
       for( int i = 0; i < nMaps; i++ )
         Map[i].mix( m, 1, 3 );
@@ -7121,10 +7121,10 @@ states to provide additional states that are then mapped to predictions.
       m.set( min( 63, column[0] ) + ( ( ctx[0] >> 3 ) & 0xC0 ), 256 );
       m.set( min( 127, column[1] ) + ( ( ctx[0] >> 2 ) & 0x180 ), 512 );
       m.set( ( ctx[0] & 0x7FC ) | ( bpos >> 1 ), 2048 );
-      m.set( col + ( isPNG ? ( ctx[0] & 7 ) + 1 : ( c0 == ( ( 0x100 | ( ( N + W ) / 2 ) ) >> ( 8 - bpos ) ) ) ) * 32,
+      m.set( col + ( isPNG != 0 ? ( ctx[0] & 7 ) + 1 : static_cast<int>( c0 == ( ( 0x100 | ( ( N + W ) / 2 ) ) >> ( 8 - bpos ) ) ) ) * 32,
              8 * 32 );
-      m.set( ( ( isPNG ? p1 : 0 ) >> 4 ) * stride + ( x % stride ) + min( 5, filterOn ? filter + 1 : 0 ) * 64, 6 * 64 );
-      m.set( c0 + 256 * ( isPNG && abs( R1 - 128 ) > 8 ), 256 * 2 );
+      m.set( ( ( isPNG != 0 ? p1 : 0 ) >> 4 ) * stride + ( x % stride ) + min( 5, filterOn ? filter + 1 : 0 ) * 64, 6 * 64 );
+      m.set( c0 + 256 * static_cast<int>( (isPNG != 0) && abs( R1 - 128 ) > 8 ), 256 * 2 );
       m.set( ( ctx[1] << 2 ) | ( bpos >> 1 ), 1024 );
       m.set( finalize64( hash( LogMeanDiffQt( W, WW, 5 ), LogMeanDiffQt( N, NN, 5 ), LogMeanDiffQt( W, N, 5 ),
                                ilog2( W ), color ),
@@ -7202,8 +7202,8 @@ states to provide additional states that are then mapped to predictions.
         filterOn = false;
         columns[0] = max( 1, w / max( 1, ilog2( w ) * 2 ) );
         columns[1] = max( 1, columns[0] / max( 1, ilog2( columns[0] ) ) );
-        if( gray ) {
-          if( lastPos && lastWasPNG != isPNG ) {
+        if( gray != 0 ) {
+          if( (lastPos != 0) && lastWasPNG != isPNG ) {
             for( int i = 0; i < nMaps; i++ )
               Map[i].Reset();
           }
@@ -7223,7 +7223,7 @@ states to provide additional states that are then mapped to predictions.
       }
       lastPos = pos;
 
-      if( isPNG ) {
+      if( isPNG != 0 ) {
         if( x == 1 )
           filter = ( U8 ) c4;
         else {
@@ -7231,29 +7231,29 @@ states to provide additional states that are then mapped to predictions.
 
           switch( filter ) {
             case 1: {
-              buffer.Add( ( U8 )( B + buffer( 1 ) * ( x > 2 || !x ) ) );
+              buffer.Add( ( U8 )( B + buffer( 1 ) * static_cast<int>( x > 2 || (x == 0) ) ) );
               filterOn = x > 1;
               px = buffer( 1 );
               break;
             }
             case 2: {
-              buffer.Add( ( U8 )( B + buffer( w ) * ( filterOn = ( line > 0 ) ) ) );
+              buffer.Add( ( U8 )( B + buffer( w ) * static_cast<int>(( filterOn = ( line > 0 ) )) ) );
               px = buffer( w );
               break;
             }
             case 3: {
-              buffer.Add( ( U8 )( B + ( buffer( w ) * ( line > 0 ) + buffer( 1 ) * ( x > 2 || !x ) ) / 2 ) );
+              buffer.Add( ( U8 )( B + ( buffer( w ) * static_cast<int>( line > 0 ) + buffer( 1 ) * static_cast<int>( x > 2 || (x == 0) ) ) / 2 ) );
               filterOn = ( x > 1 || line > 0 );
-              px = ( buffer( 1 ) * ( x > 1 ) + buffer( w ) * ( line > 0 ) ) / 2;
+              px = ( buffer( 1 ) * static_cast<int>( x > 1 ) + buffer( w ) * static_cast<int>( line > 0 ) ) / 2;
               break;
             }
             case 4: {
               buffer.Add( ( U8 )( B
-                                  + Paeth( buffer( 1 ) * ( x > 2 || !x ), buffer( w ) * ( line > 0 ),
-                                           buffer( w + 1 ) * ( line > 0 && ( x > 2 || !x ) ) ) ) );
+                                  + Paeth( buffer( 1 ) * static_cast<int>( x > 2 || (x == 0) ), buffer( w ) * static_cast<int>( line > 0 ),
+                                           buffer( w + 1 ) * static_cast<int>( line > 0 && ( x > 2 || (x == 0) ) ) ) ) );
               filterOn = ( x > 1 || line > 0 );
               px =
-                  Paeth( buffer( 1 ) * ( x > 1 ), buffer( w ) * ( line > 0 ), buffer( w + 1 ) * ( x > 1 && line > 0 ) );
+                  Paeth( buffer( 1 ) * static_cast<int>( x > 1 ), buffer( w ) * static_cast<int>( line > 0 ), buffer( w + 1 ) * static_cast<int>( x > 1 && line > 0 ) );
               break;
             }
             default:
@@ -7306,7 +7306,7 @@ states to provide additional states that are then mapped to predictions.
         }
       }
 
-      if( x || !isPNG ) {
+      if( (x != 0) || (isPNG == 0) ) {
         column[0] = ( x - isPNG ) / columns[0];
         column[1] = ( x - isPNG ) / columns[1];
         WWWWW = buffer( 5 ), WWWW = buffer( 4 ), WWW = buffer( 3 ), WW = buffer( 2 ), W = buffer( 1 );
@@ -7322,7 +7322,7 @@ states to provide additional states that are then mapped to predictions.
         if( prevFramePos > 0 && prevFrameWidth == w ) {
           int offset = prevFramePos + line * w + x;
           prvFrmPx = buf[offset];
-          if( gray ) {
+          if( gray != 0 ) {
             sceneOls.Update( W );
             sceneOls.Add( W );
             sceneOls.Add( NW );
@@ -7344,8 +7344,8 @@ states to provide additional states that are then mapped to predictions.
         jump = jumps[min( x, ( int ) jumps.size() - 1 )];
         U64 i = ( filterOn ? ( filter + 1 ) * 64 : 0 ) + ( gray * 1024 );
         cm.set(
-            hash( ++i, ( jump != 0 ) ? ( 0x100 | buffer( abs( jump ) ) ) * ( 1 - 2 * ( jump < 0 ) ) : N, line & 3 ) );
-        if( !gray ) {
+            hash( ++i, ( jump != 0 ) ? ( 0x100 | buffer( abs( jump ) ) ) * ( 1 - 2 * static_cast<int>( jump < 0 ) ) : N, line & 3 ) );
+        if( gray == 0 ) {
           for( j = 0; j < nPltMaps; j++ )
             iCtx[j] += W;
           iCtx[0] = W | ( NE << 8 );
@@ -7500,7 +7500,7 @@ states to provide additional states that are then mapped to predictions.
                         LogMeanDiffQt( N, Clip( NW * 2 - NWW ) ) ) );
           cm.set( hash(
               ++i,
-              ( W + Clamp4( NE * 3 - NNE * 3 + ( isPNG ? buffer( w * 3 - 1 ) : buf( w * 3 - 1 ) ), W, N, NE, NEE ) )
+              ( W + Clamp4( NE * 3 - NNE * 3 + ( isPNG != 0 ? buffer( w * 3 - 1 ) : buf( w * 3 - 1 ) ), W, N, NE, NEE ) )
                   / 2,
               px, LogMeanDiffQt( N, ( NW + NE ) / 2 ) ) );
           cm.set( hash( ++i, ( N + NNN ) / 8, Clip( N * 3 - NN * 3 + NNN ) / 4, px ) );
@@ -7513,13 +7513,13 @@ states to provide additional states that are then mapped to predictions.
           cm.set( hash( ++i, Clip( N * 2 - NN ) - px, LogMeanDiffQt( N, Clip( NN * 2 - NNN ) ) ) );
           cm.set( hash( ++i, Clip( W * 2 - WW ) - px, LogMeanDiffQt( NE, Clip( N * 2 - NW ) ) ) );
 
-          if( isPNG )
-            ctx = ( ( abs( W - N ) > 8 ) << 10 ) | ( ( W > N ) << 9 ) | ( ( abs( N - NW ) > 8 ) << 8 )
-                  | ( ( N > NW ) << 7 ) | ( ( abs( N - NE ) > 8 ) << 6 ) | ( ( N > NE ) << 5 ) | ( ( W > WW ) << 4 )
-                  | ( ( N > NN ) << 3 ) | min( 5, filterOn ? filter + 1 : 0 );
+          if( isPNG != 0 )
+            ctx = ( static_cast<int>( abs( W - N ) > 8 ) << 10 ) | ( static_cast<int>( W > N ) << 9 ) | ( static_cast<int>( abs( N - NW ) > 8 ) << 8 )
+                  | ( static_cast<int>( N > NW ) << 7 ) | ( static_cast<int>( abs( N - NE ) > 8 ) << 6 ) | ( static_cast<int>( N > NE ) << 5 ) | ( static_cast<int>( W > WW ) << 4 )
+                  | ( static_cast<int>( N > NN ) << 3 ) | min( 5, filterOn ? filter + 1 : 0 );
           else
             ctx = min( 0x1F, x / max( 1, w / min( 32, columns[0] ) ) )
-                  | ( ( ( ( abs( W - N ) * 16 > W + N ) << 1 ) | ( abs( N - NW ) > 8 ) ) << 5 ) | ( ( W + N ) & 0x180 );
+                  | ( ( ( static_cast<int>( abs( W - N ) * 16 > W + N ) << 1 ) | static_cast<int>( abs( N - NW ) > 8 ) ) << 5 ) | ( ( W + N ) & 0x180 );
 
           res = Clamp4( W + N - NW, W, NW, N, NE ) - px;
         }
@@ -7532,8 +7532,8 @@ states to provide additional states that are then mapped to predictions.
       }
     }
     U8 B = ( c0 << ( 8 - bpos ) );
-    if( x || !isPNG ) {
-      if( gray ) {
+    if( (x != 0) || (isPNG == 0) ) {
+      if( gray != 0 ) {
         int i = 1;
         Map[i++].set_direct( ( ( ( U8 )( Clip( W + N - NW ) - px - B ) ) * 8 + bpos )
                              | ( LogMeanDiffQt( Clip( N + NE - NNE ), Clip( N + NW - NNW ) ) << 11 ) );
@@ -7550,9 +7550,9 @@ states to provide additional states that are then mapped to predictions.
     }
 
     // Predict next bit
-    if( x || !isPNG ) {
+    if( (x != 0) || (isPNG == 0) ) {
       cm.mix( m );
-      if( gray ) {
+      if( gray != 0 ) {
         for( int i = 0; i < nMaps; i++ )
           Map[i].mix( m );
       } else {
@@ -7562,19 +7562,19 @@ states to provide additional states that are then mapped to predictions.
         }
       }
       for( int i = 0; i < 5; i++ )
-        sceneMap[i].mix( m, ( prevFramePos > 0 && prevFrameWidth == w ), 4, 255 );
+        sceneMap[i].mix( m, static_cast<int>( prevFramePos > 0 && prevFrameWidth == w ), 4, 255 );
 
       col = ( col + 1 ) & 7;
       m.set( 5 + ctx, 2048 + 5 );
-      m.set( col * 2 + ( isPNG && c0 == ( ( 0x100 | res ) >> ( 8 - bpos ) ) )
+      m.set( col * 2 + static_cast<int>( (isPNG != 0) && c0 == ( ( 0x100 | res ) >> ( 8 - bpos ) ) )
                  + min( 5, filterOn ? filter + 1 : 0 ) * 16,
              6 * 16 );
-      m.set( ( ( isPNG ? px : N + W ) >> 4 ) + min( 5, filterOn ? filter + 1 : 0 ) * 32, 6 * 32 );
+      m.set( ( ( isPNG != 0 ? px : N + W ) >> 4 ) + min( 5, filterOn ? filter + 1 : 0 ) * 32, 6 * 32 );
       m.set( c0, 256 );
-      m.set( ( ( abs( ( int ) ( W - N ) ) > 4 ) << 9 ) | ( ( abs( ( int ) ( N - NE ) ) > 4 ) << 8 )
-                 | ( ( abs( ( int ) ( W - NW ) ) > 4 ) << 7 ) | ( ( W > N ) << 6 ) | ( ( N > NE ) << 5 )
-                 | ( ( W > NW ) << 4 ) | ( ( W > WW ) << 3 ) | ( ( N > NN ) << 2 ) | ( ( NW > NNWW ) << 1 )
-                 | ( NE > NNEE ),
+      m.set( ( static_cast<int>( abs( ( int ) ( W - N ) ) > 4 ) << 9 ) | ( static_cast<int>( abs( ( int ) ( N - NE ) ) > 4 ) << 8 )
+                 | ( static_cast<int>( abs( ( int ) ( W - NW ) ) > 4 ) << 7 ) | ( static_cast<int>( W > N ) << 6 ) | ( static_cast<int>( N > NE ) << 5 )
+                 | ( static_cast<int>( W > NW ) << 4 ) | ( static_cast<int>( W > WW ) << 3 ) | ( static_cast<int>( N > NN ) << 2 ) | ( static_cast<int>( NW > NNWW ) << 1 )
+                 | static_cast<int>( NE > NNEE ),
              1024 );
       m.set( min( 63, column[0] ), 64 );
       m.set( min( 127, column[1] ), 128 );
@@ -7600,7 +7600,7 @@ states to provide additional states that are then mapped to predictions.
     static StateMap map( 16 );
     static U8 WW = 0, W = 0, NWW = 0, NW = 0, N = 0, NE = 0, NEE = 0, NNWW = 0, NNW = 0, NN = 0, NNE = 0, NNEE = 0;
     static int col = 0, line = 0, run = 0, prevColor = 0, px = 0;
-    if( !cp[0] ) {
+    if( cp[0] == nullptr ) {
       for( int i = 0; i < S; i++ )
         cp[i] = t[263 * i]; //set the initial context to an arbitrary slot in the hashtable
     }
@@ -7672,7 +7672,7 @@ states to provide additional states that are then mapped to predictions.
     // predict
     for( int i = 0; i < S; i++ ) {
       const U8 s = *cp[i];
-      const int n0 = -!nex( s, 2 ), n1 = -!nex( s, 3 );
+      const int n0 = -static_cast<int>(!nex( s, 2 )), n1 = -static_cast<int>(!nex( s, 3 ));
       const int p1 = sm[i].p( s );
       const int st = stretch( p1 ) >> 1;
       m.add( st );
@@ -7714,10 +7714,10 @@ states to provide additional states that are then mapped to predictions.
     cxt[1] = 0x100 + ( ( r0 & 1 ) | ( r1 >> 4 & 0x3e ) | ( r2 >> 2 & 0x40 ) | ( r3 >> 1 & 0x80 ) );
     cxt[2] = 0x200 + ( ( r0 & 1 ) | ( r1 >> 4 & 0x1d ) | ( r2 >> 1 & 0x60 ) | ( r3 & 0xC0 ) );
     cxt[3] = 0x300 + ( y | ( ( r0 << 1 ) & 4 ) | ( ( r1 >> 1 ) & 0xF0 ) | ( ( r2 >> 3 ) & 0xA ) );
-    cxt[4] = 0x400 + ( ( r0 >> 4 & 0x2AC ) | ( r1 & 0xA4 ) | ( r2 & 0x349 ) | ( !( r3 & 0x14D ) ) );
+    cxt[4] = 0x400 + ( ( r0 >> 4 & 0x2AC ) | ( r1 & 0xA4 ) | ( r2 & 0x349 ) | static_cast<unsigned int>( ( r3 & 0x14D ) == 0u ) );
     cxt[5] = 0x800 + ( y | ( ( r1 >> 4 ) & 0xE ) | ( ( r2 >> 1 ) & 0x70 ) | ( ( r3 << 2 ) & 0x380 ) );
     cxt[6] = 0xC00 + ( ( ( r1 & 0x30 ) ^ ( r3 & 0x0c0c ) ) | ( r0 & 3 ) );
-    cxt[7] = 0x1000 + ( ( !( r0 & 0x444 ) ) | ( r1 & 0xC0C ) | ( r2 & 0xAE3 ) | ( r3 & 0x51C ) );
+    cxt[7] = 0x1000 + ( static_cast<unsigned int>( ( r0 & 0x444 ) == 0u ) | ( r1 & 0xC0C ) | ( r2 & 0xAE3 ) | ( r3 & 0x51C ) );
     cxt[8] = 0x2000 + ( ( r0 & 7 ) | ( ( r1 >> 1 ) & 0x3F8 ) | ( ( r2 << 5 ) & 0xC00 ) );
     cxt[9] = 0x3000 + ( ( r0 & 0x3f ) ^ ( r1 & 0x3ffe ) ^ ( r2 << 2 & 0x7f00 ) ^ ( r3 << 5 & 0xf800 ) );
     cxt[10] = 0x13000 + ( ( r0 & 0x3e ) ^ ( r1 & 0x0c0c ) ^ ( r2 & 0xc800 ) );
@@ -7931,8 +7931,8 @@ void dump(const char* msg, int p) {
 
       // Be sure to quit on a byte boundary
       if( bpos == 0 )
-        images[idx].next_jpeg = images[idx].jpeg > 1;
-      if( bpos != 0 && !images[idx].jpeg )
+        images[idx].next_jpeg = static_cast<int>(images[idx].jpeg > 1);
+      if( bpos != 0 && (images[idx].jpeg == 0) )
         return images[idx].next_jpeg;
       if( bpos == 0 && images[idx].app > 0 ) {
         --images[idx].app;
@@ -7979,12 +7979,12 @@ void dump(const char* msg, int p) {
         // FF 00 is interpreted as FF (to distinguish from RSTx, DNL, EOI).
 
         // Detect JPEG (SOI followed by a valid marker)
-        if( !images[idx].jpeg && buf( 4 ) == FF && buf( 3 ) == SOI && buf( 2 ) == FF
+        if( (images[idx].jpeg == 0) && buf( 4 ) == FF && buf( 3 ) == SOI && buf( 2 ) == FF
             && ( ( buf( 1 ) & 0xFE ) == 0xC0 || buf( 1 ) == 0xC4 || ( buf( 1 ) >= 0xDB && buf( 1 ) <= 0xFE ) ) ) {
           images[idx].jpeg = 1;
           images[idx].offset = pos - 4;
           images[idx].sos = images[idx].sof = images[idx].htsize = images[idx].data = 0,
-          images[idx].app = ( buf( 1 ) >> 4 == 0xE ) * 2;
+          images[idx].app = static_cast<int>( buf( 1 ) >> 4 == 0xE ) * 2;
           mcusize = huffcode = huffbits = huffsize = mcupos = cpos = 0, rs = -1;
           memset( &huf[0], 0, sizeof( huf ) );
           memset( &pred[0], 0, pred.size() * sizeof( int ) );
@@ -7993,17 +7993,17 @@ void dump(const char* msg, int p) {
 
         // Detect end of JPEG when data contains a marker other than RSTx
         // or byte stuff (00), or if we jumped in position since the last byte seen
-        if( images[idx].jpeg && images[idx].data
-            && ( ( buf( 2 ) == FF && buf( 1 ) && ( buf( 1 ) & 0xf8 ) != RST0 ) || ( pos - lastPos > 1 ) ) ) {
+        if( (images[idx].jpeg != 0) && (images[idx].data != 0)
+            && ( ( buf( 2 ) == FF && (buf( 1 ) != 0u) && ( buf( 1 ) & 0xf8 ) != RST0 ) || ( pos - lastPos > 1 ) ) ) {
           jassert( ( buf( 1 ) == EOI ) || ( pos - lastPos > 1 ) );
           finish( true );
         }
         lastPos = pos;
-        if( !images[idx].jpeg )
+        if( images[idx].jpeg == 0 )
           return images[idx].next_jpeg;
 
         // Detect APPx, COM or other markers, so we can skip them
-        if( !images[idx].data && !images[idx].app && buf( 4 ) == FF
+        if( (images[idx].data == 0) && (images[idx].app == 0) && buf( 4 ) == FF
             && ( ( ( buf( 3 ) > 0xC1 ) && ( buf( 3 ) <= 0xCF ) && ( buf( 3 ) != DHT ) )
                  || ( ( buf( 3 ) >= 0xDC ) && ( buf( 3 ) <= 0xFE ) ) ) ) {
           images[idx].app = buf( 2 ) * 256 + buf( 1 ) + 2;
@@ -8014,7 +8014,7 @@ void dump(const char* msg, int p) {
         // Save pointers to sof, ht, sos, data,
         if( buf( 5 ) == FF && buf( 4 ) == SOS ) {
           int len = buf( 3 ) * 256 + buf( 2 );
-          if( len == 6 + 2 * buf( 1 ) && buf( 1 ) && buf( 1 ) <= 4 ) // buf(1) is Ns
+          if( len == 6 + 2 * buf( 1 ) && (buf( 1 ) != 0u) && buf( 1 ) <= 4 ) // buf(1) is Ns
             images[idx].sos = pos - 5, images[idx].data = images[idx].sos + len + 2, images[idx].jpeg = 2;
         }
         if( buf( 4 ) == FF && buf( 3 ) == DHT && images[idx].htsize < 8 )
@@ -8085,7 +8085,7 @@ void dump(const char* msg, int p) {
           huffcode = huffbits = huffsize = 0, rs = -1;
 
           // load default tables
-          if( !images[idx].htsize ) {
+          if( images[idx].htsize == 0 ) {
             for( int tc = 0; tc < 2; tc++ ) {
               for( int th = 0; th < 2; th++ ) {
                 HUF *h = &huf[tc * 64 + th * 16];
@@ -8143,7 +8143,7 @@ void dump(const char* msg, int p) {
 
           // Build Huffman table selection table (indexed by mcupos).
           // Get image width.
-          if( !images[idx].sof && images[idx].sos )
+          if( (images[idx].sof == 0) && (images[idx].sos != 0) )
             return images[idx].next_jpeg;
           int ns = buf[images[idx].sos + 4];
           int nf = buf[images[idx].sof + 9];
@@ -8159,7 +8159,7 @@ void dump(const char* msg, int p) {
                   hmax = hv >> 4;
                 hv = ( hv & 15 ) * ( hv >> 4 ); // number of blocks in component C
                 jassert( hv >= 1 && hv + mcusize <= 10 );
-                while( hv ) {
+                while( hv != 0 ) {
                   jassert( mcusize < 10 );
                   hufsel[0][mcusize] = buf[images[idx].sos + 2 * i + 6] >> 4 & 15;
                   hufsel[1][mcusize] = buf[images[idx].sos + 2 * i + 6] & 15;
@@ -8213,13 +8213,13 @@ void dump(const char* msg, int p) {
 
       // Decode Huffman
       {
-        if( mcusize && buf( 1 + ( bpos == 0 ) ) != FF ) { // skip stuffed byte
+        if( (mcusize != 0) && buf( 1 + static_cast<int>( bpos == 0 ) ) != FF ) { // skip stuffed byte
           jassert( huffbits <= 32 );
           huffcode += huffcode + y;
           ++huffbits;
           if( rs < 0 ) {
             jassert( huffbits >= 1 && huffbits <= 16 );
-            const int ac = ( mcupos & 63 ) > 0;
+            const int ac = static_cast<const int>(( mcupos & 63 ) > 0);
             jassert( mcupos >= 0 && ( mcupos >> 6 ) < 10 );
             jassert( ac == 0 || ac == 1 );
             const int sel = hufsel[ac][mcupos >> 6];
@@ -8240,13 +8240,13 @@ void dump(const char* msg, int p) {
             if( huffsize + ( rs & 15 ) == huffbits ) { // done decoding
               rs1 = rs;
               int ex = 0;         // decoded extra bits
-              if( mcupos & 63 ) { // AC
+              if( (mcupos & 63) != 0 ) { // AC
                 if( rs == 0 ) {   // EOB
                   mcupos = ( mcupos + 63 ) & -64;
                   jassert( mcupos >= 0 && mcupos <= mcusize && mcupos <= 640 );
-                  while( cpos & 63 ) {
+                  while( (cpos & 63) != 0 ) {
                     cbuf2[cpos] = 0;
-                    cbuf[cpos] = ( !rs ) ? 0 : ( 63 - ( cpos & 63 ) ) << 4;
+                    cbuf[cpos] = ( rs == 0 ) ? 0 : ( 63 - ( cpos & 63 ) ) << 4;
                     cpos++;
                     rs++;
                   }
@@ -8316,15 +8316,15 @@ void dump(const char* msg, int p) {
                   // necessarily in this MCU
                   int offset_DC_N = cpos_dc - blockN[acomp];
                   for( int i = 0; i < 64; ++i ) {
-                    sumu[zzu[i]] += ( zzv[i] & 1 ? -1 : 1 ) * ( zzv[i] ? 16 * ( 16 + zzv[i] ) : 185 )
+                    sumu[zzu[i]] += ( (zzv[i] & 1) != 0 ? -1 : 1 ) * ( zzv[i] != 0u ? 16 * ( 16 + zzv[i] ) : 185 )
                                     * ( images[idx].qtab[q + i] + 1 ) * cbuf2[offset_DC_N + i];
-                    sumv[zzv[i]] += ( zzu[i] & 1 ? -1 : 1 ) * ( zzu[i] ? 16 * ( 16 + zzu[i] ) : 185 )
+                    sumv[zzv[i]] += ( (zzu[i] & 1) != 0 ? -1 : 1 ) * ( zzu[i] != 0u ? 16 * ( 16 + zzu[i] ) : 185 )
                                     * ( images[idx].qtab[q + i] + 1 ) * cbuf2[offset_DC_W + i];
                   }
                 } else {
-                  sumu[zzu[zz - 1]] -= ( zzv[zz - 1] ? 16 * ( 16 + zzv[zz - 1] ) : 185 )
+                  sumu[zzu[zz - 1]] -= ( zzv[zz - 1] != 0u ? 16 * ( 16 + zzv[zz - 1] ) : 185 )
                                        * ( images[idx].qtab[q + zz - 1] + 1 ) * cbuf2[cpos - 1];
-                  sumv[zzv[zz - 1]] -= ( zzu[zz - 1] ? 16 * ( 16 + zzu[zz - 1] ) : 185 )
+                  sumv[zzv[zz - 1]] -= ( zzu[zz - 1] != 0u ? 16 * ( 16 + zzu[zz - 1] ) : 185 )
                                        * ( images[idx].qtab[q + zz - 1] + 1 ) * cbuf2[cpos - 1];
                 }
 
@@ -8341,15 +8341,15 @@ void dump(const char* msg, int p) {
                       adv_pred[i] = p;
                     } else if( abs( p ) > abs( adv_pred[i] ) + 2 && abs( adv_pred[i] ) < 210 ) {
                       if( run_pred[i] == 0 )
-                        run_pred[i] = st * 2 + ( p > 0 );
+                        run_pred[i] = st * 2 + static_cast<int>( p > 0 );
                       if( abs( p ) > abs( adv_pred[i] ) + 21 && run_pred[i + 3] == 0 )
-                        run_pred[i + 3] = st * 2 + ( p > 0 );
+                        run_pred[i + 3] = st * 2 + static_cast<int>( p > 0 );
                     }
                   }
                 }
                 ex = 0;
                 for( int i = 0; i < 8; ++i )
-                  ex += ( zzu[zz] < i ) * sumu[i] + ( zzv[zz] < i ) * sumv[i];
+                  ex += static_cast<int>( zzu[zz] < i ) * sumu[i] + static_cast<int>( zzv[zz] < i ) * sumv[i];
                 ex = ( sumu[zzu[zz]] * ( 2 + zzu[zz] ) + sumv[zzv[zz]] * ( 2 + zzv[zz] ) - ex * 2 ) * 4
                      / ( zzu[zz] + zzv[zz] + 16 );
                 ex /= ( images[idx].qtab[q + zz] + 1 ) * 185;
@@ -8358,11 +8358,11 @@ void dump(const char* msg, int p) {
                 adv_pred[3] = ( ex < 0 ? -1 : +1 ) * ilog( abs( ex ) + 1 );
 
                 for( int i = 0; i < 4; ++i ) {
-                  const int a = ( i & 1 ? zzv[zz] : zzu[zz] ), b = ( i & 2 ? 2 : 1 );
+                  const int a = ( (i & 1) != 0 ? zzv[zz] : zzu[zz] ), b = ( (i & 2) != 0 ? 2 : 1 );
                   if( a < b )
                     ex = 65535;
                   else {
-                    const int zz2 = zpos[zzu[zz] + 8 * zzv[zz] - ( i & 1 ? 8 : 1 ) * b];
+                    const int zz2 = zpos[zzu[zz] + 8 * zzv[zz] - ( (i & 1) != 0 ? 8 : 1 ) * b];
                     ex = ( images[idx].qtab[q + zz2] + 1 ) * cbuf2[cpos_dc + zz2] / ( images[idx].qtab[q + zz] + 1 );
                     ex = ( ex < 0 ? -1 : +1 ) * ( ilog( abs( ex ) + 1 ) + ( ex != 0 ? 17 : 0 ) );
                   }
@@ -8419,14 +8419,14 @@ void dump(const char* msg, int p) {
       }
 
       // Estimate next bit probability
-      if( !images[idx].jpeg || !images[idx].data )
+      if( (images[idx].jpeg == 0) || (images[idx].data == 0) )
         return images[idx].next_jpeg;
-      if( buf( 1 + ( bpos == 0 ) ) == FF ) {
+      if( buf( 1 + static_cast<int>( bpos == 0 ) ) == FF ) {
         m.add( 128 ); //network bias
         m.set( 0, 9 );
         m.set( 0, 1025 );
         m.set( buf( 1 ), 1024 );
-        return true;
+        return 1;
       }
       if( rstlen > 0 && rstlen == column + row * width - rstpos && mcupos == 0
           && ( int ) huffcode == ( 1 << huffbits ) - 1 ) {
@@ -8434,11 +8434,11 @@ void dump(const char* msg, int p) {
         m.set( 0, 9 );
         m.set( 0, 1025 );
         m.set( buf( 1 ), 1024 );
-        return true;
+        return 1;
       }
 
       // Update model
-      if( cp[N - 1] ) {
+      if( cp[N - 1] != nullptr ) {
         for( int i = 0; i < N; ++i )
           *cp[i] = nex( *cp[i], y );
       }
@@ -8447,7 +8447,7 @@ void dump(const char* msg, int p) {
       // Update context
       const int comp = color[mcupos >> 6];
       const int coef = ( mcupos & 63 ) | comp << 6;
-      const int hc = ( huffcode * 4 + ( ( mcupos & 63 ) == 0 ) * 2 + ( comp == 0 ) ) | 1 << ( huffbits + 2 );
+      const int hc = ( huffcode * 4 + static_cast<int>( ( mcupos & 63 ) == 0 ) * 2 + static_cast<unsigned int>( comp == 0 ) ) | 1 << ( huffbits + 2 );
       const bool firstcol = column == 0 && blockW[mcupos >> 6] > mcupos;
       static int hbcount = 2;
       if( ++hbcount > 2 || huffbits == 0 )
@@ -8471,14 +8471,14 @@ void dump(const char* msg, int p) {
         cxt[12] = hash( ++n, zv / 2, lcp[1] / 13, lcp[3] / 30, prev_coef / 40 + ( ( prev_coef2 / 28 ) << 20 ) );
         cxt[13] = hash( ++n, rs1, prev_coef / 42, prev_coef2 / 34, lcp[0] / 60, lcp[2] / 14, lcp[1] / 60, lcp[3] / 14 );
         cxt[14] = hash( ++n, mcupos & 63, column >> 1 );
-        cxt[15] = hash( ++n, column >> 3, min( 5 + 2 * ( !comp ), zu + zv ), lcp[0] / 10, lcp[2] / 40, lcp[1] / 10,
+        cxt[15] = hash( ++n, column >> 3, min( 5 + 2 * static_cast<int>( comp == 0 ), zu + zv ), lcp[0] / 10, lcp[2] / 40, lcp[1] / 10,
                         lcp[3] / 40 );
         cxt[16] = hash( ++n, ssum >> 3, mcupos & 63 );
         cxt[17] = hash( ++n, rs1, mcupos & 63, run_pred[1] );
         cxt[18] = hash( ++n, coef, ssum2 >> 5, adv_pred[3] / 30,
-                        ( comp ) ? hash( prev_coef / 22, prev_coef2 / 50 ) : ssum / ( ( mcupos & 0x3F ) + 1 ) );
+                        ( comp ) != 0 ? hash( prev_coef / 22, prev_coef2 / 50 ) : ssum / ( ( mcupos & 0x3F ) + 1 ) );
         cxt[19] = hash( ++n, lcp[0] / 40, lcp[1] / 40, adv_pred[1] / 28,
-                        ( comp ) ? prev_coef / 40 + ( ( prev_coef2 / 40 ) << 20 ) : lcp[4] / 22, min( 7, zu + zv ),
+                        ( comp ) != 0 ? prev_coef / 40 + ( ( prev_coef2 / 40 ) << 20 ) : lcp[4] / 22, min( 7, zu + zv ),
                         ssum / ( 2 * ( zu + zv ) + 1 ) );
         cxt[20] = hash( ++n, zv, cbuf[cpos - blockN[mcupos >> 6]], adv_pred[2] / 28, run_pred[2] );
         cxt[21] = hash( ++n, zu, cbuf[cpos - blockW[mcupos >> 6]], adv_pred[0] / 28, run_pred[0] );
@@ -8490,9 +8490,9 @@ void dump(const char* msg, int p) {
         cxt[27] = hash( ++n, lcp[0] / 14, lcp[1] / 14, adv_pred[3] / 16 );
         cxt[28] = hash( ++n, coef, prev_coef / 10, prev_coef2 / 20 );
         cxt[29] = hash( ++n, coef, ssum >> 2, prev_coef_rs );
-        cxt[30] = hash( ++n, coef, adv_pred[1] / 17, lcp[( zu < zv )] / 24, lcp[2] / 20, lcp[3] / 24 );
-        cxt[31] = hash( ++n, coef, adv_pred[3] / 11, lcp[( zu < zv )] / 50, lcp[2 + 3 * ( zu * zv > 1 )] / 50,
-                        lcp[3 + 3 * ( zu * zv > 1 )] / 50 );
+        cxt[30] = hash( ++n, coef, adv_pred[1] / 17, lcp[static_cast<U64>( zu < zv )] / 24, lcp[2] / 20, lcp[3] / 24 );
+        cxt[31] = hash( ++n, coef, adv_pred[3] / 11, lcp[static_cast<U64>( zu < zv )] / 50, lcp[2 + 3 * static_cast<int>( zu * zv > 1 )] / 50,
+                        lcp[3 + 3 * static_cast<int>( zu * zv > 1 )] / 50 );
       }
 
       // Predict next bit
@@ -8527,10 +8527,10 @@ void dump(const char* msg, int p) {
           }
         } break;
       }
-      if( !hbcount )
+      if( hbcount == 0 )
         MJPEGMap.set( hash( mcupos, column, row, hc >> 2 ) );
       MJPEGMap.mix( *m1, 1, 2, 127 );
-      m1->set( firstcol, 2 );
+      m1->set( static_cast<int>(firstcol), 2 );
       m1->set( coef | ( min( 3, huffbits ) << 8 ), 1024 );
       m1->set( ( ( hc & 0x1FE ) << 1 ) | min( 3, ilog2( zu + zv ) ), 1024 );
       int pr = m1->p( 1, 1 );
@@ -8542,10 +8542,10 @@ void dump(const char* msg, int p) {
       pr = a2.p( pr, ( hc & 511 ) | ( coef << 9 ), 1023 );
       m.add( stretch( pr ) >> 1 );
       m.add( ( pr >> 2 ) - 511 );
-      m.set( 1 + ( ( zu + zv < 5 ) | ( ( huffbits > 8 ) << 1 ) | ( firstcol << 2 ) ), 1 + 8 );
+      m.set( 1 + ( static_cast<int>( zu + zv < 5 ) | ( static_cast<int>( huffbits > 8 ) << 1 ) | ( static_cast<int>(firstcol) << 2 ) ), 1 + 8 );
       m.set( 1 + ( ( hc & 0xFF ) | ( min( 3, ( zu + zv ) / 3 ) ) << 8 ), 1 + 1024 );
       m.set( coef | ( min( 3, huffbits / 2 ) << 8 ), 1024 );
-      return true;
+      return 1;
     }
   };
 
@@ -8642,7 +8642,7 @@ void dump(const char* msg, int p) {
         Stats->Wav = stereo + 1;
         wmode = info;
       }
-      ch = ( stereo ) ? blpos & 1 : 0;
+      ch = ( stereo ) != 0 ? blpos & 1 : 0;
       const int8_t s = int( ( ( info & 4 ) > 0 ) ? buf( 1 ) ^ 128 : buf( 1 ) ) - 128;
       const int pCh = ch ^ stereo;
       int i = 0;
@@ -8650,7 +8650,7 @@ void dump(const char* msg, int p) {
         ols[i][pCh].Update( s );
         residuals[i][pCh] = s - prd[i][pCh][0];
         const U32 absResidual = ( U32 ) abs( residuals[i][pCh] );
-        mask += mask + ( absResidual > 4 );
+        mask += mask + static_cast<unsigned int>( absResidual > 4 );
         errLog += SQR( absResidual );
       }
       for( ; i < nLnrPrd; i++ )
@@ -8659,19 +8659,19 @@ void dump(const char* msg, int p) {
       Stats->Audio = mxCtx = ilog2( min( 0x1F, BitCount( mask ) ) ) * 2 + ch;
 
       int k1 = 90, k2 = k1 - 12 * stereo;
-      for( int j = ( i = 1 ); j <= k1; j++, i += 1 << ( ( j > 8 ) + ( j > 16 ) + ( j > 64 ) ) )
+      for( int j = ( i = 1 ); j <= k1; j++, i += 1 << ( static_cast<int>( j > 8 ) + static_cast<int>( j > 16 ) + static_cast<int>( j > 64 ) ) )
         ols[1][ch].Add( X1( i ) );
       for( int j = ( i = 1 ); j <= k2;
-           j++, i += 1 << ( ( j > 5 ) + ( j > 10 ) + ( j > 17 ) + ( j > 26 ) + ( j > 37 ) ) )
+           j++, i += 1 << ( static_cast<int>( j > 5 ) + static_cast<int>( j > 10 ) + static_cast<int>( j > 17 ) + static_cast<int>( j > 26 ) + static_cast<int>( j > 37 ) ) )
         ols[2][ch].Add( X1( i ) );
       for( int j = ( i = 1 ); j <= k2;
-           j++, i += 1 << ( ( j > 3 ) + ( j > 7 ) + ( j > 14 ) + ( j > 20 ) + ( j > 33 ) + ( j > 49 ) ) )
+           j++, i += 1 << ( static_cast<int>( j > 3 ) + static_cast<int>( j > 7 ) + static_cast<int>( j > 14 ) + static_cast<int>( j > 20 ) + static_cast<int>( j > 33 ) + static_cast<int>( j > 49 ) ) )
         ols[3][ch].Add( X1( i ) );
-      for( int j = ( i = 1 ); j <= k2; j++, i += 1 + ( j > 4 ) + ( j > 8 ) )
+      for( int j = ( i = 1 ); j <= k2; j++, i += 1 + static_cast<int>( j > 4 ) + static_cast<int>( j > 8 ) )
         ols[4][ch].Add( X1( i ) );
-      for( int j = ( i = 1 ); j <= k1; j++, i += 2 + ( ( j > 3 ) + ( j > 9 ) + ( j > 19 ) + ( j > 36 ) + ( j > 61 ) ) )
+      for( int j = ( i = 1 ); j <= k1; j++, i += 2 + ( static_cast<int>( j > 3 ) + static_cast<int>( j > 9 ) + static_cast<int>( j > 19 ) + static_cast<int>( j > 36 ) + static_cast<int>( j > 61 ) ) )
         ols[5][ch].Add( X1( i ) );
-      if( stereo ) {
+      if( stereo != 0 ) {
         for( i = 1; i <= k1 - k2; i++ ) {
           const double s = ( double ) X2( i );
           ols[2][ch].AddFloat( s );
@@ -8688,7 +8688,7 @@ void dump(const char* msg, int p) {
       }
       for( ; i <= 96; i++ )
         ols[0][ch].Add( X1( i ) );
-      if( stereo ) {
+      if( stereo != 0 ) {
         for( i = 1; i <= k1 - k2; i++ ) {
           const double s = ( double ) X2( i );
           ols[0][ch].AddFloat( s );
@@ -8716,8 +8716,8 @@ void dump(const char* msg, int p) {
       sMap1b[i][0].set( ctx );
       sMap1b[i][1].set( ctx );
       sMap1b[i][2].set( ( prd[i][ch][1] - B ) * 8 + bpos );
-      sMap1b[i][0].mix( m, 6, 1, 2 + ( i >= nOLS ) );
-      sMap1b[i][1].mix( m, 9, 1, 2 + ( i >= nOLS ) );
+      sMap1b[i][0].mix( m, 6, 1, 2 + static_cast<int>( i >= nOLS ) );
+      sMap1b[i][1].mix( m, 9, 1, 2 + static_cast<int>( i >= nOLS ) );
       sMap1b[i][2].mix( m, 7, 1, 3 );
     }
     m.set( ( errLog << 8 ) | c0, 4096 );
@@ -8872,15 +8872,15 @@ void dump(const char* msg, int p) {
         x1 -= 128;
         x2 -= 128;
       }
-      const int t = ( ( bits == 8 ) || ( ( !msb ) ^ ( wmode < 6 ) ) );
+      const int t = static_cast<const int>( ( bits == 8 ) || (( ( msb == 0 ) ^ ( wmode < 6 ) ) != 0) );
       i = ch << 4;
-      if( ( msb ) ^ ( wmode < 6 ) ) {
+      if( (( msb ) ^ static_cast<int>( wmode < 6 )) != 0 ) {
         cm.set( hash( ++i, y1 & 0xff ) );
         cm.set( hash( ++i, y1 & 0xff, ( ( z1 - y2 + z2 - y3 ) >> 1 ) & 0xff ) );
         cm.set( hash( ++i, x1, y1 & 0xff ) );
         cm.set( hash( ++i, x1, x2 >> 3, x3 ) );
         if( bits == 8 )
-          cm.set( hash( ++i, y1 & 0xFE, ilog2( abs( ( int ) ( z1 - y2 ) ) ) * 2 + ( z1 > y2 ) ) );
+          cm.set( hash( ++i, y1 & 0xFE, ilog2( abs( ( int ) ( z1 - y2 ) ) ) * 2 + static_cast<unsigned int>( z1 > y2 ) ) );
         else
           cm.set( hash( ++i, ( y1 + z1 - y2 ) & 0xff ) );
         cm.set( hash( ++i, x1 ) );
@@ -8926,7 +8926,7 @@ void dump(const char* msg, int p) {
     if( col == w * 8 )
       col = 0;
     m.set( ch + 4 * ilog2( col & ( bits - 1 ) ), 4 * 8 );
-    m.set( col % bits < 8, 2 );
+    m.set( static_cast<int>(col % bits < 8), 2 );
     m.set( col % bits, bits );
     m.set( col, w * 8 );
     m.set( c0, 256 );
@@ -10085,20 +10085,20 @@ void dump(const char* msg, int p) {
       return ( ( Mask >> ( CategoryShift * ( n - 1 ) ) ) & CategoryMask );
     }
     inline int pref( const int i ) {
-      return ( buf( i ) == 0x0f ) + 2 * ( buf( i ) == 0x66 ) + 3 * ( buf( i ) == 0x67 );
+      return static_cast<int>( buf( i ) == 0x0f ) + 2 * static_cast<int>( buf( i ) == 0x66 ) + 3 * static_cast<int>( buf( i ) == 0x67 );
     }
     // Get context at buf(i) relevant to parsing 32-bit x86 code
     U32 execxt( int i, int x = 0 ) {
       int prefix = 0, opcode = 0, modrm = 0, sib = 0;
-      if( i )
+      if( i != 0 )
         prefix += 4 * pref( i-- );
-      if( i )
+      if( i != 0 )
         prefix += pref( i-- );
-      if( i )
+      if( i != 0 )
         opcode += buf( i-- );
-      if( i )
+      if( i != 0 )
         modrm += buf( i-- ) & ( ModRM_mod | ModRM_rm );
-      if( i && ( ( modrm & ModRM_rm ) == 4 ) && ( modrm < ModRM_mod ) )
+      if( (i != 0) && ( ( modrm & ModRM_rm ) == 4 ) && ( modrm < ModRM_mod ) )
         sib = buf( i ) & SIB_scale;
       return prefix | opcode << 4 | modrm << 12 | x << 20 | sib << ( 28 - 6 );
     }
@@ -10121,7 +10121,7 @@ void dump(const char* msg, int p) {
       memset( &Cache, 0, sizeof( OpCache ) );
       memset( &Op, 0, sizeof( Instruction ) );
       memset( &StateBH, 0, sizeof( StateBH ) );
-      if( options & OPTION_TRAINEXE )
+      if( (options & OPTION_TRAINEXE) != 0 )
         Train();
     }
     bool Predict( Mixer &m, bool Forced, ModelStats *Stats );
@@ -10172,22 +10172,22 @@ void dump(const char* msg, int p) {
 
           // check prefixes
           Op.Prefix =
-              ( Op.Code == ES_OVERRIDE || Op.Code == CS_OVERRIDE || Op.Code == SS_OVERRIDE || Op.Code == DS_OVERRIDE )
+              static_cast<int>( Op.Code == ES_OVERRIDE || Op.Code == CS_OVERRIDE || Op.Code == SS_OVERRIDE || Op.Code == DS_OVERRIDE )
               + //invalid in x64
-              ( Op.Code == FS_OVERRIDE ) * 2 + ( Op.Code == GS_OVERRIDE ) * 3 + ( Op.Code == AD_OVERRIDE ) * 4
-              + ( Op.Code == WAIT_FPU ) * 5 + ( Op.Code == LOCK ) * 6
-              + ( Op.Code == REP_N_STR || Op.Code == REP_STR ) * 7;
+              static_cast<int>( Op.Code == FS_OVERRIDE ) * 2 + static_cast<int>( Op.Code == GS_OVERRIDE ) * 3 + static_cast<int>( Op.Code == AD_OVERRIDE ) * 4
+              + static_cast<int>( Op.Code == WAIT_FPU ) * 5 + static_cast<int>( Op.Code == LOCK ) * 6
+              + static_cast<int>( Op.Code == REP_N_STR || Op.Code == REP_STR ) * 7;
 
           if( !Op.Decoding ) {
-            TotalOps += ( Op.Data != 0 ) - ( Cache.Index && Cache.Op[Cache.Index & ( CacheSize - 1 )] != 0 );
-            OpMask = ( OpMask << 1 ) | ( State != Error );
+            TotalOps += static_cast<int>( Op.Data != 0 ) - static_cast<int>( (Cache.Index != 0u) && Cache.Op[Cache.Index & ( CacheSize - 1 )] != 0 );
+            OpMask = ( OpMask << 1 ) | static_cast<unsigned int>( State != Error );
             OpCategMask = ( OpCategMask << CategoryShift ) | ( Op.Category );
             Op.Size = 0;
 
             Cache.Op[Cache.Index & ( CacheSize - 1 )] = Op.Data;
             Cache.Index++;
 
-            if( !Op.Prefix )
+            if( Op.Prefix == 0u )
               Op.Data = Op.Code << CodeShift;
             else {
               Op.Data = Op.Prefix;
@@ -10199,7 +10199,7 @@ void dump(const char* msg, int p) {
           } else {
             // we only have enough bits for one prefix, so the
             // instruction will be encoded with the last one
-            if( !Op.Prefix ) {
+            if( Op.Prefix == 0u ) {
               Op.Data |= ( Op.Code << CodeShift );
               Op.Decoding = false;
             } else {
@@ -10306,13 +10306,13 @@ void dump(const char* msg, int p) {
       case Read8:
       case Read16:
       case Read32: {
-        if( ++Op.BytesRead >= ( ( State - Read8 ) << int( Op.imm8 + 1 ) ) ) {
+        if( ++Op.BytesRead >= ( ( State - Read8 ) << int( static_cast<int>(Op.imm8) + 1 ) ) ) {
           Op.BytesRead = 0;
           Op.imm8 = false;
           State = Start;
         }
         BrkCtx = hash( 12, State, Op.Flags & fMODE, Op.BytesRead,
-                       ( ( Op.BytesRead > 1 ) ? ( buf( Op.BytesRead ) << 8 ) : 0 ) | ( ( Op.BytesRead ) ? B : 0 ) );
+                       ( ( Op.BytesRead > 1 ) ? ( buf( Op.BytesRead ) << 8 ) : 0 ) | ( ( Op.BytesRead ) != 0u ? B : 0 ) );
         break;
       }
       case Read8_ModRM: {
@@ -10348,12 +10348,12 @@ void dump(const char* msg, int p) {
       int i = 0;
       while( i < N1 ) {
         if( i > 1 ) {
-          mask = mask * 2 + ( buf( i - 1 ) == 0 );
+          mask = mask * 2 + static_cast<int>( buf( i - 1 ) == 0 );
           count0 += mask & 1;
         }
-        int j = ( i < 4 ) ? i + 1 : 5 + ( i - 4 ) * ( 2 + ( i > 6 ) );
-        cm.set( hash( i, execxt( j, buf( 1 ) * ( j > 6 ) ), ( ( 1 << N1 ) | mask ) * ( count0 * N1 / 2 >= i ),
-                      ( 0x08 | ( blpos & 0x07 ) ) * ( i < 4 ) ) );
+        int j = ( i < 4 ) ? i + 1 : 5 + ( i - 4 ) * ( 2 + static_cast<int>( i > 6 ) );
+        cm.set( hash( i, execxt( j, buf( 1 ) * static_cast<int>( j > 6 ) ), ( ( 1 << N1 ) | mask ) * static_cast<int>( count0 * N1 / 2 >= i ),
+                      ( 0x08 | ( blpos & 0x07 ) ) * static_cast<int>( i < 4 ) ) );
         i++;
       }
 
@@ -10366,7 +10366,7 @@ void dump(const char* msg, int p) {
       mask = 0x04 | ( 0xFE << CodeShift ) | MultiByteOpcode | Prefix38 | Prefix3A
              | ( ( ModRM_mod | ModRM_reg ) << ModRMShift );
       cm.set( hash( ++i, OpN( Cache, 1 ) & mask, OpN( Cache, 2 ) & mask, OpN( Cache, 3 ) & mask,
-                    Context + 256 * ( ( Op.ModRM & ModRM_mod ) == ModRM_mod ),
+                    Context + 256 * static_cast<int>( ( Op.ModRM & ModRM_mod ) == ModRM_mod ),
                     Op.Data & ( ( mask | PrefixREX ) ^ ( ModRM_mod << ModRMShift ) ) ) );
 
       mask = 0x04 | CodeMask;
@@ -10375,8 +10375,8 @@ void dump(const char* msg, int p) {
 
       mask = 0x04 | ( 0xFC << CodeShift ) | MultiByteOpcode | Prefix38 | Prefix3A;
       cm.set( hash( ++i, State + 16 * Op.BytesRead, Op.Data & mask, Op.Category * 8 + ( OpMask & 0x07 ), Op.Flags,
-                    ( ( Op.SIB & SIB_base ) == 5 ) * 4 + ( ( Op.ModRM & ModRM_reg ) == ModRM_reg ) * 2
-                        + ( ( Op.ModRM & ModRM_mod ) == 0 ) ) );
+                    static_cast<int>( ( Op.SIB & SIB_base ) == 5 ) * 4 + static_cast<int>( ( Op.ModRM & ModRM_reg ) == ModRM_reg ) * 2
+                        + static_cast<int>( ( Op.ModRM & ModRM_mod ) == 0 ) ) );
 
       mask = PrefixMask | CodeMask | OperandSizeOverride | MultiByteOpcode | PrefixREX | Prefix38 | Prefix3A
              | HasExtraFlags | HasModRM | ( ( ModRM_mod | ModRM_rm ) << ModRMShift );
@@ -10384,7 +10384,7 @@ void dump(const char* msg, int p) {
 
       mask = PrefixMask | CodeMask | OperandSizeOverride | MultiByteOpcode | Prefix38 | Prefix3A | HasExtraFlags
              | HasModRM;
-      cm.set( hash( ++i, OpN( Cache, 1 ) & mask, State, Op.BytesRead * 2 + ( ( Op.REX & REX_w ) > 0 ),
+      cm.set( hash( ++i, OpN( Cache, 1 ) & mask, State, Op.BytesRead * 2 + static_cast<int>( ( Op.REX & REX_w ) > 0 ),
                     Op.Data & ( ( U16 )( mask ^ OperandSizeOverride ) ) ) );
 
       mask = 0x04 | ( 0xFE << CodeShift ) | MultiByteOpcode | Prefix38 | Prefix3A | ( ModRM_reg << ModRMShift );
@@ -10393,10 +10393,10 @@ void dump(const char* msg, int p) {
 
       cm.set( hash( ++i, State + 16 * Op.BytesRead ) );
 
-      cm.set( hash( ++i, ( 0x100 | B ) * ( Op.BytesRead > 0 ), State + 16 * pState + 256 * Op.BytesRead,
-                    ( ( Op.Flags & fMODE ) == fAM ) * 16 + ( Op.REX & REX_w ) + ( Op.o16 ) * 4
-                        + ( ( Op.Code & 0xFE ) == 0xE8 ) * 2
-                        + ( ( Op.Data & MultiByteOpcode ) != 0 && ( Op.Code & 0xF0 ) == 0x80 ) ) );
+      cm.set( hash( ++i, ( 0x100 | B ) * static_cast<int>( Op.BytesRead > 0 ), State + 16 * pState + 256 * Op.BytesRead,
+                    static_cast<int>( ( Op.Flags & fMODE ) == fAM ) * 16 + ( Op.REX & REX_w ) + static_cast<int>(( Op.o16 )) * 4
+                        + static_cast<int>( ( Op.Code & 0xFE ) == 0xE8 ) * 2
+                        + static_cast<int>( ( Op.Data & MultiByteOpcode ) != 0 && ( Op.Code & 0xF0 ) == 0x80 ) ) );
     }
   }
 
@@ -10414,16 +10414,16 @@ void dump(const char* msg, int p) {
     }
     U8 s = ( ( StateBH[Context] >> ( 28 - bpos ) ) & 0x08 ) | ( ( StateBH[Context] >> ( 21 - bpos ) ) & 0x04 )
            | ( ( StateBH[Context] >> ( 14 - bpos ) ) & 0x02 ) | ( ( StateBH[Context] >> ( 7 - bpos ) ) & 0x01 )
-           | ( ( Op.Category == OP_GEN_BRANCH ) << 4 ) | ( ( ( c0 & ( ( 1 << bpos ) - 1 ) ) == 0 ) << 5 );
+           | ( static_cast<int>( Op.Category == OP_GEN_BRANCH ) << 4 ) | ( static_cast<int>( ( c0 & ( ( 1 << bpos ) - 1 ) ) == 0 ) << 5 );
 
     m.set( Context * 4 + ( s >> 4 ), 1024 );
-    m.set( State * 64 + bpos * 8 + ( Op.BytesRead > 0 ) * 4 + ( s >> 4 ), 1024 );
+    m.set( State * 64 + bpos * 8 + static_cast<int>( Op.BytesRead > 0 ) * 4 + ( s >> 4 ), 1024 );
     m.set( ( BrkCtx & 0x1FF ) | ( ( s & 0x20 ) << 4 ), 1024 );
     m.set( finalize64( hash( Op.Code, State, OpN( Cache, 1 ) & CodeMask ), 13 ), 8192 );
     m.set( finalize64( hash( State, bpos, Op.Code, Op.BytesRead ), 13 ), 8192 );
     m.set( finalize64( hash( State, ( bpos << 2 ) | ( c0 & 3 ), OpCategMask & CategoryMask,
-                             ( ( Op.Category == OP_GEN_BRANCH ) << 2 ) | ( ( ( Op.Flags & fMODE ) == fAM ) << 1 )
-                                 | ( Op.BytesRead > 0 ) ),
+                             ( static_cast<int>( Op.Category == OP_GEN_BRANCH ) << 2 ) | ( static_cast<int>( ( Op.Flags & fMODE ) == fAM ) << 1 )
+                                 | static_cast<int>( Op.BytesRead > 0 ) ),
                        13 ),
            8192 );
 
@@ -10461,9 +10461,9 @@ void dump(const char* msg, int p) {
       const U32 tc = d3 | t4[d3] << 16;
       const U8 pc = tolower( U8( c4 >> 8 ) );
       iCtx += ( c = tolower( c ) ), iCtx = ( pc << 8 ) | c;
-      const U32 ctx0 = iCtx(), mask = ( U8( t1[c] ) == U8( t2[d] ) ) | ( ( U8( t1[c] ) == U8( t3[d2] ) ) << 1 )
-                                      | ( ( U8( t1[c] ) == U8( t4[d3] ) ) << 2 )
-                                      | ( ( U8( t1[c] ) == U8( ctx0 ) ) << 3 );
+      const U32 ctx0 = iCtx(), mask = static_cast<int>( U8( t1[c] ) == U8( t2[d] ) ) | ( static_cast<int>( U8( t1[c] ) == U8( t3[d2] ) ) << 1 )
+                                      | ( static_cast<int>( U8( t1[c] ) == U8( t4[d3] ) ) << 2 )
+                                      | ( static_cast<int>( U8( t1[c] ) == U8( ctx0 ) ) << 3 );
       U64 i = 0;
       cm.set( hash( ++i, t ) );
       cm.set( hash( ++i, t0 ) );
@@ -10736,8 +10736,8 @@ void dump(const char* msg, int p) {
     static ContextMap cm( MEM, 12 );
     if( bpos == 0 ) {
       int c = c4 & 255, matched = 1, vv;
-      w *= ( ( vc & 7 ) > 0 && ( vc & 7 ) < 3 );
-      if( c & 0x80 )
+      w *= static_cast<int>( ( vc & 7 ) > 0 && ( vc & 7 ) < 3 );
+      if( (c & 0x80) != 0 )
         w = w * 11 * 32 + c;
       const int lc = ( c >= 'A' && c <= 'Z' ? c + 'a' - 'A' : c );
       if( lc == 'a' || lc == 'e' || lc == 'i' || lc == 'o' || lc == 'u' ) {
@@ -10755,7 +10755,7 @@ void dump(const char* msg, int p) {
       else if( lc == '\'' )
         vv = 6;
       else
-        vv = ( c & 32 ) ? 7 : 0;
+        vv = ( c & 32 ) != 0 ? 7 : 0;
       vc = ( vc << 3 ) | vv;
       if( vv != lvc ) {
         wc = ( wc << 3 ) | vv;
@@ -10864,8 +10864,8 @@ void dump(const char* msg, int p) {
       if( c4 == 0x266C743B )
         uc = min( 7, uc + 1 ); //&lt;
       else if( c4 == 0x2667743B )
-        uc -= ( uc > 0 ); //&gt;
-      if( matched )
+        uc -= static_cast<int>( uc > 0 ); //&gt;
+      if( matched != 0 )
         bc = 0;
       else
         bc += 1;
@@ -11008,9 +11008,9 @@ void dump(const char* msg, int p) {
       XMLAttribute *Attribute = &( ( *Tag ).Attributes.Items[( *Tag ).Attributes.Index & 3] );
       XMLContent *Content = &( *Tag ).Content;
       pState = State;
-      if( ( B == TAB || B == SPACE ) && ( B == ( U8 )( c4 >> 8 ) || !WhiteSpaceRun ) ) {
+      if( ( B == TAB || B == SPACE ) && ( B == ( U8 )( c4 >> 8 ) || (WhiteSpaceRun == 0u) ) ) {
         WhiteSpaceRun++;
-        IndentTab = ( B == TAB );
+        IndentTab = static_cast<U32>( B == TAB );
       } else {
         if( ( State == None || ( State == ReadContent && ( *Content ).Length <= LineEnding + WhiteSpaceRun ) )
             && WhiteSpaceRun > 1 + IndentTab && WhiteSpaceRun != pWSRun ) {
@@ -11020,7 +11020,7 @@ void dump(const char* msg, int p) {
         WhiteSpaceRun = 0;
       }
       if( B == NEW_LINE )
-        LineEnding = 1 + ( ( U8 )( c4 >> 8 ) == CARRIAGE_RETURN );
+        LineEnding = 1 + static_cast<int>( ( U8 )( c4 >> 8 ) == CARRIAGE_RETURN );
 
       switch( State ) {
         case None: {
@@ -11073,12 +11073,12 @@ void dump(const char* msg, int p) {
           do {
             pTag = &Cache.Tags[( Cache.Index - i ) & ( CacheSize - 1 )];
             i += 1
-                 + ( ( *pTag ).EndTag
+                 + static_cast<int>( ( *pTag ).EndTag
                      && Cache.Tags[( Cache.Index - i - 1 ) & ( CacheSize - 1 )].Name == ( *pTag ).Name );
           } while( i < CacheSize && ( ( *pTag ).EndTag || ( *pTag ).Empty ) );
 
           cm.set(
-              hash( pState, State, ( *Tag ).Name, ( *Tag ).Level, ( *pTag ).Name, ( *pTag ).Level != ( *Tag ).Level ) );
+              hash( pState, State, ( *Tag ).Name, ( *Tag ).Level, ( *pTag ).Name, static_cast<U64>(( *pTag ).Level != ( *Tag ).Level) ) );
           break;
         }
         case ReadTag: {
@@ -11158,10 +11158,10 @@ void dump(const char* msg, int p) {
       StateBH[pState] = ( StateBH[pState] << 8 ) | B;
       pTag = &Cache.Tags[( Cache.Index - 1 ) & ( CacheSize - 1 )];
       U64 i = 64;
-      cm.set( hash( ++i, State, ( *Tag ).Level, pState * 2 + ( *Tag ).EndTag, ( *Tag ).Name ) );
+      cm.set( hash( ++i, State, ( *Tag ).Level, pState * 2 + static_cast<int>(( *Tag ).EndTag), ( *Tag ).Name ) );
       cm.set(
-          hash( ++i, ( *pTag ).Name, State * 2 + ( *pTag ).EndTag, ( *pTag ).Content.Type, ( *Tag ).Content.Type ) );
-      cm.set( hash( ++i, State * 2 + ( *Tag ).EndTag, ( *Tag ).Name, ( *Tag ).Content.Type, c4 & 0xE0FF ) );
+          hash( ++i, ( *pTag ).Name, State * 2 + static_cast<int>(( *pTag ).EndTag), ( *pTag ).Content.Type, ( *Tag ).Content.Type ) );
+      cm.set( hash( ++i, State * 2 + static_cast<int>(( *Tag ).EndTag), ( *Tag ).Name, ( *Tag ).Content.Type, c4 & 0xE0FF ) );
     }
     cm.mix( m );
     U8 s = ( ( StateBH[State] >> ( 28 - bpos ) ) & 0x08 ) | ( ( StateBH[State] >> ( 21 - bpos ) ) & 0x04 )
@@ -11185,7 +11185,7 @@ void dump(const char* msg, int p) {
     void update_contexts( const U8 B ) {
       // update order 1..14 context hashes
       // note: order 0 context does not need an update so its hash never changes
-      cxt[15] = ( isalpha( B ) ) ? combine64( cxt[15], tolower( B ) ) : 0;
+      cxt[15] = ( isalpha( B ) ) != 0 ? combine64( cxt[15], tolower( B ) ) : 0;
       cm.set( cxt[15] );
       for( int i = 14; i > 0; --i )
         cxt[i] = combine64( cxt[i - 1], B );
@@ -11227,7 +11227,7 @@ void dump(const char* msg, int p) {
   public:
     normalModel( const U64 size ) : cm( size, 10 ), rcm7( MEM ), rcm9( MEM ), rcm10( MEM ), StateMaps{256, 256 * 256} {
       assert( ispowerof2( size ) );
-      if( options & OPTION_TRAINTXT ) {
+      if( (options & OPTION_TRAINTXT) != 0 ) {
         reset();
         Train( "english.dic", 3 );
         Train( "english.exp", 1 );
@@ -11280,7 +11280,7 @@ void dump(const char* msg, int p) {
 #ifdef USE_TEXTMODEL
         textModel( MEM * 16 ),
 #endif //USE_TEXTMODEL
-        matchModel( MEM * 4, options & OPTION_FASTMODE ),
+        matchModel( MEM * 4, (options & OPTION_FASTMODE) != 0 ),
         sparseMatchModel( MEM ),
 
         next_blocktype( DEFAULT ),
@@ -11303,7 +11303,7 @@ void dump(const char* msg, int p) {
 
     ~ContextModel() {
       delete m;
-      if( jpegModel )
+      if( jpegModel != nullptr )
         delete jpegModel;
     }
     int Predict( ModelStats *Stats );
@@ -11352,7 +11352,7 @@ void dump(const char* msg, int p) {
 
     Bypass = false;
     int matchlength = matchModel.Predict( *m, buf, Stats );
-    if( options & OPTION_FASTMODE && ( matchlength >= 4096 || matchModel.Bypass ) ) {
+    if( ((options & OPTION_FASTMODE) != 0) && ( matchlength >= 4096 || matchModel.Bypass ) ) {
       matchModel.Bypass = Bypass = true;
       m->reset();
       return matchModel.BypassPrediction;
@@ -11395,18 +11395,18 @@ void dump(const char* msg, int p) {
     if( ( blocktype == JPEG || blocktype == HDR ) ) {
       if( jpegModel == nullptr )
         jpegModel = new JpegModel();
-      if( jpegModel->jpegModel( *m ) )
+      if( jpegModel->jpegModel( *m ) != 0 )
         return m->p( 1, 0 );
     }
 
     U32 c1 = buf( 1 ), c2 = buf( 2 ), c3 = buf( 3 ), c;
 
     m->set( 8
-                + ( c1 | ( bpos > 5 ) << 8
-                    | ( ( ( c0 & ( ( 1 << bpos ) - 1 ) ) == 0 ) || ( c0 == ( ( 2 << bpos ) - 1 ) ) ) << 9 ),
+                + ( c1 | static_cast<int>( bpos > 5 ) << 8
+                    | static_cast<int>( ( ( c0 & ( ( 1 << bpos ) - 1 ) ) == 0 ) || ( c0 == ( ( 2 << bpos ) - 1 ) ) ) << 9 ),
             8 + 1024 );
     m->set( c0, 256 );
-    m->set( order | ( ( c4 >> 6 ) & 3 ) << 3 | ( bpos == 0 ) << 5 | ( c1 == c2 ) << 6 | ( blocktype == EXE ) << 7,
+    m->set( order | ( ( c4 >> 6 ) & 3 ) << 3 | static_cast<int>( bpos == 0 ) << 5 | static_cast<int>( c1 == c2 ) << 6 | static_cast<int>( blocktype == EXE ) << 7,
             256 );
     m->set( c2, 256 );
     m->set( c3, 256 );
@@ -11497,7 +11497,7 @@ void dump(const char* msg, int p) {
   void Predictor::update() {
     // Update global context: pos, bpos, c0, c4, c8, buf
     c0 += c0 + y;
-    stats.Misses += stats.Misses + ( ( pr >> 11 ) != y );
+    stats.Misses += stats.Misses + static_cast<unsigned long long>( ( pr >> 11 ) != y );
     if( c0 >= 256 ) {
       c0 = U8( c0 );
       buf[pos++] = c0;
@@ -11521,7 +11521,7 @@ void dump(const char* msg, int p) {
     switch( stats.blockType ) {
       case TEXT:
       case TEXT_EOL: {
-        int limit = 0x3FF >> ( ( blpos < 0xFFF ) * 2 );
+        int limit = 0x3FF >> ( static_cast<int>( blpos < 0xFFF ) * 2 );
         pr = Text.APMs[0].p( pr0, ( c0 << 8 ) | ( stats.Text.mask & 0xF ) | ( ( stats.Misses & 0xF ) << 4 ), limit );
         pr1 = Text.APMs[1].p( pr0, finalize64( hash( bpos, stats.Misses & 3, c4 & 0xffff, stats.Text.mask >> 4 ), 16 ),
                               limit );
@@ -11545,7 +11545,7 @@ void dump(const char* msg, int p) {
       }
       case IMAGE24:
       case IMAGE32: {
-        int limit = 0x3FF >> ( ( blpos < 0xFFF ) * 4 );
+        int limit = 0x3FF >> ( static_cast<int>( blpos < 0xFFF ) * 4 );
         pr = Image.Color.APMs[0].p( pr0, ( c0 << 4 ) | ( stats.Misses & 0xF ), limit );
         pr1 = Image.Color.APMs[1].p( pr0, finalize64( hash( c0, stats.Image.pixels.W, stats.Image.pixels.WW ), 16 ),
                                      limit );
@@ -11567,7 +11567,7 @@ void dump(const char* msg, int p) {
         break;
       }
       case IMAGE8GRAY: {
-        int limit = 0x3FF >> ( ( blpos < 0xFFF ) * 4 );
+        int limit = 0x3FF >> ( static_cast<int>( blpos < 0xFFF ) * 4 );
         pr = Image.Gray.APMs[0].p( pr0, ( c0 << 4 ) | ( stats.Misses & 0xF ), limit );
         pr1 = Image.Gray.APMs[1].p( pr, ( c0 << 8 ) | stats.Image.ctx, limit );
         pr2 = Image.Gray.APMs[2].p( pr0, bpos | ( stats.Image.ctx & 0xF8 ) | ( stats.Match.expectedByte << 8 ), limit );
@@ -11577,7 +11577,7 @@ void dump(const char* msg, int p) {
         break;
       }
       case IMAGE8: {
-        int limit = 0x3FF >> ( ( blpos < 0xFFF ) * 4 );
+        int limit = 0x3FF >> ( static_cast<int>( blpos < 0xFFF ) * 4 );
         pr = Image.Palette.APMs[0].p( pr0, ( c0 << 4 ) | ( stats.Misses & 0xF ), limit );
         pr1 = Image.Palette.APMs[1].p(
             pr0, finalize64( hash( c0 | stats.Image.pixels.W << 8 | stats.Image.pixels.N << 16 ), 16 ), limit );
@@ -11658,10 +11658,10 @@ void dump(const char* msg, int p) {
       U32 xmid = x1 + ( ( x2 - x1 ) >> 12 ) * p + ( ( ( x2 - x1 ) & 0xfff ) * p >> 12 );
       assert( xmid >= x1 && xmid < x2 );
       if( mode == DECOMPRESS )
-        y = x <= xmid;
+        y = static_cast<int>(x <= xmid);
       else
         y = i;
-      y ? ( x2 = xmid ) : ( x1 = xmid + 1 );
+      y != 0 ? ( x2 = xmid ) : ( x1 = xmid + 1 );
       predictor.update();
       while( ( ( x1 ^ x2 ) & 0xff000000 ) == 0 ) { // pass equal leading bytes of range
         if( mode == COMPRESS )
@@ -11837,16 +11837,16 @@ void dump(const char* msg, int p) {
   static int luts_init = 0;
 
   void eccedc_init( void ) {
-    if( luts_init )
+    if( luts_init != 0 )
       return;
     U32 i, j, edc;
     for( i = 0; i < 256; i++ ) {
-      j = ( i << 1 ) ^ ( i & 0x80 ? 0x11D : 0 );
+      j = ( i << 1 ) ^ ( (i & 0x80) != 0u ? 0x11D : 0 );
       ecc_f_lut[i] = j;
       ecc_b_lut[i ^ j] = i;
       edc = i;
       for( j = 0; j < 8; j++ )
-        edc = ( edc >> 1 ) ^ ( edc & 1 ? 0xD8018001 : 0 );
+        edc = ( edc >> 1 ) ^ ( (edc & 1) != 0u ? 0xD8018001 : 0 );
       edc_lut[i] = edc;
     }
     luts_init = 1;
@@ -11876,7 +11876,7 @@ void dump(const char* msg, int p) {
 
   U32 edc_compute( const U8 *src, int size ) {
     U32 edc = 0;
-    while( size-- )
+    while( (size--) != 0 )
       edc = ( edc >> 8 ) ^ edc_lut[( edc ^ ( *src++ ) ) & 0xFF];
     return edc;
   }
@@ -11912,7 +11912,7 @@ void dump(const char* msg, int p) {
     d2[15] = mode;
     if( mode == 2 )
       for( int i = 16; i < 24; i++ )
-        d2[i] = data[i - 4 * ( i >= 20 )]; //8 byte subheader
+        d2[i] = data[i - 4 * static_cast<int>( i >= 20 )]; //8 byte subheader
     if( form == 1 ) {
       if( mode == 2 ) {
         d2[1] = d2[12], d2[2] = d2[13], d2[3] = d2[14];
@@ -11921,11 +11921,11 @@ void dump(const char* msg, int p) {
         for( int i = 2068; i < 2076; i++ )
           d2[i] = 0; //Mode1: reserved 8 (zero) bytes
       }
-      for( int i = 16 + 8 * ( mode == 2 ); i < 2064 + 8 * ( mode == 2 ); i++ )
+      for( int i = 16 + 8 * static_cast<int>( mode == 2 ); i < 2064 + 8 * static_cast<int>( mode == 2 ); i++ )
         d2[i] = data[i]; //data bytes
-      U32 edc = edc_compute( d2 + 16 * ( mode == 2 ), 2064 - 8 * ( mode == 2 ) );
+      U32 edc = edc_compute( d2 + 16 * static_cast<int>( mode == 2 ), 2064 - 8 * static_cast<int>( mode == 2 ) );
       for( int i = 0; i < 4; i++ )
-        d2[2064 + 8 * ( mode == 2 ) + i] = ( edc >> ( 8 * i ) ) & 0xff;
+        d2[2064 + 8 * static_cast<int>( mode == 2 ) + i] = ( edc >> ( 8 * i ) ) & 0xff;
       ecc_compute( d2 + 12, 86, 24, 2, 86, d2 + 2076 );
       ecc_compute( d2 + 12, 52, 43, 86, 88, d2 + 2248 );
       if( mode == 2 ) {
@@ -11934,7 +11934,7 @@ void dump(const char* msg, int p) {
       }
     }
     for( int i = 0; i < 2352; i++ )
-      if( d2[i] != data[i] && test )
+      if( d2[i] != data[i] && (test != 0) )
         form = 2;
     if( form == 2 ) {
       for( int i = 24; i < 2348; i++ )
@@ -11944,7 +11944,7 @@ void dump(const char* msg, int p) {
         d2[2348 + i] = ( edc >> ( 8 * i ) ) & 0xff; //EDC
     }
     for( int i = 0; i < 2352; i++ )
-      if( d2[i] != data[i] && test )
+      if( d2[i] != data[i] && (test != 0) )
         return 0;
       else
         data[i] = d2[i];
@@ -12015,29 +12015,29 @@ void dump(const char* msg, int p) {
 
   bool IsGrayscalePalette( File *in, int n = 256, int isRGBA = 0 ) {
     U64 offset = in->curpos();
-    int stride = 3 + isRGBA, res = ( n > 0 ) << 8, order = 1;
-    for( int i = 0; ( i < n * stride ) && ( res >> 8 ); i++ ) {
+    int stride = 3 + isRGBA, res = static_cast<int>( n > 0 ) << 8, order = 1;
+    for( int i = 0; ( i < n * stride ) && (( res >> 8 ) != 0); i++ ) {
       int b = in->getchar();
       if( b == EOF ) {
         res = 0;
         break;
       }
-      if( !i ) {
+      if( i == 0 ) {
         res = 0x100 | b;
-        order = 1 - 2 * ( b > int( ilog2( n ) / 4 ) );
+        order = 1 - 2 * static_cast<int>( b > int( ilog2( n ) / 4 ) );
         continue;
       }
       //"j" is the index of the current byte in this color entry
       int j = i % stride;
-      if( !j ) {
+      if( j == 0 ) {
         // load first component of this entry
         int k = ( b - ( res & 0xFF ) ) * order;
-        res = res & ( ( k >= 0 && k <= 8 ) << 8 );
-        res |= ( res ) ? b : 0;
+        res = res & ( static_cast<int>( k >= 0 && k <= 8 ) << 8 );
+        res |= ( res ) != 0 ? b : 0;
       } else if( j == 3 )
-        res &= ( ( !b || ( b == 0xFF ) ) * 0x1FF ); // alpha/attribute component must be zero or 0xFF
+        res &= ( static_cast<int>( (b == 0) || ( b == 0xFF ) ) * 0x1FF ); // alpha/attribute component must be zero or 0xFF
       else
-        res &= ( ( b == ( res & 0xFF ) ) * 0x1FF );
+        res &= ( static_cast<int>( b == ( res & 0xFF ) ) * 0x1FF );
     }
     in->setpos( offset );
     return ( res >> 8 ) > 0;
@@ -12179,11 +12179,11 @@ void dump(const char* msg, int p) {
     // For image detection
     static int deth = 0, detd = 0; // detected header/data size in bytes
     static Blocktype dett;         // detected block type
-    if( deth ) {
+    if( deth != 0 ) {
       in->setpos( start + deth );
       deth = 0;
       return dett;
-    } else if( detd ) {
+    } else if( detd != 0 ) {
       in->setpos( start + min( blocksize, ( U64 ) detd ) );
       detd = 0;
       return DEFAULT;
@@ -12200,9 +12200,9 @@ void dump(const char* msg, int p) {
       buf0 = buf0 << 8 | c;
 
       // detect PNG images
-      if( !png && buf3 == 0x89504E47 /*%PNG*/ && buf2 == 0x0D0A1A0A && buf1 == 0x0000000D && buf0 == 0x49484452 )
+      if( (png == 0) && buf3 == 0x89504E47 /*%PNG*/ && buf2 == 0x0D0A1A0A && buf1 == 0x0000000D && buf0 == 0x49484452 )
         png = i, pngtype = -1, lastchunk = buf3;
-      if( png ) {
+      if( png != 0 ) {
         const int p = i - png;
         if( p == 12 ) {
           pngw = buf2;
@@ -12210,20 +12210,20 @@ void dump(const char* msg, int p) {
           pngbps = buf0 >> 24;
           pngtype = ( U8 )( buf0 >> 16 );
           pnggray = 0;
-          png *= ( ( buf0 & 0xFFFF ) == 0 && pngw && pngh && pngbps == 8
-                   && ( !pngtype || pngtype == 2 || pngtype == 3 || pngtype == 4 || pngtype == 6 ) );
+          png *= static_cast<int>( ( buf0 & 0xFFFF ) == 0 && (pngw != 0) && (pngh != 0) && pngbps == 8
+                   && ( (pngtype == 0) || pngtype == 2 || pngtype == 3 || pngtype == 4 || pngtype == 6 ) );
         } else if( p > 12 && pngtype < 0 )
           png = 0;
         else if( p == 17 ) {
-          png *= ( ( buf1 & 0xFF ) == 0 );
-          nextchunk = ( png ) ? i + 8 : 0;
+          png *= static_cast<int>( ( buf1 & 0xFF ) == 0 );
+          nextchunk = ( png ) != 0 ? i + 8 : 0;
         } else if( p > 17 && i == nextchunk ) {
           nextchunk += buf1 + 4 /*CRC*/ + 8 /*Chunk length+Id*/;
           lastchunk = buf0;
-          png *= ( lastchunk != 0x49454E44 /*IEND*/ );
+          png *= static_cast<int>( lastchunk != 0x49454E44 /*IEND*/ );
           if( lastchunk == 0x504C5445 /*PLTE*/ ) {
-            png *= ( buf1 % 3 == 0 );
-            pnggray = ( png && IsGrayscalePalette( in, buf1 / 3 ) );
+            png *= static_cast<int>( buf1 % 3 == 0 );
+            pnggray = static_cast<int>( (png != 0) && IsGrayscalePalette( in, buf1 / 3 ) );
           }
         }
       }
@@ -12241,15 +12241,15 @@ void dump(const char* msg, int p) {
       int zh = parse_zlib_header( ( ( int ) zbuf[( zbufpos - 32 ) & 0xFF] ) * 256
                                   + ( int ) zbuf[( zbufpos - 32 + 1 ) & 0xFF] );
       bool valid = ( i >= 31 && zh != -1 );
-      if( !valid && options & OPTION_BRUTE && i >= 255 ) {
+      if( !valid && ((options & OPTION_BRUTE) != 0) && i >= 255 ) {
         U8 BTYPE = ( zbuf[zbufpos] & 7 ) >> 1;
         if( ( valid = ( BTYPE == 1 || BTYPE == 2 ) ) ) {
           int maximum = 0, used = 0, offset = zbufpos;
           for( int i = 0; i < 4; i++, offset += 64 ) {
             for( int j = 0; j < 64; j++ ) {
               int freq = histogram[zbuf[( offset + j ) & 0xFF]];
-              used += ( freq > 0 );
-              maximum += ( freq > maximum );
+              used += static_cast<int>( freq > 0 );
+              maximum += static_cast<int>( freq > maximum );
             }
             if( maximum >= ( ( 12 + i ) << i ) || used * ( 6 - i ) < ( i + 1 ) * 64 ) {
               valid = false;
@@ -12259,7 +12259,7 @@ void dump(const char* msg, int p) {
         }
       }
       if( valid || zzippos == i ) {
-        int streamLength = 0, ret = 0, brute = ( zh == -1 && zzippos != i );
+        int streamLength = 0, ret = 0, brute = static_cast<int>( zh == -1 && zzippos != i );
 
         // Quick check possible stream by decompressing first 32 bytes
         z_stream strm;
@@ -12269,14 +12269,14 @@ void dump(const char* msg, int p) {
         strm.next_in = Z_NULL;
         strm.avail_in = 0;
         if( zlib_inflateInit( &strm, zh ) == Z_OK ) {
-          strm.next_in = &zbuf[( zbufpos - ( brute ? 0 : 32 ) ) & 0xFF];
+          strm.next_in = &zbuf[( zbufpos - ( brute != 0 ? 0 : 32 ) ) & 0xFF];
           strm.avail_in = 32;
           strm.next_out = zout;
           strm.avail_out = 1 << 16;
           ret = inflate( &strm, Z_FINISH );
-          ret = ( inflateEnd( &strm ) == Z_OK && ( ret == Z_STREAM_END || ret == Z_BUF_ERROR ) && strm.total_in >= 16 );
+          ret = static_cast<int>( inflateEnd( &strm ) == Z_OK && ( ret == Z_STREAM_END || ret == Z_BUF_ERROR ) && strm.total_in >= 16 );
         }
-        if( ret ) {
+        if( ret != 0 ) {
           // Verify valid stream and determine stream length
           const U64 savedpos = in->curpos();
           strm.zalloc = Z_NULL;
@@ -12286,7 +12286,7 @@ void dump(const char* msg, int p) {
           strm.avail_in = 0;
           strm.total_in = strm.total_out = 0;
           if( zlib_inflateInit( &strm, zh ) == Z_OK ) {
-            for( int j = i - ( brute ? 255 : 31 ); j < n; j += 1 << 16 ) {
+            for( int j = i - ( brute != 0 ? 255 : 31 ); j < n; j += 1 << 16 ) {
               unsigned int blsize = min( n - j, 1 << 16 );
               in->setpos( start + j );
               if( in->blockread( zin, blsize ) != blsize )
@@ -12312,7 +12312,7 @@ void dump(const char* msg, int p) {
           info = 0;
           if( pdfimw > 0 && pdfimw < 0x1000000 && pdfimh > 0 ) {
             if( pdfimb == 8 && ( int ) strm.total_out == pdfimw * pdfimh )
-              info = ( ( pdfgray ? IMAGE8GRAY : IMAGE8 ) << 24 ) | pdfimw;
+              info = ( ( pdfgray != 0 ? IMAGE8GRAY : IMAGE8 ) << 24 ) | pdfimw;
             if( pdfimb == 8 && ( int ) strm.total_out == pdfimw * pdfimh * 3 )
               info = ( IMAGE24 << 24 ) | pdfimw * 3;
             if( pdfimb == 4 && ( int ) strm.total_out == ( ( pdfimw + 1 ) / 2 ) * pdfimh )
@@ -12320,15 +12320,15 @@ void dump(const char* msg, int p) {
             if( pdfimb == 1 && ( int ) strm.total_out == ( ( pdfimw + 7 ) / 8 ) * pdfimh )
               info = ( IMAGE1 << 24 ) | ( ( pdfimw + 7 ) / 8 );
             pdfgray = 0;
-          } else if( png && pngw < 0x1000000 && lastchunk == 0x49444154 /*IDAT*/ ) {
+          } else if( (png != 0) && pngw < 0x1000000 && lastchunk == 0x49444154 /*IDAT*/ ) {
             if( pngbps == 8 && pngtype == 2 && ( int ) strm.total_out == ( pngw * 3 + 1 ) * pngh )
               info = ( PNG24 << 24 ) | ( pngw * 3 ), png = 0;
             else if( pngbps == 8 && pngtype == 6 && ( int ) strm.total_out == ( pngw * 4 + 1 ) * pngh )
               info = ( PNG32 << 24 ) | ( pngw * 4 ), png = 0;
-            else if( pngbps == 8 && ( !pngtype || pngtype == 3 ) && ( int ) strm.total_out == ( pngw + 1 ) * pngh )
-              info = ( ( ( !pngtype || pnggray ) ? PNG8GRAY : PNG8 ) << 24 ) | ( pngw ), png = 0;
+            else if( pngbps == 8 && ( (pngtype == 0) || pngtype == 3 ) && ( int ) strm.total_out == ( pngw + 1 ) * pngh )
+              info = ( ( ( (pngtype == 0) || (pnggray != 0) ) ? PNG8GRAY : PNG8 ) << 24 ) | ( pngw ), png = 0;
           }
-          in->setpos( start + i - ( brute ? 255 : 31 ) );
+          in->setpos( start + i - ( brute != 0 ? 255 : 31 ) );
           detd = streamLength;
           return ZLIB;
         }
@@ -12345,30 +12345,30 @@ void dump(const char* msg, int p) {
 
       if( i - pdfimp > 1024 )
         pdfim = pdfimw = pdfimh = pdfimb = pdfgray = 0; // fail
-      if( pdfim > 1 && !( isspace( c ) || isdigit( c ) ) )
+      if( pdfim > 1 && !( (isspace( c ) != 0) || (isdigit( c ) != 0) ) )
         pdfim = 1;
-      if( pdfim == 2 && isdigit( c ) )
+      if( pdfim == 2 && (isdigit( c ) != 0) )
         pdfimw = pdfimw * 10 + ( c - '0' );
-      if( pdfim == 3 && isdigit( c ) )
+      if( pdfim == 3 && (isdigit( c ) != 0) )
         pdfimh = pdfimh * 10 + ( c - '0' );
-      if( pdfim == 4 && isdigit( c ) )
+      if( pdfim == 4 && (isdigit( c ) != 0) )
         pdfimb = pdfimb * 10 + ( c - '0' );
       if( ( buf0 & 0xffff ) == 0x3c3c )
         pdfimp = i, pdfim = 1; // <<
-      if( pdfim && ( buf1 & 0xffff ) == 0x2f57 && buf0 == 0x69647468 )
+      if( (pdfim != 0) && ( buf1 & 0xffff ) == 0x2f57 && buf0 == 0x69647468 )
         pdfim = 2, pdfimw = 0; // /Width
-      if( pdfim && ( buf1 & 0xffffff ) == 0x2f4865 && buf0 == 0x69676874 )
+      if( (pdfim != 0) && ( buf1 & 0xffffff ) == 0x2f4865 && buf0 == 0x69676874 )
         pdfim = 3, pdfimh = 0; // /Height
-      if( pdfim && buf3 == 0x42697473 && buf2 == 0x50657243 && buf1 == 0x6f6d706f && buf0 == 0x6e656e74
+      if( (pdfim != 0) && buf3 == 0x42697473 && buf2 == 0x50657243 && buf1 == 0x6f6d706f && buf0 == 0x6e656e74
           && zbuf[( zbufpos - 32 + 15 ) & 0xFF] == '/' )
         pdfim = 4, pdfimb = 0; // /BitsPerComponent
-      if( pdfim && ( buf2 & 0xFFFFFF ) == 0x2F4465 && buf1 == 0x76696365 && buf0 == 0x47726179 )
+      if( (pdfim != 0) && ( buf2 & 0xFFFFFF ) == 0x2F4465 && buf1 == 0x76696365 && buf0 == 0x47726179 )
         pdfgray = 1; // /DeviceGray
 
       // CD sectors detection (mode 1 and mode 2 form 1+2 - 2352 bytes)
-      if( buf1 == 0x00ffffff && buf0 == 0xffffffff && !cdi )
+      if( buf1 == 0x00ffffff && buf0 == 0xffffffff && (cdi == 0) )
         cdi = i, cda = -1, cdm = 0;
-      if( cdi && i > cdi ) {
+      if( (cdi != 0) && i > cdi ) {
         const int p = ( i - cdi ) % 2352;
         if( p == 8 && ( buf1 != 0xffffff00 || ( ( buf0 & 0xff ) != 1 && ( buf0 & 0xff ) != 2 ) ) )
           cdi = 0;
@@ -12380,8 +12380,8 @@ void dump(const char* msg, int p) {
           in->setpos( savedpos );
           int t = expand_cd_sector( data, cda, 1 );
           if( t != cdm )
-            cdm = t * ( i - cdi < 2352 );
-          if( cdm && cda != 10 && ( cdm == 1 || buf0 == buf1 ) ) {
+            cdm = t * static_cast<int>( i - cdi < 2352 );
+          if( (cdm != 0) && cda != 10 && ( cdm == 1 || buf0 == buf1 ) ) {
             if( type != CD )
               return info = cdm, in->setpos( start + cdi - 7 ), CD;
             cda = ( data[12] << 16 ) + ( data[13] << 8 ) + data[14];
@@ -12392,7 +12392,7 @@ void dump(const char* msg, int p) {
           } else
             cdi = 0;
         }
-        if( !cdi && type == CD ) {
+        if( (cdi == 0) && type == CD ) {
           in->setpos( start + i - p - 7 );
           return DEFAULT;
         }
@@ -12405,42 +12405,42 @@ void dump(const char* msg, int p) {
       // Detect end by any code other than RST0-RST7 (FF D9-D7) or
       // a byte stuff (FF 00).
 
-      if( !soi && i >= 3 && ( buf0 & 0xffffff00 ) == 0xffd8ff00
+      if( (soi == 0) && i >= 3 && ( buf0 & 0xffffff00 ) == 0xffd8ff00
           && ( ( buf0 & 0xFE ) == 0xC0 || ( U8 ) buf0 == 0xC4 || ( ( U8 ) buf0 >= 0xDB && ( U8 ) buf0 <= 0xFE ) ) )
         soi = i, app = i + 2, sos = sof = 0;
-      if( soi ) {
+      if( soi != 0 ) {
         if( app == i && ( buf0 >> 24 ) == 0xff && ( ( buf0 >> 16 ) & 0xff ) > 0xc1 && ( ( buf0 >> 16 ) & 0xff ) < 0xff )
           app = i + ( buf0 & 0xffff ) + 2;
         if( app < i && ( buf1 & 0xff ) == 0xff && ( buf0 & 0xfe0000ff ) == 0xc0000008 )
           sof = i;
-        if( sof && sof > soi && i - sof < 0x1000 && ( buf0 & 0xffff ) == 0xffda ) {
+        if( (sof != 0) && sof > soi && i - sof < 0x1000 && ( buf0 & 0xffff ) == 0xffda ) {
           sos = i;
           if( type != JPEG )
             return in->setpos( start + soi - 3 ), JPEG;
         }
-        if( i - soi > 0x40000 && !sos )
+        if( i - soi > 0x40000 && (sos == 0) )
           soi = 0;
       }
-      if( type == JPEG && sos && i > sos && ( buf0 & 0xff00 ) == 0xff00 && ( buf0 & 0xff ) != 0
+      if( type == JPEG && (sos != 0) && i > sos && ( buf0 & 0xff00 ) == 0xff00 && ( buf0 & 0xff ) != 0
           && ( buf0 & 0xf8 ) != 0xd0 )
         return DEFAULT;
 #ifdef USE_WAVMODEL
       // Detect .wav file header
       if( buf0 == 0x52494646 )
         wavi = i, wavm = wavlen = 0;
-      if( wavi ) {
+      if( wavi != 0 ) {
         int p = i - wavi;
         if( p == 4 )
           wavsize = bswap( buf0 );
         else if( p == 8 ) {
           wavtype = ( buf0 == 0x57415645 ) ? 1 : ( buf0 == 0x7366626B ) ? 2 : 0;
-          if( !wavtype )
+          if( wavtype == 0 )
             wavi = 0;
-        } else if( wavtype ) {
+        } else if( wavtype != 0 ) {
           if( wavtype == 1 ) {
             if( p == 16 + wavlen && ( buf1 != 0x666d7420 || ( ( wavm = bswap( buf0 ) - 16 ) & 0xFFFFFFFD ) != 0 ) )
               wavlen = ( ( bswap( buf0 ) + 1 ) & ( -2 ) ) + 8,
-              wavi *= ( buf1 == 0x666d7420 && ( wavm & 0xFFFFFFFD ) != 0 );
+              wavi *= static_cast<int>( buf1 == 0x666d7420 && ( wavm & 0xFFFFFFFD ) != 0 );
             else if( p == 22 + wavlen )
               wavch = bswap( buf0 ) & 0xffff;
             else if( p == 34 + wavlen )
@@ -12458,16 +12458,16 @@ void dump(const char* msg, int p) {
           } else {
             if( ( p == 16 && buf1 != 0x4C495354 ) || ( p == 20 && buf0 != 0x494E464F ) )
               wavi = 0;
-            else if( p > 20 && buf1 == 0x4C495354 && ( wavi *= ( buf0 != 0 ) ) ) {
+            else if( p > 20 && buf1 == 0x4C495354 && (( wavi *= static_cast<int>( buf0 != 0 ) ) != 0) ) {
               wavlen = bswap( buf0 );
               wavlist = i;
-            } else if( wavlist ) {
+            } else if( wavlist != 0 ) {
               p = i - wavlist;
               if( p == 8 && ( buf1 != 0x73647461 || buf0 != 0x736D706C ) )
                 wavi = 0;
               else if( p == 12 ) {
                 int wavd = bswap( buf0 );
-                if( wavd && ( wavd + 12 ) == wavlen )
+                if( (wavd != 0) && ( wavd + 12 ) == wavlen )
                   AUD_DET( AUDIO, wavi - 3, ( 12 + wavlist - ( wavi - 3 ) + 1 ) & ~1, wavd, 1 + 16 / 4 - 3 );
                 wavi = 0;
               }
@@ -12479,7 +12479,7 @@ void dump(const char* msg, int p) {
       // Detect .aiff file header
       if( buf0 == 0x464f524d )
         aiff = i, aiffs = 0; // FORM
-      if( aiff ) {
+      if( aiff != 0 ) {
         const int p = i - aiff;
         if( p == 12 && ( buf1 != 0x41494646 || buf0 != 0x434f4d4d ) )
           aiff = 0; // AIFF COMM
@@ -12524,7 +12524,7 @@ void dump(const char* msg, int p) {
       // Detect .s3m file header
       if( buf0 == 0x1a100000 )
         s3mi = i, s3mno = s3mni = 0;
-      if( s3mi ) {
+      if( s3mi != 0 ) {
         const int p = i - s3mi;
         if( p == 4 )
           s3mno = bswap( buf0 ) & 0xffff, s3mni = ( bswap( buf0 ) >> 16 );
@@ -12552,7 +12552,7 @@ void dump(const char* msg, int p) {
                 sam_end = ofs * 16 + len;
             }
           }
-          if( ok && sam_start < ( 1 << 16 ) )
+          if( (ok != 0) && sam_start < ( 1 << 16 ) )
             AUD_DET( AUDIO, s3mi - 31, sam_start, sam_end - sam_start, 0 );
           s3mi = 0;
           in->setpos( savedpos );
@@ -12560,11 +12560,11 @@ void dump(const char* msg, int p) {
       }
 #endif //  USE_WAVMODEL
       // Detect .bmp image
-      if( !( bmp || hdrless )
+      if( !( (bmp != 0) || (hdrless != 0) )
           && ( ( ( buf0 & 0xffff ) == 16973 )
-               || ( !( buf0 & 0xFFFFFF ) && ( ( buf0 >> 24 ) == 0x28 ) ) ) ) //possible 'BM' or headerless DIB
-        imgbpp = bmpx = bmpy = 0, hdrless = !( U8 ) buf0, bmpof = hdrless * 54, bmp = i - hdrless * 16;
-      if( bmp || hdrless ) {
+               || ( (( buf0 & 0xFFFFFF ) == 0u) && ( ( buf0 >> 24 ) == 0x28 ) ) ) ) //possible 'BM' or headerless DIB
+        imgbpp = bmpx = bmpy = 0, hdrless = static_cast<int>(( U8 ) buf0) == 0u, bmpof = hdrless * 54, bmp = i - hdrless * 16;
+      if( (bmp != 0) || (hdrless != 0) ) {
         const int p = i - bmp;
         if( p == 12 )
           bmpof = bswap( buf0 );
@@ -12579,19 +12579,19 @@ void dump(const char* msg, int p) {
           imgbpp = c,
           bmp =
               ( ( imgbpp != 1 && imgbpp != 4 && imgbpp != 8 && imgbpp != 24 && imgbpp != 32 ) ? ( hdrless = 0 ) : bmp );
-        else if( ( p == 31 ) && buf0 )
+        else if( ( p == 31 ) && (buf0 != 0u) )
           bmp = hdrless = 0;
         else if( p == 36 )
           bmps = bswap( buf0 );
         // check number of colors in palette (4 bytes), must be 0 (default) or <= 1<<bpp.
         // also check if image is too small, since it might not be worth it to use the image models
         else if( p == 48 ) {
-          if( ( !buf0 || ( ( bswap( buf0 ) <= ( U32 )( 1 << imgbpp ) ) && ( imgbpp <= 8 ) ) )
+          if( ( (buf0 == 0u) || ( ( bswap( buf0 ) <= ( U32 )( 1 << imgbpp ) ) && ( imgbpp <= 8 ) ) )
               && ( ( ( bmpx * bmpy * imgbpp ) >> 3 ) > 64 ) ) {
             // possible icon/cursor?
-            if( hdrless && ( bmpx * 2 == bmpy ) && imgbpp > 1
+            if( (hdrless != 0) && ( bmpx * 2 == bmpy ) && imgbpp > 1
                 && ( ( bmps > 0 && bmps == ( ( bmpx * bmpy * ( imgbpp + 1 ) ) >> 4 ) )
-                     || ( ( !bmps || bmps < ( ( bmpx * bmpy * imgbpp ) >> 3 ) )
+                     || ( ( (bmps == 0) || bmps < ( ( bmpx * bmpy * imgbpp ) >> 3 ) )
                           && ( ( bmpx == 8 ) || ( bmpx == 10 ) || ( bmpx == 14 ) || ( bmpx == 16 ) || ( bmpx == 20 )
                                || ( bmpx == 22 ) || ( bmpx == 24 ) || ( bmpx == 32 ) || ( bmpx == 40 ) || ( bmpx == 48 )
                                || ( bmpx == 60 ) || ( bmpx == 64 ) || ( bmpx == 72 ) || ( bmpx == 80 ) || ( bmpx == 96 )
@@ -12599,11 +12599,11 @@ void dump(const char* msg, int p) {
               bmpy = bmpx;
 
             // if DIB and not 24bpp, we must calculate the data offset based on BPP or num. of entries in color palette
-            if( hdrless && ( imgbpp < 24 ) )
-              bmpof += ( ( buf0 ) ? bswap( buf0 ) * 4 : 4 << imgbpp );
-            bmpof += ( bmp - 1 ) * ( bmp < 1 );
+            if( (hdrless != 0) && ( imgbpp < 24 ) )
+              bmpof += ( ( buf0 ) != 0u ? bswap( buf0 ) * 4 : 4 << imgbpp );
+            bmpof += ( bmp - 1 ) * static_cast<int>( bmp < 1 );
 
-            if( hdrless && bmps
+            if( (hdrless != 0) && (bmps != 0)
                 && bmps < ( ( bmpx * bmpy * imgbpp ) >> 3 ) ) { /*Guard against erroneous DIB detections*/
             } else if( imgbpp == 1 )
               IMG_DET( IMAGE1, max( 0, bmp - 1 ), bmpof, ( ( ( bmpx - 1 ) >> 5 ) + 1 ) * 4, bmpy );
@@ -12629,11 +12629,11 @@ void dump(const char* msg, int p) {
           pgm = i, pgm_ptr = pgmw = pgmh = pgmc = pgmcomment = pamatr = pamd = pgmdata = pgmdatasize =
                        0; // "P4" (pbm), "P5" (pgm), "P6" (ppm), "P7" (pam)
       }
-      if( pgm ) {
+      if( pgm != 0 ) {
         if( pgmdata == 0 ) { // parse header
           if( i - pgm == 1 && c == 0x23 )
             pgmcomment = 1; // # (pgm comment)
-          if( !pgmcomment && pgm_ptr ) {
+          if( (pgmcomment == 0) && (pgm_ptr != 0) ) {
             int s = 0;
             if( pgmn == 7 ) {
               if( ( buf1 & 0xdfdf ) == 0x5749 && ( buf0 & 0xdfdfdfff ) == 0x44544820 )
@@ -12657,13 +12657,13 @@ void dump(const char* msg, int p) {
                 if( pamatr != 6 )
                   pamatr = 0;
               }
-            } else if( c == 0x20 && !pgmw )
+            } else if( c == 0x20 && (pgmw == 0) )
               s = 1;
-            else if( c == 0x0a && !pgmh )
+            else if( c == 0x0a && (pgmh == 0) )
               s = 2;
-            else if( c == 0x0a && !pgmc && pgmn != 4 )
+            else if( c == 0x0a && (pgmc == 0) && pgmn != 4 )
               s = 3;
-            if( s ) {
+            if( s != 0 ) {
               pgm_buf[pgm_ptr++] = 0;
               int v = atoi( pgm_buf ); // parse width/height/depth/maxval value
               if( s == 1 )
@@ -12680,40 +12680,40 @@ void dump(const char* msg, int p) {
                 pgm_ptr = 0;
             }
           }
-          if( !pgmcomment )
+          if( pgmcomment == 0 )
             pgm_buf[pgm_ptr++] = c;
           if( pgm_ptr >= 32 )
             pgm = 0;
-          if( pgmcomment && c == 0x0a )
+          if( (pgmcomment != 0) && c == 0x0a )
             pgmcomment = 0;
-          if( pgmw && pgmh && !pgmc && pgmn == 4 ) {
+          if( (pgmw != 0) && (pgmh != 0) && (pgmc == 0) && pgmn == 4 ) {
             pgmdata = i;
             pgmdatasize = ( pgmw + 7 ) / 8 * pgmh;
           }
-          if( pgmw && pgmh && pgmc && ( pgmn == 5 || ( pgmn == 7 && pamd == 1 && pamatr == 6 ) ) ) {
+          if( (pgmw != 0) && (pgmh != 0) && (pgmc != 0) && ( pgmn == 5 || ( pgmn == 7 && pamd == 1 && pamatr == 6 ) ) ) {
             pgmdata = i;
             pgmdatasize = pgmw * pgmh;
           }
-          if( pgmw && pgmh && pgmc && ( pgmn == 6 || ( pgmn == 7 && pamd == 3 && pamatr == 6 ) ) ) {
+          if( (pgmw != 0) && (pgmh != 0) && (pgmc != 0) && ( pgmn == 6 || ( pgmn == 7 && pamd == 3 && pamatr == 6 ) ) ) {
             pgmdata = i;
             pgmdatasize = pgmw * 3 * pgmh;
           }
-          if( pgmw && pgmh && pgmc && ( pgmn == 7 && pamd == 4 && pamatr == 6 ) ) {
+          if( (pgmw != 0) && (pgmh != 0) && (pgmc != 0) && ( pgmn == 7 && pamd == 4 && pamatr == 6 ) ) {
             pgmdata = i;
             pgmdatasize = pgmw * 4 * pgmh;
           }
         } else {                                          // pixel data
           if( textparser.start() == U32( i ) ||           // for any sign of non-text data in pixel area
               ( pgm - 2 == 0 && n - pgmdatasize == i ) || // or the image is the whole file/block
-              ( options & OPTION_FORCEPNM_IN_TEXT ) )     // or forced detection  -> finish (success)
+              (( options & OPTION_FORCEPNM_IN_TEXT ) != 0) )     // or forced detection  -> finish (success)
           {
-            if( pgmw && pgmh && !pgmc && pgmn == 4 )
+            if( (pgmw != 0) && (pgmh != 0) && (pgmc == 0) && pgmn == 4 )
               IMG_DET( IMAGE1, pgm - 2, pgmdata - pgm + 3, ( pgmw + 7 ) / 8, pgmh );
-            if( pgmw && pgmh && pgmc && ( pgmn == 5 || ( pgmn == 7 && pamd == 1 && pamatr == 6 ) ) )
+            if( (pgmw != 0) && (pgmh != 0) && (pgmc != 0) && ( pgmn == 5 || ( pgmn == 7 && pamd == 1 && pamatr == 6 ) ) )
               IMG_DET( IMAGE8GRAY, pgm - 2, pgmdata - pgm + 3, pgmw, pgmh );
-            if( pgmw && pgmh && pgmc && ( pgmn == 6 || ( pgmn == 7 && pamd == 3 && pamatr == 6 ) ) )
+            if( (pgmw != 0) && (pgmh != 0) && (pgmc != 0) && ( pgmn == 6 || ( pgmn == 7 && pamd == 3 && pamatr == 6 ) ) )
               IMG_DET( IMAGE24, pgm - 2, pgmdata - pgm + 3, pgmw * 3, pgmh );
-            if( pgmw && pgmh && pgmc && ( pgmn == 7 && pamd == 4 && pamatr == 6 ) )
+            if( (pgmw != 0) && (pgmh != 0) && (pgmc != 0) && ( pgmn == 7 && pamd == 4 && pamatr == 6 ) )
               IMG_DET( IMAGE32, pgm - 2, pgmdata - pgm + 3, pgmw * 4, pgmh );
           } else if( ( --pgmdatasize ) == 0 )
             pgm = 0; // all data was probably text in pixel area: fail
@@ -12723,7 +12723,7 @@ void dump(const char* msg, int p) {
       // Detect .rgb image
       if( ( buf0 & 0xffff ) == 0x01da )
         rgbi = i, rgbx = rgby = 0;
-      if( rgbi ) {
+      if( rgbi != 0 ) {
         const int p = i - rgbi;
         if( p == 1 && c != 0 )
           rgbi = 0;
@@ -12737,7 +12737,7 @@ void dump(const char* msg, int p) {
           rgby = buf0 & 0xffff, rgbi = ( rgby == 0 ? 0 : rgbi );
         else if( p == 10 ) {
           int z = buf0 & 0xffff;
-          if( rgbx && rgby && ( z == 1 || z == 3 || z == 4 ) )
+          if( (rgbx != 0) && (rgby != 0) && ( z == 1 || z == 3 || z == 4 ) )
             IMG_DET( IMAGE8, rgbi - 1, 512, rgbx, rgby * z );
           rgbi = 0;
         }
@@ -12771,7 +12771,7 @@ void dump(const char* msg, int p) {
               else if( tag == 259 )
                 tifc = tagval; // 1 = no compression
               else if( tag == 273 && tagfmt == 4 )
-                tifofs = tagval, tifofval = ( taglen <= 1 );
+                tifofs = tagval, tifofval = static_cast<int>( taglen <= 1 );
               else if( tag == 277 )
                 tifz = tagval; // components per pixel
               else if( tag == 279 && taglen == 1 )
@@ -12779,15 +12779,15 @@ void dump(const char* msg, int p) {
             }
           }
         }
-        if( tifx && tify && tifzb && ( tifz == 1 || tifz == 3 )
-            && ( ( tifc == 1 ) || ( tifc == 5 /*LZW*/ && tifsize > 0 ) ) && ( tifofs && tifofs + i < n ) ) {
-          if( !tifofval ) {
+        if( (tifx != 0) && (tify != 0) && (tifzb != 0) && ( tifz == 1 || tifz == 3 )
+            && ( ( tifc == 1 ) || ( tifc == 5 /*LZW*/ && tifsize > 0 ) ) && ( (tifofs != 0) && tifofs + i < n ) ) {
+          if( tifofval == 0 ) {
             in->setpos( start + i + tifofs - 7 );
             for( int j = 0; j < 4; j++ )
               b[j] = in->getchar();
             tifofs = b[0] + ( b[1] << 8 ) + ( b[2] << 16 ) + ( b[3] << 24 );
           }
-          if( tifofs && tifofs < ( 1 << 18 ) && tifofs + i < n ) {
+          if( (tifofs != 0) && tifofs < ( 1 << 18 ) && tifofs + i < n ) {
             if( tifc == 1 ) {
               if( tifz == 1 && tifzb == 1 )
                 IMG_DET( IMAGE1, i - 7, tifofs, ( ( tifx - 1 ) >> 3 ) + 1, tify );
@@ -12816,13 +12816,13 @@ void dump(const char* msg, int p) {
         tga = i, tgax = tgay, tgaz = 24, tgat = 2;
       else if( ( buf1 & 0xFFF7FF ) == 0x00000300 && buf0 == 0x00000000 )
         tga = i, tgax = tgay, tgaz = 8, tgat = ( buf1 >> 8 ) & 0xF;
-      if( tga ) {
+      if( tga != 0 ) {
         if( i - tga == 8 )
           tga = ( buf1 == 0 ? tga : 0 ), tgax = ( bswap( buf0 ) & 0xffff ), tgay = ( bswap( buf0 ) >> 16 );
         else if( i - tga == 10 ) {
           if( ( buf0 & 0xFFF7 ) == 32 << 8 )
             tgaz = 32;
-          if( ( tgaz << 8 ) == ( int ) ( buf0 & 0xFFD7 ) && tgax && tgay && U32( tgax * tgay ) < 0xFFFFFFF ) {
+          if( ( tgaz << 8 ) == ( int ) ( buf0 & 0xFFD7 ) && (tgax != 0) && (tgay != 0) && U32( tgax * tgay ) < 0xFFFFFFF ) {
             if( tgat == 1 ) {
               in->setpos( start + tga + 11 + tgaid );
               IMG_DET( ( IsGrayscalePalette( in ) ) ? IMAGE8GRAY : IMAGE8, tga - 7, 18 + tgaid + 256 * tgamap, tgax,
@@ -12883,13 +12883,13 @@ void dump(const char* msg, int p) {
         else
           gifgray = 0;
       }
-      if( !gif && ( buf1 & 0xffff ) == 0x4749 && ( buf0 == 0x46383961 || buf0 == 0x46383761 ) )
+      if( (gif == 0) && ( buf1 & 0xffff ) == 0x4749 && ( buf0 == 0x46383961 || buf0 == 0x46383761 ) )
         gif = 1, gifi = i + 5;
-      if( gif ) {
+      if( gif != 0 ) {
         if( gif == 1 && i == gifi )
-          gif = 2, gifi = i + 5 + ( gifplt = ( c & 128 ) ? ( 3 * ( 2 << ( c & 7 ) ) ) : 0 );
-        if( gif == 2 && gifplt && i == gifi - gifplt - 3 )
-          gifgray = IsGrayscalePalette( in, gifplt / 3 ), gifplt = 0;
+          gif = 2, gifi = i + 5 + ( gifplt = ( c & 128 ) != 0 ? ( 3 * ( 2 << ( c & 7 ) ) ) : 0 );
+        if( gif == 2 && (gifplt != 0) && i == gifi - gifplt - 3 )
+          gifgray = static_cast<int>(IsGrayscalePalette( in, gifplt / 3 )), gifplt = 0;
         if( gif == 2 && i == gifi ) {
           if( ( buf0 & 0xff0000 ) == 0x210000 )
             gif = 5, gifi = i;
@@ -12901,19 +12901,19 @@ void dump(const char* msg, int p) {
         if( gif == 3 && i == gifi + 6 )
           gifw = ( bswap( buf0 ) & 0xffff );
         if( gif == 3 && i == gifi + 7 )
-          gif = 4, gifc = gifb = 0, gifa = gifi = i + 2 + ( gifplt = ( ( c & 128 ) ? ( 3 * ( 2 << ( c & 7 ) ) ) : 0 ) );
-        if( gif == 4 && gifplt )
-          gifgray = IsGrayscalePalette( in, gifplt / 3 ), gifplt = 0;
+          gif = 4, gifc = gifb = 0, gifa = gifi = i + 2 + ( gifplt = ( ( c & 128 ) != 0 ? ( 3 * ( 2 << ( c & 7 ) ) ) : 0 ) );
+        if( gif == 4 && (gifplt != 0) )
+          gifgray = static_cast<int>(IsGrayscalePalette( in, gifplt / 3 )), gifplt = 0;
         if( gif == 4 && i == gifi ) {
-          if( c > 0 && gifb && gifc != gifb )
+          if( c > 0 && (gifb != 0) && gifc != gifb )
             gifw = 0;
           if( c > 0 )
             gifb = gifc, gifc = c, gifi += c + 1;
-          else if( !gifw )
+          else if( gifw == 0 )
             gif = 2, gifi = i + 3;
           else
             return in->setpos( start + gifa - 1 ),
-                   detd = i - gifa + 2, info = ( ( gifgray ? IMAGE8GRAY : IMAGE8 ) << 24 ) | gifw, dett = GIF;
+                   detd = i - gifa + 2, info = ( ( gifgray != 0 ? IMAGE8GRAY : IMAGE8 ) << 24 ) | gifw, dett = GIF;
         }
         if( gif == 5 && i == gifi ) {
           if( c > 0 )
@@ -12978,11 +12978,11 @@ void dump(const char* msg, int p) {
             b64s = 0;
         } else if( b64s == 2 && ( buf0 & 0xffffff ) == 0x3d0d0a )
           i -= 1, b64s = 5; // '=' or '=='
-        else if( b64s == 2 && !( isalnum( c ) || c == '+' || c == '/' || c == 10 || c == 13 || c == '=' ) )
+        else if( b64s == 2 && !( (isalnum( c ) != 0) || c == '+' || c == '/' || c == 10 || c == 13 || c == '=' ) )
           b64s = 0;
         if( b64line > 0 && ( b64line <= 4 || b64line > 255 ) )
           b64s = 0;
-        if( b64s == 3 && i >= b64i && !( isalnum( c ) || c == '+' || c == '/' || c == '=' ) )
+        if( b64s == 3 && i >= b64i && !( (isalnum( c ) != 0) || c == '+' || c == '/' || c == '=' ) )
           b64s = 4;
         if( ( b64s == 4 && i - b64i > 128 ) || ( b64s == 5 && i - b64i > 512 && i - b64i < ( 1 << 27 ) ) )
           return in->setpos( start + b64i ), detd = i - b64i, BASE64;
@@ -13045,9 +13045,9 @@ void dump(const char* msg, int p) {
               &blk[12],
               4
                   + 4
-                        * ( blk[15]
+                        * static_cast<int>( blk[15]
                             != 1 ) ); //4-byte address + 4 bytes from the 8-byte subheader goes only to the first sector
-        out->blockwrite( &blk[16 + 8 * ( blk[15] != 1 )], 2048 + 276 * ( info == 3 ) ); //user data goes to all sectors
+        out->blockwrite( &blk[16 + 8 * static_cast<int>( blk[15] != 1 )], 2048 + 276 * static_cast<int>( info == 3 ) ); //user data goes to all sectors
         if( offset + BLOCK * 2 > size && blk[15] != 1 )
           out->blockwrite( &blk[16], 4 ); //in Mode2 4 bytes from the 8-byte subheader goes after the last sector
       }
@@ -13071,7 +13071,7 @@ void dump(const char* msg, int p) {
           out->blockwrite( blk, residual );
         else if( mode == FCOMPARE )
           for( int j = 0; j < ( int ) residual; ++j )
-            if( blk[j] != out->getchar() && !diffFound )
+            if( blk[j] != out->getchar() && (diffFound == 0u) )
               diffFound = nextblockpos + j + 1;
         return nextblockpos + residual;
       } else if( i == 0 ) { //first sector
@@ -13082,14 +13082,14 @@ void dump(const char* msg, int p) {
           in->blockread( blk + 16, 4 ); //Mode2: 4 bytes from the read 8-byte subheader
         datasize =
             2048
-            + ( blk[15] == 3 )
+            + static_cast<int>( blk[15] == 3 )
                   * 276; //user data bytes: Mode1 and Mode2/Form1: 2048 (ECC is present) or Mode2/Form2: 2048+276=2324 bytes (ECC is not present)
-        i += 4 + 4 * ( blk[15] != 1 ); //4 byte header + ( Mode2: 4 bytes from the 8-byte subheader )
+        i += 4 + 4 * static_cast<int>( blk[15] != 1 ); //4 byte header + ( Mode2: 4 bytes from the 8-byte subheader )
       } else {                         //normal sector
         address = ( blk[12] << 16 ) + ( blk[13] << 8 ) + blk[14]; //3-byte address (Minutes, Seconds, Sectors)
       }
       in->blockread(
-          blk + 16 + ( blk[15] != 1 ) * 8,
+          blk + 16 + static_cast<int>( blk[15] != 1 ) * 8,
           datasize ); //read data bytes, but skip 8-byte subheader in Mode 2 (which we processed alread above)
       i += datasize;
       if( datasize > 2048 )
@@ -13103,7 +13103,7 @@ void dump(const char* msg, int p) {
         out->blockwrite( blk, BLOCK );
       else if( mode == FCOMPARE )
         for( int j = 0; j < BLOCK; ++j )
-          if( blk[j] != out->getchar() && !diffFound )
+          if( blk[j] != out->getchar() && (diffFound == 0u) )
             diffFound = nextblockpos + j + 1;
       nextblockpos += BLOCK;
     }
@@ -13128,7 +13128,7 @@ void dump(const char* msg, int p) {
         if( isPossibleRGB565 ) {
           int pTotal = total;
           total = std::min<int>( total + 1, 0xFFFF )
-                  * ( ( b & 7 ) == ( ( b & 8 ) - ( ( b >> 3 ) & 1 ) ) && ( g & 3 ) == ( ( g & 4 ) - ( ( g >> 2 ) & 1 ) )
+                  * static_cast<int>( ( b & 7 ) == ( ( b & 8 ) - ( ( b >> 3 ) & 1 ) ) && ( g & 3 ) == ( ( g & 4 ) - ( ( g >> 2 ) & 1 ) )
                       && ( r & 7 ) == ( ( r & 8 ) - ( ( r >> 3 ) & 1 ) ) );
           if( total > RGB565_MIN_RUN || pTotal >= RGB565_MIN_RUN ) {
             b ^= ( b & 8 ) - ( ( b >> 3 ) & 1 );
@@ -13138,8 +13138,8 @@ void dump(const char* msg, int p) {
           isPossibleRGB565 = total > 0;
         }
         out->putchar( g );
-        out->putchar( options & OPTION_SKIPRGB ? r : g - r );
-        out->putchar( options & OPTION_SKIPRGB ? b : g - b );
+        out->putchar( (options & OPTION_SKIPRGB) != 0 ? r : g - r );
+        out->putchar( (options & OPTION_SKIPRGB) != 0 ? b : g - b );
       }
       for( int j = 0; j < width % 3; j++ )
         out->putchar( in->getchar() );
@@ -13157,7 +13157,7 @@ void dump(const char* msg, int p) {
         g = en.decompress();
         r = en.decompress();
         b = en.decompress();
-        if( !( options & OPTION_SKIPRGB ) )
+        if( ( options & OPTION_SKIPRGB ) == 0 )
           r = g - r, b = g - b;
         if( isPossibleRGB565 ) {
           if( total >= RGB565_MIN_RUN ) {
@@ -13166,7 +13166,7 @@ void dump(const char* msg, int p) {
             r ^= ( r & 8 ) - ( ( r >> 3 ) & 1 );
           }
           total = std::min<int>( total + 1, 0xFFFF )
-                  * ( ( b & 7 ) == ( ( b & 8 ) - ( ( b >> 3 ) & 1 ) ) && ( g & 3 ) == ( ( g & 4 ) - ( ( g >> 2 ) & 1 ) )
+                  * static_cast<int>( ( b & 7 ) == ( ( b & 8 ) - ( ( b >> 3 ) & 1 ) ) && ( g & 3 ) == ( ( g & 4 ) - ( ( g >> 2 ) & 1 ) )
                       && ( r & 7 ) == ( ( r & 8 ) - ( ( r >> 3 ) & 1 ) ) );
           isPossibleRGB565 = total > 0;
         }
@@ -13174,14 +13174,14 @@ void dump(const char* msg, int p) {
           out->putchar( b );
           out->putchar( g );
           out->putchar( r );
-          if( !j && !( i & 0xf ) )
+          if( (j == 0) && (( i & 0xf ) == 0) )
             en.print_status();
         } else if( mode == FCOMPARE ) {
-          if( ( b & 255 ) != out->getchar() && !diffFound )
+          if( ( b & 255 ) != out->getchar() && (diffFound == 0u) )
             diffFound = p + 1;
-          if( g != out->getchar() && !diffFound )
+          if( g != out->getchar() && (diffFound == 0u) )
             diffFound = p + 2;
-          if( ( r & 255 ) != out->getchar() && !diffFound )
+          if( ( r & 255 ) != out->getchar() && (diffFound == 0u) )
             diffFound = p + 3;
           p += 3;
         }
@@ -13190,7 +13190,7 @@ void dump(const char* msg, int p) {
         if( mode == FDECOMPRESS ) {
           out->putchar( en.decompress() );
         } else if( mode == FCOMPARE ) {
-          if( en.decompress() != out->getchar() && !diffFound )
+          if( en.decompress() != out->getchar() && (diffFound == 0u) )
             diffFound = p + j + 1;
         }
       }
@@ -13199,7 +13199,7 @@ void dump(const char* msg, int p) {
       if( mode == FDECOMPRESS ) {
         out->putchar( en.decompress() );
       } else if( mode == FCOMPARE ) {
-        if( en.decompress() != out->getchar() && !diffFound ) {
+        if( en.decompress() != out->getchar() && (diffFound == 0u) ) {
           diffFound = size - i;
           break;
         }
@@ -13218,8 +13218,8 @@ void dump(const char* msg, int p) {
         r = in->getchar();
         a = in->getchar();
         out->putchar( g );
-        out->putchar( options & OPTION_SKIPRGB ? r : g - r );
-        out->putchar( options & OPTION_SKIPRGB ? b : g - b );
+        out->putchar( (options & OPTION_SKIPRGB) != 0 ? r : g - r );
+        out->putchar( (options & OPTION_SKIPRGB) != 0 ? b : g - b );
         out->putchar( a );
       }
       for( int j = 0; j < width % 4; j++ )
@@ -13239,20 +13239,20 @@ void dump(const char* msg, int p) {
       for( int j = 0; j < width / 4; j++ ) {
         b = en.decompress(), g = en.decompress(), r = en.decompress(), a = en.decompress();
         if( mode == FDECOMPRESS ) {
-          out->putchar( options & OPTION_SKIPRGB ? r : b - r );
+          out->putchar( (options & OPTION_SKIPRGB) != 0 ? r : b - r );
           out->putchar( b );
-          out->putchar( options & OPTION_SKIPRGB ? g : b - g );
+          out->putchar( (options & OPTION_SKIPRGB) != 0 ? g : b - g );
           out->putchar( a );
-          if( !j && !( i & 0xf ) )
+          if( (j == 0) && (( i & 0xf ) == 0) )
             en.print_status();
         } else if( mode == FCOMPARE ) {
-          if( ( ( options & OPTION_SKIPRGB ? r : b - r ) & 255 ) != out->getchar() && !diffFound )
+          if( ( ( (options & OPTION_SKIPRGB) != 0 ? r : b - r ) & 255 ) != out->getchar() && (diffFound == 0u) )
             diffFound = p + 1;
-          if( b != out->getchar() && !diffFound )
+          if( b != out->getchar() && (diffFound == 0u) )
             diffFound = p + 2;
-          if( ( ( options & OPTION_SKIPRGB ? g : b - g ) & 255 ) != out->getchar() && !diffFound )
+          if( ( ( (options & OPTION_SKIPRGB) != 0 ? g : b - g ) & 255 ) != out->getchar() && (diffFound == 0u) )
             diffFound = p + 3;
-          if( ( ( a ) &255 ) != out->getchar() && !diffFound )
+          if( ( ( a ) &255 ) != out->getchar() && (diffFound == 0u) )
             diffFound = p + 4;
           p += 4;
         }
@@ -13261,7 +13261,7 @@ void dump(const char* msg, int p) {
         if( mode == FDECOMPRESS ) {
           out->putchar( en.decompress() );
         } else if( mode == FCOMPARE ) {
-          if( en.decompress() != out->getchar() && !diffFound )
+          if( en.decompress() != out->getchar() && (diffFound == 0u) )
             diffFound = p + j + 1;
         }
       }
@@ -13270,7 +13270,7 @@ void dump(const char* msg, int p) {
       if( mode == FDECOMPRESS ) {
         out->putchar( en.decompress() );
       } else if( mode == FCOMPARE ) {
-        if( en.decompress() != out->getchar() && !diffFound ) {
+        if( en.decompress() != out->getchar() && (diffFound == 0u) ) {
           diffFound = size - i;
           break;
         }
@@ -13303,7 +13303,7 @@ void dump(const char* msg, int p) {
         if( mode == FDECOMPRESS )
           out->putchar( CARRIAGE_RETURN );
         else if( mode == FCOMPARE ) {
-          if( out->getchar() != CARRIAGE_RETURN && !diffFound ) {
+          if( out->getchar() != CARRIAGE_RETURN && (diffFound == 0u) ) {
             diffFound = size - i;
             break;
           }
@@ -13313,12 +13313,12 @@ void dump(const char* msg, int p) {
       if( mode == FDECOMPRESS )
         out->putchar( B );
       else if( mode == FCOMPARE ) {
-        if( B != out->getchar() && !diffFound ) {
+        if( B != out->getchar() && (diffFound == 0u) ) {
           diffFound = size - i;
           break;
         }
       }
-      if( mode == FDECOMPRESS && !( i & 0xFFF ) )
+      if( mode == FDECOMPRESS && (( i & 0xFFF ) == 0) )
         en.print_status();
     }
     return count;
@@ -13408,7 +13408,7 @@ void dump(const char* msg, int p) {
               loop = 1;
             }
           }
-        } while( loop );
+        } while( loop != 0u );
       }
 
       U64 length = outPtr - ( U8 * ) ( &outBuffer[0] );
@@ -13416,14 +13416,14 @@ void dump(const char* msg, int p) {
         out->blockwrite( &outBuffer[0], length );
       else if( mode == FCOMPARE ) {
         for( int j = 0; j < ( int ) length; ++j ) {
-          if( outBuffer[j] != out->getchar() && !diffFound ) {
+          if( outBuffer[j] != out->getchar() && (diffFound == 0u) ) {
             diffFound = pos + j + 1;
             break;
           }
         }
       }
       pos += length;
-    } while( !in->eof() && !diffFound );
+    } while( !in->eof() && (diffFound == 0u) );
     return pos;
   }
 
@@ -13476,7 +13476,7 @@ void dump(const char* msg, int p) {
       dictionary[index].prefix = prefix;
       dictionary[index].suffix = suffix;
       table[-offset - 1] = index;
-      index += ( index < 4096 );
+      index += static_cast<int>( index < 4096 );
     }
     int32_t dumpEntry( File *f, int32_t code ) {
       int32_t n = 4095;
@@ -13650,9 +13650,9 @@ void dump(const char* msg, int p) {
       }
       if( mode == FDECOMPRESS )
         out->putchar( c[5] );
-      else if( mode == FCOMPARE && c[5] != out->getchar() && !diffFound )
+      else if( mode == FCOMPARE && c[5] != out->getchar() && (diffFound == 0u) )
         diffFound = offset - 6 + 1;
-      if( mode == FDECOMPRESS && !( offset & 0xfff ) )
+      if( mode == FDECOMPRESS && (( offset & 0xfff ) == 0) )
         en.print_status();
       offset++;
     }
@@ -13687,7 +13687,7 @@ void dump(const char* msg, int p) {
     main_strm.next_in = Z_NULL;
     main_strm.avail_in = 0;
     if( zlib_inflateInit( &main_strm, zh ) != Z_OK )
-      return false;
+      return 0;
     for( int i = 0; i < 81; i++ ) {
       clevel = ( i / 9 ) + 1;
       // Early skip if invalid parameter
@@ -13784,7 +13784,7 @@ void dump(const char* msg, int p) {
     }
     inflateEnd( &main_strm );
     if( minCount == LIMIT )
-      return false;
+      return 0;
     MTF.MoveToFront( index );
 
     // Step 3 - write parameters, differences and precompressed (inflated) data
@@ -13806,7 +13806,7 @@ void dump(const char* msg, int p) {
     main_strm.next_in = Z_NULL;
     main_strm.avail_in = 0;
     if( zlib_inflateInit( &main_strm, zh ) != Z_OK )
-      return false;
+      return 0;
     for( U64 i = 0; i < len; i += BLOCK ) {
       U32 blsize = min( U32( len - i ), BLOCK );
       in->blockread( &zin[0], blsize );
@@ -13823,7 +13823,7 @@ void dump(const char* msg, int p) {
     }
     inflateEnd( &main_strm );
     hdrsize = diffCount[index] * 5 + 7;
-    return main_ret == Z_STREAM_END;
+    return static_cast<int>(main_ret == Z_STREAM_END);
   }
 
   int decode_zlib( File *in, U64 size, File *out, FMode mode, U64 &diffFound ) {
@@ -13880,7 +13880,7 @@ void dump(const char* msg, int p) {
           out->blockwrite( &zout[0], have );
         else if( mode == FCOMPARE )
           for( int j = 0; j < have; j++ )
-            if( zout[j] != out->getchar() && !diffFound )
+            if( zout[j] != out->getchar() && (diffFound == 0u) )
               diffFound = recpos + j + 1;
         recpos += have;
 
@@ -13890,7 +13890,7 @@ void dump(const char* msg, int p) {
       if( mode == FDECOMPRESS )
         out->putchar( diffByte[diffIndex] );
       else if( mode == FCOMPARE )
-        if( diffByte[diffIndex] != out->getchar() && !diffFound )
+        if( diffByte[diffIndex] != out->getchar() && (diffFound == 0u) )
           diffFound = recpos + 1;
       diffIndex++;
       recpos++;
@@ -13905,7 +13905,7 @@ void dump(const char* msg, int p) {
   //
   static const char table1[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
   bool isbase64( unsigned char c ) {
-    return ( isalnum( c ) || ( c == '+' ) || ( c == '/' ) || ( c == 10 ) || ( c == 13 ) );
+    return ( (isalnum( c ) != 0) || ( c == '+' ) || ( c == '/' ) || ( c == 10 ) || ( c == 13 ) );
   }
 
   U64 decode_base64( File *in, File *out, FMode mode, U64 &diffFound ) {
@@ -13940,7 +13940,7 @@ void dump(const char* msg, int p) {
         } else
           inn[i] = 0;
       }
-      if( len ) {
+      if( len != 0 ) {
         U8 in0, in1, in2;
         in0 = inn[0], in1 = inn[1], in2 = inn[2];
         ptr[fle++] = ( table1[in0 >> 2] );
@@ -13950,8 +13950,8 @@ void dump(const char* msg, int p) {
         blocksout++;
       }
       if( blocksout >= ( linesize / 4 ) && linesize != 0 ) { //no lf if linesize==0
-        if( blocksout && !in->eof() && fle <= outlen ) {     //no lf if eof
-          if( tlf )
+        if( (blocksout != 0) && !in->eof() && fle <= outlen ) {     //no lf if eof
+          if( tlf != 0 )
             ptr[fle++] = ( tlf );
           else
             ptr[fle++] = 13, ptr[fle++] = 10;
@@ -13965,7 +13965,7 @@ void dump(const char* msg, int p) {
     } else if( mode == FCOMPARE ) {
       for( i = 0; i < outlen; i++ ) {
         U8 b = ptr[i];
-        if( b != out->getchar() && !diffFound )
+        if( b != out->getchar() && (diffFound == 0u) )
           diffFound = ( int ) out->curpos();
       }
     }
@@ -13974,7 +13974,7 @@ void dump(const char* msg, int p) {
 
   inline char valueb( char c ) {
     const char *p = strchr( table1, c );
-    if( p )
+    if( p != nullptr )
       return ( char ) ( p - table1 );
     return 0;
   }
@@ -14015,7 +14015,7 @@ void dump(const char* msg, int p) {
       }
     }
 
-    if( i ) {
+    if( i != 0 ) {
       for( j = i; j < 4; j++ )
         src[j] = 0;
 
@@ -14096,15 +14096,15 @@ void dump(const char* msg, int p) {
             code = buffer & ( ( 1 << bits ) - 1 );
             buffer >>= bits;
             shift -= bits;
-            if( !bsize && code != ( 1 << codesize ) ) {
+            if( (bsize == 0) && code != ( 1 << codesize ) ) {
               hdrsize += 4;
               out->put32( 0 );
             }
-            if( !bsize )
+            if( bsize == 0 )
               bsize = blocksize;
             if( code == ( 1 << codesize ) ) {
               if( maxcode > ( 1 << codesize ) + 1 ) {
-                if( clearpos && clearpos != 69631 - maxcode )
+                if( (clearpos != 0) && clearpos != 69631 - maxcode )
                   return 0;
                 clearpos = 69631 - maxcode;
               }
@@ -14141,9 +14141,9 @@ void dump(const char* msg, int p) {
                   table[( index < 0 ) ? -index - 1 : offset] = maxcode;
                   if( phase == 0 && index > 0 ) {
                     hdrsize += 4;
-                    j = diffpos - size - ( code == maxcode );
+                    j = diffpos - size - static_cast<int>( code == maxcode );
                     out->put32( j );
-                    diffpos = size + ( code == maxcode );
+                    diffpos = size + static_cast<int>( code == maxcode );
                   }
                 }
                 if( maxcode >= ( ( 1 << bits ) - 1 ) && bits < 12 )
@@ -14163,7 +14163,7 @@ void dump(const char* msg, int p) {
     out->putchar( ( clearpos >> 8 ) & 255 );
     out->putchar( clearpos & 255 );
     out->setpos( diffpos );
-    return in->curpos() - beginin == len - 1;
+    return static_cast<int>(in->curpos() - beginin == len - 1);
   }
 
 #define gif_write_block( count )                                                                                       \
@@ -14223,7 +14223,7 @@ void dump(const char* msg, int p) {
     if( mode == FDECOMPRESS )
       out->putchar( codesize );
     else if( mode == FCOMPARE )
-      if( codesize != out->getchar() && !diffFound )
+      if( codesize != out->getchar() && (diffFound == 0u) )
         diffFound = 1;
     if( diffcount == 0 || diffpos[0] != 0 )
       gif_write_code( 1 << codesize ) else curdiff++;
@@ -14268,7 +14268,7 @@ void dump(const char* msg, int p) {
     if( mode == FDECOMPRESS )
       out->putchar( 0 );
     else if( mode == FCOMPARE )
-      if( 0 != out->getchar() && !diffFound )
+      if( 0 != out->getchar() && (diffFound == 0u) )
         diffFound = outsize + 1;
     return outsize + 1;
   }
@@ -14340,16 +14340,16 @@ void dump(const char* msg, int p) {
       encode_cd( in, tmp, len, info );
 #ifdef USE_ZLIB
     else if( type == ZLIB )
-      return encode_zlib( in, tmp, len, hdrsize ) ? 0 : 1;
+      return encode_zlib( in, tmp, len, hdrsize ) != 0 ? 0 : 1;
 #endif //USE_ZLIB
     else if( type == BASE64 )
       encode_base64( in, tmp, len );
     else if( type == GIF )
-      return encode_gif( in, tmp, len, hdrsize ) ? 0 : 1;
+      return encode_gif( in, tmp, len, hdrsize ) != 0 ? 0 : 1;
     else if( type == RLE )
       encode_rle( in, tmp, len, info, hdrsize );
     else if( type == LZW )
-      return encode_lzw( in, tmp, len, hdrsize ) ? 0 : 1;
+      return encode_lzw( in, tmp, len, hdrsize ) != 0 ? 0 : 1;
     else
       assert( false );
     return 0;
@@ -14528,7 +14528,7 @@ void dump(const char* msg, int p) {
     compressRecursive( &in, filesize, en, blstr, 0, 0.0f, 1.0f );
     in.close();
 
-    if( options & OPTION_MULTIPLE_FILE_MODE ) { //multiple file mode
+    if( (options & OPTION_MULTIPLE_FILE_MODE) != 0 ) { //multiple file mode
       if( verbose )
         printf(
             "File size to encode   : 4\n" ); //This string must be long enough. "Compressing ..." is still on screen, we need to overwrite it.
@@ -14565,12 +14565,12 @@ void dump(const char* msg, int p) {
         len = decode_func( type, en, NULL, len, info, out, mode, diffFound );
       } else {
         for( U64 j = 0; j < len; ++j ) {
-          if( !( j & 0xfff ) )
+          if( ( j & 0xfff ) == 0u )
             en.print_status();
           if( mode == FDECOMPRESS )
             out->putchar( en.decompress() );
           else if( mode == FCOMPARE ) {
-            if( en.decompress() != out->getchar() && !diffFound ) {
+            if( en.decompress() != out->getchar() && (diffFound == 0u) ) {
               mode = FDISCARD;
               diffFound = i + j + 1;
             }
@@ -14605,9 +14605,9 @@ void dump(const char* msg, int p) {
 
     // Decompress/Compare
     U64 r = decompressRecursive( &f, filesize, en, fmode, 0 );
-    if( fmode == FCOMPARE && !r && f.getchar() != EOF )
+    if( fmode == FCOMPARE && (r == 0u) && f.getchar() != EOF )
       printf( "file is longer\n" );
-    else if( fmode == FCOMPARE && r )
+    else if( fmode == FCOMPARE && (r != 0u) )
       printf( "differ at %" PRIu64 "\n", r - 1 );
     else if( fmode == FCOMPARE )
       printf( "identical\n" );
@@ -15062,7 +15062,7 @@ void dump(const char* msg, int p) {
       listoffiles.setbasepath( whattodo == doCompress ? inputpath.c_str() : outputpath.c_str() );
 
       // Process file list (in multiple file mode)
-      if( options & OPTION_MULTIPLE_FILE_MODE ) { //multiple file mode
+      if( (options & OPTION_MULTIPLE_FILE_MODE) != 0 ) { //multiple file mode
         assert( whattodo == doCompress );
         // Read and parse filelist file
         FileDisk f;
@@ -15121,22 +15121,22 @@ void dump(const char* msg, int p) {
         // Print specified options
         printf( " Level          = %d\n", level );
         printf( " Brute      (b) = %s\n",
-                options & OPTION_BRUTE
+                (options & OPTION_BRUTE) != 0
                     ? "On  (Brute-force detection of DEFLATE streams)"
                     : "Off" ); //this is a compression-only option, but we put/get it for reproducibility
-        printf( " Train exe  (e) = %s\n", options & OPTION_TRAINEXE ? "On  (Pre-train x86/x64 model)" : "Off" );
+        printf( " Train exe  (e) = %s\n", (options & OPTION_TRAINEXE) != 0 ? "On  (Pre-train x86/x64 model)" : "Off" );
         printf( " Train txt  (t) = %s\n",
-                options & OPTION_TRAINTXT ? "On  (Pre-train main model with word and expression list)" : "Off" );
-        printf( " Adaptive   (a) = %s\n", options & OPTION_ADAPTIVE ? "On  (Adaptive learning rate)" : "Off" );
+                (options & OPTION_TRAINTXT) != 0 ? "On  (Pre-train main model with word and expression list)" : "Off" );
+        printf( " Adaptive   (a) = %s\n", (options & OPTION_ADAPTIVE) != 0 ? "On  (Adaptive learning rate)" : "Off" );
         printf( " Skip RGB   (s) = %s\n",
-                options & OPTION_SKIPRGB ? "On  (Skip the color transform, just reorder the RGB channels)" : "Off" );
+                (options & OPTION_SKIPRGB) != 0 ? "On  (Skip the color transform, just reorder the RGB channels)" : "Off" );
         printf( " Fast mode  (f) = %s\n",
-                options & OPTION_FASTMODE ? "On  (Bypass modeling and mixing on long matches)" : "Off" );
+                (options & OPTION_FASTMODE) != 0 ? "On  (Bypass modeling and mixing on long matches)" : "Off" );
         printf( " Force PNM  (p) = %s\n",
-                options & OPTION_FORCEPNM_IN_TEXT
+                (options & OPTION_FORCEPNM_IN_TEXT) != 0
                     ? "On  (Force PNM detection in textual data)"
                     : "Off" ); //this is a compression-only option, but we put/get it for reproducibility
-        printf( " File mode      = %s\n", options & OPTION_MULTIPLE_FILE_MODE ? "Multiple" : "Single" );
+        printf( " File mode      = %s\n", (options & OPTION_MULTIPLE_FILE_MODE) != 0 ? "Multiple" : "Single" );
       }
       printf( "\n" );
 
@@ -15144,7 +15144,7 @@ void dump(const char* msg, int p) {
 
       // Write archive header to archive file
       if( mode == COMPRESS ) {
-        if( options & OPTION_MULTIPLE_FILE_MODE ) { //multiple file mode
+        if( (options & OPTION_MULTIPLE_FILE_MODE) != 0 ) { //multiple file mode
           number_of_files = listoffiles.getcount();
           printf( "Creating archive %s in multiple file mode with %d file%s...\n", archiveName.c_str(), number_of_files,
                   number_of_files > 1 ? "s" : "" );

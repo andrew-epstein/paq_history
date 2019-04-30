@@ -2155,18 +2155,18 @@ void sparseModel( Mixer &m, int seenbefore, int howmany ) {
     }
 
     int fl = 0;
-    if( ( ( c4 & ( static_cast<unsigned int>( 0xff ) != 0 ) != 0u ) ) ) {
+    if( ( ( c4 & static_cast<unsigned int>(( static_cast<unsigned int>( 0xff ) != 0 ) != 0u) ) ) != 0u ) {
       if( isalpha( c4 & 0xff ) != 0 )
         fl = 1;
       else if( ispunct( c4 & 0xff ) != 0 )
         fl = 2;
       else if( isspace( c4 & 0xff ) != 0 )
         fl = 3;
-      else if( ( ( c4 & ( static_cast<unsigned int>( 0xff ) == 0xff ) != 0u ) ) )
+      else if( ( ( c4 & static_cast<unsigned int>(( static_cast<unsigned int>( 0xff ) == 0xff ) != 0u) ) ) != 0u )
         fl = 4;
-      else if( ( ( c4 & ( static_cast<unsigned int>( 0xff ) < 16 ) != 0u ) ) )
+      else if( ( ( c4 & static_cast<unsigned int>(( static_cast<unsigned int>( 0xff ) < 16 ) != 0u) ) ) != 0u )
         fl = 5;
-      else if( ( ( c4 & ( static_cast<unsigned int>( 0xff ) < 64 ) != 0u ) ) )
+      else if( ( ( c4 & static_cast<unsigned int>(( static_cast<unsigned int>( 0xff ) < 64 ) != 0u) ) ) != 0u )
         fl = 6;
       else
         fl = 7;
@@ -4649,7 +4649,7 @@ Filetype detect( FILE *in, int n, Filetype type ) {
         if( wavdatas == 0 || ( wavsize < ( wavdatas + 0x24 ) ) )
           wavi = wavdatas = wavsize = 0;
       }
-      if( static_cast<int>( ( ( wavsize ) ) == 0 == 0 ) && static_cast<int>( ( ( wavdatas ) ) == 0 == 0 ) ) {
+      if( (static_cast<int>( static_cast<int>(( ( wavsize ) ) == 0) == 0 ) != 0) && (static_cast<int>( static_cast<int>(( ( wavdatas ) ) == 0) == 0 ) != 0) ) {
         if( type == WAVFILE || type == CWAVFILE )
           return fseek( in, start + wavsize + 8, SEEK_SET ), DEFAULT;
         if( iswavcompressible == 0 )

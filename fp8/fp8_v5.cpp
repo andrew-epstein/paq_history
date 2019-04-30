@@ -648,7 +648,7 @@ void quit( const char *message = 0 ) {
 // strings are equal ignoring case?
 int equals( const char *a, const char *b ) {
   assert( a && b );
-  while( *a && *b ) {
+  while( (*a != 0) && (*b != 0) ) {
     int c1 = *a;
     if( c1 >= 'A' && c1 <= 'Z' )
       c1 += 'a' - 'A';
@@ -660,7 +660,7 @@ int equals( const char *a, const char *b ) {
     ++a;
     ++b;
   }
-  return *a == *b;
+  return static_cast<int>(*a == *b);
 }
 
 //////////////////////// Program Checker /////////////////////
@@ -751,7 +751,7 @@ void Array<T>::resize( int i ) {
   T *savedata = data;
   int saven = n;
   create( i );
-  if( saveptr ) {
+  if( saveptr != nullptr ) {
     if( savedata ) {
       memcpy( data, savedata, sizeof( T ) * min( i, saven ) );
       programChecker.alloc( -n * sizeof( T ) );
@@ -771,7 +771,7 @@ void Array<T>::create( int i ) {
   const int sz = n * sizeof( T );
   programChecker.alloc( sz );
   ptr = ( char * ) calloc( sz, 1 );
-  if( !ptr )
+  if( ptr == nullptr )
     quit( "Out of memory" );
   data = ( T * ) ptr;
 }
@@ -809,7 +809,7 @@ public:
   void operator+=( const char *s ) {
     assert( s );
     pop_back();
-    while( *s )
+    while( *s != 0 )
       push_back( *s++ );
     push_back( 0 );
   }
@@ -853,7 +853,7 @@ class Buf {
 public:
   Buf( int i = 0 ) : b( i ) {}
   void setsize( int i ) {
-    if( !i )
+    if( i == 0 )
       return;
     assert( i > 0 && ( i & ( i - 1 ) ) == 0 );
     b.resize( i );
@@ -1242,7 +1242,7 @@ static int dot_product( const short *const t, const short *const w, int n ) {
 }
 
 static void train( const short *const t, short *const w, int n, const int e ) {
-  if( e ) {
+  if( e != 0 ) {
     const __m128i one = _mm_set1_epi16( 1 );
     const __m128i err = _mm_set1_epi16( short( e ) );
     while( ( n -= 8 ) >= 0 ) {
@@ -1299,7 +1299,7 @@ public:
     for( int i = 0; i < ncxt; ++i ) {
       int err = ( ( y << 12 ) - pr[i] ) * 7;
       assert( err >= -32768 && err < 32768 );
-      if( err )
+      if( err != 0 )
         train( &tx[0], &wx[cxt[i] * N], nx, err );
     }
     nx = base = ncxt = 0;
@@ -1323,9 +1323,9 @@ public:
 
   // predict next bit
   int p() {
-    while( nx & 7 )
+    while( (nx & 7) != 0 )
       tx[nx++] = 0; // pad
-    if( mp ) {      // combine outputs
+    if( mp != nullptr ) {      // combine outputs
       mp->update();
       for( int i = 0; i < ncxt; ++i ) {
         pr[i] = squash( dot_product( &tx[0], &wx[cxt[i] * N], nx ) >> 5 );
@@ -1611,7 +1611,7 @@ public:
   }
   int mix( Mixer &m ) { // return run length
     m.add( p() );
-    return cp[0] != 0;
+    return static_cast<int>(cp[0] != 0);
   }
 };
 
@@ -1760,11 +1760,11 @@ int ContextMap::mix1( Mixer &m, int cc, int bp, int c1, int y1 ) {
   // Update model with y
   int result = 0;
   for( int i = 0; i < cn; ++i ) {
-    if( cp[i] ) {
+    if( cp[i] != nullptr ) {
       assert( cp[i] >= &t[0].bh[0][0] && cp[i] <= &t[t.size() - 1].bh[6][6] );
       assert( ( long( cp[i] ) & 63 ) >= 15 );
       int ns = nex( *cp[i], y1 );
-      if( ns >= 204 && rnd() << ( ( 452 - ns ) >> 3 ) )
+      if( ns >= 204 && ((rnd() << ( ( 452 - ns ) >> 3 )) != 0u) )
         ns -= 4; // probabilistic increment
       *cp[i] = ns;
     }
@@ -1826,8 +1826,8 @@ int ContextMap::mix1( Mixer &m, int cc, int bp, int c1, int y1 ) {
     // predict from bit context
     int p;
     ;
-    if( cp[i] ) {
-      result += ( *cp[i] > 0 );
+    if( cp[i] != nullptr ) {
+      result += static_cast<int>( *cp[i] > 0 );
       p = sm[i].p( *cp[i] );
     } else {
       p = sm[i].p( 0 );
@@ -1859,13 +1859,13 @@ int matchModel( Mixer &m ) {
   static SmallStationaryContextMap scm1( 0x20000 ), scm2( 0x20000 );
   static int posnl = 0;
 
-  if( !bpos ) {
+  if( bpos == 0 ) {
     h = ( h * 997 * 8 + buf( 1 ) + 1 ) & ( t.size() - 1 ); // update context hash
-    if( len )
+    if( len != 0 )
       ++len, ++ptr;
     else { // find match
       ptr = t[h];
-      if( ptr && pos - ptr < buf.size() )
+      if( (ptr != 0) && pos - ptr < buf.size() )
         while( buf( len + 1 ) == buf[ptr - len - 1] && len < MAXLEN )
           ++len;
     }
@@ -1880,11 +1880,11 @@ int matchModel( Mixer &m ) {
   }
 
   // predict
-  if( len ) {
+  if( len != 0 ) {
     if( buf( 1 ) == buf[ptr - 1] && c0 == ( buf[ptr] + 256 ) >> ( 8 - bpos ) ) {
       if( len > MAXLEN )
         len = MAXLEN;
-      if( buf[ptr] >> ( 7 - bpos ) & 1 ) {
+      if( (buf[ptr] >> ( 7 - bpos ) & 1) != 0 ) {
         m.add( ilog( len ) << 2 );
         m.add( min( len, 32 ) << 6 );
       } else {
@@ -2023,17 +2023,17 @@ int jpegModel( Mixer &m ) {
                              5, 4, 3, 2, 1, 0, 0, 1, 2, 3, 4, 5, 6, 7, 7, 6, 5, 4, 3, 2, 1, 2,
                              3, 4, 5, 6, 7, 7, 6, 5, 4, 3, 4, 5, 6, 7, 7, 6, 5, 6, 7, 7};
 
-  if( !bpos && !blpos )
+  if( (bpos == 0) && (blpos == 0) )
     jpeg = 0;
 
   // Be sure to quit on a byte boundary
-  if( bpos && !jpeg )
+  if( (bpos != 0) && (jpeg == 0) )
     return 0;
-  if( !bpos && app >= 0 )
+  if( (bpos == 0) && app >= 0 )
     --app;
   if( app > 0 )
     return 0;
-  if( !bpos ) {
+  if( bpos == 0 ) {
     // Parse.  Baseline DCT-Huffman JPEG syntax is:
     // SOI APPx... misc... SOF0 DHT... SOS data EOI
     // SOI (= FF D8) start of image.
@@ -2070,10 +2070,10 @@ int jpegModel( Mixer &m ) {
     // FF 00 is interpreted as FF (to distinguish from RSTx, DNL, EOI).
 
     // Detect JPEG (SOI, APPx)
-    if( !jpeg && buf( 4 ) == FF && buf( 3 ) == SOI && buf( 2 ) == FF
+    if( (jpeg == 0) && buf( 4 ) == FF && buf( 3 ) == SOI && buf( 2 ) == FF
         && ( buf( 1 ) == 0xC0 || buf( 1 ) == 0xC4 || ( buf( 1 ) >= 0xDB && buf( 1 ) <= 0xFE ) ) ) {
       jpeg = 1;
-      sos = sof = htsize = data = mcusize = linesize = 0, app = ( buf( 1 ) >> 4 == 0xE ) * 2;
+      sos = sof = htsize = data = mcusize = linesize = 0, app = static_cast<int>( buf( 1 ) >> 4 == 0xE ) * 2;
       huffcode = huffbits = huffsize = mcupos = cpos = 0, rs = -1;
       memset( &huf[0], 0, huf.size() * sizeof( HUF ) );
       memset( &pred[0], 0, pred.size() * sizeof( int ) );
@@ -2081,21 +2081,21 @@ int jpegModel( Mixer &m ) {
 
     // Detect end of JPEG when data contains a marker other than RSTx
     // or byte stuff (00).
-    if( jpeg && data && buf( 2 ) == FF && buf( 1 ) && ( buf( 1 ) & 0xf8 ) != RST0 ) {
+    if( (jpeg != 0) && (data != 0) && buf( 2 ) == FF && (buf( 1 ) != 0) && ( buf( 1 ) & 0xf8 ) != RST0 ) {
       jassert( buf( 1 ) == EOI );
       jpeg = 0;
     }
-    if( !jpeg )
+    if( jpeg == 0 )
       return 0;
 
     // Detect APPx or COM field
-    if( !data && !app && buf( 4 ) == FF && ( buf( 3 ) >> 4 == 0xe || buf( 3 ) == COM ) )
+    if( (data == 0) && (app == 0) && buf( 4 ) == FF && ( buf( 3 ) >> 4 == 0xe || buf( 3 ) == COM ) )
       app = buf( 2 ) * 256 + buf( 1 ) + 2;
 
     // Save pointers to sof, ht, sos, data,
     if( buf( 5 ) == FF && buf( 4 ) == SOS ) {
       int len = buf( 3 ) * 256 + buf( 2 );
-      if( len == 6 + 2 * buf( 1 ) && buf( 1 ) && buf( 1 ) <= 4 ) // buf(1) is Ns
+      if( len == 6 + 2 * buf( 1 ) && (buf( 1 ) != 0) && buf( 1 ) <= 4 ) // buf(1) is Ns
         sos = pos - 5, data = sos + len + 2, jpeg = 2;
     }
     if( buf( 4 ) == FF && buf( 3 ) == DHT && htsize < 8 )
@@ -2167,7 +2167,7 @@ int jpegModel( Mixer &m ) {
 
       // Build Huffman table selection table (indexed by mcupos).
       // Get image width.
-      if( !sof && sos )
+      if( (sof == 0) && (sos != 0) )
         return 0;
       int ns = buf[sos + 4];
       int nf = buf[sof + 9];
@@ -2184,7 +2184,7 @@ int jpegModel( Mixer &m ) {
             hv = ( hv & 15 ) * ( hv >> 4 ); // number of blocks in component C
             nBlocks[j] = hv;
             jassert( hv >= 1 && hv + mcusize <= 10 );
-            while( hv ) {
+            while( hv != 0 ) {
               jassert( mcusize < 10 );
               hufsel[0][mcusize] = buf[sos + 2 * i + 6] >> 4 & 15;
               hufsel[1][mcusize] = buf[sos + 2 * i + 6] & 15;
@@ -2230,7 +2230,7 @@ int jpegModel( Mixer &m ) {
             int h = SamplingFactors[i] >> 4;
             int v = SamplingFactors[i] & 0xf;
 
-            if( h ) {
+            if( h != 0 ) {
               blockW[x] += h * ( v - 1 ) * 64;
               s = h;
               while( s < nBlocks[i] ) {
@@ -2253,13 +2253,13 @@ int jpegModel( Mixer &m ) {
 
   // Decode Huffman
   {
-    if( mcusize && buf( 1 + ( !bpos ) ) != FF ) { // skip stuffed byte
+    if( (mcusize != 0) && buf( 1 + static_cast<int>( bpos == 0 ) ) != FF ) { // skip stuffed byte
       jassert( huffbits <= 32 );
       huffcode += huffcode + y;
       ++huffbits;
       if( rs < 0 ) {
         jassert( huffbits >= 1 && huffbits <= 16 );
-        const int ac = ( mcupos & 63 ) > 0;
+        const int ac = static_cast<const int>(( mcupos & 63 ) > 0);
         jassert( mcupos >= 0 && ( mcupos >> 6 ) < 10 );
         jassert( ac == 0 || ac == 1 );
         const int sel = hufsel[ac][mcupos >> 6];
@@ -2280,11 +2280,11 @@ int jpegModel( Mixer &m ) {
         if( huffsize + ( rs & 15 ) == huffbits ) { // done decoding
           rs1 = rs;
           int x = 0;          // decoded extra bits
-          if( mcupos & 63 ) { // AC
+          if( (mcupos & 63) != 0 ) { // AC
             if( rs == 0 ) {   // EOB
               mcupos = ( mcupos + 63 ) & -64;
               jassert( mcupos >= 0 && mcupos <= mcusize && mcupos <= 640 );
-              while( cpos & 63 ) {
+              while( (cpos & 63) != 0 ) {
                 cbuf2[cpos] = 0;
                 cbuf[cpos++] = 0;
               }
@@ -2296,7 +2296,7 @@ int jpegModel( Mixer &m ) {
               jassert( mcupos >> 6 == ( mcupos + r ) >> 6 );
               mcupos += r + 1;
               x = huffcode & ( ( 1 << s ) - 1 );
-              if( s && !( x >> ( s - 1 ) ) )
+              if( (s != 0) && (( x >> ( s - 1 ) ) == 0) )
                 x -= ( 1 << s ) - 1;
               for( int i = r; i >= 1; --i ) {
                 cbuf2[cpos] = 0;
@@ -2310,7 +2310,7 @@ int jpegModel( Mixer &m ) {
             jassert( rs < 12 );
             ++mcupos;
             x = huffcode & ( ( 1 << rs ) - 1 );
-            if( rs && !( x >> ( rs - 1 ) ) )
+            if( (rs != 0) && (( x >> ( rs - 1 ) ) == 0) )
               x -= ( 1 << rs ) - 1;
             jassert( mcupos >= 0 && mcupos >> 6 < 10 );
             const int comp = color[mcupos >> 6];
@@ -2353,16 +2353,16 @@ int jpegModel( Mixer &m ) {
               // necessarily in this MCU
               int offset_DC_N = cpos_dc - blockN[acomp];
               for( int i = 0; i < 64; ++i ) {
-                sumu[zzu[i]] += ( zzv[i] & 1 ? -1 : 1 ) * ( zzv[i] ? 16 * ( 16 + zzv[i] ) : 181 ) * ( qtab[q + i] + 1 )
+                sumu[zzu[i]] += ( (zzv[i] & 1) != 0 ? -1 : 1 ) * ( zzv[i] != 0u ? 16 * ( 16 + zzv[i] ) : 181 ) * ( qtab[q + i] + 1 )
                                 * cbuf2[offset_DC_N + i];
-                sumv[zzv[i]] += ( zzu[i] & 1 ? -1 : 1 ) * ( zzu[i] ? 16 * ( 16 + zzu[i] ) : 181 ) * ( qtab[q + i] + 1 )
+                sumv[zzv[i]] += ( (zzu[i] & 1) != 0 ? -1 : 1 ) * ( zzu[i] != 0u ? 16 * ( 16 + zzu[i] ) : 181 ) * ( qtab[q + i] + 1 )
                                 * cbuf2[offset_DC_W + i];
               }
             } else {
               sumu[zzu[zz - 1]] -=
-                  ( zzv[zz - 1] ? 16 * ( 16 + zzv[zz - 1] ) : 181 ) * ( qtab[q + zz - 1] + 1 ) * cbuf2[cpos - 1];
+                  ( zzv[zz - 1] != 0u ? 16 * ( 16 + zzv[zz - 1] ) : 181 ) * ( qtab[q + zz - 1] + 1 ) * cbuf2[cpos - 1];
               sumv[zzv[zz - 1]] -=
-                  ( zzu[zz - 1] ? 16 * ( 16 + zzu[zz - 1] ) : 181 ) * ( qtab[q + zz - 1] + 1 ) * cbuf2[cpos - 1];
+                  ( zzu[zz - 1] != 0u ? 16 * ( 16 + zzu[zz - 1] ) : 181 ) * ( qtab[q + zz - 1] + 1 ) * cbuf2[cpos - 1];
             }
 
             for( int i = 0; i < 3; ++i )
@@ -2377,26 +2377,26 @@ int jpegModel( Mixer &m ) {
                   adv_pred[i] = p;
                   adv_pred[i + 4] = p / 4;
                 } else if( abs( p ) > abs( adv_pred[i] ) + 1 ) {
-                  adv_pred[i] += ( st * 2 + ( p > 0 ) ) << 6;
+                  adv_pred[i] += ( st * 2 + static_cast<int>( p > 0 ) ) << 6;
                   if( abs( p / 4 ) > abs( adv_pred[i + 4] ) + 1 )
-                    adv_pred[i + 4] += ( st * 2 + ( p > 0 ) ) << 6;
+                    adv_pred[i + 4] += ( st * 2 + static_cast<int>( p > 0 ) ) << 6;
                   break;
                 }
               }
             x = 2 * sumu[zzu[zz]] + 2 * sumv[zzv[zz]];
             for( int i = 0; i < 8; ++i )
-              x -= ( zzu[zz] < i ) * sumu[i] + ( zzv[zz] < i ) * sumv[i];
+              x -= static_cast<int>( zzu[zz] < i ) * sumu[i] + static_cast<int>( zzv[zz] < i ) * sumv[i];
             x /= ( qtab[q + zz] + 1 ) * 181;
             if( zz == 0 )
               x -= cbuf2[cpos_dc - ls[acomp]];
             adv_pred[3] = ( x < 0 ? -1 : +1 ) * ilog( 10 * abs( x ) + 1 ) / 10;
 
             for( int i = 0; i < 4; ++i ) {
-              const int a = ( i & 1 ? zzv[zz] : zzu[zz] ), b = ( i & 2 ? 2 : 1 );
+              const int a = ( (i & 1) != 0 ? zzv[zz] : zzu[zz] ), b = ( (i & 2) != 0 ? 2 : 1 );
               if( a < b )
                 x = 255;
               else {
-                const int zz2 = zpos[zzu[zz] + 8 * zzv[zz] - ( i & 1 ? 8 : 1 ) * b];
+                const int zz2 = zpos[zzu[zz] + 8 * zzv[zz] - ( (i & 1) != 0 ? 8 : 1 ) * b];
                 x = ( qtab[q + zz2] + 1 ) * cbuf2[cpos_dc + zz2] / ( qtab[q + zz] + 1 );
                 x = ( x < 0 ? -1 : +1 ) * ilog( 10 * abs( x ) + 1 ) / 10;
               }
@@ -2413,9 +2413,9 @@ int jpegModel( Mixer &m ) {
   }
 
   // Estimate next bit probability
-  if( !jpeg || !data )
+  if( (jpeg == 0) || (data == 0) )
     return 0;
-  if( buf( 1 + ( !bpos ) ) == FF ) {
+  if( buf( 1 + static_cast<int>( bpos == 0 ) ) == FF ) {
     m.add( 128 );
     m.set( 2, 264 );
     m.set( 0, 256 );
@@ -2436,7 +2436,7 @@ int jpegModel( Mixer &m ) {
   static APM a1( 0x8000 ), a2( 0x10000 );
 
   // Update model
-  if( cp[N - 1] ) {
+  if( cp[N - 1] != nullptr ) {
     for( int i = 0; i < N; ++i )
       *cp[i] = nex( *cp[i], y );
   }
@@ -2445,7 +2445,7 @@ int jpegModel( Mixer &m ) {
   // Update context
   const int comp = color[mcupos >> 6];
   const int coef = ( mcupos & 63 ) | comp << 6;
-  const int hc = ( huffcode * 4 + ( ( mcupos & 63 ) == 0 ) * 2 + ( comp == 0 ) ) | 1 << ( huffbits + 2 );
+  const int hc = ( huffcode * 4 + static_cast<int>( ( mcupos & 63 ) == 0 ) * 2 + static_cast<unsigned int>( comp == 0 ) ) | 1 << ( huffbits + 2 );
   static int hbcount = 2;
   if( ++hbcount > 2 || huffbits == 0 )
     hbcount = 0;
@@ -2503,7 +2503,7 @@ int jpegModel( Mixer &m ) {
     } break;
   }
 
-  m1.set( column == 0, 2 );
+  m1.set( static_cast<int>(column == 0), 2 );
   m1.set( coef, 256 );
   m1.set( hc & 511, 512 );
   int pr = m1.p();
@@ -2591,7 +2591,7 @@ void wavModel( Mixer &m, int info ) {
   static int bits, channels, w;
   static int z1, z2, z3, z4, z5, z6, z7;
 
-  if( !bpos && !blpos ) {
+  if( (bpos == 0) && (blpos == 0) ) {
     bits = ( ( info % 4 ) / 2 ) * 8 + 8;
     channels = info % 2 + 1;
     w = channels * ( bits >> 3 );
@@ -2610,11 +2610,11 @@ void wavModel( Mixer &m, int info ) {
     }
   }
   // Select previous samples and predicted sample as context
-  if( !bpos && blpos >= w ) {
+  if( (bpos == 0) && blpos >= w ) {
     const int ch = blpos % w;
     const int msb = ch % ( bits >> 3 );
     const int chn = ch / ( bits >> 3 );
-    if( !msb ) {
+    if( msb == 0 ) {
       z1 = X1( 1 ), z2 = X1( 2 ), z3 = X1( 3 ), z4 = X1( 4 ), z5 = X1( 5 );
       k = X1( 1 );
       for( l = 0; l <= min( S, counter[chn] - 1 ); l++ ) {
@@ -2698,9 +2698,9 @@ void wavModel( Mixer &m, int info ) {
       x1 ^= 128, x2 ^= 128;
     if( bits == 8 )
       x1 -= 128, x2 -= 128;
-    const int t = ( ( bits == 8 ) || ( ( !msb ) ^ ( wmode < 6 ) ) );
+    const int t = static_cast<const int>( ( bits == 8 ) || (( ( msb == 0 ) ^ ( wmode < 6 ) ) != 0) );
     i = ch << 4;
-    if( ( msb ) ^ ( wmode < 6 ) ) {
+    if( (( msb ) ^ static_cast<int>( wmode < 6 )) != 0 ) {
       cm.set( hash( ++i, y1 & 0xff ) );
       cm.set( hash( ++i, y1 & 0xff, ( ( z1 - y2 + z2 - y3 ) >> 1 ) & 0xff ) );
       cm.set( hash( ++i, x1, y1 & 0xff ) );
@@ -2745,7 +2745,7 @@ void wavModel( Mixer &m, int info ) {
   if( ++col >= w * 8 )
     col = 0;
   m.set( 5, 264 );
-  m.set( col % bits < 8, 2 );
+  m.set( static_cast<int>(col % bits < 8), 2 );
   m.set( col % bits, bits );
   m.set( col, w * 8 );
   m.set( c0, 256 );
@@ -2768,7 +2768,7 @@ void im24bitModel( Mixer &m, int w ) {
   static ContextMap cm( MEM * 4, 13 );
 
   // Select nearby pixels as context
-  if( !bpos ) {
+  if( bpos == 0 ) {
     assert( w > 3 );
     int color = pos % 3;
     int mean = buf( 3 ) + buf( w - 3 ) + buf( w ) + buf( w + 3 );
@@ -2832,7 +2832,7 @@ void im8bitModel( Mixer &m, int w ) {
   static ContextMap cm( MEM * 4, 32 );
 
   // Select nearby pixels as context
-  if( !bpos ) {
+  if( bpos == 0 ) {
     assert( w > 3 );
     int mean = buf( 1 ) + buf( w - 1 ) + buf( w ) + buf( w + 1 );
     const int var = ( sqrbuf( 1 ) + sqrbuf( w - 1 ) + sqrbuf( w ) + sqrbuf( w + 1 ) - mean * mean / 4 ) >> 2;
@@ -2926,9 +2926,9 @@ void im1bitModel( Mixer &m, int w ) {
   cxt[2] = 0x200 + ( ( r0 & 0x3f ) ^ ( r1 & 0x3ffe ) ^ ( r2 << 2 & 0x7f00 ) ^ ( r3 << 5 & 0xf800 ) );
   cxt[3] = 0x400 + ( ( r0 & 0x3e ) ^ ( r1 & 0x0c0c ) ^ ( r2 & 0xc800 ) );
   cxt[4] = 0x800 + ( ( ( r1 & 0x30 ) ^ ( r3 & 0x0c0c ) ) | ( r0 & 3 ) );
-  cxt[5] = 0x1000 + ( ( !r0 & 0x444 ) | ( r1 & 0xC0C ) | ( r2 & 0xAE3 ) | ( r3 & 0x51C ) );
+  cxt[5] = 0x1000 + ( ( static_cast<int>(r0) == 0u & 0x444 ) | ( r1 & 0xC0C ) | ( r2 & 0xAE3 ) | ( r3 & 0x51C ) );
   cxt[6] = 0x2000 + ( ( r0 & 1 ) | ( r1 >> 4 & 0x1d ) | ( r2 >> 1 & 0x60 ) | ( r3 & 0xC0 ) );
-  cxt[7] = 0x4000 + ( ( r0 >> 4 & 0x2AC ) | ( r1 & 0xA4 ) | ( r2 & 0x349 ) | ( !r3 & 0x14D ) );
+  cxt[7] = 0x4000 + ( ( r0 >> 4 & 0x2AC ) | ( r1 & 0xA4 ) | ( r2 & 0x349 ) | ( static_cast<int>(r3) == 0u & 0x14D ) );
 
   // predict
   for( i = 0; i < N; ++i )
@@ -2966,7 +2966,7 @@ void dmcModel( Mixer &m ) {
   // clone next state
   if( top > 0 && top < t.size() ) {
     int next = t[curr].nx[y];
-    int n = y ? t[curr].c1 : t[curr].c0;
+    int n = y != 0 ? t[curr].c1 : t[curr].c0;
     int nn = t[next].c0 + t[next].c1;
     if( n >= threshold * 2 && nn - n >= threshold * 3 ) {
       int r = n * 4096 / nn;
@@ -3009,7 +3009,7 @@ void dmcModel( Mixer &m ) {
   }
 
   // update count, state
-  if( y ) {
+  if( y != 0 ) {
     if( t[curr].c1 < 3800 )
       t[curr].c1 += 256;
   } else if( t[curr].c0 < 3800 )
@@ -3033,19 +3033,19 @@ void dmcModel( Mixer &m ) {
 // of modR/M byte).
 
 inline int pref( int i ) {
-  return ( buf( i ) == 0x0f ) + 2 * ( buf( i ) == 0x66 ) + 3 * ( buf( i ) == 0x67 );
+  return static_cast<int>( buf( i ) == 0x0f ) + 2 * static_cast<int>( buf( i ) == 0x66 ) + 3 * static_cast<int>( buf( i ) == 0x67 );
 }
 
 // Get context at buf(i) relevant to parsing 32-bit x86 code
 U32 execxt( int i ) {
   int prefix = 0, opcode = 0, modrm = 0;
-  if( i )
+  if( i != 0 )
     prefix += 4 * pref( i-- );
-  if( i )
+  if( i != 0 )
     prefix += pref( i-- );
-  if( i )
+  if( i != 0 )
     opcode += buf( i-- );
-  if( i )
+  if( i != 0 )
     modrm += buf( i ) & 0xc7;
   return hash( prefix, opcode, modrm );
 }
@@ -3081,7 +3081,7 @@ int contextModel2() {
       info = buf( 4 ) << 24 | buf( 3 ) << 16 | buf( 2 ) << 8 | buf( 1 );
       blpos = 0;
     }
-    if( !blpos )
+    if( blpos == 0 )
       filetype = ft2;
     if( size == 0 )
       filetype = DEFAULT;
@@ -3101,7 +3101,7 @@ int contextModel2() {
   if( filetype == AUDIO )
     return wavModel( m, info ), m.p();
   if( filetype == JPEG )
-    if( jpegModel( m ) )
+    if( jpegModel( m ) != 0 )
       return m.p();
 
   dmcModel( m );
@@ -3136,11 +3136,11 @@ int contextModel2() {
 
     int fl = 0;
     if( ( c4 & 0xff ) != 0 ) {
-      if( isalpha( c4 & 0xff ) )
+      if( isalpha( c4 & 0xff ) != 0 )
         fl = 1;
-      else if( ispunct( c4 & 0xff ) )
+      else if( ispunct( c4 & 0xff ) != 0 )
         fl = 2;
-      else if( isspace( c4 & 0xff ) )
+      else if( isspace( c4 & 0xff ) != 0 )
         fl = 3;
       else if( ( c4 & 0xff ) == 0xff )
         fl = 4;
@@ -3178,7 +3178,7 @@ int contextModel2() {
         c += 'a' - 'A';
       if( ( c >= 'a' && c <= 'z' ) || c >= 128 )
         word0 = hash( word0, c );
-      else if( word0 )
+      else if( word0 != 0u )
         word1 = word0, word0 = 0;
       cm.set( word0 );
       cm.set( hash( word0, word1 ) );
@@ -3191,7 +3191,7 @@ int contextModel2() {
 
   m.set( c1 + 8, 264 );
   m.set( c0, 256 );
-  m.set( order + 16 * ( c1 > 32 ) + 32 * ( bpos == 0 ) + 64 * ( c1 == c2 ) + 128 * ( filetype == EXE ), 256 );
+  m.set( order + 16 * static_cast<int>( c1 > 32 ) + 32 * static_cast<int>( bpos == 0 ) + 64 * static_cast<int>( c1 == c2 ) + 128 * static_cast<int>( filetype == EXE ), 256 );
   m.set( c2, 256 );
   m.set( ismatch, 256 );
   int pr = m.p();
@@ -3275,14 +3275,14 @@ private:
   int code( int i = 0 ) {
     int p = predictor.p();
     assert( p >= 0 && p < 4096 );
-    p += p < 2048;
+    p += static_cast<int>(p < 2048);
     U32 xmid = x1 + ( ( x2 - x1 ) >> 12 ) * p + ( ( ( x2 - x1 ) & 0xfff ) * p >> 12 );
     assert( xmid >= x1 && xmid < x2 );
     if( mode == DECOMPRESS )
-      y = x <= xmid;
+      y = static_cast<int>(x <= xmid);
     else
       y = i;
-    y ? ( x2 = xmid ) : ( x1 = xmid + 1 );
+    y != 0 ? ( x2 = xmid ) : ( x1 = xmid + 1 );
     predictor.update();
     while( ( ( x1 ^ x2 ) & 0xff000000 ) == 0 ) { // pass equal leading bytes of range
       if( mode == COMPRESS )
@@ -3433,16 +3433,16 @@ static U32 edc_lut[256];
 static int luts_init = 0;
 
 void eccedc_init( void ) {
-  if( luts_init )
+  if( luts_init != 0 )
     return;
   U32 i, j, edc;
   for( i = 0; i < 256; i++ ) {
-    j = ( i << 1 ) ^ ( i & 0x80 ? 0x11D : 0 );
+    j = ( i << 1 ) ^ ( (i & 0x80) != 0u ? 0x11D : 0 );
     ecc_f_lut[i] = j;
     ecc_b_lut[i ^ j] = i;
     edc = i;
     for( j = 0; j < 8; j++ )
-      edc = ( edc >> 1 ) ^ ( edc & 1 ? 0xD8018001 : 0 );
+      edc = ( edc >> 1 ) ^ ( (edc & 1) != 0u ? 0xD8018001 : 0 );
     edc_lut[i] = edc;
   }
   luts_init = 1;
@@ -3472,7 +3472,7 @@ void ecc_compute( U8 *src, U32 major_count, U32 minor_count, U32 major_mult, U32
 
 U32 edc_compute( const U8 *src, int size ) {
   U32 edc = 0;
-  while( size-- )
+  while( (size--) != 0 )
     edc = ( edc >> 8 ) ^ edc_lut[( edc ^ ( *src++ ) ) & 0xFF];
   return edc;
 }
@@ -3505,7 +3505,7 @@ int expand_cd_sector( U8 *data, int a, int test ) {
   d2[15] = mode;
   if( mode == 2 )
     for( int i = 16; i < 24; i++ )
-      d2[i] = data[i - 4 * ( i >= 20 )];
+      d2[i] = data[i - 4 * static_cast<int>( i >= 20 )];
   if( form == 1 ) {
     if( mode == 2 ) {
       d2[1] = d2[12], d2[2] = d2[13], d2[3] = d2[14];
@@ -3514,11 +3514,11 @@ int expand_cd_sector( U8 *data, int a, int test ) {
       for( int i = 2068; i < 2076; i++ )
         d2[i] = 0;
     }
-    for( int i = 16 + 8 * ( mode == 2 ); i < 2064 + 8 * ( mode == 2 ); i++ )
+    for( int i = 16 + 8 * static_cast<int>( mode == 2 ); i < 2064 + 8 * static_cast<int>( mode == 2 ); i++ )
       d2[i] = data[i];
-    U32 edc = edc_compute( d2 + 16 * ( mode == 2 ), 2064 - 8 * ( mode == 2 ) );
+    U32 edc = edc_compute( d2 + 16 * static_cast<int>( mode == 2 ), 2064 - 8 * static_cast<int>( mode == 2 ) );
     for( int i = 0; i < 4; i++ )
-      d2[2064 + 8 * ( mode == 2 ) + i] = ( edc >> ( 8 * i ) ) & 0xff;
+      d2[2064 + 8 * static_cast<int>( mode == 2 ) + i] = ( edc >> ( 8 * i ) ) & 0xff;
     ecc_compute( d2 + 12, 86, 24, 2, 86, d2 + 2076 );
     ecc_compute( d2 + 12, 52, 43, 86, 88, d2 + 2248 );
     if( mode == 2 ) {
@@ -3527,7 +3527,7 @@ int expand_cd_sector( U8 *data, int a, int test ) {
     }
   }
   for( int i = 0; i < 2352; i++ )
-    if( d2[i] != data[i] && test )
+    if( d2[i] != data[i] && (test != 0) )
       form = 2;
   if( form == 2 ) {
     for( int i = 24; i < 2348; i++ )
@@ -3537,7 +3537,7 @@ int expand_cd_sector( U8 *data, int a, int test ) {
       d2[2348 + i] = ( edc >> ( 8 * i ) ) & 0xff;
   }
   for( int i = 0; i < 2352; i++ )
-    if( d2[i] != data[i] && test )
+    if( d2[i] != data[i] && (test != 0) )
       return 0;
     else
       data[i] = d2[i];
@@ -3636,9 +3636,9 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
   // For image detection
   static int deth = 0, detd = 0; // detected header/data size in bytes
   static Filetype dett;          // detected block type
-  if( deth )
+  if( deth != 0 )
     return fseek( in, start + deth, SEEK_SET ), deth = 0, dett;
-  else if( detd )
+  else if( detd != 0 )
     return fseek( in, start + detd, SEEK_SET ), detd = 0, DEFAULT;
 
   for( int i = 0; i < n; ++i ) {
@@ -3673,9 +3673,9 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
         strm.next_out = zout;
         strm.avail_out = 1 << 16;
         ret = inflate( &strm, Z_FINISH );
-        ret = ( inflateEnd( &strm ) == Z_OK && ( ret == Z_STREAM_END || ret == Z_BUF_ERROR ) && strm.total_in >= 16 );
+        ret = static_cast<int>( inflateEnd( &strm ) == Z_OK && ( ret == Z_STREAM_END || ret == Z_BUF_ERROR ) && strm.total_in >= 16 );
       }
-      if( ret ) {
+      if( ret != 0 ) {
         // Verify valid stream and determine stream length
         long savedpos = ftell( in );
         strm.zalloc = Z_NULL;
@@ -3730,28 +3730,28 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
     }
     if( i - pdfimp > 1024 )
       pdfim = pdfimw = pdfimh = pdfimb = 0;
-    if( pdfim > 1 && !( isspace( c ) || isdigit( c ) ) )
+    if( pdfim > 1 && !( (isspace( c ) != 0) || (isdigit( c ) != 0) ) )
       pdfim = 1;
-    if( pdfim == 2 && isdigit( c ) )
+    if( pdfim == 2 && (isdigit( c ) != 0) )
       pdfimw = pdfimw * 10 + ( c - '0' );
-    if( pdfim == 3 && isdigit( c ) )
+    if( pdfim == 3 && (isdigit( c ) != 0) )
       pdfimh = pdfimh * 10 + ( c - '0' );
-    if( pdfim == 4 && isdigit( c ) )
+    if( pdfim == 4 && (isdigit( c ) != 0) )
       pdfimb = pdfimb * 10 + ( c - '0' );
     if( ( buf0 & 0xffff ) == 0x3c3c )
       pdfimp = i, pdfim = 1; // <<
-    if( pdfim && ( buf1 & 0xffff ) == 0x2f57 && buf0 == 0x69647468 )
+    if( (pdfim != 0) && ( buf1 & 0xffff ) == 0x2f57 && buf0 == 0x69647468 )
       pdfim = 2, pdfimw = 0; // /Width
-    if( pdfim && ( buf1 & 0xffffff ) == 0x2f4865 && buf0 == 0x69676874 )
+    if( (pdfim != 0) && ( buf1 & 0xffffff ) == 0x2f4865 && buf0 == 0x69676874 )
       pdfim = 3, pdfimh = 0; // /Height
-    if( pdfim && buf3 == 0x42697473 && buf2 == 0x50657243 && buf1 == 0x6f6d706f && buf0 == 0x6e656e74
+    if( (pdfim != 0) && buf3 == 0x42697473 && buf2 == 0x50657243 && buf1 == 0x6f6d706f && buf0 == 0x6e656e74
         && zbuf[( zbufpos + 15 ) % 32] == '/' )
       pdfim = 4, pdfimb = 0; // /BitsPerComponent
 
     // CD sectors detection (mode 1 and mode 2 form 1+2 - 2352 bytes)
-    if( buf1 == 0x00ffffff && buf0 == 0xffffffff && !cdi )
+    if( buf1 == 0x00ffffff && buf0 == 0xffffffff && (cdi == 0) )
       cdi = i, cda = -1, cdm = 0;
-    if( cdi && i > cdi ) {
+    if( (cdi != 0) && i > cdi ) {
       const int p = ( i - cdi ) % 2352;
       if( p == 8 && ( buf1 != 0xffffff00 || ( ( buf0 & 0xff ) != 1 && ( buf0 & 0xff ) != 2 ) ) )
         cdi = 0;
@@ -3763,8 +3763,8 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
         fseek( in, savedpos, SEEK_SET );
         int t = expand_cd_sector( data, cda, 1 );
         if( t != cdm )
-          cdm = t * ( i - cdi < 2352 );
-        if( cdm && cda != 10 && ( cdm == 1 || buf0 == buf1 ) ) {
+          cdm = t * static_cast<int>( i - cdi < 2352 );
+        if( (cdm != 0) && cda != 10 && ( cdm == 1 || buf0 == buf1 ) ) {
           if( type != CD )
             return info = cdm, fseek( in, start + cdi - 7, SEEK_SET ), CD;
           cda = ( data[12] << 16 ) + ( data[13] << 8 ) + data[14];
@@ -3775,7 +3775,7 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
         } else
           cdi = 0;
       }
-      if( !cdi && type == CD )
+      if( (cdi == 0) && type == CD )
         return fseek( in, start + i - p - 7, SEEK_SET ), DEFAULT;
     }
     if( type == CD )
@@ -3786,30 +3786,30 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
     // Detect end by any code other than RST0-RST7 (FF D9-D7) or
     // a byte stuff (FF 00).
 
-    if( !soi && i >= 3 && ( buf0 & 0xffffff00 ) == 0xffd8ff00
+    if( (soi == 0) && i >= 3 && ( buf0 & 0xffffff00 ) == 0xffd8ff00
         && ( ( U8 ) buf0 == 0xC0 || ( U8 ) buf0 == 0xC4 || ( ( U8 ) buf0 >= 0xDB && ( U8 ) buf0 <= 0xFE ) ) )
       soi = i, app = i + 2, sos = sof = 0;
-    if( soi ) {
+    if( soi != 0 ) {
       if( app == i && ( buf0 >> 24 ) == 0xff && ( ( buf0 >> 16 ) & 0xff ) > 0xc0 && ( ( buf0 >> 16 ) & 0xff ) < 0xff )
         app = i + ( buf0 & 0xffff ) + 2;
       if( app < i && ( buf1 & 0xff ) == 0xff && ( buf0 & 0xff0000ff ) == 0xc0000008 )
         sof = i;
-      if( sof && sof > soi && i - sof < 0x1000 && ( buf0 & 0xffff ) == 0xffda ) {
+      if( (sof != 0) && sof > soi && i - sof < 0x1000 && ( buf0 & 0xffff ) == 0xffda ) {
         sos = i;
         if( type != JPEG )
           return fseek( in, start + soi - 3, SEEK_SET ), JPEG;
       }
-      if( i - soi > 0x40000 && !sos )
+      if( i - soi > 0x40000 && (sos == 0) )
         soi = 0;
     }
-    if( type == JPEG && sos && i > sos && ( buf0 & 0xff00 ) == 0xff00 && ( buf0 & 0xff ) != 0
+    if( type == JPEG && (sos != 0) && i > sos && ( buf0 & 0xff00 ) == 0xff00 && ( buf0 & 0xff ) != 0
         && ( buf0 & 0xf8 ) != 0xd0 )
       return DEFAULT;
 
     // Detect .wav file header
     if( buf0 == 0x52494646 )
       wavi = i, wavm = 0;
-    if( wavi ) {
+    if( wavi != 0 ) {
       const int p = i - wavi;
       if( p == 4 )
         wavsize = bswap( buf0 );
@@ -3835,7 +3835,7 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
     // Detect .aiff file header
     if( buf0 == 0x464f524d )
       aiff = i, aiffs = 0; // FORM
-    if( aiff ) {
+    if( aiff != 0 ) {
       const int p = i - aiff;
       if( p == 12 && ( buf1 != 0x41494646 || buf0 != 0x434f4d4d ) )
         aiff = 0; // AIFF COMM
@@ -3880,7 +3880,7 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
     // Detect .s3m file header
     if( buf0 == 0x1a100000 )
       s3mi = i, s3mno = s3mni = 0;
-    if( s3mi ) {
+    if( s3mi != 0 ) {
       const int p = i - s3mi;
       if( p == 4 )
         s3mno = bswap( buf0 ) & 0xffff, s3mni = ( bswap( buf0 ) >> 16 );
@@ -3908,7 +3908,7 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
               sam_end = ofs * 16 + len;
           }
         }
-        if( ok && sam_start < ( 1 << 16 ) )
+        if( (ok != 0) && sam_start < ( 1 << 16 ) )
           AUD_DET( AUDIO, s3mi - 31, sam_start, sam_end - sam_start, 0 );
         s3mi = 0;
         fseek( in, savedpos, SEEK_SET );
@@ -3918,7 +3918,7 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
     // Detect .bmp image
     if( ( buf0 & 0xffff ) == 16973 )
       imgbpp = bmpx = bmpy = bmpof = 0, bmp = i; //possible 'BM'
-    if( bmp ) {
+    if( bmp != 0 ) {
       const int p = i - bmp;
       if( p == 12 )
         bmpof = bswap( buf0 );
@@ -3949,18 +3949,18 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
       if( pgmn >= 4 && pgmn <= 6 )
         pgm = i, pgm_ptr = pgmw = pgmh = pgmc = pgmcomment = 0;
     }
-    if( pgm ) {
+    if( pgm != 0 ) {
       if( i - pgm == 1 && c == 0x23 )
         pgmcomment = 1; //pgm comment
-      if( !pgmcomment && pgm_ptr ) {
+      if( (pgmcomment == 0) && (pgm_ptr != 0) ) {
         int s = 0;
-        if( c == 0x20 && !pgmw )
+        if( c == 0x20 && (pgmw == 0) )
           s = 1;
-        else if( c == 0x0a && !pgmh )
+        else if( c == 0x0a && (pgmh == 0) )
           s = 2;
-        else if( c == 0x0a && !pgmc && pgmn != 4 )
+        else if( c == 0x0a && (pgmc == 0) && pgmn != 4 )
           s = 3;
-        if( s ) {
+        if( s != 0 ) {
           pgm_buf[pgm_ptr++] = 0;
           int v = atoi( pgm_buf );
           if( s == 1 )
@@ -3975,24 +3975,24 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
             pgm_ptr = 0;
         }
       }
-      if( !pgmcomment )
+      if( pgmcomment == 0 )
         pgm_buf[pgm_ptr++] = c;
       if( pgm_ptr >= 32 )
         pgm = 0;
-      if( pgmcomment && c == 0x0a )
+      if( (pgmcomment != 0) && c == 0x0a )
         pgmcomment = 0;
-      if( pgmw && pgmh && !pgmc && pgmn == 4 )
+      if( (pgmw != 0) && (pgmh != 0) && (pgmc == 0) && pgmn == 4 )
         IMG_DET( IMAGE1, pgm - 2, i - pgm + 3, ( pgmw + 7 ) / 8, pgmh );
-      if( pgmw && pgmh && pgmc && pgmn == 5 )
+      if( (pgmw != 0) && (pgmh != 0) && (pgmc != 0) && pgmn == 5 )
         IMG_DET( IMAGE8, pgm - 2, i - pgm + 3, pgmw, pgmh );
-      if( pgmw && pgmh && pgmc && pgmn == 6 )
+      if( (pgmw != 0) && (pgmh != 0) && (pgmc != 0) && pgmn == 6 )
         IMG_DET( IMAGE24, pgm - 2, i - pgm + 3, pgmw * 3, pgmh );
     }
 
     // Detect .rgb image
     if( ( buf0 & 0xffff ) == 0x01da )
       rgbi = i, rgbx = rgby = 0;
-    if( rgbi ) {
+    if( rgbi != 0 ) {
       const int p = i - rgbi;
       if( p == 1 && c != 0 )
         rgbi = 0;
@@ -4006,7 +4006,7 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
         rgby = buf0 & 0xffff, rgbi = ( rgby == 0 ? 0 : rgbi );
       else if( p == 10 ) {
         int z = buf0 & 0xffff;
-        if( rgbx && rgby && ( z == 1 || z == 3 || z == 4 ) )
+        if( (rgbx != 0) && (rgby != 0) && ( z == 1 || z == 3 || z == 4 ) )
           IMG_DET( IMAGE8, rgbi - 1, 512, rgbx, rgby * z );
         rgbi = 0;
       }
@@ -4040,20 +4040,20 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
             else if( tag == 259 )
               tifc = tagval; // 1 = no compression
             else if( tag == 273 && tagfmt == 4 )
-              tifofs = tagval, tifofval = ( taglen <= 1 );
+              tifofs = tagval, tifofval = static_cast<int>( taglen <= 1 );
             else if( tag == 277 )
               tifz = tagval; // components per pixel
           }
         }
       }
-      if( tifx && tify && tifzb && ( tifz == 1 || tifz == 3 ) && ( tifc == 1 ) && ( tifofs && tifofs + i < n ) ) {
-        if( !tifofval ) {
+      if( (tifx != 0) && (tify != 0) && (tifzb != 0) && ( tifz == 1 || tifz == 3 ) && ( tifc == 1 ) && ( (tifofs != 0) && tifofs + i < n ) ) {
+        if( tifofval == 0 ) {
           fseek( in, start + i + tifofs - 7, SEEK_SET );
           for( int j = 0; j < 4; j++ )
             b[j] = getc( in );
           tifofs = b[0] + ( b[1] << 8 ) + ( b[2] << 16 ) + ( b[3] << 24 );
         }
-        if( tifofs && tifofs < ( 1 << 18 ) && tifofs + i < n ) {
+        if( (tifofs != 0) && tifofs < ( 1 << 18 ) && tifofs + i < n ) {
           if( tifz == 1 && tifzb == 1 )
             IMG_DET( IMAGE1, i - 7, tifofs, ( ( tifx - 1 ) >> 3 ) + 1, tify );
           else if( tifz == 1 && tifzb == 8 )
@@ -4072,11 +4072,11 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
       tga = i, tgax = tgay, tgaz = 24, tgat = 2;
     else if( buf1 == 0x00000300 && buf0 == 0x00000000 )
       tga = i, tgax = tgay, tgaz = 8, tgat = 3;
-    if( tga ) {
+    if( tga != 0 ) {
       if( i - tga == 8 )
         tga = ( buf1 == 0 ? tga : 0 ), tgax = ( bswap( buf0 ) & 0xffff ), tgay = ( bswap( buf0 ) >> 16 );
       else if( i - tga == 10 ) {
-        if( tgaz == ( int ) ( ( buf0 & 0xffff ) >> 8 ) && tgax && tgay ) {
+        if( tgaz == ( int ) ( ( buf0 & 0xffff ) >> 8 ) && (tgax != 0) && (tgay != 0) ) {
           if( tgat == 1 )
             IMG_DET( IMAGE8, tga - 7, 18 + 256 * 3, tgax, tgay );
           else if( tgat == 2 )
@@ -4094,11 +4094,11 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
       if( c == 0x2c || c == 0x21 )
         gif = 2, gifi = 2;
     }
-    if( !gif && ( buf1 & 0xffff ) == 0x4749 && ( buf0 == 0x46383961 || buf0 == 0x46383761 ) )
+    if( (gif == 0) && ( buf1 & 0xffff ) == 0x4749 && ( buf0 == 0x46383961 || buf0 == 0x46383761 ) )
       gif = 1, gifi = i + 5;
-    if( gif ) {
+    if( gif != 0 ) {
       if( gif == 1 && i == gifi )
-        gif = 2, gifi = i + 5 + ( ( c & 128 ) ? ( 3 * ( 2 << ( c & 7 ) ) ) : 0 );
+        gif = 2, gifi = i + 5 + ( ( c & 128 ) != 0 ? ( 3 * ( 2 << ( c & 7 ) ) ) : 0 );
       if( gif == 2 && i == gifi ) {
         if( ( buf0 & 0xff0000 ) == 0x210000 )
           gif = 5, gifi = i;
@@ -4110,13 +4110,13 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
       if( gif == 3 && i == gifi + 6 )
         gifw = ( bswap( buf0 ) & 0xffff );
       if( gif == 3 && i == gifi + 7 )
-        gif = 4, gifc = gifb = 0, gifa = gifi = i + 2 + ( ( c & 128 ) ? ( 3 * ( 2 << ( c & 7 ) ) ) : 0 );
+        gif = 4, gifc = gifb = 0, gifa = gifi = i + 2 + ( ( c & 128 ) != 0 ? ( 3 * ( 2 << ( c & 7 ) ) ) : 0 );
       if( gif == 4 && i == gifi ) {
-        if( c > 0 && gifb && gifc != gifb )
+        if( c > 0 && (gifb != 0) && gifc != gifb )
           gifw = 0;
         if( c > 0 )
           gifb = gifc, gifc = c, gifi += c + 1;
-        else if( !gifw )
+        else if( gifw == 0 )
           gif = 2, gifi = i + 3;
         else
           return fseek( in, start + gifa - 1, SEEK_SET ), detd = i - gifa + 2, info = gifw, dett = GIF;
@@ -4179,11 +4179,11 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
           b64s = 0;
       } else if( b64s == 2 && ( buf0 & 0xffffff ) == 0x3d0d0a )
         i -= 1, b64s = 5; // '=' or '=='
-      else if( b64s == 2 && !( isalnum( c ) || c == '+' || c == '/' || c == 10 || c == 13 || c == '=' ) )
+      else if( b64s == 2 && !( (isalnum( c ) != 0) || c == '+' || c == '/' || c == 10 || c == 13 || c == '=' ) )
         b64s = 0;
       if( b64line > 0 && ( b64line <= 4 || b64line > 255 ) )
         b64s = 0;
-      if( b64s == 3 && i >= b64i && !( isalnum( c ) || c == '+' || c == '/' || c == '=' ) )
+      if( b64s == 3 && i >= b64i && !( (isalnum( c ) != 0) || c == '+' || c == '/' || c == '=' ) )
         b64s = 4;
       if( ( b64s == 4 && i - b64i > 128 ) || ( b64s == 5 && i - b64i > 512 && i - b64i < ( 1 << 27 ) ) )
         return fseek( in, start + b64i, SEEK_SET ), detd = i - b64i, BASE64;
@@ -4210,8 +4210,8 @@ void encode_cd( FILE *in, FILE *out, int len, int info ) {
       if( info == 3 )
         blk[15] = 3;
       if( offset == 0 )
-        fwrite( &blk[12], 1, 4 + 4 * ( blk[15] != 1 ), out );
-      fwrite( &blk[16 + 8 * ( blk[15] != 1 )], 1, 2048 + 276 * ( info == 3 ), out );
+        fwrite( &blk[12], 1, 4 + 4 * static_cast<int>( blk[15] != 1 ), out );
+      fwrite( &blk[16 + 8 * static_cast<int>( blk[15] != 1 )], 1, 2048 + 276 * static_cast<int>( info == 3 ), out );
       if( offset + BLOCK * 2 > len && blk[15] != 1 )
         fwrite( &blk[16], 1, 4, out );
     }
@@ -4235,12 +4235,12 @@ int decode_cd( FILE *in, int size, FILE *out, FMode mode, int &diffFound ) {
       fread( blk + 12, 4, 1, in );
       if( blk[15] != 1 )
         fread( blk + 16, 4, 1, in );
-      bsize = 2048 + ( blk[15] == 3 ) * 276;
-      i += 4 * ( blk[15] != 1 ) + 4;
+      bsize = 2048 + static_cast<int>( blk[15] == 3 ) * 276;
+      i += 4 * static_cast<int>( blk[15] != 1 ) + 4;
     } else {
       a = ( blk[12] << 16 ) + ( blk[13] << 8 ) + blk[14];
     }
-    fread( blk + 16 + ( blk[15] != 1 ) * 8, bsize, 1, in );
+    fread( blk + 16 + static_cast<int>( blk[15] != 1 ) * 8, bsize, 1, in );
     i += bsize;
     if( bsize > 2048 )
       blk[15] = 3;
@@ -4253,7 +4253,7 @@ int decode_cd( FILE *in, int size, FILE *out, FMode mode, int &diffFound ) {
       fwrite( blk, BLOCK, 1, out );
     else if( mode == FCOMPARE )
       for( int j = 0; j < BLOCK; ++j )
-        if( blk[j] != getc( out ) && !diffFound )
+        if( blk[j] != getc( out ) && (diffFound == 0) )
           diffFound = i2 + j + 1;
     i2 += BLOCK;
   }
@@ -4287,14 +4287,14 @@ int decode_bmp( Encoder &en, int size, int width, FILE *out, FMode mode, int &di
         fputc( b - r, out );
         fputc( b, out );
         fputc( b - g, out );
-        if( !j && !( i & 0xf ) )
+        if( (j == 0) && (( i & 0xf ) == 0) )
           en.print_status();
       } else if( mode == FCOMPARE ) {
-        if( ( ( b - r ) & 255 ) != getc( out ) && !diffFound )
+        if( ( ( b - r ) & 255 ) != getc( out ) && (diffFound == 0) )
           diffFound = p + 1;
-        if( b != getc( out ) && !diffFound )
+        if( b != getc( out ) && (diffFound == 0) )
           diffFound = p + 2;
-        if( ( ( b - g ) & 255 ) != getc( out ) && !diffFound )
+        if( ( ( b - g ) & 255 ) != getc( out ) && (diffFound == 0) )
           diffFound = p + 3;
         p += 3;
       }
@@ -4303,7 +4303,7 @@ int decode_bmp( Encoder &en, int size, int width, FILE *out, FMode mode, int &di
       if( mode == FDECOMPRESS ) {
         fputc( en.decompress(), out );
       } else if( mode == FCOMPARE ) {
-        if( en.decompress() != getc( out ) && !diffFound )
+        if( en.decompress() != getc( out ) && (diffFound == 0) )
           diffFound = p + j + 1;
       }
     }
@@ -4378,9 +4378,9 @@ int decode_exe( Encoder &en, int size, FILE *out, FMode mode, int &diffFound ) {
     }
     if( mode == FDECOMPRESS )
       putc( c[5], out );
-    else if( mode == FCOMPARE && c[5] != getc( out ) && !diffFound )
+    else if( mode == FCOMPARE && c[5] != getc( out ) && (diffFound == 0) )
       diffFound = offset - 6 + 1;
-    if( mode == FDECOMPRESS && !( offset & 0xfff ) )
+    if( mode == FDECOMPRESS && (( offset & 0xfff ) == 0) )
       en.print_status();
     offset++;
   }
@@ -4410,7 +4410,7 @@ int encode_zlib( FILE *in, FILE *out, int len ) {
   main_strm.next_in = Z_NULL;
   main_strm.avail_in = 0;
   if( zlib_inflateInit( &main_strm, zh ) != Z_OK )
-    return false;
+    return 0;
   for( int i = 0; i < 81; i++ ) {
     memlevel = ( i % 9 ) + 1;
     clevel = ( i / 9 ) + 1;
@@ -4488,7 +4488,7 @@ int encode_zlib( FILE *in, FILE *out, int len ) {
   }
   inflateEnd( &main_strm );
   if( minCount == LIMIT )
-    return false;
+    return 0;
 
   // Step 3 - write parameters, differences and precompressed (inflated) data
   fputc( diffCount[index], out );
@@ -4512,7 +4512,7 @@ int encode_zlib( FILE *in, FILE *out, int len ) {
   main_strm.next_in = Z_NULL;
   main_strm.avail_in = 0;
   if( zlib_inflateInit( &main_strm, zh ) != Z_OK )
-    return false;
+    return 0;
   for( int i = 0; i < len; i += BLOCK ) {
     unsigned int blsize = min( len - i, BLOCK );
     fread( &zin[0], 1, blsize, in );
@@ -4527,7 +4527,7 @@ int encode_zlib( FILE *in, FILE *out, int len ) {
     if( main_ret != Z_BUF_ERROR && main_ret != Z_STREAM_END )
       break;
   }
-  return main_ret == Z_STREAM_END;
+  return static_cast<int>(main_ret == Z_STREAM_END);
 }
 
 int decode_zlib( FILE *in, int size, FILE *out, FMode mode, int &diffFound ) {
@@ -4587,7 +4587,7 @@ int decode_zlib( FILE *in, int size, FILE *out, FMode mode, int &diffFound ) {
         fwrite( &zout[0], 1, have, out );
       else if( mode == FCOMPARE )
         for( int j = 0; j < have; j++ )
-          if( zout[j] != getc( out ) && !diffFound )
+          if( zout[j] != getc( out ) && (diffFound == 0) )
             diffFound = recpos + j + 1;
       recpos += have;
 
@@ -4597,7 +4597,7 @@ int decode_zlib( FILE *in, int size, FILE *out, FMode mode, int &diffFound ) {
     if( mode == FDECOMPRESS )
       fputc( diffByte[diffIndex], out );
     else if( mode == FCOMPARE )
-      if( diffByte[diffIndex] != getc( out ) && !diffFound )
+      if( diffByte[diffIndex] != getc( out ) && (diffFound == 0) )
         diffFound = recpos + 1;
     diffIndex++;
     recpos++;
@@ -4611,7 +4611,7 @@ int decode_zlib( FILE *in, int size, FILE *out, FMode mode, int &diffFound ) {
 //
 static const char table1[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 bool isbase64( unsigned char c ) {
-  return ( isalnum( c ) || ( c == '+' ) || ( c == '/' ) || ( c == 10 ) || ( c == 13 ) );
+  return ( (isalnum( c ) != 0) || ( c == '+' ) || ( c == '/' ) || ( c == 10 ) || ( c == 13 ) );
 }
 
 int decode_base64( FILE *in, FILE *out, FMode mode, int &diffFound ) {
@@ -4629,7 +4629,7 @@ int decode_base64( FILE *in, FILE *out, FMode mode, int &diffFound ) {
   outlen += ( ( tlf & 63 ) << 24 );
   U8 *ptr, *fptr;
   ptr = ( U8 * ) calloc( ( outlen >> 2 ) * 4 + 10, 1 );
-  if( !ptr )
+  if( ptr == nullptr )
     quit( "Out of memory (d_B64)" );
   fptr = &ptr[0];
   tlf = ( tlf & 192 );
@@ -4644,14 +4644,14 @@ int decode_base64( FILE *in, FILE *out, FMode mode, int &diffFound ) {
     len = 0;
     for( i = 0; i < 3; i++ ) {
       inn[i] = getc( in );
-      if( !feof( in ) ) {
+      if( feof( in ) == 0 ) {
         len++;
         len1++;
       } else {
         inn[i] = 0;
       }
     }
-    if( len ) {
+    if( len != 0 ) {
       U8 in0, in1, in2;
       in0 = inn[0], in1 = inn[1], in2 = inn[2];
       fptr[fle++] = ( table1[in0 >> 2] );
@@ -4661,8 +4661,8 @@ int decode_base64( FILE *in, FILE *out, FMode mode, int &diffFound ) {
       blocksout++;
     }
     if( blocksout >= ( linesize / 4 ) && linesize != 0 ) { //no lf if linesize==0
-      if( blocksout && !feof( in ) && fle <= outlen ) {    //no lf if eof
-        if( tlf )
+      if( (blocksout != 0) && (feof( in ) == 0) && fle <= outlen ) {    //no lf if eof
+        if( tlf != 0 )
           fptr[fle++] = ( tlf );
         else
           fptr[fle++] = 13, fptr[fle++] = 10;
@@ -4678,7 +4678,7 @@ int decode_base64( FILE *in, FILE *out, FMode mode, int &diffFound ) {
     for( i = 0; i < outlen; i++ ) {
       U8 b = fptr[i];
 
-      if( b != fgetc( out ) && !diffFound )
+      if( b != fgetc( out ) && (diffFound == 0) )
         diffFound = ftell( out );
     }
   }
@@ -4688,7 +4688,7 @@ int decode_base64( FILE *in, FILE *out, FMode mode, int &diffFound ) {
 
 inline char valueb( char c ) {
   const char *p = strchr( table1, c );
-  if( p ) {
+  if( p != nullptr ) {
     return p - table1;
   } else {
     return 0;
@@ -4706,7 +4706,7 @@ void encode_base64( FILE *in, FILE *out, int len ) {
   U8 *ptr, *fptr;
   int b64mem = ( len >> 2 ) * 3 + 10;
   ptr = ( U8 * ) calloc( b64mem, 1 );
-  if( !ptr )
+  if( ptr == nullptr )
     quit( "Out of memory (e_B64)" );
   fptr = &ptr[0];
   int olen = 5;
@@ -4734,7 +4734,7 @@ void encode_base64( FILE *in, FILE *out, int len ) {
     }
   }
 
-  if( i ) {
+  if( i != 0 ) {
     for( j = i; j < 4; j++ )
       src[j] = 0;
 
@@ -4787,18 +4787,18 @@ int encode_gif( FILE *in, FILE *out, int len ) {
           int code = buf & ( ( 1 << bits ) - 1 );
           buf >>= bits;
           shift -= bits;
-          if( !bsize && code != ( 1 << codesize ) ) {
+          if( (bsize == 0) && code != ( 1 << codesize ) ) {
             hdrsize += 4;
             fputc( 0, out );
             fputc( 0, out );
             fputc( 0, out );
             fputc( 0, out );
           }
-          if( !bsize )
+          if( bsize == 0 )
             bsize = blocksize;
           if( code == ( 1 << codesize ) ) {
             if( maxcode > ( 1 << codesize ) + 1 ) {
-              if( clearpos && clearpos != 69631 - maxcode )
+              if( (clearpos != 0) && clearpos != 69631 - maxcode )
                 return 0;
               clearpos = 69631 - maxcode;
             }
@@ -4838,12 +4838,12 @@ int encode_gif( FILE *in, FILE *out, int len ) {
                     }
                   if( diff ) {
                     hdrsize += 4;
-                    j = diffpos - size - ( code == maxcode );
+                    j = diffpos - size - static_cast<int>( code == maxcode );
                     fputc( ( j >> 24 ) & 255, out );
                     fputc( ( j >> 16 ) & 255, out );
                     fputc( ( j >> 8 ) & 255, out );
                     fputc( j & 255, out );
-                    diffpos = size + ( code == maxcode );
+                    diffpos = size + static_cast<int>( code == maxcode );
                   }
                 }
               }
@@ -4864,7 +4864,7 @@ int encode_gif( FILE *in, FILE *out, int len ) {
   fputc( ( clearpos >> 8 ) & 255, out );
   fputc( clearpos & 255, out );
   fseek( out, diffpos, SEEK_SET );
-  return ftell( in ) - beginin == len - 1;
+  return static_cast<int>(ftell( in ) - beginin == len - 1);
 }
 
 #define gif_write_block( count )                                                                                       \
@@ -4918,7 +4918,7 @@ int decode_gif( FILE *in, int size, FILE *out, FMode mode, int &diffFound ) {
   if( mode == FDECOMPRESS )
     fputc( codesize, out );
   else if( mode == FCOMPARE )
-    if( codesize != getc( out ) && !diffFound )
+    if( codesize != getc( out ) && (diffFound == 0) )
       diffFound = 1;
   if( diffcount == 0 || diffpos[0] != 0 )
     gif_write_code( 1 << codesize ) else curdiff++;
@@ -4957,7 +4957,7 @@ int decode_gif( FILE *in, int size, FILE *out, FMode mode, int &diffFound ) {
   if( mode == FDECOMPRESS )
     fputc( 0, out );
   else if( mode == FCOMPARE )
-    if( 0 != getc( out ) && !diffFound )
+    if( 0 != getc( out ) && (diffFound == 0) )
       diffFound = outsize + 1;
   return outsize + 1;
 }
@@ -4978,7 +4978,7 @@ void direct_encode_block( Filetype type, FILE *in, int len, Encoder &en, int inf
   }
   printf( "Compressing... " );
   for( int j = 0; j < len; ++j ) {
-    if( !( j & 0xfff ) )
+    if( ( j & 0xfff ) == 0 )
       en.print_status( j, len );
     en.compress( getc( in ) );
   }
@@ -4991,7 +4991,7 @@ void transform_encode_block( Filetype type, FILE *in, int len, Encoder &en, int 
                              float p2, long begin ) {
   if( type == EXE || type == CD || type == IMAGE24 || type == ZLIB || type == BASE64 || type == GIF ) {
     FILE *tmp = tmpfile(); // temporary encoded file
-    if( !tmp )
+    if( tmp == nullptr )
       perror( "tmpfile" ), quit();
     int diffFound = 0;
     if( type == IMAGE24 )
@@ -5001,14 +5001,14 @@ void transform_encode_block( Filetype type, FILE *in, int len, Encoder &en, int 
     else if( type == CD )
       encode_cd( in, tmp, len, info );
     else if( type == ZLIB )
-      diffFound = encode_zlib( in, tmp, len ) ? 0 : 1;
+      diffFound = encode_zlib( in, tmp, len ) != 0 ? 0 : 1;
     else if( type == BASE64 )
       encode_base64( in, tmp, len );
     else if( type == GIF )
-      diffFound = encode_gif( in, tmp, len ) ? 0 : 1;
+      diffFound = encode_gif( in, tmp, len ) != 0 ? 0 : 1;
     const long tmpsize = ftell( tmp );
     fseek( tmp, tmpsize, SEEK_SET );
-    if( !diffFound ) {
+    if( diffFound == 0 ) {
       rewind( tmp );
       en.setFile( tmp );
       fseek( in, begin, SEEK_SET );
@@ -5026,7 +5026,7 @@ void transform_encode_block( Filetype type, FILE *in, int len, Encoder &en, int 
         decode_gif( tmp, tmpsize, in, FCOMPARE, diffFound );
     }
     // Test fails, compress without transform
-    if( diffFound || fgetc( tmp ) != EOF ) {
+    if( (diffFound != 0) || fgetc( tmp ) != EOF ) {
       printf( "Transform fails at %d, skipping...\n", diffFound - 1 );
       fseek( in, begin, SEEK_SET );
       direct_encode_block( DEFAULT, in, len, en );
@@ -5072,7 +5072,7 @@ void compressRecursive( FILE *in, long n, Encoder &en, char *blstr, int it, floa
   long begin = ftell( in ), end0 = begin + n;
   char b2[32];
   strcpy( b2, blstr );
-  if( b2[0] )
+  if( b2[0] != 0 )
     strcat( b2, "-" );
   if( it == 5 ) {
     direct_encode_block( DEFAULT, in, n, en );
@@ -5120,13 +5120,13 @@ void compress( const char *filename, long filesize, Encoder &en ) {
   assert( en.getMode() == COMPRESS );
   assert( filename && filename[0] );
   FILE *in = fopen( filename, "rb" );
-  if( !in )
+  if( in == nullptr )
     perror( filename ), quit();
   long start = en.size();
   printf( "Block segmentation:\n" );
   char blstr[32] = "";
   compressRecursive( in, filesize, en, blstr );
-  if( in )
+  if( in != nullptr )
     fclose( in );
   printf( "Compressed from %ld to %ld bytes.\n", filesize, en.size() - start );
 }
@@ -5173,7 +5173,7 @@ int decompressRecursive( FILE *out, long n, Encoder &en, FMode mode, int it = 0 
       len = decode_exe( en, len, out, mode, diffFound );
     else if( type == CD || type == ZLIB || type == GIF || type == BASE64 ) {
       tmp = tmpfile();
-      if( !tmp )
+      if( tmp == nullptr )
         perror( "tmpfile" ), quit();
       decompressRecursive( tmp, len, en, FDECOMPRESS, it + 1 );
       if( mode != FDISCARD ) {
@@ -5190,12 +5190,12 @@ int decompressRecursive( FILE *out, long n, Encoder &en, FMode mode, int it = 0 
       fclose( tmp );
     } else {
       for( int j = 0; j < len; ++j ) {
-        if( !( j & 0xfff ) )
+        if( ( j & 0xfff ) == 0 )
           en.print_status();
         if( mode == FDECOMPRESS )
           putc( en.decompress(), out );
         else if( mode == FCOMPARE ) {
-          if( en.decompress() != fgetc( out ) && !diffFound ) {
+          if( en.decompress() != fgetc( out ) && (diffFound == 0) ) {
             mode = FDISCARD;
             diffFound = i + j + 1;
           }
@@ -5216,14 +5216,14 @@ void decompress( const char *filename, long filesize, Encoder &en ) {
 
   // Test if output file exists.  If so, then compare.
   FILE *f = fopen( filename, "rb" );
-  if( f )
+  if( f != nullptr )
     mode = FCOMPARE, printf( "Comparing" );
   else {
     // Create file
     f = fopen( filename, "wb" );
-    if( !f ) { // Try creating directories in path and try again
+    if( f == nullptr ) { // Try creating directories in path and try again
       String path( filename );
-      for( int i = 0; path[i]; ++i ) {
+      for( int i = 0; path[i] != 0; ++i ) {
         if( path[i] == '/' || path[i] == '\\' ) {
           char savechar = path[i];
           path[i] = 0;
@@ -5234,7 +5234,7 @@ void decompress( const char *filename, long filesize, Encoder &en ) {
       }
       f = fopen( filename, "wb" );
     }
-    if( !f )
+    if( f == nullptr )
       mode = FDISCARD, printf( "Skipping" );
     else
       printf( "Extracting" );
@@ -5243,15 +5243,15 @@ void decompress( const char *filename, long filesize, Encoder &en ) {
 
   // Decompress/Compare
   int r = decompressRecursive( f, filesize, en, mode );
-  if( mode == FCOMPARE && !r && getc( f ) != EOF )
+  if( mode == FCOMPARE && (r == 0) && getc( f ) != EOF )
     printf( "file is longer\n" );
-  else if( mode == FCOMPARE && r )
+  else if( mode == FCOMPARE && (r != 0) )
     printf( "differ at %d\n", r - 1 );
   else if( mode == FCOMPARE )
     printf( "identical\n" );
   else
     printf( "done   \n" );
-  if( f )
+  if( f != nullptr )
     fclose( f );
 }
 
@@ -5271,7 +5271,7 @@ void decompress( const char *filename, long filesize, Encoder &en ) {
 int putsize( String &archive, String &s, const char *fname, int base ) {
   int result = 0;
   FILE *f = fopen( fname, "rb" );
-  if( f ) {
+  if( f != nullptr ) {
     fseek( f, 0, SEEK_END );
     long len = ftell( f );
     if( len >= 0 ) {
@@ -5369,7 +5369,7 @@ int main( int argc, char **argv ) {
     // Get option
     bool doExtract = false; // -d option
     bool doList = false;    // -l option
-    if( argc > 1 && argv[1][0] == '-' && argv[1][1] && !argv[1][2] ) {
+    if( argc > 1 && argv[1][0] == '-' && (argv[1][1] != 0) && (argv[1][2] == 0) ) {
       if( argv[1][1] >= '0' && argv[1][1] <= '8' )
         level = argv[1][1] - '0';
       else if( argv[1][1] == 'd' )
@@ -5426,7 +5426,7 @@ int main( int argc, char **argv ) {
       const int prognamesize = strlen( PROGNAME );
       const int arg1size = strlen( argv[1] );
       if( arg1size > prognamesize + 1 && argv[1][arg1size - prognamesize - 1] == '.'
-          && equals( PROGNAME, argv[1] + arg1size - prognamesize ) ) {
+          && (equals( PROGNAME, argv[1] + arg1size - prognamesize ) != 0) ) {
         mode = DECOMPRESS;
       } else if( doExtract || doList )
         mode = DECOMPRESS;
@@ -5458,7 +5458,7 @@ int main( int argc, char **argv ) {
         if( base == 0 && len >= 2 && name[1] == ':' )
           base = 2; // chop "C:"
         int expanded = expand( header_string, filenames, name.c_str(), base );
-        if( !expanded && ( i > 1 || argc == 2 ) )
+        if( (expanded == 0) && ( i > 1 || argc == 2 ) )
           printf( "%s: not found, skipping...\n", name.c_str() );
         files += expanded;
       }
@@ -5468,7 +5468,7 @@ int main( int argc, char **argv ) {
       if( files < 1 )
         quit( "Nothing to compress\n" );
       archive = fopen( archiveName.c_str(), "wb+" );
-      if( !archive )
+      if( archive == nullptr )
         perror( archiveName.c_str() ), quit();
       fprintf( archive, PROGNAME "%c%d", 0, level );
       printf( "Creating archive %s with %d file(s)...\n", archiveName.c_str(), files );
@@ -5477,7 +5477,7 @@ int main( int argc, char **argv ) {
     // Decompress: open archive for reading and store file names and sizes
     if( mode == DECOMPRESS ) {
       archive = fopen( archiveName.c_str(), "rb+" );
-      if( !archive )
+      if( archive == nullptr )
         perror( archiveName.c_str() ), quit();
 
       // Check for proper format and get option
@@ -5489,7 +5489,7 @@ int main( int argc, char **argv ) {
         i++;
       }
       header[i] = 0;
-      if( strncmp( header.c_str(), PROGNAME "\0", strlen( PROGNAME ) + 1 ) )
+      if( strncmp( header.c_str(), PROGNAME "\0", strlen( PROGNAME ) + 1 ) != 0 )
         printf( "%s: not a %s file\n", archiveName.c_str(), PROGNAME ), quit();
       level = header[strlen( PROGNAME ) + 1] - '0';
       if( level < 0 || level > 8 )
@@ -5596,7 +5596,7 @@ int main( int argc, char **argv ) {
           dir = "."; // "/" not found
       }
       dir = dir.c_str();
-      if( dir[0] && ( dir.size() != 3 || dir[1] != ':' ) )
+      if( (dir[0] != 0) && ( dir.size() != 3 || dir[1] != ':' ) )
         dir += "/";
       for( int i = 0; i < files; ++i ) {
         String out( dir.c_str() );
@@ -5608,7 +5608,7 @@ int main( int argc, char **argv ) {
     if( !doList )
       programChecker.print();
   } catch( const char *s ) {
-    if( s )
+    if( s != nullptr )
       printf( "%s\n", s );
   }
   if( pause ) {

@@ -668,7 +668,7 @@ public:
     return 4096 * ( table[state].n0 + table[state].n1 ) + state;
   }
   void add( int y ) {
-    if( y ) {
+    if( y != 0 ) {
       if( state < 214 || rnd() <= table[state].p1 )
         state = table[state].s11;
       else
@@ -715,9 +715,9 @@ public:
   void init() {
     lon = 1;
     po = bp = 0;
-    N = 1 << ( 16 + MEM + ( MEM > 6 ) );
+    N = 1 << ( 16 + MEM + static_cast<int>( MEM > 6 ) );
     buf = ( U8 * ) calloc( N--, 1 );
-    if( !buf )
+    if( buf == nullptr )
       handler();
     buf[0] = 1;
     memset( lpos, 0, 4096 );
@@ -735,10 +735,10 @@ public:
     ++bp;
     if( ( lon = lon * 2 + y ) > 15 ) {
       lon = 1;
-      if( !( bp &= 7 ) ) {
+      if( ( bp &= 7 ) == 0 ) {
         lpos[++lidx[r] &= 3][r] = po++;
         buf[po & N] = 1;
-        z += ( l8 > 127 );
+        z += static_cast<int>( l8 > 127 );
       }
     }
   }
@@ -783,7 +783,7 @@ class Hashtable {
 public:
   Hashtable( U32 n ) : N( n ) {
     U8 *p = ( U8 * ) calloc( ( 17 << N ) + 64, 1 );
-    if( !p )
+    if( p == nullptr )
       handler();
     p += 64 - ( ( long ) p & 63 );
     table = ( HashElement * ) p;
@@ -798,7 +798,7 @@ public:
     for( ; i < lo + 4; i++ )
       if( *( ( short * ) &table[i].cs[0] ) == cs )
         break;
-      else if( !table[i].c[0].priority() ) {
+      else if( table[i].c[0].priority() == 0 ) {
         *( ( short * ) &table[i].cs[0] ) = cs;
         break;
       }
@@ -823,7 +823,7 @@ U32 bc0[64], bc1[64], mxrs[64], mxwt[8][64];
 struct SSEContext {
   U8 c, n;
   int p() {
-    return 4096 * c / ( n + ( !n ) );
+    return 4096 * c / ( n + static_cast<int>( n == 0u ) );
   }
   void upd( int y ) {
     c += y;
@@ -917,7 +917,7 @@ public:
     ssep /= 32;
     wt = sse[c][ssep].p() * ( 32 - wt ) + sse[c][ssep + 1].p() * wt;
     if( fsize > 300000 ) {
-      if( exe )
+      if( exe != 0 )
         p = ( wt * 26 / 32 + p * 6 ) / 32;
       else
         p = ( wt / 32 + p ) / 2;
@@ -932,12 +932,12 @@ public:
       sse[c][ssep].upd( y );
       sse[c][ssep + 1].upd( y );
       U32 s = b0 + b1;
-      U32 sy = y ? b1 : b0;
+      U32 sy = y != 0 ? b1 : b0;
       U32 rn = rnd();
       U32 s1 = ( au / s + ( ( rn >> ( d - 7 ) ) & 63 ) ) / 64 + e * 64;
       U32 syd = ( au * ( 1.0 / sy - 1.0 / s ) + ( rn & 63 ) ) / 64;
-      int m0 = y ? -s1 : syd;
-      int m1 = y ? syd : -s1;
+      int m0 = y != 0 ? -s1 : syd;
+      int m1 = y != 0 ? syd : -s1;
       rn = ( rn >> d ) & 65535;
       {
         U32 *wl = &wt[c][0];
@@ -991,10 +991,10 @@ public:
     int c = ch( 1 ) * 8 + ch( 2 ) / 32;
     m6.predict( c );
     m7.predict( c );
-    c = ch( 2 ) / 16 + tf * 16 * ( ch( 1 ) / 32 + 8 * ( wlen == clen ) );
+    c = ch( 2 ) / 16 + tf * 16 * ( ch( 1 ) / 32 + 8 * static_cast<int>( wlen == clen ) );
     m0.predict( c );
     m2.predict( c );
-    c = ch( 0 ) * 8 + ( ch( 1 ) / 64 ) * 2 + tf * ( wlen == clen );
+    c = ch( 0 ) * 8 + ( ch( 1 ) / 64 ) * 2 + tf * static_cast<int>( wlen == clen );
     ma.predict( c );
     mb.predict( c );
     c = ch( 1 ) / 32 + 8 * ( ch( 2 ) / 32 ) + ( ch( 3 ) & 192 );
@@ -1025,7 +1025,7 @@ public:
     if( fsize < 0 ) {
       i = 3, j = 64;
     }
-    if( exe ) {
+    if( exe != 0 ) {
       i = 5, j = 128;
     }
     m0.upd( y, 15, i );
@@ -1042,12 +1042,12 @@ public:
     mb.upd( y, 15, j );
     if( mp > 0 ) {
       U32 s = b0 + b1;
-      U32 sy = y ? b1 : b0;
+      U32 sy = y != 0 ? b1 : b0;
       U32 rn = rnd() & 32767;
       U32 s1 = ( au / s + 64 ) / 128;
       U32 syd = ( au / sy - au / s + 64 ) / 128;
-      int m0 = y ? -s1 : syd;
-      int m1 = y ? syd : -s1;
+      int m0 = y != 0 ? -s1 : syd;
+      int m1 = y != 0 ? syd : -s1;
       U32 bp1 = ( bp - 1 ) & 7;
       int mi = 4;
       if( z != 0 && fsize != 0 )
@@ -1097,7 +1097,7 @@ class CounterMap1 {
 
 public:
   CounterMap1( int n ) : N( n + MEM - 9 ) {
-    if( !( t = ( S * ) calloc( 1 << N, 2 ) ) )
+    if( ( t = ( S * ) calloc( 1 << N, 2 ) ) == nullptr )
       handler();
     cxt = t;
   }
@@ -1111,7 +1111,7 @@ public:
   }
   void add() {
     U32 d = ( cxt->c + 256 ) >> ( 7 - bp );
-    if( !( d ^= ch( 0 ) * 2 ) )
+    if( ( d ^= ch( 0 ) * 2 ) == 0u )
       mixer.add( cxt->n, 0 );
     else if( d == 1 )
       mixer.add( 0, cxt->n );
@@ -1135,7 +1135,7 @@ public:
   void upd( U32 h ) {
     int c = ch( 1 );
     for( int i = 0; i < 8; i++ )
-      if( cp[i] ) {
+      if( cp[i] != nullptr ) {
         cp[i]->add( ( c >> ( 7 - i ) ) & 1 ), cp[i] = 0;
       }
     ht2.set( cxt = h );
@@ -1213,12 +1213,12 @@ public:
     memset( cxt, 0, 44 );
   }
   void model() {
-    int y = ch( !bp ) & 1;
+    int y = ch( static_cast<int>(bp) == 0 ) & 1;
     cp0->add( y );
     cp1->add( y );
-    if( !bp ) {
+    if( bp == 0 ) {
       for( int i = 10; i != 0; i-- )
-        cxt[i] = cxt[i - 1] ^ hash( ch( 1 ), i, tf * ( wlen == i ) );
+        cxt[i] = cxt[i - 1] ^ hash( ch( 1 ), i, tf * static_cast<int>( wlen == i ) );
       t2.upd( cxt[2] );
       t3.upd( cxt[3] );
       t4.upd( cxt[4] );
@@ -1232,10 +1232,10 @@ public:
     cp0 = t0 + ch( 0 );
     cp1 = t0 + 256 + ch( 1 ) * 256 + ch( 0 );
     mixer.wri( cp0->get0(), cp0->get1() );
-    if( tf )
+    if( tf != 0 )
       mixer.mul( 3 );
     mixer.wri( cp1->get0(), cp1->get1() );
-    if( tf )
+    if( tf != 0 )
       mixer.mul( 2 );
     t2.wri();
     t3.wri();
@@ -1273,17 +1273,17 @@ public:
       begin[i] = end[i] = 0;
   }
   void model() {
-    if( !bp ) {
+    if( bp == 0 ) {
       hash[0] = hash[0] * 908754512 + ch( 1 ) + 1;
       hash[1] = hash[1] * 91368434 + ch( 1 ) + 1;
       U32 h = hash[0] >> 11;
-      if( !( h >> 17 ) )
+      if( ( h >> 17 ) == 0u )
         h = hash[1] >> 11;
       for( int i = 0; i < 4; i++ )
-        if( end[i] && ch( 1 ) == ch[end[i]] )
+        if( (end[i] != 0u) && ch( 1 ) == ch[end[i]] )
           ++end[i];
       for( int i = 0; i < 4; i++ ) {
-        if( !end[i] ) {
+        if( end[i] == 0u ) {
           int j;
           for( j = 0; j < 4; j++ )
             if( end[j] == ptr[h] )
@@ -1291,10 +1291,10 @@ public:
           if( j < 4 )
             break;
           end[i] = ptr[h];
-          if( end[i] ) {
+          if( end[i] != 0u ) {
             U32 p = po;
             begin[i] = end[i];
-            while( begin[i] && p && begin[i] != p + 1 && ch[begin[i] - 1] == ch[--p] )
+            while( (begin[i] != 0u) && (p != 0u) && begin[i] != p + 1 && ch[begin[i] - 1] == ch[--p] )
               --begin[i];
           }
           if( end[i] == begin[i] )
@@ -1306,14 +1306,14 @@ public:
     }
     int n0 = 0, n1 = 0;
     for( int i = 0; i < 4; i++ )
-      if( end[i] ) {
+      if( end[i] != 0u ) {
         U32 d = ( ch[end[i]] + 256 ) >> ( 7 - bp );
         if( ( d >> 1 ) != ch( 0 ) )
           begin[i] = end[i] = 0;
         else {
           U32 wt = end[i] - begin[i];
           wt = min( int( wt * wt / 4 ), 1020 );
-          if( d & 1 )
+          if( (d & 1) != 0u )
             n1 += wt;
           else
             n0 += wt;
@@ -1360,7 +1360,7 @@ public:
       c1( 0 ),
       c2( 0 ) {}
   void model() {
-    if( !bp ) {
+    if( bp == 0 ) {
       int c = ch( 1 );
       int d = ch.pos( c, 0 ) - ch.pos( c, 1 );
       if( d > 2 && d == ch.pos( c, 1 ) - ch.pos( c, 2 ) && d == ch.pos( c, 2 ) - ch.pos( c, 3 ) )
@@ -1395,7 +1395,7 @@ public:
       ta.upd( hash( ch( r4 ), r4 ) );
     }
     if( fsize != 0 ) {
-      if( tf ) {
+      if( tf != 0 ) {
         t0.mul( 2 );
         tb.add();
         t1.mul( 2 );
@@ -1440,7 +1440,7 @@ public:
       t9( SIZE ),
       ta( SIZE ) {}
   void model() {
-    if( !bp ) {
+    if( bp == 0 ) {
       int i = min( int( po - ch.pos( ch( 1 ), 1 ) ), 192 ) / 4;
       int j = min( int( po - ch.pos( ch( 2 ), 1 ) ), 192 ) / 4;
       if( j > 8 )
@@ -1481,7 +1481,7 @@ class SparseModel2 {
 public:
   SparseModel2() : t0( SIZE ), t1( SIZE ), t2( SIZE ), t3( SIZE ), t4( SIZE ) {}
   void model() {
-    if( !bp ) {
+    if( bp == 0 ) {
       t0.upd( hash( ch( 1 ), ch( 7 ), ch( 9 ), ch( 13 ) ) );
       t1.upd( hash( ch( 2 ), ch( 5 ), ch( 10 ), ch( 14 ) ) );
       t2.upd( hash( ch( 3 ), ch( 8 ), ch( 12 ), ch( 15 ) ) );
@@ -1509,7 +1509,7 @@ class AnalogModel {
 public:
   AnalogModel() : t0( SIZE ), t1( SIZE ), t2( SIZE ), t3( SIZE ) {}
   void model() {
-    if( !bp ) {
+    if( bp == 0 ) {
       t0.upd( hash( ch( 2 ) / 16, ch( 4 ) / 16, po % 2 ) );
       t1.upd( hash( ch( 4 ) / 4, ( ch( 2 ) - ch( 6 ) ) / 4, ( ch( 4 ) - ch( 8 ) ) / 4 ) );
       t2.upd( hash( ch( 1 ) / 2, ch( 2 ) / 8, ch( 3 ) / 32, 5 ) );
@@ -1563,7 +1563,7 @@ public:
       tv( SIZE ),
       tw( SIZE ) {}
   void model() {
-    if( !bp ) {
+    if( bp == 0 ) {
       int i = 0, j = 63;
       t0.upd( hash( ch( 1 ), ch( 2 ), ch( 216 ), i++ ) );
       t1.upd( hash( ch( 1 ), ch( 2 ), ch( 217 ), i++ ) );
@@ -1667,17 +1667,17 @@ public:
     clen = 0;
   }
   void model() {
-    if( !bp ) {
+    if( bp == 0 ) {
       int c = ch( 1 );
       if( c > 32 )
         cxt[0] ^= hash( cxt[0], cxt[0] >> 8, c, clen++ );
-      else if( cxt[0] ) {
+      else if( cxt[0] != 0u ) {
         for( int i = 5; i != 0; i-- )
           cxt[i] = cxt[i - 1];
         cxt[0] = 0;
         clen = 0;
       }
-      if( isalpha( c ) ) {
+      if( isalpha( c ) != 0 ) {
         wxt[0] ^= hash( wxt[0], tolower( c ), wlen++ );
       } else {
         wlen = 0;
@@ -1696,7 +1696,7 @@ public:
       t8.upd( wxt[2] - wxt[0] );
       t9.upd( wxt[3] - wxt[0] );
     }
-    if( tf ) {
+    if( tf != 0 ) {
       t0.mul( 3 );
       t1.mul( 4 );
       t2.mul( 4 );
@@ -1789,7 +1789,7 @@ public:
     ss3[c3][ssep].upd( y );
     ss4[c4][ssep].upd( y );
     ch.upd( y );
-    tf = ch.pos( 0, 0 ) < ch.pos( 32, 3 ) && ch.pos( 255, 0 ) < ch.pos( 32, 3 );
+    tf = static_cast<int>(ch.pos( 0, 0 ) < ch.pos( 32, 3 ) && ch.pos( 255, 0 ) < ch.pos( 32, 3 ));
     mixer.upd( y );
     charModel.model();
     recordModel.model();
@@ -1807,14 +1807,14 @@ public:
     U32 wt = ssep & 31;
     ssep /= 32;
     c4 = ch( 1 ) * 8 + ch( 2 ) / 32;
-    c1 = ch( 0 ) * 8 + ( ch( 1 ) / 64 ) * 2 + tf * ( wlen == clen );
+    c1 = ch( 0 ) * 8 + ( ch( 1 ) / 64 ) * 2 + tf * static_cast<int>( wlen == clen );
     c2 = bp * 256 + l8;
     c3 = bp * 256 + ch( 1 ) / 32 + 8 * ( ch( 2 ) / 32 ) + ( ch( 3 ) & 192 );
     U32 p1 = sse[c1][ssep].p() * ( 32 - wt ) + sse[c1][ssep + 1].p() * wt;
     U32 p2 = ss2[c2][ssep].p() * ( 32 - wt ) + ss2[c2][ssep + 1].p() * wt;
     U32 p3 = ss3[c3][ssep].p() * ( 32 - wt ) + ss3[c3][ssep + 1].p() * wt;
     U32 p4 = ss4[c4][ssep].p() * ( 32 - wt ) + ss4[c4][ssep + 1].p() * wt;
-    if( tf )
+    if( tf != 0 )
       nextp = ( ( 3 * p3 + 6 * p1 + 5 * p2 + 1 * p4 ) * 11 / 32 + 7 + nextp * 15 ) / ( 15 * 12 );
     else
       nextp = ( ( 3 * p3 + 5 * p1 + 4 * p2 + 2 * p4 ) * 13 / 32 + 7 + nextp * 14 ) / ( 14 * 14 );
@@ -1856,18 +1856,18 @@ public:
 };
 
 void Encoder::bit_plus_follow( int bit ) {
-  if( bit )
+  if( bit != 0 )
     bout |= bptr;
-  if( !( bptr >>= 1 ) ) {
+  if( ( bptr >>= 1 ) == 0u ) {
     putc( bout, archive );
     bptr = 128;
     bout = 0;
   }
   bit ^= 1;
   for( ; bits_to_follow > 0; bits_to_follow-- ) {
-    if( bit )
+    if( bit != 0 )
       bout |= bptr;
-    if( !( bptr >>= 1 ) ) {
+    if( ( bptr >>= 1 ) == 0u ) {
       putc( bout, archive );
       bptr = 128;
       bout = 0;
@@ -1875,13 +1875,13 @@ void Encoder::bit_plus_follow( int bit ) {
   }
 }
 inline int Encoder::input_bit( void ) {
-  if( !( bptrin >>= 1 ) ) {
+  if( ( bptrin >>= 1 ) == 0u ) {
     bin = getc( archive );
     if( bin == EOF )
       bin = 0;
     bptrin = 128;
   }
-  return ( ( bin & bptrin ) != 0 );
+  return static_cast<int>( ( bin & bptrin ) != 0 );
 }
 
 // Constructor
@@ -1923,7 +1923,7 @@ inline void Encoder::encode( int y ) {
   xmid = x1 + a * c + ( ( c * b ) >> 13 );
 
   // Update the range
-  if( y )
+  if( y != 0 )
     x2 = xmid;
   else
     x1 = xmid + 1;
@@ -2004,7 +2004,7 @@ void Encoder::flush() {
       bit_plus_follow( 0 );
     else
       bit_plus_follow( 1 );
-    if( bout )
+    if( bout != 0u )
       putc( bout, archive );
   }
 }
@@ -2094,7 +2094,7 @@ int main( int argc, char **argv ) {
 
   // Read and remove -MEM option
   if( argc > 1 && argv[1][0] == '-' ) {
-    if( isdigit( argv[1][1] ) ) {
+    if( isdigit( argv[1][1] ) != 0 ) {
       MEM = argv[1][1] - '0';
       if( argv[1][2] == 'e' )
         exe = 1;
@@ -2111,7 +2111,7 @@ int main( int argc, char **argv ) {
   FILE *archive = fopen( argv[1], "rb" );
 
   // Extract files
-  if( archive ) {
+  if( archive != nullptr ) {
     if( argc > 2 ) {
       printf( "File %s already exists\n", argv[1] );
       return 1;
@@ -2140,7 +2140,7 @@ int main( int argc, char **argv ) {
           exe = 1;
       }
     }
-    if( exe )
+    if( exe != 0 )
       printf( "Extracting archive " PROGNAME " -%de %s ...\n", MEM, argv[1] );
     else
       printf( "Extracting archive " PROGNAME " -%d %s ...\n", MEM, argv[1] );
@@ -2179,7 +2179,7 @@ int main( int argc, char **argv ) {
       FILE *f = fopen( filename[i].c_str(), "rb" );
       long size = filesize[i];
       uncompressed_bytes += size;
-      if( f ) {
+      if( f != nullptr ) {
         bool different = false;
         fsize = size - 513216;
         for( long j = 0; j < size; ++j ) {
@@ -2198,26 +2198,26 @@ int main( int argc, char **argv ) {
       // Extract to new file
       else {
         f = fopen( filename[i].c_str(), "wb" );
-        if( !f )
+        if( f == nullptr )
           printf( "cannot create, skipping...\n" );
         fsize = size - 513216;
-        if( exe && size > 0 ) {
+        if( (exe != 0) && size > 0 ) {
           int c = e.decode();
-          if( f )
+          if( f != nullptr )
             putc( c, f );
-          if( c ) {
+          if( c != 0 ) {
             c -= 23;
-            if( ( c < 0 && ( ( c + 8 ) & 1 ) ) || ( c >= 0 && ( ( c + 2 ) & 1 ) ) ) {
+            if( ( c < 0 && (( ( c + 8 ) & 1 ) != 0) ) || ( c >= 0 && (( ( c + 2 ) & 1 ) != 0) ) ) {
               int c = e.decode();
-              if( f )
+              if( f != nullptr )
                 putc( c, f );
               int d = e.decode();
-              if( f )
+              if( f != nullptr )
                 putc( d, f );
               d = d * 256 + c;
               for( long j = 0; j < d * 3; ++j ) {
                 int c = e.decode();
-                if( f )
+                if( f != nullptr )
                   putc( c, f );
               }
             }
@@ -2225,12 +2225,12 @@ int main( int argc, char **argv ) {
         }
         for( long j = 0; j < size; ++j ) {
           int c = e.decode();
-          if( f )
+          if( f != nullptr )
             putc( c, f );
         }
-        if( f ) {
+        if( f != nullptr ) {
           printf( "extracted\n" );
-          if( exe && size > 0 ) {
+          if( (exe != 0) && size > 0 ) {
             int data2write[4] = {0, 0, 0, 0};
 
             fclose( f );
@@ -2246,9 +2246,9 @@ int main( int argc, char **argv ) {
             fclose( f );
             f = fopen( filename[i].c_str(), "wb" );
 
-            if( flen )
+            if( flen != 0 )
               te8e9( st, 4, flen, &data2write[0] );
-            if( data2write[0] )
+            if( data2write[0] != 0 )
               fwrite( ( char * ) data2write[1], 1, data2write[0], f );
 
             free( st0 );
@@ -2281,7 +2281,7 @@ int main( int argc, char **argv ) {
     int i;
     for( i = 0; i < int( filename.size() ); ++i ) {
       FILE *f = fopen( filename[i].c_str(), "rb" );
-      if( !f ) {
+      if( f == nullptr ) {
         printf( "File not found, skipping: %s\n", filename[i].c_str() );
         filesize.push_back( -1 );
       } else {
@@ -2297,12 +2297,12 @@ int main( int argc, char **argv ) {
 
     // Write header
     archive = fopen( argv[1], "wb" );
-    if( !archive ) {
+    if( archive == nullptr ) {
       printf( "Cannot create archive: %s\n", argv[1] );
       return 1;
     }
     fprintf( archive, PROGNAME " -%d", MEM );
-    if( exe )
+    if( exe != 0 )
       fprintf( archive, "e" );
     fprintf( archive, "\r\n" );
     for( i = 0; i < int( filename.size() ); ++i ) {
@@ -2324,7 +2324,7 @@ int main( int argc, char **argv ) {
         FILE *f = fopen( filename[i].c_str(), "rb" );
         fsize = size - 513216;
 
-        if( f && exe && size > 0 ) {
+        if( (f != nullptr) && (exe != 0) && size > 0 ) {
           int data2write[4] = {0, 0, 0, 0};
           FILE *fw = fopen( "paqar11tmp.tmp", "wb" );
 
@@ -2337,12 +2337,12 @@ int main( int argc, char **argv ) {
           st = st0 + 256 - ( ( long ) st0 & 255 ); // 256-byte-alignment
           flen = fread( st + CONSTA - 32768, 1, flen, f );
 
-          if( flen )
+          if( flen != 0 )
             te8e9( st, 3, flen, &data2write[0] );
           size = 0;
-          if( data2write[0] )
+          if( data2write[0] != 0 )
             size += data2write[0], fwrite( ( char * ) data2write[1], 1, data2write[0], fw );
-          if( data2write[2] )
+          if( data2write[2] != 0 )
             size += data2write[2], fwrite( ( char * ) data2write[3], 1, data2write[2], fw );
           free( st0 );
 
@@ -2353,15 +2353,15 @@ int main( int argc, char **argv ) {
 
         int c;
         for( long j = 0; j < size; ++j ) {
-          if( f )
+          if( f != nullptr )
             c = getc( f );
           else
             c = 0;
           e.encode( c );
         }
-        if( f )
+        if( f != nullptr )
           fclose( f );
-        if( f && exe && size > 0 )
+        if( (f != nullptr) && (exe != 0) && size > 0 )
           remove( "paqar11tmp.tmp" );
         printf( "%ld\n", ftell( archive ) - file_start );
         file_start = ftell( archive );

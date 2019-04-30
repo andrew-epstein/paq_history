@@ -1402,10 +1402,10 @@ inline int mix2( Mixer &m, int s, StateMap &sm ) {
   int p0 = 255 - p1;
   m.add( p1 - p0 );
   m.add( st * static_cast<int>( static_cast<int>( static_cast<int>( n0 ) == 0 - static_cast<int>( n1 ) ) == 0 ) );
-  m.add( ( ( p1 & ( static_cast<int>( -static_cast<int>( n0 ) ) == 0 ) ) )
-         - ( ( p0 & ( static_cast<int>( -static_cast<int>( n1 ) ) == 0 ) ) ) );
-  m.add( ( ( p1 & ( static_cast<int>( -static_cast<int>( n1 ) ) == 0 ) ) )
-         - ( ( p0 & ( static_cast<int>( -static_cast<int>( n0 ) ) == 0 ) ) ) );
+  m.add( ( ( p1 & static_cast<int>( static_cast<int>( -static_cast<int>( n0 ) ) == 0 ) ) )
+         - ( ( p0 & static_cast<int>( static_cast<int>( -static_cast<int>( n1 ) ) == 0 ) ) ) );
+  m.add( ( ( p1 & static_cast<int>( static_cast<int>( -static_cast<int>( n1 ) ) == 0 ) ) )
+         - ( ( p0 & static_cast<int>( static_cast<int>( -static_cast<int>( n0 ) ) == 0 ) ) ) );
   return static_cast<int>( s > 0 );
 }
 

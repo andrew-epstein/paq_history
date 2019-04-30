@@ -2971,11 +2971,11 @@ void im1bitModel( Mixer &m, int w ) {
   cxt[3] = 0x400 + ( ( r0 & 0x3e ) ^ ( r1 & 0x0c0c ) ^ ( r2 & 0xc800 ) );
   cxt[4] = 0x800 + ( ( ( r1 & 0x30 ) ^ ( r3 & 0x0c0c ) ) | ( r0 & 3 ) );
   cxt[5] =
-      0x1000 + ( ( static_cast<int>( ( ( r0 ) ) == 0u & 0x444 ) ) | ( r1 & 0xC0C ) | ( r2 & 0xAE3 ) | ( r3 & 0x51C ) );
+      0x1000 + ( ( static_cast<int>( static_cast<int>(( ( r0 ) ) == 0u) & 0x444 ) ) | ( r1 & 0xC0C ) | ( r2 & 0xAE3 ) | ( r3 & 0x51C ) );
   cxt[6] = 0x2000 + ( ( r0 & 1 ) | ( r1 >> 4 & 0x1d ) | ( r2 >> 1 & 0x60 ) | ( r3 & 0xC0 ) );
   cxt[7] =
       0x4000
-      + ( ( r0 >> 4 & 0x2AC ) | ( r1 & 0xA4 ) | ( r2 & 0x349 ) | ( static_cast<int>( ( ( r3 ) ) == 0u & 0x14D ) ) );
+      + ( ( r0 >> 4 & 0x2AC ) | ( r1 & 0xA4 ) | ( r2 & 0x349 ) | ( static_cast<int>( static_cast<int>(( ( r3 ) ) == 0u) & 0x14D ) ) );
 
   // predict
   for( i = 0; i < N; ++i ) {
@@ -4801,7 +4801,7 @@ int main( int argc, char **argv ) {
         i++;
       }
       header[i] = 0;
-      if( strncmp( header.c_str(), PROGNAME "\0", strlen( PROGNAME ) + 1 ) != 0 != 0 ) {
+      if( static_cast<int>(strncmp( header.c_str(), PROGNAME "\0", strlen( PROGNAME ) + 1 ) != 0) != 0 ) {
         printf( "%s: not a %s file\n", archiveName.c_str(), PROGNAME ), quit();
       }
       level = header[strlen( PROGNAME ) + 1] - '0';
