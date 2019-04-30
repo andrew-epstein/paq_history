@@ -1219,7 +1219,7 @@ int main( int argc, char **argv ) {
       printf( "Enter names of files to compress, followed by blank line or EOF.\n" );
       while( true ) {
         string s = getline( stdin );
-        if( s == "" )
+        if( s.empty() )
           break;
         else
           filename.push_back( s );
