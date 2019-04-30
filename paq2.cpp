@@ -1075,7 +1075,8 @@ public:
   WordModel m3;
   CyclicModel m4;
   U16 p() const {
-    int n0 = 1, n1 = n0;
+    int n0 = 1;
+    int n1 = n0;
     m1.predict( n0, n1 );
     m2.predict( n0, n1 );
     m3.predict( n0, n1 );
@@ -1156,7 +1157,8 @@ Encoder::Encoder( Mode m, FILE *f ) :
   }
 
   // Initialize SSE contexts
-  int i, j;
+  int i;
+  int j;
   for( i = 0; i < 4096; i++ ) {
     for( int j = 0; j < 64; j++ ) {
       sse[i][j].init( 1024 * j + 512 );
@@ -1196,7 +1198,8 @@ int Encoder::encode( int y, int pi ) {
   int c0 = predictor.m1.c0; // Take first bits of current symbol
 
   // Make additional flags for SSE
-  int ww = 1, ww1 = 1;
+  int ww = 1;
+  int ww1 = 1;
   predictor.m2.predict( ww, ww1 );
   c0 = c0 * 4 + ( static_cast<int>( ww * 3 > ww1 ) + static_cast<int>( ww > ww1 ) + static_cast<int>( ww > 3 * ww1 ) );
 
@@ -1409,7 +1412,8 @@ int main( int argc, char **argv ) {
 
     // Test end of header for "\f\0"
     {
-      int c1 = 0, c2 = 0;
+      int c1 = 0;
+      int c2 = 0;
       if( ( c1 = getc( archive ) ) != '\f' || ( c2 = getc( archive ) ) != 0 ) {
         printf( "%s: Bad PAQ2 header format %d %d\n", argv[1], c1, c2 );
         return 1;

@@ -454,7 +454,8 @@ Encoder::Encoder( Mode m, FILE *f ) : mode( m ), archive( f ), x( 0 ), n( 0 ), e
         int d = i & 1;
         int q = qinv[r] >> ( 12 - N );
         int k = 0;
-        int w = j + ( 1 << N ), x1 = 0;
+        int w = j + ( 1 << N );
+        int x1 = 0;
         while( k < 15 ) {
           assert( q > 0 );
           assert( ( 1 << N ) - q > 0 );

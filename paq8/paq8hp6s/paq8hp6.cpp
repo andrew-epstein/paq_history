@@ -1250,7 +1250,9 @@ public:
 
 // maps p, cxt -> p initially
 APM::APM( int n ) : index( 0 ), N( n ), t( n * 33 ) {
-  int i, j, k;
+  int i;
+  int j;
+  int k;
   for( j = 0; j < 33; ++j )
     for( i = 0, k = squash( ( j - 16 ) * 128 ) * 16; i < N; ++i )
       t[i * 33 + j] = k;
@@ -1577,7 +1579,8 @@ inline U8 *ContextMap::E::get( U16 ch, int j ) {
     ch += j;
   if( chk[last & 15] == ch )
     return &bh[last & 15][0];
-  int b = 0xffff, bi = 0;
+  int b = 0xffff;
+  int bi = 0;
   for( int i = 0; i < 7; ++i ) {
     if( chk[i] == ch )
       return last = last << 4 | i, &bh[i][0];
@@ -1777,9 +1780,14 @@ static U32 spaces = 0, spacecount = 0, words = 0, wordcount = 0, fails = 0, fail
 // Model English text (words and columns/end of line)
 
 void wordModel( Mixer &m ) {
-  static U32 word0 = 0, word1 = 0, word2 = 0, word3 = 0, word4 = 0; // hashes
+  static U32 word0 = 0;
+  static U32 word1 = 0;
+  static U32 word2 = 0;
+  static U32 word3 = 0;
+  static U32 word4 = 0; // hashes
   static ContextMap cm( MEM * 64, 43 );
-  static int nl1 = -3, nl = -2; // previous, current newline position
+  static int nl1 = -3;
+  static int nl = -2; // previous, current newline position
   static U32 t1[256];
   static U16 t2[0x10000];
 
@@ -1831,7 +1839,8 @@ void wordModel( Mixer &m ) {
     cm.set( c | b3 << 8 | b5 << 16 );
     cm.set( b2 | b4 << 8 | b6 << 16 );
 
-    int col = min( 31, pos - nl ), above = buf[nl1 + col]; // text column context
+    int col = min( 31, pos - nl );
+    int above = buf[nl1 + col]; // text column context
     // Text column models
     cm.set( col << 16 | c << 8 | above );
     cm.set( col << 8 | c );
@@ -1895,11 +1904,16 @@ void recordModel( Mixer &m ) {
   static int wpos1[0x10000]; // buf(1..2) -> last position
                              ///  static int rlen=2, rlen1=3, rlen2=4;  // run length and 2 candidates
                              ///  static int rcount1=0, rcount2=0;  // candidate counts
-  static ContextMap cm( 32768 / 2, 2 ), cn( 32768 / 2, 4 ), co( 32768 * 2, 3 ), cp( 32768, 3 );
+  static ContextMap cm( 32768 / 2, 2 );
+  static ContextMap cn( 32768 / 2, 4 );
+  static ContextMap co( 32768 * 2, 3 );
+  static ContextMap cp( 32768, 3 );
 
   // Find record length
   if( bpos == 0 ) {
-    int c = b1, w = ( b2 << 8 ) + c, d = w & 0xf0ff;
+    int c = b1;
+    int w = ( b2 << 8 ) + c;
+    int d = w & 0xf0ff;
 #if 0
     int r=pos-cpos1[c];
     if (r>1 && r==cpos1[c]-cpos2[c]
@@ -1954,7 +1968,10 @@ void recordModel( Mixer &m ) {
 
 void sparseModel( Mixer &m ) {
   static ContextMap cn( MEM * 2, 5 );
-  static SmallStationaryContextMap scm1( 0x20000 ), scm2( 0x20000 ), scm3( 0x20000 ), scm4( 0x20000 );
+  static SmallStationaryContextMap scm1( 0x20000 );
+  static SmallStationaryContextMap scm2( 0x20000 );
+  static SmallStationaryContextMap scm3( 0x20000 );
+  static SmallStationaryContextMap scm4( 0x20000 );
 
   if( bpos == 0 ) {
     cn.set( ( x4 & 0xf0f0f0f0 ) + 1 );
@@ -2552,7 +2569,9 @@ static char arrdict[411681] = "arrdict";
 
 int contextModel2() {
   static ContextMap cm( MEM * 32, 7 );
-  static RunContextMap rcm7( MEM / 4 ), rcm9( MEM / 4 ), rcm10( MEM / 2 );
+  static RunContextMap rcm7( MEM / 4 );
+  static RunContextMap rcm9( MEM / 4 );
+  static RunContextMap rcm10( MEM / 2 );
   static Mixer m( 412, 8 + 1024 + 2048 + 256 * ( 8 + 6 + 7 + 8 ), 6, 192 );
   static U32 cxt[16]; // order 0-11 contexts
   static Filetype filetype = DEFAULT;
@@ -2601,7 +2620,9 @@ int contextModel2() {
 
   // Normal model
   if( bpos == 0 ) {
-    int i = 0, f2 = buf( 2 ), f3 = buf( 3 );
+    int i = 0;
+    int f2 = buf( 2 );
+    int f3 = buf( 3 );
     if( b1 != '.' && f2 == '.' && f3 != '.' )
       i = 13;
     if( b1 != '?' && f2 == '?' && f3 != '?' )
@@ -2627,7 +2648,10 @@ int contextModel2() {
   int qq = m.nx;
   int order = cm.mix( m );
   /////  if (order>7) order=7;
-  int ii, jj, kk, zz = ( m.nx - qq ) / 7;
+  int ii;
+  int jj;
+  int kk;
+  int zz = ( m.nx - qq ) / 7;
 
   m.nx = qq + zz * 5;
   for( jj = zz * 2; jj != 0; --jj )
@@ -2645,7 +2669,10 @@ int contextModel2() {
     /////    if (fsize==513216) picModel(m);
   }
 
-  U32 c1 = b1, c2 = b2, c3 = b3, c;
+  U32 c1 = b1;
+  U32 c2 = b2;
+  U32 c3 = b3;
+  U32 c;
   if( c1 == 10 || c1 == 32 )
     c1 = 16;
   if( c2 == 10 || c2 == 32 )
@@ -2707,7 +2734,12 @@ public:
 Predictor::Predictor()  {}
 
 void Predictor::update() {
-  static APM a1( 256 ), a2( 0x10000 ), a3( 0x10000 ), a4( 0x10000 ), a5( 0x10000 ), a6( 0x10000 );
+  static APM a1( 256 );
+  static APM a2( 0x10000 );
+  static APM a3( 0x10000 );
+  static APM a4( 0x10000 );
+  static APM a5( 0x10000 );
+  static APM a6( 0x10000 );
 
   // Update global context: pos, bpos, c0, c4, buf
   c0 += c0 + y;
@@ -2737,7 +2769,13 @@ void Predictor::update() {
   // Filter the context model with APMs
   pr = contextModel2();
   int rate = 6 + static_cast<int>( pos > 4096 * 1024 ) + static_cast<int>( pos > 8192 * 1024 );
-  int pr1 = ( a1.p( pr, c0, 8 ) * 3 + 5 * pr + 4 ) >> 3, ps = b1, pt = b2, pu = b3, pv, pw, pz;
+  int pr1 = ( a1.p( pr, c0, 8 ) * 3 + 5 * pr + 4 ) >> 3;
+  int ps = b1;
+  int pt = b2;
+  int pu = b3;
+  int pv;
+  int pw;
+  int pz;
   pw = pt & 0xfc;
   if( pt == 10 || pt == 32 )
     pw = 16;
@@ -3120,7 +3158,8 @@ void ExeFilter::encode( FILE *f, int n ) {
   fprintf( tmp, "%c%c%c%c", n >> 24, n >> 16, n >> 8, n ); // size, MSB first
 
   // Scan for jpeg and mark end
-  U32 buf1 = 0, buf2 = 0;
+  U32 buf1 = 0;
+  U32 buf2 = 0;
   int end;
   for( end = 0; end < n; ++end ) {
     buf2 = buf2 << 8 | buf1 >> 24;
@@ -3231,7 +3270,8 @@ int TextFilter::decode() {
       if( dtmp == nullptr )
         perror( "WRT tmpfile" ), exit( 1 );
 
-      unsigned int size = 0, i;
+      unsigned int size = 0;
+      unsigned int i;
       for( i = 0; i < 4; i++ ) {
         int c = read();
         size = size * 256 + c;
@@ -3308,7 +3348,8 @@ Filter *Filter::make( const char *filename, Encoder *e ) {
 char *getline( FILE *f = stdin ) {
   const int MAXLINE = 512;
   static char s[MAXLINE];
-  int len = 0, c;
+  int len = 0;
+  int c;
   while( ( c = getc( f ) ) != EOF && c != 26 && c != '\n' && len < MAXLINE - 1 ) {
     if( c != '\r' && len < MAXLINE - 1 )
       s[len++] = c;
@@ -3452,7 +3493,8 @@ int main( int argc, char **argv ) {
     f = fopen( argv[1], "rbe" );
   if( f == nullptr )
     perror( argv[1] ), exit( 1 );
-  long header, body;             // file positions in header, body
+  long header;
+  long body;             // file positions in header, body
   char *filename = getline( f ); // check header
   if( ( filename == nullptr ) || ( strncmp( filename, PROGNAME " -", strlen( PROGNAME ) + 2 ) != 0 ) )
     fprintf( stderr, "%s: not a " PROGNAME " file\n", argv[1] ), exit( 1 );

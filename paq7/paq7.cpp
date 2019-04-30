@@ -680,8 +680,12 @@ StateTable::StateTable() : ns( 1024 ) {
     for( int y = 0; y <= i; ++y ) {
       int x = i - y;
       for( int k = 0; k < t[x][y][1]; ++k ) {
-        int x0 = x, y0 = y, x1 = x, y1 = y; // next x,y for input 0,1
-        int ns0 = 0, ns1 = 0;
+        int x0 = x;
+        int y0 = y;
+        int x1 = x;
+        int y1 = y; // next x,y for input 0,1
+        int ns0 = 0;
+        int ns1 = 0;
         if( state < 15 ) {
           ++x0;
           ++y1;
@@ -999,7 +1003,8 @@ public:
   U8 *operator[]( U32 i ) {
     int chk = ( i >> 24 ^ i >> 12 ^ i ) & 255;
     i &= n;
-    int bi = i, b = 1024; // best replacement so far
+    int bi = i;
+    int b = 1024; // best replacement so far
     U8 *p;
     for( int j = 0; j < M; ++j ) {
       p = &t[( i ^ j ) * B];
@@ -1285,7 +1290,10 @@ int matchModel( Mixer &m ) {
 // into m.
 
 void picModel( Mixer &m ) {
-  static U32 r0, r1, r2, r3;     // last 5 rows, bit 8 is over current pixel
+  static U32 r0;
+  static U32 r1;
+  static U32 r2;
+  static U32 r3;     // last 5 rows, bit 8 is over current pixel
   static Array<U8> t( 0x10200 ); // model: cxt -> state
   const int N = 3;               // number of contexts
   static int cxt[N];             // contexts
@@ -1314,12 +1322,26 @@ void picModel( Mixer &m ) {
 // Model English text (words and columns/end of line)
 
 void wordModel( Mixer &m ) {
-  static U32 word0 = 0, word1 = 0, word2 = 0, word3 = 0, word4 = 0; // hashes
-  static ContextMap cm1( MEM * 4 ), cm2( MEM * 4 ), cm3( MEM * 8 ), cm4( MEM * 8 ), cm5( MEM * 8 ), cm6( MEM * 8 ),
-      cm7( MEM * 8 ), cm8( MEM * 8 ), wcm( MEM * 8 );
-  static NonstationaryContextMap lcm1( MEM ), lcm2( MEM ), lcm3( MEM );
+  static U32 word0 = 0;
+  static U32 word1 = 0;
+  static U32 word2 = 0;
+  static U32 word3 = 0;
+  static U32 word4 = 0; // hashes
+  static ContextMap cm1( MEM * 4 );
+  static ContextMap cm2( MEM * 4 );
+  static ContextMap cm3( MEM * 8 );
+  static ContextMap cm4( MEM * 8 );
+  static ContextMap cm5( MEM * 8 );
+  static ContextMap cm6( MEM * 8 );
+  static ContextMap cm7( MEM * 8 );
+  static ContextMap cm8( MEM * 8 );
+  static ContextMap wcm( MEM * 8 );
+  static NonstationaryContextMap lcm1( MEM );
+  static NonstationaryContextMap lcm2( MEM );
+  static NonstationaryContextMap lcm3( MEM );
   static Array<int> wpos( MEM ); // last position of word
-  static int nl1 = -3, nl = -2;  // previous, current newline position
+  static int nl1 = -3;
+  static int nl = -2;  // previous, current newline position
 
   // Update word hashes
   if( bpos == 0 ) {
@@ -1338,7 +1360,8 @@ void wordModel( Mixer &m ) {
     if( c == 10 )
       nl1 = nl, nl = pos - 1;
     int i = 0;
-    int col = min( 255, pos - nl ), above = buf[nl1 + col]; // text column context
+    int col = min( 255, pos - nl );
+    int above = buf[nl1 + col]; // text column context
     U32 h = hash( ++i, word0, buf( 1 ) );
     int w = h & wpos.size() - 1;
     cm1.set( h );
@@ -1381,11 +1404,17 @@ void wordModel( Mixer &m ) {
 void recordModel( Mixer &m ) {
   const int MAXRUN = 1024;
   static Array<U8> run( MAXRUN );               // candidate record lengths
-  static Array<int> cpos1( 256 ), cpos2( 256 ); // buf(1) -> last 2 positions
+  static Array<int> cpos1( 256 );
+  static Array<int> cpos2( 256 ); // buf(1) -> last 2 positions
   static Array<int> wpos1( 0x10000 );           // last position of order 2 context
   static Array<int> wpos3( MEM );               // last position of order 3 hash
   static int rlen = 2;                          // current, previous run length
-  static ContextMap cm1( MEM ), cm2( MEM ), cm3( MEM ), cm4( MEM ), cm5( MEM ), cm6( MEM );
+  static ContextMap cm1( MEM );
+  static ContextMap cm2( MEM );
+  static ContextMap cm3( MEM );
+  static ContextMap cm4( MEM );
+  static ContextMap cm5( MEM );
+  static ContextMap cm6( MEM );
 
   // Find record length
   if( bpos == 0 ) {
@@ -1426,10 +1455,22 @@ void recordModel( Mixer &m ) {
 // Model order 1-2 contexts with gaps.
 
 void sparseModel( Mixer &m ) {
-  static ContextMap cm13( MEM / 4 ), cm14( MEM / 4 ), cm15( MEM / 4 ), cm16( MEM / 4 ), cm23( MEM / 4 ),
-      cm24( MEM / 4 ), cm36( MEM / 4 ), cm48( MEM / 4 );
-  static SmallContextMap scm1( 0x20000 ), scm2( 0x20000 ), scm3( 0x20000 ), scm4( 0x20000 ), scm5( 0x20000 ),
-      scm6( 0x20000 ), scm7( 0x20000 ), scm8( 0x20000 );
+  static ContextMap cm13( MEM / 4 );
+  static ContextMap cm14( MEM / 4 );
+  static ContextMap cm15( MEM / 4 );
+  static ContextMap cm16( MEM / 4 );
+  static ContextMap cm23( MEM / 4 );
+  static ContextMap cm24( MEM / 4 );
+  static ContextMap cm36( MEM / 4 );
+  static ContextMap cm48( MEM / 4 );
+  static SmallContextMap scm1( 0x20000 );
+  static SmallContextMap scm2( 0x20000 );
+  static SmallContextMap scm3( 0x20000 );
+  static SmallContextMap scm4( 0x20000 );
+  static SmallContextMap scm5( 0x20000 );
+  static SmallContextMap scm6( 0x20000 );
+  static SmallContextMap scm7( 0x20000 );
+  static SmallContextMap scm8( 0x20000 );
   if( bpos == 0 ) {
     int i = 0;
     cm13.set( hash( ++i, buf( 1 ), buf( 3 ) ) );
@@ -1488,13 +1529,25 @@ inline int sqrbuf( int i ) {
 }
 
 int bmpModel( Mixer &m ) {
-  static int width = 0, w = 0; // width of image in pixels, bytes
+  static int width = 0;
+  static int w = 0; // width of image in pixels, bytes
   static int eoi = 0;          // end of image
   static U32 tiff = 0;         // offset of tif header
   const int SC = 0x20000;
-  static SmallStationaryContextMap scm1( SC ), scm2( SC ), scm3( SC ), scm4( SC ), scm5( SC ), scm6( SC * 2 );
-  static ContextMap cm1( MEM / 2 ), cm2( MEM / 2 ), cm3( MEM / 2 ), cm4( MEM / 2 ), cm5( MEM / 2 ), cm6( 0x40000 ),
-      cm7( 0x40000 ), cm8( MEM / 2 );
+  static SmallStationaryContextMap scm1( SC );
+  static SmallStationaryContextMap scm2( SC );
+  static SmallStationaryContextMap scm3( SC );
+  static SmallStationaryContextMap scm4( SC );
+  static SmallStationaryContextMap scm5( SC );
+  static SmallStationaryContextMap scm6( SC * 2 );
+  static ContextMap cm1( MEM / 2 );
+  static ContextMap cm2( MEM / 2 );
+  static ContextMap cm3( MEM / 2 );
+  static ContextMap cm4( MEM / 2 );
+  static ContextMap cm5( MEM / 2 );
+  static ContextMap cm6( 0x40000 );
+  static ContextMap cm7( 0x40000 );
+  static ContextMap cm8( MEM / 2 );
 
   // Detect .bmp file header (24 bit color, not compressed)
   if( ( bpos == 0 ) && pos >= eoi && buf( 54 ) == 'B' && buf( 53 ) == 'M' && i4( 44 ) == 54 && i4( 40 ) == 40
@@ -1520,7 +1573,9 @@ int bmpModel( Mixer &m ) {
     if( ( tiff != 0U ) && pos - tiff == 200 ) { // most of directory should be read by now
       int dirsize = i2( pos - tiff - 4 );       // number of 12-byte directory entries
       width = w = 0;
-      int bpp = 0, compression = 0, height = 0;
+      int bpp = 0;
+      int compression = 0;
+      int height = 0;
       for( int i = tiff + 6; i < pos - 12 && --dirsize > 0; i += 12 ) {
         int tag = i2( pos - i );        // 256=width, 257==height, 259: 1=no compression
                                         // 277=3 samples/pixel
@@ -1646,7 +1701,9 @@ int jpegModel( Mixer &m ) {
   static int jpeg = 0;                   // 1 if JPEG is detected
   static int next_jpeg = 0;              // updated with jpeg on next byte boundary
   static int app;                        // Bytes remaining to skip in APPx or COM field
-  static int sof = 0, sos = 0, data = 0; // pointers to buf
+  static int sof = 0;
+  static int sos = 0;
+  static int data = 0; // pointers to buf
   static Array<int> ht( 8 );             // pointers to Huffman table headers
   static int htsize = 0;                 // number of pointers in ht
 
@@ -1673,7 +1730,8 @@ int jpegModel( Mixer &m ) {
   static Array<int> pred( 4 );    // component -> last DC value
   static int dc = 0;              // DC value of the current block
   static int width = 0;           // Image width in MCU
-  static int row = 0, column = 0; // in MCU (column 0 to width-1)
+  static int row = 0;
+  static int column = 0; // in MCU (column 0 to width-1)
   static Buf cbuf( 0x20000 );     // Rotating buffer of coefficients, coded as:
                                   // DC: level shifted absolute value, low 4 bits discarded, i.e.
                                   //   [-1023...1024] -> [0...255].
@@ -1683,9 +1741,19 @@ int jpegModel( Mixer &m ) {
                                   //   xx is the first 2 extra bits, and the last 2 bits are 1 (since
                                   //   this never occurs in a valid RS code).
   static int cpos = 0;            // position in cbuf
-  static U32 huff1 = 0, huff2 = 0, huff3 = 0, huff4 = 0; // hashes of last codes
-  static int rs1, rs2, rs3, rs4;                         // last 4 RS codes
-  static int ssum = 0, ssum1 = 0, ssum2 = 0, ssum3 = 0, ssum4 = 0;
+  static U32 huff1 = 0;
+  static U32 huff2 = 0;
+  static U32 huff3 = 0;
+  static U32 huff4 = 0; // hashes of last codes
+  static int rs1;
+  static int rs2;
+  static int rs3;
+  static int rs4;                         // last 4 RS codes
+  static int ssum = 0;
+  static int ssum1 = 0;
+  static int ssum2 = 0;
+  static int ssum3 = 0;
+  static int ssum4 = 0;
   // sum of S in RS codes in block and last 4 values
 
   // Be sure to quit on a byte boundary
@@ -1783,7 +1851,8 @@ int jpegModel( Mixer &m ) {
         int end = p + buf[p - 2] * 256 + buf[p - 1] - 2; // end of Huffman table
         int count = 0;                                   // sanity check
         while( p < end && end < pos && end < p + 2100 && ++count < 10 ) {
-          int tc = buf[p] >> 4, th = buf[p] & 15;
+          int tc = buf[p] >> 4;
+          int th = buf[p] & 15;
           if( tc >= 2 || th >= 4 )
             break;
           jassert( tc >= 0 && tc < 2 && th >= 0 && th < 4 );
@@ -1942,7 +2011,8 @@ int jpegModel( Mixer &m ) {
   static Array<U8 *> cp( N ); // context pointers
   static StateMap sm[N];
   static Mixer m1( N + 1, 800, 4 );
-  static APM a1( 1024 ), a2( 0x10000 );
+  static APM a1( 1024 );
+  static APM a2( 0x10000 );
 
   // Update model
   if( cp[N - 1] != nullptr ) {
@@ -2005,9 +2075,18 @@ int jpegModel( Mixer &m ) {
 // This combines all the context models with a Mixer.
 
 int contextModel2() {
-  static SmallContextMap cm0( 0x200 ), cm1( 0x20000 );
-  static ContextMap cm2( MEM ), cm3( MEM ), cm4( MEM ), cm5( MEM * 2 ), cm6( MEM * 2 ), cm7( MEM * 2 ), cm8( MEM * 2 );
-  static RunContextMap rcm7( MEM ), rcm9( MEM ), rcm10( MEM );
+  static SmallContextMap cm0( 0x200 );
+  static SmallContextMap cm1( 0x20000 );
+  static ContextMap cm2( MEM );
+  static ContextMap cm3( MEM );
+  static ContextMap cm4( MEM );
+  static ContextMap cm5( MEM * 2 );
+  static ContextMap cm6( MEM * 2 );
+  static ContextMap cm7( MEM * 2 );
+  static ContextMap cm8( MEM * 2 );
+  static RunContextMap rcm7( MEM );
+  static RunContextMap rcm9( MEM );
+  static RunContextMap rcm10( MEM );
   static Mixer m( 512, 1024, 4 );
 
   m.update();
@@ -2100,7 +2179,10 @@ public:
 Predictor::Predictor()  {}
 
 void Predictor::update() {
-  static APM a1( 256 ), a2( 0x10000 ), a3( 0x10000 ), a4( 0x10000 );
+  static APM a1( 256 );
+  static APM a2( 0x10000 );
+  static APM a3( 0x10000 );
+  static APM a4( 0x10000 );
 
   // Update global context: pos, bpos, c0, c4, buf, nibble
   c0 += c0 + y;
@@ -2205,7 +2287,8 @@ void Encoder::flush() {
 char *getline( FILE *f = stdin ) {
   const int MAXLINE = 512;
   static char s[MAXLINE];
-  int len = 0, c;
+  int len = 0;
+  int c;
   while( ( c = getc( f ) ) != EOF && c != 26 && c != '\n' && len < MAXLINE - 1 ) {
     if( c != '\r' && len < MAXLINE - 1 )
       s[len++] = c;
@@ -2320,7 +2403,8 @@ int main( int argc, char **argv ) {
     f = fopen( argv[1], "rbe" );
   if( f == nullptr )
     perror( argv[1] ), exit( 1 );
-  long header, body;             // file positions in header, body
+  long header;
+  long body;             // file positions in header, body
   char *filename = getline( f ); // check header
   if( ( filename == nullptr ) || ( strncmp( filename, PROGNAME " -", strlen( PROGNAME ) + 2 ) != 0 ) )
     fprintf( stderr, "%s: not a " PROGNAME " file\n", argv[1] ), exit( 1 );
@@ -2375,7 +2459,8 @@ int main( int argc, char **argv ) {
       printf( " -> %4ld  \n", ftell( f ) - body );
     } else {                // DECOMPRESS
       if( fi != nullptr ) { // compare
-        int c1, c2;
+        int c1;
+        int c2;
         bool diff = false;
         for( long i = 0; i < size; ++i ) {
           print_status( i );

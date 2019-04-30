@@ -329,7 +329,8 @@ public:
     assert( cx >= 0 && cx < N );
     assert( cxt >= 0 && cxt < N );
     U32 p0 = *t_cxt;
-    U32 i = p0 & 1023, pr = p0 >> 10; // count, prediction
+    U32 i = p0 & 1023;
+    U32 pr = p0 >> 10; // count, prediction
     p0 += static_cast<unsigned int>( i < TOLIMIT_1 );
     p0 += ( ( ( y22 - ( int ) pr ) >> 3 ) * dt[i] ) & 0xfffffc00;
     *t_cxt = p0;
@@ -366,8 +367,10 @@ public:
     assert( cx >= 0 && cx < N / 24 );
     assert( cxt >= 0 && cxt < N );
     {
-      U32 *p = &t[cxt], p0 = p[0];
-      U32 i = p0 & 1023, pr = p0 >> 10; // count, prediction
+      U32 *p = &t[cxt];
+      U32 p0 = p[0];
+      U32 i = p0 & 1023;
+      U32 pr = p0 >> 10; // count, prediction
       p0 += static_cast<unsigned int>( i < TOLIMIT_2 );
       p0 += ( ( ( y22 - ( int ) pr ) >> 3 ) * dt[i] + 0x200 ) & 0xfffffc00;
       p[0] = p0;
@@ -541,9 +544,12 @@ inline U32 hash7( U32 i ) {
 
 template <int B>
 inline U8 *HashTable<B>::get( U32 i ) {
-  U8 *p = t + ( i * B & NB ), *q, *r;
+  U8 *p = t + ( i * B & NB );
+  U8 *q;
+  U8 *r;
   i >>= 24;
-  U8 a, c = i;
+  U8 a;
+  U8 c = i;
   if( *( p - 1 ) == c )
     return p;
   q = ( U8 * ) ( ( uintptr_t ) p ^ B );
@@ -711,10 +717,15 @@ void Predictor::update( int y ) {
   static HashTable<16> t2( MEM );     // cxt -> state
 #endif
   static U8 t0[0x10000];                                   // order 1 cxt -> state
-  static U8 *t0c1 = t0, *cp[6] = {t0, t0, t0, t0, t0, t0}; // pointer to bit history
+  static U8 *t0c1 = t0;
+  static U8 *cp[6] = {t0, t0, t0, t0, t0, t0}; // pointer to bit history
   static StateMap sm[6];
-  static APM a1( 24 * 0x10000 ), a2( 24 * 0x800 );
-  static U32 h[6], pw = 0, c8 = 0, prevfail = 0;
+  static APM a1( 24 * 0x10000 );
+  static APM a2( 24 * 0x800 );
+  static U32 h[6];
+  static U32 pw = 0;
+  static U32 c8 = 0;
+  static U32 prevfail = 0;
   static U8 fails = 0;
   static MatchModel mm( MEM ); // predicts next bit by matching context
   assert( MEM > 0 );
@@ -902,7 +913,8 @@ Encoder::Encoder( Mode m, FILE *f ) : mode( m ), archive( f ), x1( 0 ), x2( 0xff
     for( int i = 0; i < 4; ++i )
       x = ( x << 8 ) + ( getc( archive ) & 255 );
   }
-  int i, pi = 0;
+  int i;
+  int pi = 0;
   for( int x = -2047; x <= 2047; ++x ) { // invert squash()
     int i = squash_init( x );
 #ifdef WIKI
@@ -930,7 +942,8 @@ Encoder::Encoder( Mode m, FILE *f ) : mode( m ), archive( f ), x1( 0 ), x2( 0xff
   }
 
   for( i = -4096; i < 4096; ++i ) {
-    int e = i, v = 0;
+    int e = i;
+    int v = 0;
     if( e < 0 )
       e = -e;
     if( e > 960 )
@@ -978,7 +991,8 @@ int main( int argc, char **argv ) {
   clock_t start = clock();
 
   // Open input file
-  FILE *in = fopen( argv[2], "rbe" ), *out = 0;
+  FILE *in = fopen( argv[2], "rbe" );
+  FILE *out = 0;
   if( in == nullptr )
     perror( argv[2] ), exit( 1 );
 
@@ -995,7 +1009,8 @@ int main( int argc, char **argv ) {
 
     { // a better data detection algorithm will be here in future
       U8 buf[4096];
-      int i = fread( buf, 1, 4096, in ), k = 0;
+      int i = fread( buf, 1, 4096, in );
+      int k = 0;
       while( i-- > 0 ) {
         if( buf[i] > 0x7f )
           ++k;
@@ -1041,8 +1056,12 @@ int main( int argc, char **argv ) {
     Encoder e( DECOMPRESS, in );
 
     { // this is because we don't save TextFlag in the compressed file
-      U8 buf[4096], *p = &buf[0], c;
-      long s = 4096, ss, k = 0;
+      U8 buf[4096];
+      U8 *p = &buf[0];
+      U8 c;
+      long s = 4096;
+      long ss;
+      long k = 0;
       if( s > size )
         s = size;
       size -= s;

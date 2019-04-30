@@ -1427,8 +1427,10 @@ protected:
   Array<U32> t; // cxt -> prediction in high 22 bits, count in low 10 bits
   inline void update( int limit ) {
     assert( cxt >= 0 && cxt < N );
-    U32 *p = &t[cxt], p0 = p[0];
-    int n = p0 & 1023, pr = p0 >> 10; // count, prediction
+    U32 *p = &t[cxt];
+    U32 p0 = p[0];
+    int n = p0 & 1023;
+    int pr = p0 >> 10; // count, prediction
     if( n < limit )
       ++p0;
     else
@@ -1741,7 +1743,8 @@ public:
 inline U8 *ContextMap::E::get( U16 ch ) {
   if( chk[last & 15] == ch )
     return &bh[last & 15][0];
-  int b = 0xffff, bi = 0;
+  int b = 0xffff;
+  int bi = 0;
   for( int i = 0; i < 7; ++i ) {
     if( chk[i] == ch )
       return last = last << 4 | i, ( U8 * ) &bh[i][0];
@@ -1926,18 +1929,31 @@ int matchModel( Mixer &m ) {
 // Model English text (words and columns/end of line)
 static U32 frstchar = 0, spafdo = 0, spaces = 0, spacecount = 0, words = 0, wordcount = 0, wordlen = 0, wordlen1 = 0;
 void wordModel( Mixer &m, Filetype filetype ) {
-  static U32 word0 = 0, word1 = 0, word2 = 0, word3 = 0, word4 = 0, word5 = 0; // hashes
-  static U32 xword0 = 0, xword1 = 0, xword2 = 0, cword0 = 0, ccword = 0;
-  static U32 number0 = 0, number1 = 0; // hashes
+  static U32 word0 = 0;
+  static U32 word1 = 0;
+  static U32 word2 = 0;
+  static U32 word3 = 0;
+  static U32 word4 = 0;
+  static U32 word5 = 0; // hashes
+  static U32 xword0 = 0;
+  static U32 xword1 = 0;
+  static U32 xword2 = 0;
+  static U32 cword0 = 0;
+  static U32 ccword = 0;
+  static U32 number0 = 0;
+  static U32 number1 = 0; // hashes
   static U32 text0 = 0;                // hash stream of letters
   static ContextMap cm( MEM * 16, 44 );
-  static int nl1 = -3, nl = -2, w = 0; // previous, current newline position
+  static int nl1 = -3;
+  static int nl = -2;
+  static int w = 0; // previous, current newline position
   static U32 mask = 0;
   static Array<int> wpos( 0x10000 ); // last position of word
 
   // Update word hashes
   if( bpos == 0 ) {
-    int c = c4 & 255, f = 0;
+    int c = c4 & 255;
+    int f = 0;
     if( (spaces & 0x80000000) != 0U )
       --spacecount;
     if( (words & 0x80000000) != 0U )
@@ -2107,17 +2123,27 @@ inline unsigned ilog2( unsigned x ) {
 #define SPACE 0x20
 
 void recordModel( Mixer &m ) {
-  static int cpos1[256], cpos2[256], cpos3[256], cpos4[256];
+  static int cpos1[256];
+  static int cpos2[256];
+  static int cpos3[256];
+  static int cpos4[256];
   static int wpos1[0x10000];                         // buf(1..2) -> last position
   static int rlen[3] = {2, 3, 4};                    // run length and 2 candidates
   static int rcount[2] = {0, 0};                     // candidate counts
   static U8 padding = 0;                             // detected padding byte
-  static int prevTransition = 0, col = 0, mxCtx = 0; // position of the last padding transition
-  static ContextMap cm( 32768, 3 ), cn( 32768 / 2, 3 ), co( 32768 * 2, 3 ), cp( MEM, 6 );
+  static int prevTransition = 0;
+  static int col = 0;
+  static int mxCtx = 0; // position of the last padding transition
+  static ContextMap cm( 32768, 3 );
+  static ContextMap cn( 32768 / 2, 3 );
+  static ContextMap co( 32768 * 2, 3 );
+  static ContextMap cp( MEM, 6 );
 
   // Find record length
   if( bpos == 0 ) {
-    int w = c4 & 0xffff, c = w & 255, d = w >> 8;
+    int w = c4 & 0xffff;
+    int c = w & 255;
+    int d = w >> 8;
     int r = pos - cpos1[c];
     if( r > 1 && r == cpos1[c] - cpos2[c] && r == cpos2[c] - cpos3[c] && ( r > 32 || r == cpos3[c] - cpos4[c] )
         && ( r > 10 || ( ( c == buf( r * 5 + 1 ) ) && c == buf( r * 6 + 1 ) ) ) ) {
@@ -2279,7 +2305,9 @@ void sparseModel( Mixer &m, int seenbefore, int howmany ) {
 void distanceModel( Mixer &m ) {
   static ContextMap cr( MEM, 3 );
   if( bpos == 0 ) {
-    static int pos00 = 0, pos20 = 0, posnl = 0;
+    static int pos00 = 0;
+    static int pos20 = 0;
+    static int posnl = 0;
     int c = c4 & 0xff;
     if( c == 0x00 )
       pos00 = pos;
@@ -2317,12 +2345,23 @@ inline int sqrbuf( int i ) {
 
 void im24bitModel( Mixer &m, int w, int alpha = 0 ) {
   const int SC = 0x20000;
-  static SmallStationaryContextMap scm1( SC ), scm2( SC ), scm3( SC ), scm4( SC ), scm5( SC ), scm6( SC ), scm7( SC ),
-      scm8( SC ), scm9( SC * 2 ), scm10( 512 );
+  static SmallStationaryContextMap scm1( SC );
+  static SmallStationaryContextMap scm2( SC );
+  static SmallStationaryContextMap scm3( SC );
+  static SmallStationaryContextMap scm4( SC );
+  static SmallStationaryContextMap scm5( SC );
+  static SmallStationaryContextMap scm6( SC );
+  static SmallStationaryContextMap scm7( SC );
+  static SmallStationaryContextMap scm8( SC );
+  static SmallStationaryContextMap scm9( SC * 2 );
+  static SmallStationaryContextMap scm10( 512 );
   static ContextMap cm( MEM * 4, 13 + 6 );
   static int color = -1;
   static int stride = 3;
-  static int ctx, padding, lastPos, x = 0;
+  static int ctx;
+  static int padding;
+  static int lastPos;
+  static int x = 0;
 
   // Select nearby pixels as context
   if( bpos == 0 ) {
@@ -2346,9 +2385,16 @@ void im24bitModel( Mixer &m, int w, int alpha = 0 ) {
     const int logvar = ilog( var );
     int i = color << 5;
 
-    int WWW = buf( 3 * stride ), WW = buf( 2 * stride ), W = buf( stride ), NW = buf( w + stride ), N = buf( w ),
-        NE = buf( w - stride ), NNW = buf( w * 2 + stride ), NN = buf( w * 2 ), NNE = buf( w * 2 - stride ),
-        NNN = buf( w * 3 );
+    int WWW = buf( 3 * stride );
+    int WW = buf( 2 * stride );
+    int W = buf( stride );
+    int NW = buf( w + stride );
+    int N = buf( w );
+    int NE = buf( w - stride );
+    int NNW = buf( w * 2 + stride );
+    int NN = buf( w * 2 );
+    int NNE = buf( w * 2 - stride );
+    int NNN = buf( w * 3 );
     ctx = ( min( color, stride ) << 9 ) | ( static_cast<int>( abs( W - N ) > 8 ) << 8 ) | ( static_cast<int>( W > N ) << 7 ) | ( static_cast<int>( W > NW ) << 6 )
           | ( static_cast<int>( abs( N - NW ) > 8 ) << 5 ) | ( static_cast<int>( N > NW ) << 4 ) | ( static_cast<int>( abs( N - NE ) > 8 ) << 3 ) | ( static_cast<int>( N > NE ) << 2 )
           | ( static_cast<int>( W > WW ) << 1 ) | static_cast<int>( N > NN );
@@ -2409,11 +2455,19 @@ void im24bitModel( Mixer &m, int w, int alpha = 0 ) {
 // Model for 8-bit image data
 void im8bitModel( Mixer &m, int w, int gray = 0 ) {
   const int SC = 0x20000;
-  static SmallStationaryContextMap scm1( SC ), scm2( SC ), scm3( SC ), scm4( SC ), scm5( SC ), scm6( SC * 2 ),
-      scm7( SC );
+  static SmallStationaryContextMap scm1( SC );
+  static SmallStationaryContextMap scm2( SC );
+  static SmallStationaryContextMap scm3( SC );
+  static SmallStationaryContextMap scm4( SC );
+  static SmallStationaryContextMap scm5( SC );
+  static SmallStationaryContextMap scm6( SC * 2 );
+  static SmallStationaryContextMap scm7( SC );
   static ContextMap cm( MEM * 4, 45 + 12 + 5 );
-  static int itype = 0, id8 = 1, id9 = 1;
-  static int ctx, col = 0;
+  static int itype = 0;
+  static int id8 = 1;
+  static int id9 = 1;
+  static int ctx;
+  static int col = 0;
   // Select nearby pixels as context
   if( bpos == 0 ) {
     assert( w > 3 );
@@ -2548,8 +2602,17 @@ void im8bitModel( Mixer &m, int w, int gray = 0 ) {
       cm.set( hash( ++i, buf( 3 ) >> 2, buf( w - 2 ) >> 2, buf( w * 2 - 2 ) >> 2 ) );
     }
 
-    int WWW = buf( 3 ), WW = buf( 2 ), W = buf( 1 ), NW = buf( w + 1 ), N = buf( w ), NE = buf( w - 1 ),
-        NEE = buf( w - 2 ), NNW = buf( w * 2 + 1 ), NN = buf( w * 2 ), NNE = buf( w * 2 - 1 ), NNN = buf( w * 3 );
+    int WWW = buf( 3 );
+    int WW = buf( 2 );
+    int W = buf( 1 );
+    int NW = buf( w + 1 );
+    int N = buf( w );
+    int NE = buf( w - 1 );
+    int NEE = buf( w - 2 );
+    int NNW = buf( w * 2 + 1 );
+    int NN = buf( w * 2 );
+    int NNE = buf( w * 2 - 1 );
+    int NNN = buf( w * 3 );
 
     if( gray != 0 ) {
       ctx = min( 0x1F, ( blpos % w ) / max( 1, w / 32 ) )
@@ -2601,7 +2664,10 @@ void im8bitModel( Mixer &m, int w, int gray = 0 ) {
 // Model for 1-bit image data
 
 void im1bitModel( Mixer &m, int w ) {
-  static U32 r0, r1, r2, r3;           // last 4 rows, bit 8 is over current pixel
+  static U32 r0;
+  static U32 r1;
+  static U32 r2;
+  static U32 r3;           // last 4 rows, bit 8 is over current pixel
   static Array<U8> t( 0x10200 );       // model: cxt -> state
   const int N = 4 + 1 + 1 + 1 + 1 + 1; // number of contexts
   static int cxt[N];                   // contexts
@@ -2741,7 +2807,8 @@ int jpegModel( Mixer &m ) {
   static Array<int> pred( 4 );    // component -> last DC value
   static int dc = 0;              // DC value of the current block
   static int width = 0;           // Image width in MCU
-  static int row = 0, column = 0; // in MCU (column 0 to width-1)
+  static int row = 0;
+  static int column = 0; // in MCU (column 0 to width-1)
   static Buf cbuf( 0x20000 );     // Rotating buffer of coefficients, coded as:
                                   // DC: level shifted absolute value, low 4 bits discarded, i.e.
                                   //   [-1023...1024] -> [0...255].
@@ -2752,17 +2819,29 @@ int jpegModel( Mixer &m ) {
                                   //   this never occurs in a valid RS code).
   static int cpos = 0;            // position in cbuf
   static int rs1;                 // last RS code
-  static int ssum = 0, ssum1 = 0, ssum2 = 0, ssum3 = 0;
+  static int ssum = 0;
+  static int ssum1 = 0;
+  static int ssum2 = 0;
+  static int ssum3 = 0;
   // sum of S in RS codes in block and sum of S in first component
 
   static IntBuf cbuf2( 0x20000 );
-  static Array<int> adv_pred( 4 ), sumu( 8 ), sumv( 8 ), run_pred( 6 );
+  static Array<int> adv_pred( 4 );
+  static Array<int> sumu( 8 );
+  static Array<int> sumv( 8 );
+  static Array<int> run_pred( 6 );
   static Array<int> ls( 10 ); // block -> distance to previous block
-  static Array<int> blockW( 10 ), blockN( 10 ), nBlocks( 4 ), SamplingFactors( 4 );
-  static Array<int> lcp( 4 ), zpos( 64 );
+  static Array<int> blockW( 10 );
+  static Array<int> blockN( 10 );
+  static Array<int> nBlocks( 4 );
+  static Array<int> SamplingFactors( 4 );
+  static Array<int> lcp( 4 );
+  static Array<int> zpos( 64 );
 
   //for parsing Quantization tables
-  static int dqt_state = -1, dqt_end = 0, qnum = 0;
+  static int dqt_state = -1;
+  static int dqt_end = 0;
+  static int qnum = 0;
 
   const static U8 zzu[64] = {// zigzag coef -> u,v
                              0, 1, 0, 0, 1, 2, 3, 2, 1, 0, 0, 1, 2, 3, 4, 5, 4, 3, 2, 1, 0, 0,
@@ -2937,7 +3016,8 @@ int jpegModel( Mixer &m ) {
         int end = p + buf[p - 2] * 256 + buf[p - 1] - 2; // end of Huffman table
         int count = 0;                                   // sanity check
         while( p < end && end < pos && end < p + 2100 && ++count < 10 ) {
-          int tc = buf[p] >> 4, th = buf[p] & 15;
+          int tc = buf[p] >> 4;
+          int th = buf[p] & 15;
           if( tc >= 2 || th >= 4 )
             break;
           jassert( tc >= 0 && tc < 2 && th >= 0 && th < 4 );
@@ -2969,7 +3049,9 @@ int jpegModel( Mixer &m ) {
           for( int th = 0; th < 2; th++ ) {
             HUF *h = &huf[tc * 64 + th * 16];
             int hval = tc * 1024 + th * 256;
-            int code = 0, c = 0, x = 0;
+            int code = 0;
+            int c = 0;
+            int x = 0;
 
             for( int i = 0; i < 16; i++ ) {
               switch( tc * 2 + th ) {
@@ -3194,8 +3276,10 @@ int jpegModel( Mixer &m ) {
 
           // UPDATE_ADV_PRED !!!!
           {
-            const int acomp = mcupos >> 6, q = 64 * images[idx].qmap[acomp];
-            const int zz = mcupos & 63, cpos_dc = cpos - zz;
+            const int acomp = mcupos >> 6;
+            const int q = 64 * images[idx].qmap[acomp];
+            const int zz = mcupos & 63;
+            const int cpos_dc = cpos - zz;
             if( zz == 0 ) {
               for( int i = 0; i < 8; ++i )
                 sumu[i] = sumv[i] = 0;
@@ -3249,7 +3333,8 @@ int jpegModel( Mixer &m ) {
             adv_pred[3] = ( x < 0 ? -1 : +1 ) * ilog( 10 * abs( x ) + 1 ) / 10;
 
             for( int i = 0; i < 4; ++i ) {
-              const int a = ( (i & 1) != 0 ? zzv[zz] : zzu[zz] ), b = ( (i & 2) != 0 ? 2 : 1 );
+              const int a = ( (i & 1) != 0 ? zzv[zz] : zzu[zz] );
+              const int b = ( (i & 2) != 0 ? 2 : 1 );
               if( a < b )
                 x = 255;
               else {
@@ -3290,7 +3375,8 @@ int jpegModel( Mixer &m ) {
   static Array<U8 *> cp( N ); // context pointers
   static StateMap sm[N];
   static Mixer m1( 32, 2050, 3 );
-  static APM a1( 0x8000 ), a2( 0x20000 );
+  static APM a1( 0x8000 );
+  static APM a2( 0x20000 );
 
   // Update model
   if( cp[N - 1] != nullptr ) {
@@ -3307,7 +3393,8 @@ int jpegModel( Mixer &m ) {
   if( ++hbcount > 2 || huffbits == 0 )
     hbcount = 0;
   jassert( coef >= 0 && coef < 256 );
-  const int zu = zzu[mcupos & 63], zv = zzv[mcupos & 63];
+  const int zu = zzu[mcupos & 63];
+  const int zv = zzv[mcupos & 63];
   if( hbcount == 0 ) {
     int n = hc * 32;
     cxt[0] = hash( ++n, coef, adv_pred[2], run_pred[2], ssum2 >> 6 );
@@ -3451,16 +3538,38 @@ inline int X2( int i ) {
 }
 
 void wavModel( Mixer &m, int info ) {
-  static int pr[3][2], n[2], counter[2];
-  static double F[49][49][2], L[49][49];
-  int j, k, l, i = 0;
+  static int pr[3][2];
+  static int n[2];
+  static int counter[2];
+  static double F[49][49][2];
+  static double L[49][49];
+  int j;
+  int k;
+  int l;
+  int i = 0;
   long double sum;
-  const double a = 0.996, a2 = 1 / a;
+  const double a = 0.996;
+  const double a2 = 1 / a;
   const int SC = 0x20000;
-  static SmallStationaryContextMap scm1( SC ), scm2( SC ), scm3( SC ), scm4( SC ), scm5( SC ), scm6( SC ), scm7( SC );
+  static SmallStationaryContextMap scm1( SC );
+  static SmallStationaryContextMap scm2( SC );
+  static SmallStationaryContextMap scm3( SC );
+  static SmallStationaryContextMap scm4( SC );
+  static SmallStationaryContextMap scm5( SC );
+  static SmallStationaryContextMap scm6( SC );
+  static SmallStationaryContextMap scm7( SC );
   static ContextMap cm( MEM * 4, 10 + 1 );
-  static int bits, channels, w, ch;
-  static int z1, z2, z3, z4, z5, z6, z7;
+  static int bits;
+  static int channels;
+  static int w;
+  static int ch;
+  static int z1;
+  static int z2;
+  static int z3;
+  static int z4;
+  static int z5;
+  static int z6;
+  static int z7;
 
   if( (bpos == 0) && (blpos == 0) ) {
     bits = ( ( info % 4 ) / 2 ) * 8 + 8;
@@ -3563,8 +3672,12 @@ void wavModel( Mixer &m, int info ) {
       pr[0][chn] = int( floor( sum ) );
       counter[chn]++;
     }
-    const int y1 = pr[0][chn], y2 = pr[1][chn], y3 = pr[2][chn];
-    int x1 = buf( 1 ), x2 = buf( 2 ), x3 = buf( 3 );
+    const int y1 = pr[0][chn];
+    const int y2 = pr[1][chn];
+    const int y3 = pr[2][chn];
+    int x1 = buf( 1 );
+    int x2 = buf( 2 );
+    int x3 = buf( 3 );
     if( wmode == 4 || wmode == 5 )
       x1 ^= 128, x2 ^= 128;
     if( bits == 8 )
@@ -3642,7 +3755,9 @@ inline int pref( int i ) {
 
 // Get context at buf(i) relevant to parsing 32-bit x86 code
 U32 execxt( int i, int x = 0 ) {
-  int prefix = 0, opcode = 0, modrm = 0;
+  int prefix = 0;
+  int opcode = 0;
+  int modrm = 0;
   if( i != 0 )
     prefix += 4 * pref( i-- );
   if( i != 0 )
@@ -3677,7 +3792,9 @@ void indirectModel( Mixer &m ) {
   static U16 t4[0x8000];
 
   if( bpos == 0 ) {
-    U32 d = c4 & 0xffff, c = d & 255, d2 = ( buf( 1 ) & 31 ) + 32 * ( buf( 2 ) & 31 ) + 1024 * ( buf( 3 ) & 31 );
+    U32 d = c4 & 0xffff;
+    U32 c = d & 255;
+    U32 d2 = ( buf( 1 ) & 31 ) + 32 * ( buf( 2 ) & 31 ) + 1024 * ( buf( 3 ) & 31 );
     U32 d3 = ( buf( 1 ) >> 3 & 31 ) + 32 * ( buf( 3 ) >> 3 & 31 ) + 1024 * ( buf( 4 ) >> 3 & 31 );
     U32 &r1 = t1[d >> 8];
     r1 = r1 << 8 | c;
@@ -3730,7 +3847,8 @@ struct DMCNode {                 // 12 bytes
 };
 
 void dmcModel( Mixer &m ) {
-  static int top = 0, curr = 0;       // allocated, current node
+  static int top = 0;
+  static int curr = 0;       // allocated, current node
   static Array<DMCNode> t( MEM * 2 ); // state graph
   static StateMap sm;
   static int threshold = 256;
@@ -3799,10 +3917,18 @@ void dmcModel( Mixer &m ) {
 }
 
 void nestModel( Mixer &m ) {
-  static int ic = 0, bc = 0, pc = 0, vc = 0, qc = 0, lvc = 0, wc = 0;
+  static int ic = 0;
+  static int bc = 0;
+  static int pc = 0;
+  static int vc = 0;
+  static int qc = 0;
+  static int lvc = 0;
+  static int wc = 0;
   static ContextMap cm( MEM, 10 );
   if( bpos == 0 ) {
-    int c = c4 & 255, matched = 1, vv;
+    int c = c4 & 255;
+    int matched = 1;
+    int vv;
     const int lc = ( c >= 'A' && c <= 'Z' ? c + 'a' - 'A' : c );
     if( lc == 'a' || lc == 'e' || lc == 'i' || lc == 'o' || lc == 'u' )
       vv = 1;
@@ -3942,10 +4068,13 @@ void nestModel( Mixer &m ) {
 
 int contextModel2() {
   static ContextMap cm( MEM * 32, 9 );
-  static RunContextMap rcm7( MEM ), rcm9( MEM ), rcm10( MEM );
+  static RunContextMap rcm7( MEM );
+  static RunContextMap rcm9( MEM );
+  static RunContextMap rcm10( MEM );
   static Mixer m( 881 + 8 * 3, 3095 + 768 + 1024 * static_cast<int>( level > 7 ), 7 + static_cast<int>( level > 7 ) );
   static U32 cxt[16]; // order 0-11 contexts
-  static Filetype ft2, filetype = DEFAULT;
+  static Filetype ft2;
+  static Filetype filetype = DEFAULT;
   static int size = 0; // bytes remaining in block
   static int info = 0; // image width or audio type
 
@@ -4029,7 +4158,10 @@ int contextModel2() {
   if( order < 0 )
     order = 0;
 
-  U32 c1 = buf( 1 ), c2 = buf( 2 ), c3 = buf( 3 ), c;
+  U32 c1 = buf( 1 );
+  U32 c2 = buf( 2 );
+  U32 c3 = buf( 3 );
+  U32 c;
 
   m.set( 8 + c1 + static_cast<int>( bpos > 5 ) * 256
              + static_cast<int>( ( ( c0 & ( ( 1 << bpos ) - 1 ) ) == 0 ) || ( c0 == ( ( 2 << bpos ) - 1 ) ) ) * 512,
@@ -4073,7 +4205,13 @@ public:
 Predictor::Predictor()  {}
 
 void Predictor::update() {
-  static APM1 a( 256 ), a1( 0x10000 ), a2( 0x10000 ), a3( 0x10000 ), a4( 0x10000 ), a5( 0x10000 ), a6( 0x10000 );
+  static APM1 a( 256 );
+  static APM1 a1( 0x10000 );
+  static APM1 a2( 0x10000 );
+  static APM1 a3( 0x10000 );
+  static APM1 a4( 0x10000 );
+  static APM1 a5( 0x10000 );
+  static APM1 a6( 0x10000 );
 
   // Update global context: pos, bpos, c0, c4, buf, f4
   c0 += c0 + y;
@@ -4304,7 +4442,9 @@ static int luts_init = 0;
 void eccedc_init( void ) {
   if( luts_init != 0 )
     return;
-  U32 i, j, edc;
+  U32 i;
+  U32 j;
+  U32 edc;
   for( i = 0; i < 256; i++ ) {
     j = ( i << 1 ) ^ ( (i & 0x80) != 0U ? 0x11D : 0 );
     ecc_f_lut[i] = j;
@@ -4319,7 +4459,8 @@ void eccedc_init( void ) {
 
 void ecc_compute( U8 *src, U32 major_count, U32 minor_count, U32 major_mult, U32 minor_inc, U8 *dest ) {
   U32 size = major_count * minor_count;
-  U32 major, minor;
+  U32 major;
+  U32 minor;
   for( major = 0; major < major_count; major++ ) {
     U32 index = ( major >> 1 ) * major_mult + ( major & 1 );
     U8 ecc_a = 0;
@@ -4475,7 +4616,9 @@ int zlib_inflateInit( z_streamp strm, int zh ) {
 
 bool IsGrayscalePalette( FILE *in, int n = 256, int isRGBA = 0 ) {
   long offset = ftell( in );
-  int stride = 3 + isRGBA, res = static_cast<int>( n > 0 ) << 8, order = 1;
+  int stride = 3 + isRGBA;
+  int res = static_cast<int>( n > 0 ) << 8;
+  int order = 1;
   for( int i = 0; ( i < n * stride ) && (( res >> 8 ) != 0); i++ ) {
     int b = getc( in );
     if( b == EOF ) {
@@ -4503,35 +4646,85 @@ bool IsGrayscalePalette( FILE *in, int n = 256, int isRGBA = 0 ) {
 
 // Detect blocks
 Filetype detect( FILE *in, int n, Filetype type, int &info ) {
-  U32 buf3 = 0, buf2 = 0, buf1 = 0, buf0 = 0; // last 16 bytes
+  U32 buf3 = 0;
+  U32 buf2 = 0;
+  U32 buf1 = 0;
+  U32 buf0 = 0; // last 16 bytes
   long start = ftell( in );
 
   // For EXE detection
-  Array<int> abspos( 256 ), // CALL/JMP abs. addr. low byte -> last offset
+  Array<int> abspos( 256 );
+  Array<int> // CALL/JMP abs. addr. low byte -> last offset
       relpos( 256 );        // CALL/JMP relative addr. low byte -> last offset
   int e8e9count = 0;        // number of consecutive CALL/JMPs
   int e8e9pos = 0;          // offset of first CALL or JMP instruction
   int e8e9last = 0;         // offset of most recent CALL or JMP
 
-  int soi = 0, sof = 0, sos = 0, app = 0;                              // For JPEG detection - position where found
-  int wavi = 0, wavsize = 0, wavch = 0, wavbps = 0, wavm = 0;          // For WAVE detection
-  int aiff = 0, aiffm = 0, aiffs = 0;                                  // For AIFF detection
-  int s3mi = 0, s3mno = 0, s3mni = 0;                                  // For S3M detection
-  int bmp = 0, imgbpp = 0, bmpx = 0, bmpy = 0, bmpof = 0, hdrless = 0; // For BMP detection
-  int rgbi = 0, rgbx = 0, rgby = 0;                                    // For RGB detection
-  int tga = 0, tgax = 0, tgay = 0, tgaz = 0, tgat = 0;                 // For TGA detection
-  int pgm = 0, pgmcomment = 0, pgmw = 0, pgmh = 0, pgm_ptr = 0, pgmc = 0, pgmn = 0; // For PBM, PGM, PPM detection
+  int soi = 0;
+  int sof = 0;
+  int sos = 0;
+  int app = 0;                              // For JPEG detection - position where found
+  int wavi = 0;
+  int wavsize = 0;
+  int wavch = 0;
+  int wavbps = 0;
+  int wavm = 0;          // For WAVE detection
+  int aiff = 0;
+  int aiffm = 0;
+  int aiffs = 0;                                  // For AIFF detection
+  int s3mi = 0;
+  int s3mno = 0;
+  int s3mni = 0;                                  // For S3M detection
+  int bmp = 0;
+  int imgbpp = 0;
+  int bmpx = 0;
+  int bmpy = 0;
+  int bmpof = 0;
+  int hdrless = 0; // For BMP detection
+  int rgbi = 0;
+  int rgbx = 0;
+  int rgby = 0;                                    // For RGB detection
+  int tga = 0;
+  int tgax = 0;
+  int tgay = 0;
+  int tgaz = 0;
+  int tgat = 0;                 // For TGA detection
+  int pgm = 0;
+  int pgmcomment = 0;
+  int pgmw = 0;
+  int pgmh = 0;
+  int pgm_ptr = 0;
+  int pgmc = 0;
+  int pgmn = 0; // For PBM, PGM, PPM detection
   char pgm_buf[32];
-  int cdi = 0, cda = 0, cdm = 0; // For CD sectors detection
+  int cdi = 0;
+  int cda = 0;
+  int cdm = 0; // For CD sectors detection
   U32 cdf = 0;
-  unsigned char zbuf[32], zin[1 << 16], zout[1 << 16]; // For ZLIB stream detection
-  int zbufpos = 0, zzippos = -1;
-  int pdfim = 0, pdfimw = 0, pdfimh = 0, pdfimb = 0, pdfimp = 0;
-  int b64s = 0, b64i = 0, b64line = 0, b64nl = 0;                // For base64 detection
-  int gif = 0, gifa = 0, gifi = 0, gifw = 0, gifc = 0, gifb = 0; // For GIF detection
+  unsigned char zbuf[32];
+  unsigned char zin[1 << 16];
+  unsigned char zout[1 << 16]; // For ZLIB stream detection
+  int zbufpos = 0;
+  int zzippos = -1;
+  int pdfim = 0;
+  int pdfimw = 0;
+  int pdfimh = 0;
+  int pdfimb = 0;
+  int pdfimp = 0;
+  int b64s = 0;
+  int b64i = 0;
+  int b64line = 0;
+  int b64nl = 0;                // For base64 detection
+  int gif = 0;
+  int gifa = 0;
+  int gifi = 0;
+  int gifw = 0;
+  int gifc = 0;
+  int gifb = 0; // For GIF detection
 
   // For image detection
-  static int deth = 0, detd = 0; // detected header/data size in bytes
+  static int deth = 0;
+  static int detd = 0; // detected header/data size in bytes
   static Filetype dett;          // detected block type
   if( deth != 0 )
     return fseek( in, start + deth, SEEK_SET ), deth = 0, dett;
@@ -4552,7 +4745,8 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
     zbufpos = ( zbufpos + 1 ) % 32;
     int zh = parse_zlib_header( ( ( int ) zbuf[zbufpos] ) * 256 + ( int ) zbuf[( zbufpos + 1 ) % 32] );
     if( ( i >= 31 && zh != -1 ) || zzippos == i ) {
-      int streamLength = 0, ret = 0;
+      int streamLength = 0;
+      int ret = 0;
 
       // Quick check possible stream by decompressing first 32 bytes
       z_stream strm;
@@ -4737,7 +4931,8 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
       if( p == 12 && ( buf1 != 0x41494646 || buf0 != 0x434f4d4d ) )
         aiff = 0; // AIFF COMM
       else if( p == 24 ) {
-        const int bits = buf0 & 0xffff, chn = buf1 >> 16;
+        const int bits = buf0 & 0xffff;
+        const int chn = buf1 >> 16;
         if( ( bits == 8 || bits == 16 ) && ( chn == 1 || chn == 2 ) )
           aiffm = chn + bits / 4 + 1;
         else
@@ -4785,7 +4980,10 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
         s3mi = 0;
       else if( p == 16 ) {
         long savedpos = ftell( in );
-        int b[31], sam_start = ( 1 << 16 ), sam_end = 0, ok = 1;
+        int b[31];
+        int sam_start = ( 1 << 16 );
+        int sam_end = 0;
+        int ok = 1;
         for( int j = 0; j < s3mni; j++ ) {
           fseek( in, start + s3mi - 31 + 0x60 + s3mno + j * 2, SEEK_SET );
           int i1 = getc( in );
@@ -4939,7 +5137,14 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
 
       // read directory
       int dirsize = getc( in );
-      int tifx = 0, tify = 0, tifz = 0, tifzb = 0, tifc = 0, tifofs = 0, tifofval = 0, b[12];
+      int tifx = 0;
+      int tify = 0;
+      int tifz = 0;
+      int tifzb = 0;
+      int tifc = 0;
+      int tifofs = 0;
+      int tifofval = 0;
+      int b[12];
       if( getc( in ) == 0 ) {
         for( int i = 0; i < dirsize; i++ ) {
           for( int j = 0; j < 12; j++ )
@@ -5142,8 +5347,11 @@ void encode_cd( FILE *in, FILE *out, int len, int info ) {
 int decode_cd( FILE *in, int size, FILE *out, FMode mode, int &diffFound ) {
   const int BLOCK = 2352;
   U8 blk[BLOCK];
-  long i = 0, i2 = 0;
-  int a = -1, bsize = 0, q = fgetc( in );
+  long i = 0;
+  long i2 = 0;
+  int a = -1;
+  int bsize = 0;
+  int q = fgetc( in );
   q = ( q << 8 ) + fgetc( in );
   size -= 2;
   while( i < size ) {
@@ -5185,7 +5393,9 @@ int decode_cd( FILE *in, int size, FILE *out, FMode mode, int &diffFound ) {
 // simple color transform (b, g, r) -> (g, g-r, g-b)
 
 void encode_bmp( FILE *in, FILE *out, int len, int width ) {
-  int r, g, b;
+  int r;
+  int g;
+  int b;
   for( int i = 0; i < len / width; i++ ) {
     for( int j = 0; j < width / 3; j++ ) {
       b = fgetc( in ), g = fgetc( in ), r = fgetc( in );
@@ -5199,7 +5409,10 @@ void encode_bmp( FILE *in, FILE *out, int len, int width ) {
 }
 
 int decode_bmp( Encoder &en, int size, int width, FILE *out, FMode mode, int &diffFound ) {
-  int r, g, b, p;
+  int r;
+  int g;
+  int b;
+  int p;
   for( int i = 0; i < size / width; i++ ) {
     p = i * width;
     for( int j = 0; j < width / 3; j++ ) {
@@ -5271,7 +5484,9 @@ void encode_exe( FILE *in, FILE *out, int len, int begin ) {
 
 int decode_exe( Encoder &en, int size, FILE *out, FMode mode, int &diffFound ) {
   const int BLOCK = 0x10000; // block size
-  int begin, offset = 6, a;
+  int begin;
+  int offset = 6;
+  int a;
   U8 c[6];
   begin = en.decompress() << 24;
   begin |= en.decompress() << 16;
@@ -5309,22 +5524,33 @@ int decode_exe( Encoder &en, int size, FILE *out, FMode mode, int &diffFound ) {
 }
 
 int encode_zlib( FILE *in, FILE *out, int len ) {
-  const int BLOCK = 1 << 16, LIMIT = 128;
-  U8 zin[BLOCK * 2], zout[BLOCK], zrec[BLOCK * 2], diffByte[81 * LIMIT];
+  const int BLOCK = 1 << 16;
+  const int LIMIT = 128;
+  U8 zin[BLOCK * 2];
+  U8 zout[BLOCK];
+  U8 zrec[BLOCK * 2];
+  U8 diffByte[81 * LIMIT];
   int diffPos[81 * LIMIT];
 
   // Step 1 - parse offset type form zlib stream header
   long pos = ftell( in );
-  unsigned int h1 = fgetc( in ), h2 = fgetc( in );
+  unsigned int h1 = fgetc( in );
+  unsigned int h2 = fgetc( in );
   fseek( in, pos, SEEK_SET );
   int zh = parse_zlib_header( h1 * 256 + h2 );
-  int memlevel, clevel, window = zh == -1 ? 0 : MAX_WBITS + 10 + zh / 4, ctype = zh % 4;
+  int memlevel;
+  int clevel;
+  int window = zh == -1 ? 0 : MAX_WBITS + 10 + zh / 4;
+  int ctype = zh % 4;
   int minclevel = window == 0 ? 1 : ctype == 3 ? 7 : ctype == 2 ? 6 : ctype == 1 ? 2 : 1;
   int maxclevel = window == 0 ? 9 : ctype == 3 ? 9 : ctype == 2 ? 6 : ctype == 1 ? 5 : 1;
 
   // Step 2 - check recompressiblitiy, determine parameters and save differences
-  z_stream main_strm, rec_strm[81];
-  int diffCount[81], recpos[81], main_ret = Z_STREAM_END;
+  z_stream main_strm;
+  z_stream rec_strm[81];
+  int diffCount[81];
+  int recpos[81];
+  int main_ret = Z_STREAM_END;
   main_strm.zalloc = Z_NULL;
   main_strm.zfree = Z_NULL;
   main_strm.opaque = Z_NULL;
@@ -5397,7 +5623,8 @@ int encode_zlib( FILE *in, FILE *out, int len ) {
     if( main_ret != Z_BUF_ERROR && main_ret != Z_STREAM_END )
       break;
   }
-  int minCount = LIMIT, index;
+  int minCount = LIMIT;
+  int index;
   for( int i = 80; i >= 0; i-- ) {
     deflateEnd( &rec_strm[i] );
     if( diffCount[i] < minCount ) {
@@ -5452,8 +5679,10 @@ int encode_zlib( FILE *in, FILE *out, int len ) {
 }
 
 int decode_zlib( FILE *in, int size, FILE *out, FMode mode, int &diffFound ) {
-  const int BLOCK = 1 << 16, LIMIT = 128;
-  U8 zin[BLOCK], zout[BLOCK];
+  const int BLOCK = 1 << 16;
+  const int LIMIT = 128;
+  U8 zin[BLOCK];
+  U8 zout[BLOCK];
   int diffCount = min( fgetc( in ), LIMIT - 1 );
   int window = fgetc( in ) - MAX_WBITS;
   int index = fgetc( in );
@@ -5479,7 +5708,8 @@ int decode_zlib( FILE *in, int size, FILE *out, FMode mode, int &diffFound ) {
   size -= 7 + 5 * diffCount;
 
   z_stream rec_strm;
-  int diffIndex = 1, recpos = 0;
+  int diffIndex = 1;
+  int recpos = 0;
   rec_strm.zalloc = Z_NULL;
   rec_strm.zfree = Z_NULL;
   rec_strm.opaque = Z_NULL;
@@ -5537,7 +5767,10 @@ bool isbase64( unsigned char c ) {
 
 int decode_base64( FILE *in, FILE *out, FMode mode, int &diffFound ) {
   U8 inn[3];
-  int i, len1 = 0, len = 0, blocksout = 0;
+  int i;
+  int len1 = 0;
+  int len = 0;
+  int blocksout = 0;
   int fle = 0;
   int linesize = 0;
   int outlen = 0;
@@ -5548,7 +5781,8 @@ int decode_base64( FILE *in, FILE *out, FMode mode, int &diffFound ) {
   outlen += ( getc( in ) << 16 );
   tlf = ( getc( in ) );
   outlen += ( ( tlf & 63 ) << 24 );
-  U8 *ptr, *fptr;
+  U8 *ptr;
+  U8 *fptr;
   ptr = ( U8 * ) calloc( ( outlen >> 2 ) * 4 + 10, 1 );
   if( ptr == nullptr )
     quit( "Out of memory (d_B64)" );
@@ -5573,7 +5807,9 @@ int decode_base64( FILE *in, FILE *out, FMode mode, int &diffFound ) {
       }
     }
     if( len != 0 ) {
-      U8 in0, in1, in2;
+      U8 in0;
+      U8 in1;
+      U8 in2;
       in0 = inn[0], in1 = inn[1], in2 = inn[2];
       fptr[fle++] = ( table1[in0 >> 2] );
       fptr[fle++] = ( table1[( ( in0 & 0x03 ) << 4 ) | ( ( in1 & 0xf0 ) >> 4 )] );
@@ -5624,7 +5860,8 @@ void encode_base64( FILE *in, FILE *out, int len ) {
   int lfp = 0;
   int tlf = 0;
   char src[4];
-  U8 *ptr, *fptr;
+  U8 *ptr;
+  U8 *fptr;
   int b64mem = ( len >> 2 ) * 3 + 10;
   ptr = ( U8 * ) calloc( b64mem, 1 );
   if( ptr == nullptr )
@@ -5686,8 +5923,13 @@ void encode_base64( FILE *in, FILE *out, int len ) {
 }
 
 int encode_gif( FILE *in, FILE *out, int len ) {
-  int codesize = fgetc( in ), diffpos = 0, hdrsize = 6, clearpos = 0, bsize = 0;
-  int beginin = ftell( in ), beginout = ftell( out );
+  int codesize = fgetc( in );
+  int diffpos = 0;
+  int hdrsize = 6;
+  int clearpos = 0;
+  int bsize = 0;
+  int beginin = ftell( in );
+  int beginout = ftell( out );
   U8 output[4096];
   fputc( hdrsize >> 8, out );
   fputc( hdrsize & 255, out );
@@ -5697,8 +5939,13 @@ int encode_gif( FILE *in, FILE *out, int len ) {
   fputc( codesize, out );
   for( int phase = 0; phase < 2; phase++ ) {
     fseek( in, beginin, SEEK_SET );
-    int bits = codesize + 1, shift = 0, buf = 0;
-    int blocksize = 0, maxcode = ( 1 << codesize ) + 1, last = -1, dict[4096];
+    int bits = codesize + 1;
+    int shift = 0;
+    int buf = 0;
+    int blocksize = 0;
+    int maxcode = ( 1 << codesize ) + 1;
+    int last = -1;
+    int dict[4096];
     bool end = false;
     while( ( blocksize = fgetc( in ) ) > 0 && ftell( in ) - beginin < len && !end ) {
       for( int i = 0; i < blocksize; i++ ) {
@@ -5729,7 +5976,8 @@ int encode_gif( FILE *in, FILE *out, int len ) {
           else if( code > maxcode + 1 )
             return 0;
           else {
-            int j = ( code <= maxcode ? code : last ), size = 1;
+            int j = ( code <= maxcode ? code : last );
+            int size = 1;
             while( j >= ( 1 << codesize ) ) {
               output[4096 - ( size++ )] = dict[j] & 255;
               j = dict[j] >> 8;
@@ -5815,16 +6063,24 @@ int encode_gif( FILE *in, FILE *out, int len ) {
   }
 
 int decode_gif( FILE *in, int size, FILE *out, FMode mode, int &diffFound ) {
-  int diffcount = fgetc( in ), curdiff = 0, diffpos[4096];
+  int diffcount = fgetc( in );
+  int curdiff = 0;
+  int diffpos[4096];
   diffcount = ( ( diffcount << 8 ) + fgetc( in ) - 6 ) / 4;
   int bsize = 255 - fgetc( in );
   int clearpos = fgetc( in );
   clearpos = ( clearpos << 8 ) + fgetc( in );
   clearpos = ( 69631 - clearpos ) & 0xffff;
-  int codesize = fgetc( in ), bits = codesize + 1, shift = 0, buf = 0, blocksize = 0;
+  int codesize = fgetc( in );
+  int bits = codesize + 1;
+  int shift = 0;
+  int buf = 0;
+  int blocksize = 0;
   if( diffcount > 4096 || clearpos <= ( 1 << codesize ) + 2 )
     return 1;
-  int maxcode = ( 1 << codesize ) + 1, dict[4096], input;
+  int maxcode = ( 1 << codesize ) + 1;
+  int dict[4096];
+  int input;
   for( int i = 0; i < diffcount; i++ ) {
     diffpos[i] = fgetc( in );
     diffpos[i] = ( diffpos[i] << 8 ) + fgetc( in );
@@ -5835,7 +6091,9 @@ int decode_gif( FILE *in, int size, FILE *out, FMode mode, int &diffFound ) {
   }
   U8 output[256];
   size -= 6 + diffcount * 4;
-  int last = fgetc( in ), total = size + 1, outsize = 1;
+  int last = fgetc( in );
+  int total = size + 1;
+  int outsize = 1;
   if( mode == FDECOMPRESS )
     fputc( codesize, out );
   else if( mode == FCOMPARE )
@@ -5844,7 +6102,8 @@ int decode_gif( FILE *in, int size, FILE *out, FMode mode, int &diffFound ) {
   if( diffcount == 0 || diffpos[0] != 0 )
     gif_write_code( 1 << codesize ) else curdiff++;
   while( size-- >= 0 && ( input = fgetc( in ) ) >= 0 ) {
-    int code = -1, key = ( last << 8 ) + input;
+    int code = -1;
+    int key = ( last << 8 ) + input;
     for( int i = ( 1 << codesize ) + 2; i <= min( maxcode, 4095 ); i++ )
       if( dict[i] == key )
         code = i;
@@ -5991,8 +6250,10 @@ void compressRecursive( FILE *in, long n, Encoder &en, char *blstr, int it, floa
                                       "base64",    "gif"};
   static const char *audiotypes[4] = {"8b mono", "8b stereo", "16b mono", "16b stereo"};
   Filetype type = DEFAULT;
-  int blnum = 0, info; // image width or audio type
-  long begin = ftell( in ), end0 = begin + n;
+  int blnum = 0;
+  int info; // image width or audio type
+  long begin = ftell( in );
+  long end0 = begin + n;
   char b2[32];
   strcpy( b2, blstr );
   if( b2[0] != 0 )
@@ -6073,8 +6334,10 @@ bool makedir( const char *dir ) {
 
 int decompressRecursive( FILE *out, long n, Encoder &en, FMode mode, int it = 0 ) {
   Filetype type;
-  long len, i = 0;
-  int diffFound = 0, info;
+  long len;
+  long i = 0;
+  int diffFound = 0;
+  int info;
   FILE *tmp;
   while( i < n ) {
     type = ( Filetype ) en.decompress();
@@ -6406,7 +6669,9 @@ int main( int argc, char **argv ) {
 
       // Check for proper format and get option
       String header;
-      int len = strlen( PROGNAME ) + 2, c, i = 0;
+      int len = strlen( PROGNAME ) + 2;
+      int c;
+      int i = 0;
       header.resize( len + 1 );
       while( i < len && ( c = getc( archive ) ) != EOF ) {
         header[i] = c;

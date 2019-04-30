@@ -137,7 +137,8 @@ to P(1) and P(0) as given by the predictor and narrowing to the appropriate
 subrange.  Output leading bytes of the range as they become known. */
 
 inline void Encoder::encode( int y ) {
-  U32 numerator, denominator;
+  U32 numerator;
+  U32 denominator;
   predictor.p( numerator, denominator );
 
   // Update the range. Compute the fraction so that it's exact to 64 bits
@@ -177,7 +178,8 @@ inline void Encoder::encode( int y ) {
 and returning 1 or 0 depending on which subrange the archive point x is in.
 */
 inline int Encoder::decode() {
-  U32 numerator, denominator;
+  U32 numerator;
+  U32 denominator;
   predictor.p( numerator, denominator );
 
   // Update the range. Compute the fraction so that it's exact to 64 bits
@@ -231,7 +233,8 @@ inline int Encoder::decode() {
 
 // Should be called when there is no more to compress
 void Encoder::flush() {
-  U32 numerator, denominator;
+  U32 numerator;
+  U32 denominator;
   predictor.p( numerator, denominator );
 
   // Update the range. Compute the fraction so that it's exact to 64 bits

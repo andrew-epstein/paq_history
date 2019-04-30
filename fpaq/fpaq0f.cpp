@@ -115,7 +115,8 @@ public:
     assert( cxt >= 0 && cxt < N );
     assert( y == 0 || y == 1 );
     assert( limit >= 0 && limit < 512 );
-    int n = t[cxt] & 511, p = t[cxt] >> 14; // count, prediction
+    int n = t[cxt] & 511;
+    int p = t[cxt] >> 14; // count, prediction
     if( n < limit )
       ++t[cxt];
     t[cxt] += ( ( y << 18 ) - p ) * dt[n] & 0xfffffe00;

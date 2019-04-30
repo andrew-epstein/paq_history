@@ -713,14 +713,16 @@ public:
   inline U32 p1( U32 pr, int cx ) { //, int limit=1023)
     {
       U32 p0 = *tcxt;
-      U32 i = p0 & 1023, pd = p0 >> 12; // count, prediction
+      U32 i = p0 & 1023;
+      U32 pd = p0 >> 12; // count, prediction
       p0 += static_cast<unsigned int>( i < TOLIMIT_2a );
       p0 += ( ( y20 - ( int ) pd ) * dt[i] + 0x380 ) & 0xfffffc00;
       *tcxt = p0;
     }
     pr *= APMw - 1;
     int wt = pr & 0xfff; // interpolation weight of next element
-    U32 *tcx = t + cx * APMw + ( pr >> 12 ), v0;
+    U32 *tcx = t + cx * APMw + ( pr >> 12 );
+    U32 v0;
     v0 = *tcx;
     int v1 = *( tcx + 1 );
     pr = v0 >> 12;
@@ -736,13 +738,15 @@ public:
     assert( cxt >= 0 && cxt < N );
     {
       U32 p0 = *tcxt;
-      U32 i = p0 & 1023, pr = p0 >> 12; // count, prediction
+      U32 i = p0 & 1023;
+      U32 pr = p0 >> 12; // count, prediction
       p0 += static_cast<unsigned int>( i < TOLIMIT_2b );
       p0 += ( ( y20 - ( int ) pr ) * dta[i] + 0x180 ) & 0xfffffc00;
       *tcxt = p0;
     }
     int wt = pr & 0xfff; // interpolation weight of next element
-    U32 *tcx = t + cx * APMw + ( pr >> 12 ), v0;
+    U32 *tcx = t + cx * APMw + ( pr >> 12 );
+    U32 v0;
     v0 = *tcx;
     int v1 = *( tcx + 1 );
     pr = v0 >> 12;
@@ -962,7 +966,9 @@ inline U32 hash3a( U32 i ) {
 
 template <int B>
 inline U8 *HashTable<B>::get1( U32 o, U32 i ) {
-  U8 *p = t + ( i & NB ) * B, *q, f;
+  U8 *p = t + ( i & NB ) * B;
+  U8 *q;
+  U8 f;
   i >>= 27;
   i |= o;
   f = *( p - 1 );
@@ -980,7 +986,10 @@ inline U8 *HashTable<B>::get1( U32 o, U32 i ) {
 
 template <int B>
 inline U8 *HashTable<B>::get3a( U32 o, U32 i ) {
-  U8 *p = t + ( i & NB ) * B, *q, *r, f;
+  U8 *p = t + ( i & NB ) * B;
+  U8 *q;
+  U8 *r;
+  U8 f;
   i >>= 27;
   i |= o;
   f = *( p - 1 );
@@ -1023,7 +1032,10 @@ inline U8 *HashTable<B>::get3a( U32 o, U32 i ) {
 
 template <int B>
 inline U8 *HashTable<B>::get3b( U32 o, U32 i ) {
-  U8 *p = t + ( i & NB ) * B, *q, *r, f;
+  U8 *p = t + ( i & NB ) * B;
+  U8 *q;
+  U8 *r;
+  U8 f;
   i >>= 27;
   i |= o;
   f = *( p - 1 );
@@ -1118,7 +1130,8 @@ U8 len2cxt0[] = {0,  0,  0,  0,  0,  0,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 
   }
 
 inline void mm_upd() {
-  int l = len, m;
+  int l = len;
+  int m;
 
   // find or extend match
   if( l > MINLEN ) {
@@ -1147,7 +1160,8 @@ no_upd:
 }
 
 inline int mm_p() {
-  int cxt = c0, l = len;
+  int cxt = c0;
+  int l = len;
   if( l > 0 ) {
     int b = buf_match >> bcount;
     if( ( b >> 1 ) == cxt ) {
@@ -1173,7 +1187,8 @@ mm_e:
 }
 
 inline int mm_p7() {
-  int cxt, l = len;
+  int cxt;
+  int l = len;
   if( l > 0 ) {
     int b = buf_match;
     buf_match = b + 256;
@@ -1342,8 +1357,8 @@ public:
 
         smzr( 2, cxt2, 7 * 256, 10, 1, 0 ) smzr( 3, cxt3, 9 * 256, 11, 1, 0 ) smzr( 4, cxt4, 11 * 256, 10, 1, 0 )
 
-            int len = mm_p(),
-                pr;
+            int len = mm_p();
+            int pr;
     mxr_cxt = add2order + len;
     smp0w( *( t0c1 + c0 ) + 256 );
     pr = m_p + 2047;
@@ -1360,8 +1375,8 @@ public:
 
         smzr( 2, cxt2, 6 * 256, 9, 1, 0 ) smzr( 3, cxt3, 8 * 256, 10, 1, 0 ) smzr( 4, cxt4, 10 * 256, 10, 1, 0 )
 
-            int len = mm_p(),
-                pr;
+            int len = mm_p();
+            int pr;
     mxr_cxt = add2order + len;
     smp0n( *( t0c1 + c0 ) + bc4cp0 );
     pr = m_p + 2047;
@@ -1380,7 +1395,8 @@ public:
     else {
       smzr( 2, cxt2, 6 * 256, 13, 1, 256 ) smzr( 3, cxt3, 8 * 256, 14, 1, 256 ) smzr( 4, cxt4, 10 * 256, 13, 1, 256 )
     }
-    int len = mm_p7(), pr;
+    int len = mm_p7();
+    int pr;
     mxr_cxt = add2order + len;
     smp7w( *( t0c1 + 1 ) + 256 );
     pr = m_p + 2047;
@@ -1402,7 +1418,8 @@ public:
       y2o += 384;
       smzr( 2, cxt2, 6 * 256, 9, 1, 0 ) smzr( 3, cxt3, 8 * 256, 10, 1, 0 ) smzr( 4, cxt4, 10 * 256, 9, 1, 0 )
     }
-    int len = mm_p7(), pr;
+    int len = mm_p7();
+    int pr;
     mxr_cxt = add2order + len;
     smp7n( *( t0c1 + 1 ) + bc4cp0 );
     pr = m_p + 2047;
@@ -1569,7 +1586,8 @@ public:
 
   // Decompress and return one byte
   inline int decompress() {
-    U32 p = pre, x = saved_x;
+    U32 p = pre;
+    U32 x = saved_x;
     eight_bits( dec1, dec2 ) pre = p, saved_x = x;
     int c = c4 & 255;
     return c;
@@ -1585,7 +1603,9 @@ Encoder::Encoder( Mode m, FILE *f ) {
       saved_x = ( saved_x << 8 ) + ( getc( archive ) & 255 );
   }
 
-  int i, c, pi = 0;
+  int i;
+  int c;
+  int pi = 0;
   for( int x = -2047; x <= 2047; ++x ) { // invert squash()
     int i = squash_init( x );
     squash( x ) = i + SQUARD; //rounding,  needed at the end of Predictor::update()
@@ -1606,7 +1626,8 @@ Encoder::Encoder( Mode m, FILE *f ) {
   }
 
   for( i = -4096; i < 4096; ++i ) {
-    int e = i, v;
+    int e = i;
+    int v;
     if( e < 0 )
       e = -e;
     v = 0;
@@ -1656,7 +1677,9 @@ Encoder::Encoder( Mode m, FILE *f ) {
   }
 
   for( i = 1; i <= MAXLEN; i++ ) {
-    int j, k, c = len2cxt0[i];
+    int j;
+    int k;
+    int c = len2cxt0[i];
     k = 0x80000 + ( 0x7ffff * c / 27 );
     c *= 512;
     len2cxt[i * 2] = c;
@@ -1705,8 +1728,17 @@ Encoder::Encoder( Mode m, FILE *f ) {
   for( i = 256 * 13 - 1; i >= 0; --i )
     smt[i] = 0x7ffff;
   {
-    int i, z, o, p1, p2, p3, p4, p5, p6;
-    U8 *p = ( U8 * ) &State_table[0], *q = p + 256 * 6;
+    int i;
+    int z;
+    int o;
+    int p1;
+    int p2;
+    int p3;
+    int p4;
+    int p5;
+    int p6;
+    U8 *p = ( U8 * ) &State_table[0];
+    U8 *q = p + 256 * 6;
     for( i = 0; i < 6; ++i ) {
       U32 *j = &smt[( ( 0x578046 >> ( i * 4 ) ) & 15 ) * 256];
       p1 = p2 = nex( 0, i );
@@ -1775,7 +1807,8 @@ int main( int argc, char **argv ) {
   clock_t start = clock();
 
   // Open input file
-  FILE *in = fopen( argv[2], "rbe" ), *out = 0;
+  FILE *in = fopen( argv[2], "rbe" );
+  FILE *out = 0;
   if( in == nullptr )
     perror( argv[2] ), exit( 1 );
 

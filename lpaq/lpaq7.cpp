@@ -575,8 +575,10 @@ public:
     assert( cx >= 0 && cx < N / 24 );
     assert( cxt >= 0 && cxt < N );
     {
-      U32 *p = &t[cxt], p0 = p[0];
-      U32 i = p0 & 1023, pr = p0 >> 12; // count, prediction
+      U32 *p = &t[cxt];
+      U32 p0 = p[0];
+      U32 i = p0 & 1023;
+      U32 pr = p0 >> 12; // count, prediction
       p0 += static_cast<unsigned int>( i < TOLIMIT_2a );
       p0 += ( ( y20 - ( int ) pr ) * dta[i] + 0x200 ) & 0xfffffc00;
       p[0] = p0;
@@ -593,8 +595,10 @@ public:
     assert( cx >= 0 && cx < N / 24 );
     assert( cxt >= 0 && cxt < N );
     {
-      U32 *p = &t[cxt], p0 = p[0];
-      U32 i = p0 & 1023, pr = p0 >> 12; // count, prediction
+      U32 *p = &t[cxt];
+      U32 p0 = p[0];
+      U32 i = p0 & 1023;
+      U32 pr = p0 >> 12; // count, prediction
       p0 += static_cast<unsigned int>( i < TOLIMIT_2b );
       p0 += ( ( y20 - ( int ) pr ) * dta[i] + 0x200 ) & 0xfffffc00;
       p[0] = p0;
@@ -828,7 +832,9 @@ inline U32 hash0( U32 i ) {
 
 template <int B>
 inline U8 *HashTable<B>::get( U32 i ) {
-  U8 *p = t + ( i * B & NB ), *q, *r;
+  U8 *p = t + ( i * B & NB );
+  U8 *q;
+  U8 *r;
   i >>= 24;
   U8 c = i;
   if( *( p - 1 ) == c )
@@ -971,7 +977,8 @@ inline void MatchModel::upd() {
       ++len;
   } else {
     if( pos >= MAXLEN ) {
-      U8 *p1 = buf + pos - 1, *p;
+      U8 *p1 = buf + pos - 1;
+      U8 *p;
       SEARCH2( h1 )
       if( len < 3 ) {
         SEARCH2( h2 )
@@ -1151,7 +1158,8 @@ public:
     m_update( y );
 
     // predict
-    int len = mm.p(), pr;
+    int len = mm.p();
+    int pr;
     if( len == 0 ) {
 #ifdef WIKI
       if( *cp[1] != 0 ) {
@@ -1383,7 +1391,8 @@ Encoder::Encoder( Mode m, FILE *f ) :
       x = ( x << 8 ) + ( getc( archive ) & 255 );
   }
 
-  int i, pi = 0;
+  int i;
+  int pi = 0;
   for( int x = -2047; x <= 2047; ++x ) { // invert squash()
     int i = squash_init( x );
     squash( x ) = i + SQUARD; //rounding,  needed at the end of Predictor::update()
@@ -1411,13 +1420,15 @@ Encoder::Encoder( Mode m, FILE *f ) :
     calcprevfail[i] = pi;
   }
 
-  int cf1 = 1216, cf3 = 2592;
+  int cf1 = 1216;
+  int cf3 = 2592;
   if( method == TEXT )
     cf1 = 640, cf3 = 2272;
 #endif
 
   for( i = -4096; i < 4096; ++i ) {
-    int e = i, v = 0;
+    int e = i;
+    int v = 0;
     if( e < 0 )
       e = -e;
 #ifdef WIKI
@@ -1488,7 +1499,8 @@ int main( int argc, char **argv ) {
   clock_t start = clock();
 
   // Open input file
-  FILE *in = fopen( argv[2], "rbe" ), *out = 0;
+  FILE *in = fopen( argv[2], "rbe" );
+  FILE *out = 0;
   if( in == nullptr )
     perror( argv[2] ), exit( 1 );
 
@@ -1505,7 +1517,8 @@ int main( int argc, char **argv ) {
 
     uncompressed = in;
     { // a better data detection algorithm will be here in future
-      int i = fread( file_buf, 1, FB_SIZE + 4, in ), k = 0;
+      int i = fread( file_buf, 1, FB_SIZE + 4, in );
+      int k = 0;
       fb_len = &file_buf[i];
       fb_stop = fb_len;
       if( fb_stop > &file_buf[FB_SIZE] )
@@ -1590,8 +1603,11 @@ int main( int argc, char **argv ) {
 
     uncompressed = out;
     {
-      U8 *p = &file_buf[0], c;
-      long s = FB_SIZE + 4, ss, k = 0;
+      U8 *p = &file_buf[0];
+      U8 c;
+      long s = FB_SIZE + 4;
+      long ss;
+      long k = 0;
       if( s > size )
         s = size;
       size -= s;

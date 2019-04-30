@@ -147,7 +147,8 @@ static inline int64_t xgetbv( int ctr ) {
     || ( defined( __INTEL_COMPILER ) && __INTEL_COMPILER >= 1200 )
   return _xgetbv( ctr );
 #elif defined( __GNUC__ )
-  uint32_t a, d;
+  uint32_t a;
+  uint32_t d;
   __asm( "xgetbv" : "=a"( a ), "=d"( d ) : "c"( ctr ) : );
   return a | ( ( ( uint64_t ) d ) << 32 );
 #else
@@ -1961,7 +1962,8 @@ StateTable::StateTable() : ns( 1024 ) {
     Array<U32> t; // cxt -> prediction in high 22 bits, count in low 10 bits
     inline void update( const int limit ) {
       assert( cxt >= 0 && cxt < N );
-      U32 *p = &t[cxt], p0 = p[0];
+      U32 *p = &t[cxt];
+      U32 p0 = p[0];
       const int n = p0 & 1023; //count
       const int pr = p0 >> 10; //prediction
       if( n < limit )
@@ -2464,7 +2466,8 @@ Uses (2^(BitsOfContext+1))*((2^InputBits)-1) bytes of memory.
     void mix( Mixer &m, const int Multiplier = 1, const int Divisor = 4, const U16 Limit = 1023 ) {
       // update
       U32 Count = min( min( Limit, 0x3FF ), ( ( *cp ) & 0x3FF ) + 1 );
-      int Prediction = ( *cp ) >> 10, Error = ( y << 22 ) - Prediction;
+      int Prediction = ( *cp ) >> 10;
+      int Error = ( y << 22 ) - Prediction;
       Error = ( ( Error / 8 ) * dt[Count] ) / 1024;
       Prediction = min( 0x3FFFFF, max( 0, Prediction + Error ) );
       *cp = ( Prediction << 10 ) | Count;
@@ -2606,7 +2609,8 @@ Uses (2^(BitsOfContext+1))*((2^InputBits)-1) bytes of memory.
   inline U8 *ContextMap::E::get( U16 ch ) {
     if( chk[last & 15] == ch )
       return &bh[last & 15][0];
-    int b = 0xffff, bi = 0;
+    int b = 0xffff;
+    int bi = 0;
     for( int i = 0; i < 7; ++i ) {
       if( chk[i] == ch )
         return last = last << 4 | i, ( U8 * ) &bh[i][0];
@@ -2848,7 +2852,8 @@ states to provide additional states that are then mapped to predictions.
                                         // If not found, insert or replace lowest priority (skipping 2 most recent).
         if( Checksums[MRU & 15] == Checksum )
           return &BitState[MRU & 15][0];
-        int worst = 0xFFFF, idx = 0;
+        int worst = 0xFFFF;
+        int idx = 0;
         for( int i = 0; i < 7; ++i ) {
           if( Checksums[i] == Checksum )
             return MRU = MRU << 4 | i, ( U8 * ) &BitState[i][0];
@@ -3011,7 +3016,9 @@ states to provide additional states that are then mapped to predictions.
         // predict from bit context
         int state = BitState[i] != nullptr ? *BitState[i] : 0;
         int p1 = Maps8b[i]->p( state );
-        int n0 = nex( state, 2 ), n1 = nex( state, 3 ), k = -~n1;
+        int n0 = nex( state, 2 );
+        int n1 = nex( state, 3 );
+        int k = -~n1;
         k = ( k * 64 ) / ( k - ~n0 );
         n0 = static_cast<int>(-static_cast<int>(n0) == 0), n1 = static_cast<int>(-static_cast<int>(n1) == 0);
         // predict from last byte in context
@@ -3230,7 +3237,8 @@ states to provide additional states that are then mapped to predictions.
       assert( i >= 0 && i < Previous.size() );
       if( ( Index = i ) == Root )
         return;
-      const int p = Previous[Index], n = Next[Index];
+      const int p = Previous[Index];
+      const int n = Next[Index];
       if( p >= 0 )
         Next[p] = Next[Index];
       if( n >= 0 )
@@ -4147,7 +4155,8 @@ states to provide additional states that are then mapped to predictions.
 
       // Start of modified Porter2 Stemmer
       MarkYsAsConsonants( W );
-      U32 R1 = GetRegion1( W ), R2 = GetRegion( W, R1 );
+      U32 R1 = GetRegion1( W );
+      U32 R2 = GetRegion( W, R1 );
       res |= Step0( W );
       res |= Step1a( W );
       for( int i = 0; i < NUM_EXCEPTIONS2; i++ ) {
@@ -4311,7 +4320,8 @@ states to provide additional states that are then mapped to predictions.
       }
     }
     U32 GetRV( Word *W ) {
-      U32 len = W->Length(), res = W->Start + len;
+      U32 len = W->Length();
+      U32 res = W->Start + len;
       if( len >= 3
           && ( ( IsVowel( W->Letters[W->Start] ) && IsVowel( W->Letters[W->Start + 1] ) ) || W->StartsWith( "par" )
                || W->StartsWith( "col" ) || W->StartsWith( "tap" ) ) )
@@ -4576,8 +4586,11 @@ states to provide additional states that are then mapped to predictions.
         }
       }
       MarkVowelsAsConsonants( W );
-      U32 RV = GetRV( W ), R1 = GetRegion( W, 0 ), R2 = GetRegion( W, R1 );
-      bool DoNextStep = false, res = Step1( W, RV, R1, R2, &DoNextStep );
+      U32 RV = GetRV( W );
+      U32 R1 = GetRegion( W, 0 );
+      U32 R2 = GetRegion( W, R1 );
+      bool DoNextStep = false;
+      bool res = Step1( W, RV, R1, R2, &DoNextStep );
       DoNextStep |= !res;
       if( DoNextStep ) {
         DoNextStep = !Step2a( W, RV );
@@ -4747,7 +4760,8 @@ states to provide additional states that are then mapped to predictions.
       }
       ReplaceSharpS( W );
       MarkVowelsAsConsonants( W );
-      U32 R1 = GetRegion( W, 0 ), R2 = GetRegion( W, R1 );
+      U32 R1 = GetRegion( W, 0 );
+      U32 R2 = GetRegion( W, R1 );
       R1 = min( 3, R1 );
       bool res = Step1( W, R1 );
       res |= Step2( W, R1 );
@@ -4840,7 +4854,9 @@ states to provide additional states that are then mapped to predictions.
     }
     bool addWord( const Word *W, const uint32_t embedding ) {
       bool res = false;
-      int32_t parent = -1, code = 0, len = W->Length();
+      int32_t parent = -1;
+      int32_t code = 0;
+      int32_t len = W->Length();
       if( len == 0 )
         return res;
       for( int32_t i = 0; i < len; i++ ) {
@@ -4885,7 +4901,9 @@ states to provide additional states that are then mapped to predictions.
 #  endif
       OpenFromMyFolder::anotherfile( &f, filename );
       Word W;
-      int32_t byte = 0, embedding = 0, total = 0;
+      int32_t byte = 0;
+      int32_t embedding = 0;
+      int32_t total = 0;
       do {
         if( f.blockread( ( uint8_t * ) ( &embedding ), WORD_EMBEDDING_SIZE ) != WORD_EMBEDDING_SIZE )
           break;
@@ -5150,7 +5168,9 @@ states to provide additional states that are then mapped to predictions.
     Info.masks[3] <<= 3;
     pState = State;
 
-    U8 c = buffer( 1 ), lc = tolower( c ), g = ( c < 0x80 ) ? AsciiGroup[c] : 31;
+    U8 c = buffer( 1 );
+    U8 lc = tolower( c );
+    U8 g = ( c < 0x80 ) ? AsciiGroup[c] : 31;
     if( g > 4 || g != ( Info.masks[4] & 0x1F ) )
       Info.masks[4] <<= 5, Info.masks[4] |= g;
 
@@ -5452,7 +5472,8 @@ states to provide additional states that are then mapped to predictions.
         Info.expectedDigit = -1;
         if( Info.numLength[0] < Info.numLength[1]
             && ( pState == Parse::ExpectDigit || ( ( Info.numDiff & 3 ) == 0 && Info.numLength[0] <= 1 ) ) ) {
-          U64 ExpectedNum = Info.numbers[1] + ( Info.numMask & 3 ) - 2, PlaceDivisor = 1;
+          U64 ExpectedNum = Info.numbers[1] + ( Info.numMask & 3 ) - 2;
+          U64 PlaceDivisor = 1;
           for( int i = 0; i < Info.numLength[1] - Info.numLength[0]; i++, PlaceDivisor *= 10 )
             ;
           if( ExpectedNum / PlaceDivisor == Info.numbers[0] ) {
@@ -5508,7 +5529,10 @@ states to provide additional states that are then mapped to predictions.
   }
 
   void TextModel::SetContexts( Buf &buffer, ModelStats *Stats ) {
-    const U8 c = buffer( 1 ), lc = tolower( c ), m2 = Info.masks[2] & 0xF, column = min( 0xFF, Info.lastNewLine );
+    const U8 c = buffer( 1 );
+    const U8 lc = tolower( c );
+    const U8 m2 = Info.masks[2] & 0xF;
+    const U8 column = min( 0xFF, Info.lastNewLine );
     const U64 w = State == Parse::ReadingWord ? cWord->Hash[0] : pWord->Hash[0];
     U64 i = State * 64;
 
@@ -5638,7 +5662,9 @@ states to provide additional states that are then mapped to predictions.
       }
       // or find a new match, starting with the highest order hash and falling back to lower ones
       else {
-        U32 minLen = MinLen + ( NumHashes - 1 ) * StepSize, bestLen = 0, bestIndex = 0;
+        U32 minLen = MinLen + ( NumHashes - 1 ) * StepSize;
+        U32 bestLen = 0;
+        U32 bestIndex = 0;
         for( U32 i = 0; i < NumHashes && length < minLen; i++, minLen -= StepSize ) {
           index = Table[hashes[i]];
           if( index > 0 ) {
@@ -5905,7 +5931,8 @@ states to provide additional states that are then mapped to predictions.
 
   void charGroupModel( Mixer &m, ModelStats *Stats ) {
     static ContextMap cm( MEM / 2, 7 );
-    static U64 g_ascii_lo = 0, g_ascii_hi = 0; // group identifiers of 8+8 last characters
+    static U64 g_ascii_lo = 0;
+    static U64 g_ascii_hi = 0; // group identifiers of 8+8 last characters
     if( bpos == 0 ) {
       U32 g = c4 & 0xff; // group identifier
       if( '0' <= g && g <= '9' )
@@ -5947,17 +5974,42 @@ states to provide additional states that are then mapped to predictions.
 #ifdef USE_WORDMODEL
 
   void wordModel( Mixer &m, ModelStats *Stats ) {
-    static U32 frstchar = 0, spafdo = 0, spaces = 0, spacecount = 0, words = 0, wordcount = 0, wordlen = 0,
-               wordlen1 = 0;
-    static U64 word0 = 0, word1 = 0, word2 = 0, word3 = 0, word4 = 0, word5 = 0; // hashes
-    static U64 xword0 = 0, xword1 = 0, xword2 = 0, cword0 = 0, ccword = 0;       // hashes
-    static U64 number0 = 0, number1 = 0;                                         // hashes
+    static U32 frstchar = 0;
+    static U32 spafdo = 0;
+    static U32 spaces = 0;
+    static U32 spacecount = 0;
+    static U32 words = 0;
+    static U32 wordcount = 0;
+    static U32 wordlen = 0;
+    static U32 wordlen1 = 0;
+    static U64 word0 = 0;
+    static U64 word1 = 0;
+    static U64 word2 = 0;
+    static U64 word3 = 0;
+    static U64 word4 = 0;
+    static U64 word5 = 0; // hashes
+    static U64 xword0 = 0;
+    static U64 xword1 = 0;
+    static U64 xword2 = 0;
+    static U64 cword0 = 0;
+    static U64 ccword = 0;       // hashes
+    static U64 number0 = 0;
+    static U64 number1 = 0;                                         // hashes
     static U32 text0 = 0;                                                        // uninterrupted stream of letters
-    static U32 wrdhsh = 0, lastLetter = 0, firstLetter = 0, lastUpper = 0, lastDigit = 0, wordGap = 0;
+    static U32 wrdhsh = 0;
+    static U32 lastLetter = 0;
+    static U32 firstLetter = 0;
+    static U32 lastUpper = 0;
+    static U32 lastDigit = 0;
+    static U32 wordGap = 0;
     //static U32 capitalization=0; //unused at this moment
     static ContextMap cm( MEM * 16, 49 );
-    static int nl1 = -3, nl = -2, w = 0; // previous, current newline position
-    static U32 mask = 0, mask2 = 0, f4 = 0;
+    static int nl1 = -3;
+    static int nl = -2;
+    static int w = 0; // previous, current newline position
+    static U32 mask = 0;
+    static U32 mask2 = 0;
+    static U32 f4 = 0;
     static Array<int> wpos( 0x10000 ); // last position of word
 
     if( bpos == 0 ) {
@@ -5973,7 +6025,8 @@ states to provide additional states that are then mapped to predictions.
       lastLetter = min( lastLetter + 1, 63 );
       mask2 <<= 2;
 
-      int b1 = buf( 1 ), c = b1;
+      int b1 = buf( 1 );
+      int c = b1;
       if( c >= 'A' && c <= 'Z' ) {
         c += 'a' - 'A';
         lastUpper = 0;
@@ -6231,16 +6284,28 @@ states to provide additional states that are then mapped to predictions.
   };
 
   void recordModel( Mixer &m, ModelStats *Stats ) {
-    static Array<int> cpos1( 256 ), cpos2( 256 ), cpos3( 256 ), cpos4( 256 );
+    static Array<int> cpos1( 256 );
+    static Array<int> cpos2( 256 );
+    static Array<int> cpos3( 256 );
+    static Array<int> cpos4( 256 );
     static Array<int> wpos1( 256 * 256 ); // buf(1..2) -> last position
     static int rlen[3] = {2, 0, 0};       // run length and 2 candidates
     static int rcount[2] = {0, 0};        // candidate counts
     static U8 padding = 0;                // detected padding byte
-    static U8 N = 0, NN = 0, NNN = 0, NNNN = 0, WxNW = 0;
-    static int prevTransition = 0, nTransition = 0; // position of the last padding transition
-    static int col = 0, mxCtx = 0, x = 0;
-    static ContextMap cm( 32768, 3 ), cn( 32768 / 2, 3 ), co( 32768 * 2, 3 ),
-        cp( MEM * 2, 16 ); // cm,cn,co: memory pressure is advantageous
+    static U8 N = 0;
+    static U8 NN = 0;
+    static U8 NNN = 0;
+    static U8 NNNN = 0;
+    static U8 WxNW = 0;
+    static int prevTransition = 0;
+    static int nTransition = 0; // position of the last padding transition
+    static int col = 0;
+    static int mxCtx = 0;
+    static int x = 0;
+    static ContextMap cm( 32768, 3 );
+    static ContextMap cn( 32768 / 2, 3 );
+    static ContextMap co( 32768 * 2, 3 );
+    static ContextMap cp( MEM * 2, 16 ); // cm,cn,co: memory pressure is advantageous
     static const int nMaps = 6;
     static StationaryMap Maps[nMaps]{10, 10, 8, 8, 8, {11, 1}};
     static SmallStationaryContextMap sMap[3]{{11, 1}, {3, 1}, {19, 1}};
@@ -6252,7 +6317,9 @@ states to provide additional states that are then mapped to predictions.
 
     // Find record length
     if( bpos == 0 ) {
-      int w = c4 & 0xffff, c = w & 255, d = w >> 8;
+      int w = c4 & 0xffff;
+      int c = w & 255;
+      int d = w >> 8;
       if( ( Stats->Wav ) > 2 && ( Stats->Wav ) != ( U32 ) rlen[0] ) {
         rlen[0] = Stats->Wav;
         rcount[0] = rcount[1] = 0;
@@ -6472,13 +6539,16 @@ states to provide additional states that are then mapped to predictions.
   }
 
   void linearPredictionModel( Mixer &m ) {
-    static const int nOLS = 3, nLnrPrd = nOLS + 2;
+    static const int nOLS = 3;
+    static const int nLnrPrd = nOLS + 2;
     static SmallStationaryContextMap sMap[nLnrPrd]{{11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}};
     static OLS<double, U8> ols[nOLS]{{32, 4, 0.995}, {32, 4, 0.995}, {32, 4, 0.995}};
     static U8 prd[nLnrPrd]{0};
 
     if( bpos == 0 ) {
-      const U8 W = buf( 1 ), WW = buf( 2 ), WWW = buf( 3 );
+      const U8 W = buf( 1 );
+      const U8 WW = buf( 2 );
+      const U8 WWW = buf( 3 );
       int i = 0;
       for( ; i < nOLS; i++ )
         ols[i].Update( W );
@@ -6542,7 +6612,9 @@ states to provide additional states that are then mapped to predictions.
   void distanceModel( Mixer &m ) {
     static ContextMap cm( MEM / 4, 3 );
     if( bpos == 0 ) {
-      static int pos00 = 0, pos20 = 0, posnl = 0;
+      static int pos00 = 0;
+      static int pos20 = 0;
+      static int posnl = 0;
       int c = c4 & 0xff;
       if( c == 0x00 )
         pos00 = pos;
@@ -6586,7 +6658,9 @@ states to provide additional states that are then mapped to predictions.
 
   inline U8 Paeth( U8 W, U8 N, U8 NW ) {
     int p = W + N - NW;
-    int pW = abs( p - ( int ) W ), pN = abs( p - ( int ) N ), pNW = abs( p - ( int ) NW );
+    int pW = abs( p - ( int ) W );
+    int pN = abs( p - ( int ) N );
+    int pNW = abs( p - ( int ) NW );
     if( pW <= pN && pW <= pNW )
       return W;
     else if( pN <= pNW )
@@ -6621,22 +6695,71 @@ states to provide additional states that are then mapped to predictions.
         {11, 1}, {11, 1}, {11, 1}, {11, 1}};
     static RingBuffer buffer( 0x100000 ); // internal rotating buffer for (PNG unfiltered) pixel data
     //pixel neighborhood
-    static U8 WWWWWW, WWWWW, WWWW, WWW, WW, W;
-    static U8 NWWWW, NWWW, NWW, NW, N, NE, NEE, NEEE, NEEEE;
-    static U8 NNWWW, NNWW, NNW, NN, NNE, NNEE, NNEEE;
-    static U8 NNNWW, NNNW, NNN, NNNE, NNNEE;
-    static U8 NNNNW, NNNN, NNNNE;
+    static U8 WWWWWW;
+    static U8 WWWWW;
+    static U8 WWWW;
+    static U8 WWW;
+    static U8 WW;
+    static U8 W;
+    static U8 NWWWW;
+    static U8 NWWW;
+    static U8 NWW;
+    static U8 NW;
+    static U8 N;
+    static U8 NE;
+    static U8 NEE;
+    static U8 NEEE;
+    static U8 NEEEE;
+    static U8 NNWWW;
+    static U8 NNWW;
+    static U8 NNW;
+    static U8 NN;
+    static U8 NNE;
+    static U8 NNEE;
+    static U8 NNEEE;
+    static U8 NNNWW;
+    static U8 NNNW;
+    static U8 NNN;
+    static U8 NNNE;
+    static U8 NNNEE;
+    static U8 NNNNW;
+    static U8 NNNN;
+    static U8 NNNNE;
     static U8 NNNNN;
     static U8 NNNNNN;
-    static U8 WWp1, Wp1, p1, NWp1, Np1, NEp1, NNp1;
-    static U8 WWp2, Wp2, p2, NWp2, Np2, NEp2, NNp2;
+    static U8 WWp1;
+    static U8 Wp1;
+    static U8 p1;
+    static U8 NWp1;
+    static U8 Np1;
+    static U8 NEp1;
+    static U8 NNp1;
+    static U8 WWp2;
+    static U8 Wp2;
+    static U8 p2;
+    static U8 NWp2;
+    static U8 Np2;
+    static U8 NEp2;
+    static U8 NNp2;
     static U8 px = 0; // current PNG filter prediction
     static int color = -1;
     static int stride = 3;
-    static int ctx[2], padding, lastPos = 0, lastWasPNG = 0, filter = 0, x = 0, w = 0, line = 0, R1 = 0, R2 = 0;
+    static int ctx[2];
+    static int padding;
+    static int lastPos = 0;
+    static int lastWasPNG = 0;
+    static int filter = 0;
+    static int x = 0;
+    static int w = 0;
+    static int line = 0;
+    static int R1 = 0;
+    static int R2 = 0;
     static bool filterOn = false;
-    static int columns[2] = {1, 1}, column[2];
-    static U8 MapCtxs[nMaps1] = {0}, SCMapCtxs[nSCMaps - 1] = {0}, pOLS[nOLS] = {0};
+    static int columns[2] = {1, 1};
+    static int column[2];
+    static U8 MapCtxs[nMaps1] = {0};
+    static U8 SCMapCtxs[nSCMaps - 1] = {0};
+    static U8 pOLS[nOLS] = {0};
     static const double lambda[nOLS] = {0.98, 0.87, 0.9, 0.8, 0.9, 0.7};
     static const int num[nOLS] = {32, 12, 15, 10, 14, 8};
     static OLS<double, U8> ols[nOLS][4] = {
@@ -7163,20 +7286,59 @@ states to provide additional states that are then mapped to predictions.
     static RingBuffer buffer( 0x100000 ); // internal rotating buffer for (PNG unfiltered) pixel data
     static Array<short> jumps( 0x8000 );
     //pixel neighborhood
-    static U8 WWWWWW, WWWWW, WWWW, WWW, WW, W;
-    static U8 NWWWW, NWWW, NWW, NW, N, NE, NEE, NEEE, NEEEE;
-    static U8 NNWWW, NNWW, NNW, NN, NNE, NNEE, NNEEE;
-    static U8 NNNWW, NNNW, NNN, NNNE, NNNEE;
-    static U8 NNNNW, NNNN, NNNNE;
+    static U8 WWWWWW;
+    static U8 WWWWW;
+    static U8 WWWW;
+    static U8 WWW;
+    static U8 WW;
+    static U8 W;
+    static U8 NWWWW;
+    static U8 NWWW;
+    static U8 NWW;
+    static U8 NW;
+    static U8 N;
+    static U8 NE;
+    static U8 NEE;
+    static U8 NEEE;
+    static U8 NEEEE;
+    static U8 NNWWW;
+    static U8 NNWW;
+    static U8 NNW;
+    static U8 NN;
+    static U8 NNE;
+    static U8 NNEE;
+    static U8 NNEEE;
+    static U8 NNNWW;
+    static U8 NNNW;
+    static U8 NNN;
+    static U8 NNNE;
+    static U8 NNNEE;
+    static U8 NNNNW;
+    static U8 NNNN;
+    static U8 NNNNE;
     static U8 NNNNN;
     static U8 NNNNNN;
-    static U8 px = 0, res = 0, prvFrmPx = 0,
-              prvFrmPred = 0; // current PNG filter prediction, expected residual, corresponding pixel in previous frame
-    static int ctx = 0, lastPos = 0, lastWasPNG = 0, col = 0, line = 0, x = 0, filter = 0, jump = 0;
-    static int framePos = 0, prevFramePos = 0, frameWidth = 0, prevFrameWidth = 0;
+    static U8 px = 0;
+    static U8 res = 0;
+    static U8 prvFrmPx = 0;
+    static U8 prvFrmPred = 0; // current PNG filter prediction, expected residual, corresponding pixel in previous frame
+    static int ctx = 0;
+    static int lastPos = 0;
+    static int lastWasPNG = 0;
+    static int col = 0;
+    static int line = 0;
+    static int x = 0;
+    static int filter = 0;
+    static int jump = 0;
+    static int framePos = 0;
+    static int prevFramePos = 0;
+    static int frameWidth = 0;
+    static int prevFrameWidth = 0;
     static bool filterOn = false;
-    static int columns[2] = {1, 1}, column[2];
-    static U8 MapCtxs[nMaps1] = {0}, pOLS[nOLS] = {0};
+    static int columns[2] = {1, 1};
+    static int column[2];
+    static U8 MapCtxs[nMaps1] = {0};
+    static U8 pOLS[nOLS] = {0};
     static const double lambda[nOLS] = {0.996, 0.87, 0.93, 0.8, 0.9};
     static const int num[nOLS] = {32, 12, 15, 10, 14};
     static OLS<double, U8> ols[nOLS] = {{num[0], 1, lambda[0]},
@@ -7271,8 +7433,10 @@ states to provide additional states that are then mapped to predictions.
           if( line > 0 && w > 8 ) {
             U8 bMask = 0xFF - ( ( 1 << gray ) - 1 );
             U32 pMask = bMask * 0x01010101U;
-            U32 left = 0, right = 0;
-            int l = min( w, ( int ) jumps.size() ), end = l - 4;
+            U32 left = 0;
+            U32 right = 0;
+            int l = min( w, ( int ) jumps.size() );
+            int end = l - 4;
             do {
               left = ( ( buffer( l - x ) << 24 ) | ( buffer( l - x - 1 ) << 16 ) | ( buffer( l - x - 2 ) << 8 )
                        | buffer( l - x - 3 ) )
@@ -7283,7 +7447,8 @@ states to provide additional states that are then mapped to predictions.
                           | buffer( l - i ) )
                         & pMask;
                 if( left == right ) {
-                  int j = ( i + 3 - x - 1 ) / 2, k = 0;
+                  int j = ( i + 3 - x - 1 ) / 2;
+                  int k = 0;
                   for( ; k <= j; k++ ) {
                     if( k < 4 || ( buffer( l - x - k ) & bMask ) == ( buffer( l - i - 3 + k ) & bMask ) ) {
                       jumps[x + k] = -( x + ( l - i - 3 ) + 2 * k );
@@ -7598,8 +7763,23 @@ states to provide additional states that are then mapped to predictions.
     static U8 *cp[S]; // context pointers
     static StateMap sm[S];
     static StateMap map( 16 );
-    static U8 WW = 0, W = 0, NWW = 0, NW = 0, N = 0, NE = 0, NEE = 0, NNWW = 0, NNW = 0, NN = 0, NNE = 0, NNEE = 0;
-    static int col = 0, line = 0, run = 0, prevColor = 0, px = 0;
+    static U8 WW = 0;
+    static U8 W = 0;
+    static U8 NWW = 0;
+    static U8 NW = 0;
+    static U8 N = 0;
+    static U8 NE = 0;
+    static U8 NEE = 0;
+    static U8 NNWW = 0;
+    static U8 NNW = 0;
+    static U8 NN = 0;
+    static U8 NNE = 0;
+    static U8 NNEE = 0;
+    static int col = 0;
+    static int line = 0;
+    static int run = 0;
+    static int prevColor = 0;
+    static int px = 0;
     if( cp[0] == nullptr ) {
       for( int i = 0; i < S; i++ )
         cp[i] = t[263 * i]; //set the initial context to an arbitrary slot in the hashtable
@@ -7672,7 +7852,8 @@ states to provide additional states that are then mapped to predictions.
     // predict
     for( int i = 0; i < S; i++ ) {
       const U8 s = *cp[i];
-      const int n0 = -static_cast<int>(!nex( s, 2 )), n1 = -static_cast<int>(!nex( s, 3 ));
+      const int n0 = -static_cast<int>(!nex( s, 2 ));
+      const int n1 = -static_cast<int>(!nex( s, 3 ));
       const int p1 = sm[i].p( s );
       const int st = stretch( p1 ) >> 1;
       m.add( st );
@@ -7694,7 +7875,10 @@ states to provide additional states that are then mapped to predictions.
   // Model for 1-bit image data
 
   void im1bitModel( Mixer &m, int w ) {
-    static U32 r0, r1, r2, r3;     // last 4 rows, bit 8 is over current pixel
+    static U32 r0;
+    static U32 r1;
+    static U32 r2;
+    static U32 r3;     // last 4 rows, bit 8 is over current pixel
     static Array<U8> t( 0x23000 ); // model: cxt -> state
     const int N = 11;              // number of contexts
     static int cxt[N];             // contexts
@@ -8058,7 +8242,8 @@ void dump(const char* msg, int p) {
             int end = p + buf[p - 2] * 256 + buf[p - 1] - 2; // end of Huffman table
             int count = 0;                                   // sanity check
             while( p < end && end < pos && end < p + 2100 && ++count < 10 ) {
-              int tc = buf[p] >> 4, th = buf[p] & 15;
+              int tc = buf[p] >> 4;
+              int th = buf[p] & 15;
               if( tc >= 2 || th >= 4 )
                 break;
               jassert( tc >= 0 && tc < 2 && th >= 0 && th < 4 );
@@ -8090,7 +8275,9 @@ void dump(const char* msg, int p) {
               for( int th = 0; th < 2; th++ ) {
                 HUF *h = &huf[tc * 64 + th * 16];
                 int hval = tc * 1024 + th * 256;
-                int code = 0, c = 0, x = 0;
+                int code = 0;
+                int c = 0;
+                int x = 0;
 
                 for( int i = 0; i < 16; i++ ) {
                   switch( tc * 2 + th ) {
@@ -8192,10 +8379,12 @@ void dump(const char* msg, int p) {
           row = column = 0;
 
           // we can have more blocks than components then we have subsampling
-          int x = 0, y = 0;
+          int x = 0;
+          int y = 0;
           for( j = 0; j < ( mcusize >> 6 ); j++ ) {
             int i = color[j];
-            int w = SamplingFactors[i] >> 4, h = SamplingFactors[i] & 0xf;
+            int w = SamplingFactors[i] >> 4;
+            int h = SamplingFactors[i] & 0xf;
             blockW[j] = x == 0 ? mcusize - 64 * ( w - 1 ) : 64;
             blockN[j] = y == 0 ? mcusize * width - 64 * w * ( h - 1 ) : w * 64;
             x++;
@@ -8301,8 +8490,10 @@ void dump(const char* msg, int p) {
 
               // UPDATE_ADV_PRED !!!!
               {
-                const int acomp = mcupos >> 6, q = 64 * images[idx].qmap[acomp];
-                const int zz = mcupos & 63, cpos_dc = cpos - zz;
+                const int acomp = mcupos >> 6;
+                const int q = 64 * images[idx].qmap[acomp];
+                const int zz = mcupos & 63;
+                const int cpos_dc = cpos - zz;
                 const bool norst = rstpos != column + row * width;
                 if( zz == 0 ) {
                   for( int i = 0; i < 8; ++i )
@@ -8358,7 +8549,8 @@ void dump(const char* msg, int p) {
                 adv_pred[3] = ( ex < 0 ? -1 : +1 ) * ilog( abs( ex ) + 1 );
 
                 for( int i = 0; i < 4; ++i ) {
-                  const int a = ( (i & 1) != 0 ? zzv[zz] : zzu[zz] ), b = ( (i & 2) != 0 ? 2 : 1 );
+                  const int a = ( (i & 1) != 0 ? zzv[zz] : zzu[zz] );
+                  const int b = ( (i & 2) != 0 ? 2 : 1 );
                   if( a < b )
                     ex = 65535;
                   else {
@@ -8383,7 +8575,12 @@ void dump(const char* msg, int p) {
                 } else
                   lcp[4] = lcp[5] = lcp[6] = 65535;
 
-                int prev1 = 0, prev2 = 0, cnt1 = 0, cnt2 = 0, r = 0, s = 0;
+                int prev1 = 0;
+                int prev2 = 0;
+                int cnt1 = 0;
+                int cnt2 = 0;
+                int r = 0;
+                int s = 0;
                 prev_coef_rs = cbuf[cpos - 64];
                 for( int i = 0; i < acomp; i++ ) {
                   ex = 0;
@@ -8453,7 +8650,8 @@ void dump(const char* msg, int p) {
       if( ++hbcount > 2 || huffbits == 0 )
         hbcount = 0;
       jassert( coef >= 0 && coef < 256 );
-      const int zu = zzu[mcupos & 63], zv = zzv[mcupos & 63];
+      const int zu = zzu[mcupos & 63];
+      const int zv = zzv[mcupos & 63];
       if( hbcount == 0 ) {
         U64 n = hc * 32;
         cxt[0] = hash( ++n, coef, adv_pred[2] / 12 + ( run_pred[2] << 8 ), ssum2 >> 6, prev_coef / 72 );
@@ -8618,7 +8816,8 @@ void dump(const char* msg, int p) {
   }
 
   void audio8bModel( Mixer &m, int info, ModelStats *Stats ) {
-    static const int nOLS = 8, nLnrPrd = nOLS + 3;
+    static const int nOLS = 8;
+    static const int nLnrPrd = nOLS + 3;
     static SmallStationaryContextMap sMap1b[nLnrPrd][3]{
         {{11, 1}, {11, 1}, {11, 1}}, {{11, 1}, {11, 1}, {11, 1}}, {{11, 1}, {11, 1}, {11, 1}},
         {{11, 1}, {11, 1}, {11, 1}}, {{11, 1}, {11, 1}, {11, 1}}, {{11, 1}, {11, 1}, {11, 1}},
@@ -8629,9 +8828,13 @@ void dump(const char* msg, int p) {
         {{90, 31, 0.996}, {90, 31, 0.996}},     {{90, 32, 0.995}, {90, 32, 0.995}},
         {{90, 33, 0.995}, {90, 33, 0.995}},     {{90, 34, 0.9985}, {90, 34, 0.9985}},
         {{28, 4, 0.98}, {28, 4, 0.98}},         {{28, 3, 0.992}, {28, 3, 0.992}}};
-    static int prd[nLnrPrd][2][2]{0}, residuals[nLnrPrd][2]{0};
-    static int stereo = 0, ch = 0;
-    static U32 mask = 0, errLog = 0, mxCtx = 0;
+    static int prd[nLnrPrd][2][2]{0};
+    static int residuals[nLnrPrd][2]{0};
+    static int stereo = 0;
+    static int ch = 0;
+    static U32 mask = 0;
+    static U32 errLog = 0;
+    static U32 mxCtx = 0;
 
     const int8_t B = c0 << ( 8 - bpos );
     if( bpos == 0 ) {
@@ -8658,7 +8861,8 @@ void dump(const char* msg, int p) {
       errLog = min( 0xF, ilog2( errLog ) );
       Stats->Audio = mxCtx = ilog2( min( 0x1F, BitCount( mask ) ) ) * 2 + ch;
 
-      int k1 = 90, k2 = k1 - 12 * stereo;
+      int k1 = 90;
+      int k2 = k1 - 12 * stereo;
       for( int j = ( i = 1 ); j <= k1; j++, i += 1 << ( static_cast<int>( j > 8 ) + static_cast<int>( j > 16 ) + static_cast<int>( j > 64 ) ) )
         ols[1][ch].Add( X1( i ) );
       for( int j = ( i = 1 ); j <= k2;
@@ -8737,14 +8941,32 @@ void dump(const char* msg, int p) {
     static Array<int> counter{2};
     static Array<double> F{49 * 49 * 2}; //[49][49][2]
     static Array<double> L{49 * 49};     //[49][49]
-    static const double a = 0.996, a2 = 1.0 / a;
-    static SmallStationaryContextMap scm1( 8, 8 ), scm2( 8, 8 ), scm3( 8, 8 ), scm4( 8, 8 ), scm5( 8, 8 ), scm6( 8, 8 ),
-        scm7( 8, 8 );
+    static const double a = 0.996;
+    static const double a2 = 1.0 / a;
+    static SmallStationaryContextMap scm1( 8, 8 );
+    static SmallStationaryContextMap scm2( 8, 8 );
+    static SmallStationaryContextMap scm3( 8, 8 );
+    static SmallStationaryContextMap scm4( 8, 8 );
+    static SmallStationaryContextMap scm5( 8, 8 );
+    static SmallStationaryContextMap scm6( 8, 8 );
+    static SmallStationaryContextMap scm7( 8, 8 );
     static ContextMap cm( MEM * 4, 11 );
-    static int bits, channels, w, ch;
-    static int z1, z2, z3, z4, z5, z6, z7;
+    static int bits;
+    static int channels;
+    static int w;
+    static int ch;
+    static int z1;
+    static int z2;
+    static int z3;
+    static int z4;
+    static int z5;
+    static int z6;
+    static int z7;
 
-    int j, k, l, i = 0;
+    int j;
+    int k;
+    int l;
+    int i = 0;
     long double sum;
 
     if( bpos == 0 && blpos == 0 ) {
@@ -8862,8 +9084,12 @@ void dump(const char* msg, int p) {
         pr_( 0, chn ) = int( floor( sum ) );
         counter[chn]++;
       }
-      const int y1 = pr_( 0, chn ), y2 = pr_( 1, chn ), y3 = pr_( 2, chn );
-      int x1 = buf( 1 ), x2 = buf( 2 ), x3 = buf( 3 );
+      const int y1 = pr_( 0, chn );
+      const int y2 = pr_( 1, chn );
+      const int y3 = pr_( 2, chn );
+      int x1 = buf( 1 );
+      int x2 = buf( 2 );
+      int x3 = buf( 3 );
       if( wmode == 4 || wmode == 5 ) {
         x1 ^= 128;
         x2 ^= 128;
@@ -10089,7 +10315,10 @@ void dump(const char* msg, int p) {
     }
     // Get context at buf(i) relevant to parsing 32-bit x86 code
     U32 execxt( int i, int x = 0 ) {
-      int prefix = 0, opcode = 0, modrm = 0, sib = 0;
+      int prefix = 0;
+      int opcode = 0;
+      int modrm = 0;
+      int sib = 0;
       if( i != 0 )
         prefix += 4 * pref( i-- );
       if( i != 0 )
@@ -10344,7 +10573,8 @@ void dump(const char* msg, int p) {
     StateBH[Context] = ( StateBH[Context] << 8 ) | B;
 
     if( Valid || Forced ) {
-      int mask = 0, count0 = 0;
+      int mask = 0;
+      int count0 = 0;
       int i = 0;
       while( i < N1 ) {
         if( i > 1 ) {
@@ -10445,7 +10675,9 @@ void dump(const char* msg, int p) {
     static IndirectContext<U32> iCtx( 16 );
 
     if( bpos == 0 ) {
-      U32 d = c4 & 0xffff, c = d & 255, d2 = ( buf( 1 ) & 31 ) + 32 * ( buf( 2 ) & 31 ) + 1024 * ( buf( 3 ) & 31 );
+      U32 d = c4 & 0xffff;
+      U32 c = d & 255;
+      U32 d2 = ( buf( 1 ) & 31 ) + 32 * ( buf( 2 ) & 31 ) + 1024 * ( buf( 3 ) & 31 );
       U32 d3 = ( buf( 1 ) >> 3 & 31 ) + 32 * ( buf( 3 ) >> 3 & 31 ) + 1024 * ( buf( 4 ) >> 3 & 31 );
       U32 &r1 = t1[d >> 8];
       r1 = r1 << 8 | c;
@@ -10461,7 +10693,8 @@ void dump(const char* msg, int p) {
       const U32 tc = d3 | t4[d3] << 16;
       const U8 pc = tolower( U8( c4 >> 8 ) );
       iCtx += ( c = tolower( c ) ), iCtx = ( pc << 8 ) | c;
-      const U32 ctx0 = iCtx(), mask = static_cast<int>( U8( t1[c] ) == U8( t2[d] ) ) | ( static_cast<int>( U8( t1[c] ) == U8( t3[d2] ) ) << 1 )
+      const U32 ctx0 = iCtx();
+      const U32 mask = static_cast<int>( U8( t1[c] ) == U8( t2[d] ) ) | ( static_cast<int>( U8( t1[c] ) == U8( t3[d2] ) ) << 1 )
                                       | ( static_cast<int>( U8( t1[c] ) == U8( t4[d3] ) ) << 2 )
                                       | ( static_cast<int>( U8( t1[c] ) == U8( ctx0 ) ) << 3 );
       U64 i = 0;
@@ -10731,11 +10964,24 @@ void dump(const char* msg, int p) {
   };
 
   void nestModel( Mixer &m ) {
-    static int ic = 0, bc = 0, pc = 0, vc = 0, qc = 0, lvc = 0, wc = 0, ac = 0, ec = 0, uc = 0, sense1 = 0, sense2 = 0,
-               w = 0;
+    static int ic = 0;
+    static int bc = 0;
+    static int pc = 0;
+    static int vc = 0;
+    static int qc = 0;
+    static int lvc = 0;
+    static int wc = 0;
+    static int ac = 0;
+    static int ec = 0;
+    static int uc = 0;
+    static int sense1 = 0;
+    static int sense2 = 0;
+    static int w = 0;
     static ContextMap cm( MEM, 12 );
     if( bpos == 0 ) {
-      int c = c4 & 255, matched = 1, vv;
+      int c = c4 & 255;
+      int matched = 1;
+      int vv;
       w *= static_cast<int>( ( vc & 7 ) > 0 && ( vc & 7 ) < 3 );
       if( (c & 0x80) != 0 )
         w = w * 11 * 32 + c;
@@ -10998,13 +11244,18 @@ void dump(const char* msg, int p) {
     static ContextMap cm( MEM / 4, 4 );
     static XMLTagCache Cache;
     static U32 StateBH[8];
-    static XMLState State = None, pState = None;
-    static U32 WhiteSpaceRun = 0, pWSRun = 0, IndentTab = 0, IndentStep = 2, LineEnding = 2;
+    static XMLState State = None;
+    static XMLState pState = None;
+    static U32 WhiteSpaceRun = 0;
+    static U32 pWSRun = 0;
+    static U32 IndentTab = 0;
+    static U32 IndentStep = 2;
+    static U32 LineEnding = 2;
 
     if( bpos == 0 ) {
       U8 B = ( U8 ) c4;
-      XMLTag *pTag = &Cache.Tags[( Cache.Index - 1 ) & ( CacheSize - 1 )],
-             *Tag = &Cache.Tags[Cache.Index & ( CacheSize - 1 )];
+      XMLTag *pTag = &Cache.Tags[( Cache.Index - 1 ) & ( CacheSize - 1 )];
+      XMLTag *Tag = &Cache.Tags[Cache.Index & ( CacheSize - 1 )];
       XMLAttribute *Attribute = &( ( *Tag ).Attributes.Items[( *Tag ).Attributes.Index & 3] );
       XMLContent *Content = &( *Tag ).Content;
       pState = State;
@@ -11392,7 +11643,10 @@ void dump(const char* msg, int p) {
         return m->p( 1, 0 );
     }
 
-    U32 c1 = buf( 1 ), c2 = buf( 2 ), c3 = buf( 3 ), c;
+    U32 c1 = buf( 1 );
+    U32 c2 = buf( 2 );
+    U32 c3 = buf( 3 );
+    U32 c;
 
     m->set( 8
                 + ( c1 | static_cast<int>( bpos > 5 ) << 8
@@ -11510,7 +11764,9 @@ void dump(const char* msg, int p) {
 
     // SSE Stage
     // Filter the context model with APMs
-    int pr1, pr2, pr3;
+    int pr1;
+    int pr2;
+    int pr3;
     switch( stats.blockType ) {
       case TEXT:
       case TEXT_EOL: {
@@ -11832,7 +12088,9 @@ void dump(const char* msg, int p) {
   void eccedc_init( void ) {
     if( luts_init != 0 )
       return;
-    U32 i, j, edc;
+    U32 i;
+    U32 j;
+    U32 edc;
     for( i = 0; i < 256; i++ ) {
       j = ( i << 1 ) ^ ( (i & 0x80) != 0U ? 0x11D : 0 );
       ecc_f_lut[i] = j;
@@ -11847,7 +12105,8 @@ void dump(const char* msg, int p) {
 
   void ecc_compute( U8 *src, U32 major_count, U32 minor_count, U32 major_mult, U32 minor_inc, U8 *dest ) {
     U32 size = major_count * minor_count;
-    U32 major, minor;
+    U32 major;
+    U32 minor;
     for( major = 0; major < major_count; major++ ) {
       U32 index = ( major >> 1 ) * major_mult + ( major & 1 );
       U8 ecc_a = 0;
@@ -12008,7 +12267,9 @@ void dump(const char* msg, int p) {
 
   bool IsGrayscalePalette( File *in, int n = 256, int isRGBA = 0 ) {
     U64 offset = in->curpos();
-    int stride = 3 + isRGBA, res = static_cast<int>( n > 0 ) << 8, order = 1;
+    int stride = 3 + isRGBA;
+    int res = static_cast<int>( n > 0 ) << 8;
+    int order = 1;
     for( int i = 0; ( i < n * stride ) && (( res >> 8 ) != 0); i++ ) {
       int b = in->getchar();
       if( b == EOF ) {
@@ -12135,42 +12396,109 @@ void dump(const char* msg, int p) {
   Blocktype detect( File *in, U64 blocksize, Blocktype type, int &info ) {
     //TODO: Large file support
     int n = ( int ) blocksize;
-    U32 buf3 = 0, buf2 = 0, buf1 = 0, buf0 = 0; // last 16 bytes
+    U32 buf3 = 0;
+    U32 buf2 = 0;
+    U32 buf1 = 0;
+    U32 buf0 = 0; // last 16 bytes
     U64 start = in->curpos();
 
     // For EXE detection
-    Array<int> abspos( 256 ), // CALL/JMP abs. addr. low byte -> last offset
+    Array<int> abspos( 256 );
+    Array<int> // CALL/JMP abs. addr. low byte -> last offset
         relpos( 256 );        // CALL/JMP relative addr. low byte -> last offset
     int e8e9count = 0;        // number of consecutive CALL/JMPs
     int e8e9pos = 0;          // offset of first CALL or JMP instruction
     int e8e9last = 0;         // offset of most recent CALL or JMP
 
-    int soi = 0, sof = 0, sos = 0, app = 0; // For JPEG detection - position where found
+    int soi = 0;
+    int sof = 0;
+    int sos = 0;
+    int app = 0; // For JPEG detection - position where found
 #ifdef USE_WAVMODEL
-    int wavi = 0, wavsize = 0, wavch = 0, wavbps = 0, wavm = 0, wavtype = 0, wavlen = 0,
-        wavlist = 0;                                                               // For WAVE detection
-    int aiff = 0, aiffm = 0, aiffs = 0;                                            // For AIFF detection
-    int s3mi = 0, s3mno = 0, s3mni = 0;                                            // For S3M detection
+    int wavi = 0;
+    int wavsize = 0;
+    int wavch = 0;
+    int wavbps = 0;
+    int wavm = 0;
+    int wavtype = 0;
+    int wavlen = 0;
+    int wavlist = 0;                                                               // For WAVE detection
+    int aiff = 0;
+    int aiffm = 0;
+    int aiffs = 0;                                            // For AIFF detection
+    int s3mi = 0;
+    int s3mno = 0;
+    int s3mni = 0;                                            // For S3M detection
 #endif                                                                             //  USE_WAVMODEL
-    int bmp = 0, imgbpp = 0, bmpx = 0, bmpy = 0, bmpof = 0, bmps = 0, hdrless = 0; // For BMP detection
-    int rgbi = 0, rgbx = 0, rgby = 0;                                              // For RGB detection
-    int tga = 0, tgax = 0, tgay = 0, tgaz = 0, tgat = 0, tgaid = 0, tgamap = 0;    // For TGA detection
+    int bmp = 0;
+    int imgbpp = 0;
+    int bmpx = 0;
+    int bmpy = 0;
+    int bmpof = 0;
+    int bmps = 0;
+    int hdrless = 0; // For BMP detection
+    int rgbi = 0;
+    int rgbx = 0;
+    int rgby = 0;                                              // For RGB detection
+    int tga = 0;
+    int tgax = 0;
+    int tgay = 0;
+    int tgaz = 0;
+    int tgat = 0;
+    int tgaid = 0;
+    int tgamap = 0;    // For TGA detection
     // ascii images are currently not supported
-    int pgm = 0, pgmcomment = 0, pgmw = 0, pgmh = 0, pgm_ptr = 0, pgmc = 0, pgmn = 0, pamatr = 0, pamd = 0, pgmdata = 0,
-        pgmdatasize = 0; // For PBM, PGM, PPM, PAM detection
+    int pgm = 0;
+    int pgmcomment = 0;
+    int pgmw = 0;
+    int pgmh = 0;
+    int pgm_ptr = 0;
+    int pgmc = 0;
+    int pgmn = 0;
+    int pamatr = 0;
+    int pamd = 0;
+    int pgmdata = 0;
+    int pgmdatasize = 0; // For PBM, PGM, PPM, PAM detection
     char pgm_buf[32];
-    int cdi = 0, cda = 0, cdm = 0; // For CD sectors detection
+    int cdi = 0;
+    int cda = 0;
+    int cdm = 0; // For CD sectors detection
     U32 cdf = 0;
-    unsigned char zbuf[256 + 32] = {0}, zin[1 << 16] = {0}, zout[1 << 16] = {0}; // For ZLIB stream detection
-    int zbufpos = 0, zzippos = -1, histogram[256] = {0};
-    int pdfim = 0, pdfimw = 0, pdfimh = 0, pdfimb = 0, pdfgray = 0, pdfimp = 0;
-    int b64s = 0, b64i = 0, b64line = 0, b64nl = 0;                            // For base64 detection
-    int gif = 0, gifa = 0, gifi = 0, gifw = 0, gifc = 0, gifb = 0, gifplt = 0; // For GIF detection
+    unsigned char zbuf[256 + 32] = {0};
+    unsigned char zin[1 << 16] = {0};
+    unsigned char zout[1 << 16] = {0}; // For ZLIB stream detection
+    int zbufpos = 0;
+    int zzippos = -1;
+    int histogram[256] = {0};
+    int pdfim = 0;
+    int pdfimw = 0;
+    int pdfimh = 0;
+    int pdfimb = 0;
+    int pdfgray = 0;
+    int pdfimp = 0;
+    int b64s = 0;
+    int b64i = 0;
+    int b64line = 0;
+    int b64nl = 0;                            // For base64 detection
+    int gif = 0;
+    int gifa = 0;
+    int gifi = 0;
+    int gifw = 0;
+    int gifc = 0;
+    int gifb = 0;
+    int gifplt = 0; // For GIF detection
     static int gifgray = 0;
-    int png = 0, pngw = 0, pngh = 0, pngbps = 0, pngtype = 0, pnggray = 0, lastchunk = 0,
-        nextchunk = 0; // For PNG detection
+    int png = 0;
+    int pngw = 0;
+    int pngh = 0;
+    int pngbps = 0;
+    int pngtype = 0;
+    int pnggray = 0;
+    int lastchunk = 0;
+    int nextchunk = 0; // For PNG detection
     // For image detection
-    static int deth = 0, detd = 0; // detected header/data size in bytes
+    static int deth = 0;
+    static int detd = 0; // detected header/data size in bytes
     static Blocktype dett;         // detected block type
     if( deth != 0 ) {
       in->setpos( start + deth );
@@ -12237,7 +12565,9 @@ void dump(const char* msg, int p) {
       if( !valid && ((options & OPTION_BRUTE) != 0) && i >= 255 ) {
         U8 BTYPE = ( zbuf[zbufpos] & 7 ) >> 1;
         if( ( valid = ( BTYPE == 1 || BTYPE == 2 ) ) ) {
-          int maximum = 0, used = 0, offset = zbufpos;
+          int maximum = 0;
+          int used = 0;
+          int offset = zbufpos;
           for( int i = 0; i < 4; i++, offset += 64 ) {
             for( int j = 0; j < 64; j++ ) {
               int freq = histogram[zbuf[( offset + j ) & 0xFF]];
@@ -12252,7 +12582,9 @@ void dump(const char* msg, int p) {
         }
       }
       if( valid || zzippos == i ) {
-        int streamLength = 0, ret = 0, brute = static_cast<int>( zh == -1 && zzippos != i );
+        int streamLength = 0;
+        int ret = 0;
+        int brute = static_cast<int>( zh == -1 && zzippos != i );
 
         // Quick check possible stream by decompressing first 32 bytes
         z_stream strm;
@@ -12477,7 +12809,8 @@ void dump(const char* msg, int p) {
         if( p == 12 && ( buf1 != 0x41494646 || buf0 != 0x434f4d4d ) )
           aiff = 0; // AIFF COMM
         else if( p == 24 ) {
-          const int bits = buf0 & 0xffff, chn = buf1 >> 16;
+          const int bits = buf0 & 0xffff;
+          const int chn = buf1 >> 16;
           if( ( bits == 8 || bits == 16 ) && ( chn == 1 || chn == 2 ) )
             aiffm = chn + bits / 4 + 1;
           else
@@ -12525,7 +12858,10 @@ void dump(const char* msg, int p) {
           s3mi = 0;
         else if( p == 16 ) {
           const U64 savedpos = in->curpos();
-          int b[31], sam_start = ( 1 << 16 ), sam_end = 0, ok = 1;
+          int b[31];
+          int sam_start = ( 1 << 16 );
+          int sam_end = 0;
+          int ok = 1;
           for( int j = 0; j < s3mni; j++ ) {
             in->setpos( start + s3mi - 31 + 0x60 + s3mno + j * 2 );
             int i1 = in->getchar();
@@ -12743,7 +13079,15 @@ void dump(const char* msg, int p) {
 
         // read directory
         int dirsize = in->getchar();
-        int tifx = 0, tify = 0, tifz = 0, tifzb = 0, tifc = 0, tifofs = 0, tifofval = 0, tifsize = 0, b[12];
+        int tifx = 0;
+        int tify = 0;
+        int tifz = 0;
+        int tifzb = 0;
+        int tifc = 0;
+        int tifofs = 0;
+        int tifofval = 0;
+        int tifsize = 0;
+        int b[12];
         if( in->getchar() == 0 ) {
           for( int i = 0; i < dirsize; i++ ) {
             for( int j = 0; j < 12; j++ )
@@ -12835,7 +13179,10 @@ void dump(const char* msg, int p) {
               info |= tgax;
               // now detect compressed image data size
               detd = 0;
-              int c = in->getchar(), b = 0, total = tgax * tgay, line = 0;
+              int c = in->getchar();
+              int b = 0;
+              int total = tgax * tgay;
+              int line = 0;
               while( total > 0 && c >= 0 && ( ++detd, b = in->getchar() ) >= 0 ) {
                 if( c == 0x80 ) {
                   c = b;
@@ -13111,7 +13458,10 @@ void dump(const char* msg, int p) {
 #define RGB565_MIN_RUN 63
 
   void encode_bmp( File *in, File *out, U64 len, int width ) {
-    int r, g, b, total = 0;
+    int r;
+    int g;
+    int b;
+    int total = 0;
     bool isPossibleRGB565 = true;
     for( int i = 0; i < ( int ) ( len / width ); i++ ) {
       for( int j = 0; j < width / 3; j++ ) {
@@ -13142,7 +13492,11 @@ void dump(const char* msg, int p) {
   }
 
   U64 decode_bmp( Encoder &en, U64 size, int width, File *out, FMode mode, U64 &diffFound ) {
-    int r, g, b, p, total = 0;
+    int r;
+    int g;
+    int b;
+    int p;
+    int total = 0;
     bool isPossibleRGB565 = true;
     for( int i = 0; i < ( int ) ( size / width ); i++ ) {
       p = i * width;
@@ -13203,7 +13557,10 @@ void dump(const char* msg, int p) {
 
   // 32-bit image
   void encode_im32( File *in, File *out, U64 len, int width ) {
-    int r, g, b, a;
+    int r;
+    int g;
+    int b;
+    int a;
     for( int i = 0; i < ( int ) ( len / width ); i++ ) {
       for( int j = 0; j < width / 4; j++ ) {
         b = in->getchar();
@@ -13223,7 +13580,11 @@ void dump(const char* msg, int p) {
   }
 
   U64 decode_im32( Encoder &en, U64 size, int width, File *out, FMode mode, U64 &diffFound ) {
-    int r, g, b, a, p;
+    int r;
+    int g;
+    int b;
+    int a;
+    int p;
     bool rgb = ( width & ( 1 << 31 ) ) > 0;
     if( rgb )
       width ^= ( 1 << 31 );
@@ -13275,7 +13636,8 @@ void dump(const char* msg, int p) {
   // EOL transform
 
   void encode_eol( File *in, File *out, U64 len ) {
-    U8 B = 0, pB = 0;
+    U8 B = 0;
+    U8 pB = 0;
     for( int i = 0; i < ( int ) len; i++ ) {
       B = in->getchar();
       if( pB == CARRIAGE_RETURN && B != NEW_LINE )
@@ -13318,8 +13680,10 @@ void dump(const char* msg, int p) {
   }
 
   void encode_rle( File *in, File *out, U64 size, int info, int &hdrsize ) {
-    U8 b, c = in->getchar();
-    int i = 1, maxBlockSize = info & 0xFFFFFF;
+    U8 b;
+    U8 c = in->getchar();
+    int i = 1;
+    int maxBlockSize = info & 0xFFFFFF;
     out->putVLI( maxBlockSize );
     hdrsize = VLICost( maxBlockSize );
     while( i < ( int ) size ) {
@@ -13362,7 +13726,8 @@ void dump(const char* msg, int p) {
       U8 *lastLiteral = nullptr;
       state = BASE;
       while( remaining > 0 ) {
-        U8 byte = *inPtr++, loop = 0;
+        U8 byte = *inPtr++;
+        U8 loop = 0;
         int run = 1;
         for( remaining--; remaining > 0 && byte == *inPtr; remaining--, run++, inPtr++ )
           ;
@@ -13486,7 +13851,11 @@ void dump(const char* msg, int p) {
 
   int encode_lzw( File *in, File *out, U64 size, int &hdrsize ) {
     LZWDictionary dic;
-    int32_t parent = -1, code = 0, buffer = 0, bitsPerCode = 9, bitsUsed = 0;
+    int32_t parent = -1;
+    int32_t code = 0;
+    int32_t buffer = 0;
+    int32_t bitsPerCode = 9;
+    int32_t bitsUsed = 0;
     bool done = false;
     while( !done ) {
       buffer = in->getchar();
@@ -13545,7 +13914,11 @@ void dump(const char* msg, int p) {
   U64 decode_lzw( File *in, U64 size, File *out, FMode mode, U64 &diffFound ) {
     LZWDictionary dic;
     U64 pos = 0;
-    int32_t parent = -1, code = 0, buffer = 0, bitsPerCode = 9, bitsUsed = 0;
+    int32_t parent = -1;
+    int32_t code = 0;
+    int32_t buffer = 0;
+    int32_t bitsPerCode = 9;
+    int32_t bitsUsed = 0;
     writeCode( out, mode, &buffer, &pos, &bitsUsed, bitsPerCode, LZW_RESET_CODE, &diffFound );
     while( ( code = in->getchar() ) >= 0 && diffFound == 0 ) {
       int32_t index = dic.findEntry( parent, code );
@@ -13617,7 +13990,9 @@ void dump(const char* msg, int p) {
 
   U64 decode_exe( Encoder &en, U64 size, File *out, FMode mode, U64 &diffFound ) {
     const int BLOCK = 0x10000; // block size
-    int begin, offset = 6, a;
+    int begin;
+    int offset = 6;
+    int a;
     U8 c[6];
     begin = ( int ) en.decode_blocksize(); //TODO: Large file support
     size -= VLICost( U64( begin ) );
@@ -13656,24 +14031,36 @@ void dump(const char* msg, int p) {
   MTFList MTF( 81 );
 
   int encode_zlib( File *in, File *out, U64 len, int &hdrsize ) {
-    const int BLOCK = 1 << 16, LIMIT = 128;
-    U8 zin[BLOCK * 2], zout[BLOCK], zrec[BLOCK * 2], diffByte[81 * LIMIT];
+    const int BLOCK = 1 << 16;
+    const int LIMIT = 128;
+    U8 zin[BLOCK * 2];
+    U8 zout[BLOCK];
+    U8 zrec[BLOCK * 2];
+    U8 diffByte[81 * LIMIT];
     U64 diffPos[81 * LIMIT];
 
     // Step 1 - parse offset type form zlib stream header
     U64 pos_backup = in->curpos();
-    U32 h1 = in->getchar(), h2 = in->getchar();
+    U32 h1 = in->getchar();
+    U32 h2 = in->getchar();
     in->setpos( pos_backup );
     int zh = parse_zlib_header( h1 * 256 + h2 );
-    int memlevel, clevel, window = zh == -1 ? 0 : MAX_WBITS + 10 + zh / 4, ctype = zh % 4;
+    int memlevel;
+    int clevel;
+    int window = zh == -1 ? 0 : MAX_WBITS + 10 + zh / 4;
+    int ctype = zh % 4;
     int minclevel = window == 0 ? 1 : ctype == 3 ? 7 : ctype == 2 ? 6 : ctype == 1 ? 2 : 1;
     int maxclevel = window == 0 ? 9 : ctype == 3 ? 9 : ctype == 2 ? 6 : ctype == 1 ? 5 : 1;
-    int index = -1, nTrials = 0;
+    int index = -1;
+    int nTrials = 0;
     bool found = false;
 
     // Step 2 - check recompressiblitiy, determine parameters and save differences
-    z_stream main_strm, rec_strm[81];
-    int diffCount[81], recpos[81], main_ret = Z_STREAM_END;
+    z_stream main_strm;
+    z_stream rec_strm[81];
+    int diffCount[81];
+    int recpos[81];
+    int main_ret = Z_STREAM_END;
     main_strm.zalloc = Z_NULL;
     main_strm.zfree = Z_NULL;
     main_strm.opaque = Z_NULL;
@@ -13820,8 +14207,10 @@ void dump(const char* msg, int p) {
   }
 
   int decode_zlib( File *in, U64 size, File *out, FMode mode, U64 &diffFound ) {
-    const int BLOCK = 1 << 16, LIMIT = 128;
-    U8 zin[BLOCK], zout[BLOCK];
+    const int BLOCK = 1 << 16;
+    const int LIMIT = 128;
+    U8 zin[BLOCK];
+    U8 zout[BLOCK];
     int diffCount = min( in->getchar(), LIMIT - 1 );
     int window = in->getchar() - MAX_WBITS;
     int index = in->getchar();
@@ -13844,7 +14233,8 @@ void dump(const char* msg, int p) {
     size -= 7 + 5 * diffCount;
 
     z_stream rec_strm;
-    int diffIndex = 1, recpos = 0;
+    int diffIndex = 1;
+    int recpos = 0;
     rec_strm.zalloc = Z_NULL;
     rec_strm.zfree = Z_NULL;
     rec_strm.opaque = Z_NULL;
@@ -13903,7 +14293,9 @@ void dump(const char* msg, int p) {
 
   U64 decode_base64( File *in, File *out, FMode mode, U64 &diffFound ) {
     U8 inn[3];
-    int i, len = 0, blocksout = 0;
+    int i;
+    int len = 0;
+    int blocksout = 0;
     int fle = 0;
     int linesize = 0;
     int outlen = 0;
@@ -13934,7 +14326,9 @@ void dump(const char* msg, int p) {
           inn[i] = 0;
       }
       if( len != 0 ) {
-        U8 in0, in1, in2;
+        U8 in0;
+        U8 in1;
+        U8 in2;
         in0 = inn[0], in1 = inn[1], in2 = inn[2];
         ptr[fle++] = ( table1[in0 >> 2] );
         ptr[fle++] = ( table1[( ( in0 & 0x03 ) << 4 ) | ( ( in1 & 0xf0 ) >> 4 )] );
@@ -14063,8 +14457,14 @@ void dump(const char* msg, int p) {
   }
 
   int encode_gif( File *in, File *out, U64 len, int &hdrsize ) {
-    int codesize = in->getchar(), diffpos = 0, clearpos = 0, bsize = 0, code, offset = 0;
-    U64 beginin = in->curpos(), beginout = out->curpos();
+    int codesize = in->getchar();
+    int diffpos = 0;
+    int clearpos = 0;
+    int bsize = 0;
+    int code;
+    int offset = 0;
+    U64 beginin = in->curpos();
+    U64 beginout = out->curpos();
     Array<U8> output( 4096 );
     hdrsize = 6;
     out->putchar( hdrsize >> 8 );
@@ -14076,8 +14476,12 @@ void dump(const char* msg, int p) {
     Array<int> table( LZW_TABLE_SIZE );
     for( int phase = 0; phase < 2; phase++ ) {
       in->setpos( beginin );
-      int bits = codesize + 1, shift = 0, buffer = 0;
-      int blocksize = 0, maxcode = ( 1 << codesize ) + 1, last = -1;
+      int bits = codesize + 1;
+      int shift = 0;
+      int buffer = 0;
+      int blocksize = 0;
+      int maxcode = ( 1 << codesize ) + 1;
+      int last = -1;
       Array<int> dict( 4096 );
       lzw_reset;
       bool end = false;
@@ -14108,7 +14512,8 @@ void dump(const char* msg, int p) {
             else if( code > maxcode + 1 )
               return 0;
             else {
-              int j = ( code <= maxcode ? code : last ), size = 1;
+              int j = ( code <= maxcode ? code : last );
+              int size = 1;
               while( j >= ( 1 << codesize ) ) {
                 output[4096 - ( size++ )] = dict[j] & 255;
                 j = dict[j] >> 8;
@@ -14128,7 +14533,8 @@ void dump(const char* msg, int p) {
                 if( ++maxcode >= 8191 )
                   return 0;
                 if( maxcode <= 4095 ) {
-                  int key = ( last << 8 ) + j, index = -1;
+                  int key = ( last << 8 ) + j;
+                  int index = -1;
                   lzw_find( key );
                   dict[maxcode] = key;
                   table[( index < 0 ) ? -index - 1 : offset] = maxcode;
@@ -14188,17 +14594,25 @@ void dump(const char* msg, int p) {
   }
 
   int decode_gif( File *in, U64 size, File *out, FMode mode, U64 &diffFound ) {
-    int diffcount = in->getchar(), curdiff = 0;
+    int diffcount = in->getchar();
+    int curdiff = 0;
     Array<int> diffpos( 4096 );
     diffcount = ( ( diffcount << 8 ) + in->getchar() - 6 ) / 4;
     int bsize = 255 - in->getchar();
     int clearpos = in->getchar();
     clearpos = ( clearpos << 8 ) + in->getchar();
     clearpos = ( 69631 - clearpos ) & 0xffff;
-    int codesize = in->getchar(), bits = codesize + 1, shift = 0, buffer = 0, blocksize = 0;
+    int codesize = in->getchar();
+    int bits = codesize + 1;
+    int shift = 0;
+    int buffer = 0;
+    int blocksize = 0;
     if( diffcount > 4096 || clearpos <= ( 1 << codesize ) + 2 )
       return 1;
-    int maxcode = ( 1 << codesize ) + 1, input, code, offset = 0;
+    int maxcode = ( 1 << codesize ) + 1;
+    int input;
+    int code;
+    int offset = 0;
     Array<int> dict( 4096 );
     Array<int> table( LZW_TABLE_SIZE );
     lzw_reset;
@@ -14212,7 +14626,9 @@ void dump(const char* msg, int p) {
     }
     Array<U8> output( 256 );
     size -= 6 + diffcount * 4;
-    int last = in->getchar(), total = ( int ) size + 1, outsize = 1;
+    int last = in->getchar();
+    int total = ( int ) size + 1;
+    int outsize = 1;
     if( mode == FDECOMPRESS )
       out->putchar( codesize );
     else if( mode == FCOMPARE )
@@ -14222,7 +14638,8 @@ void dump(const char* msg, int p) {
       gif_write_code( 1 << codesize ) else curdiff++;
     while( size != 0 && ( input = in->getchar() ) != EOF ) {
       size--;
-      int key = ( last << 8 ) + input, index = ( code = -1 );
+      int key = ( last << 8 ) + input;
+      int index = ( code = -1 );
       if( last < 0 )
         index = input;
       else
@@ -14413,7 +14830,8 @@ void dump(const char* msg, int p) {
         "png-8b",    "png-8b-grayscale", "png-24b", "png-32b", "text",     "text - eol", "rle",      "lzw"};
     static const char *audiotypes[4] = {"8b-mono", "8b-stereo", "16b-mono", "16b-stereo"};
     Blocktype type = DEFAULT;
-    int blnum = 0, info = 0; // image width or audio type
+    int blnum = 0;
+    int info = 0; // image width or audio type
     U64 begin = in->curpos();
     U64 block_end = begin + blocksize;
     if( recursion_level == 5 ) {
@@ -14532,7 +14950,8 @@ void dump(const char* msg, int p) {
 
   U64 decompressRecursive( File *out, U64 blocksize, Encoder &en, FMode mode, int recursion_level ) {
     Blocktype type;
-    U64 len, i = 0;
+    U64 len;
+    U64 i = 0;
     U64 diffFound = 0;
     int info = 0;
     while( i < blocksize ) {

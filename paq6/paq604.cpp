@@ -1225,7 +1225,8 @@ int Mixer::predict( int c_ ) {
   assert( n > 0 && n < N );
   assert( c_ >= 0 && c_ < C );
   c = c_;
-  int n0 = 1, n1 = n0;
+  int n0 = 1;
+  int n1 = n0;
   for( int j = 0; j <= n; ++j ) {
     U32 w = wt[c][j];
     n0 += bc0[j] * w;
@@ -1241,7 +1242,8 @@ int Mixer::predict( int c_ ) {
 
 // Adjust the weights by gradient descent to reduce cost of bit y
 void Mixer::update( int y ) {
-  U32 s0, s1;
+  U32 s0;
+  U32 s1;
   s0 = _b0;
   s1 = _b1;
 
@@ -1651,7 +1653,8 @@ inline void MatchModel::model() {
   }
 
   // Predict the bit found in the matching contexts
-  int n0 = 0, n1 = 0;
+  int n0 = 0;
+  int n1 = 0;
   for( int i = 0; i < M; ++i ) {
     if( end[i] != 0U ) {
       U32 d = ( ch[end[i]] + 256 ) >> ( 7 - ch.bpos() );
@@ -1719,7 +1722,8 @@ inline void RecordModel::model() {
     }
 
     // Compute context hashes
-    int r1 = repeat1, r2 = repeat2;
+    int r1 = repeat1;
+    int r2 = repeat2;
     if( r1 > r2 )
       swap( r1, r2 );
     t0.update( hash( ch( r1 ), ch( r1 * 2 ), r1 ) ); // 2 above (shorter repeat)
@@ -1918,7 +1922,8 @@ public:
         }
       }
     }
-    int n0 = 0, n1 = 0;
+    int n0 = 0;
+    int n1 = 0;
 
     // Model 4th byte of address
     if( ch( 4 ) == 0xe8 ) {
@@ -2191,7 +2196,9 @@ inline void Encoder::encode( int y ) {
   const U32 p = predictor.p() * ( 4096 / PSCALE ) + 2048 / PSCALE; // P(1) * 4K
   assert( p < 4096 );
   const U32 xdiff = x2 - x1;
-  U32 a, b, c;
+  U32 a;
+  U32 b;
+  U32 c;
   U32 xmid = x1; // = x1+p*(x2-x1) multiply without overflow, round down
 
   c = 2 * p + 1;
@@ -2245,7 +2252,9 @@ inline int Encoder::decode() {
   const U32 p = predictor.p() * ( 4096 / PSCALE ) + 2048 / PSCALE; // P(1) * 4K
   assert( p < 4096 );
   const U32 xdiff = x2 - x1;
-  U32 a, b, c;
+  U32 a;
+  U32 b;
+  U32 c;
   U32 xmid = x1; // = x1+p*(x2-x1) multiply without overflow, round down
   c = 2 * c + 1;
   c = 2 * p + 1;
@@ -2395,7 +2404,8 @@ int main( int argc, char **argv ) {
   // File names and sizes from input or archive
   vector<string> filename;                          // List of names
   vector<long> filesize;                            // Size or -1 if error
-  int uncompressed_bytes = 0, compressed_bytes = 0; // Input, output sizes
+  int uncompressed_bytes = 0;
+  int compressed_bytes = 0; // Input, output sizes
 
   // Extract files
   FILE *archive = fopen( argv[1], "rbe" );
@@ -2436,7 +2446,8 @@ int main( int argc, char **argv ) {
 
     // Test end of header for "\f\0"
     {
-      int c1 = 0, c2 = 0;
+      int c1 = 0;
+      int c2 = 0;
       if( ( c1 = getc( archive ) ) != '\f' || ( c2 = getc( archive ) ) != 0 ) {
         printf( "%s: Bad " PROGNAME " header format %d %d\n", argv[1], c1, c2 );
         return 1;

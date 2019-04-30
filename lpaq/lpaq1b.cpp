@@ -311,7 +311,8 @@ protected:
   static int dt[1024]; // i -> 16K/(i+3)
   void update( int y, int limit ) {
     assert( cxt >= 0 && cxt < N );
-    int n = t[cxt] & 1023, p = t[cxt] >> 10; // count, prediction
+    int n = t[cxt] & 1023;
+    int p = t[cxt] >> 10; // count, prediction
     if( n < limit )
       ++t[cxt];
     else
@@ -632,7 +633,8 @@ void Predictor::update( int y ) {
   static U8 *cp[6] = {t0, t0, t0, t0, t0, t0}; // pointer to bit history
   static int bcount = 0;                       // bit count
   static StateMap sm[6];
-  static APM a1( 0x100 ), a2( 0x4000 );
+  static APM a1( 0x100 );
+  static APM a2( 0x4000 );
   static U32 h[6];
   static Mixer m( 7, 80 );
   static MatchModel mm( MEM ); // predicts next bit by matching context

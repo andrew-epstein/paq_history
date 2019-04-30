@@ -787,7 +787,8 @@ void MixModel::model( int y, int &pr ) {
   // Adjust the weights by gradient descent to reduce cost
   {
     const int cn = cxt2 * N;
-    int s0 = 0, s1 = 0;
+    int s0 = 0;
+    int s1 = 0;
     for( int i = 0; i < N; ++i ) {
       s0 += ( wt[cn + i] + 48 ) * bc0[i];
       s1 += ( wt[cn + i] + 48 ) * bc1[i];
@@ -813,7 +814,8 @@ void MixModel::model( int y, int &pr ) {
   cxt2 = charModel.getc1() / ( 256 / C );
 
   // Predict next bit
-  int n0 = 1, n1 = n0;
+  int n0 = 1;
+  int n1 = n0;
   for( int j = 0; j < N; ++j ) {
     int w = wt[cxt2 * N + j];
     n0 += bc0[j] * w;
@@ -1118,7 +1120,8 @@ int main( int argc, char **argv ) {
   vector<string> filename; // List of names
   vector<long> filesize;   // Size or -1 if error
   int start_time = clock();
-  int uncompressed_bytes = 0, compressed_bytes = 0; // Input, output sizes
+  int uncompressed_bytes = 0;
+  int compressed_bytes = 0; // Input, output sizes
 
   // Extract files
   FILE *archive = fopen( argv[1], "rbe" );
@@ -1151,7 +1154,8 @@ int main( int argc, char **argv ) {
 
     // Test end of header for "\f\0"
     {
-      int c1 = 0, c2 = 0;
+      int c1 = 0;
+      int c2 = 0;
       if( ( c1 = getc( archive ) ) != '\f' || ( c2 = getc( archive ) ) != 0 ) {
         printf( "%s: Bad " PROGNAME " header format %d %d\n", argv[1], c1, c2 );
         return 1;

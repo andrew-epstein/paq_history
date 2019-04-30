@@ -1594,7 +1594,8 @@ inline U8 *ContextMap::E::get( U16 ch, int j ) {
   ch += j;
   if( chk[last & 15] == ch )
     return &bh[last & 15][0];
-  int b = 0xffff, bi = 0;
+  int b = 0xffff;
+  int bi = 0;
   for( int i = 0; i < 7; ++i ) {
     if( chk[i] == ch )
       return last = last << 4 | i, &bh[i][0];
@@ -1799,15 +1800,21 @@ static U32 col, frstchar = 0, spafdo = 0, spaces = 0, spacecount = 0, words = 0,
 // Model English text (words and columns/end of line)
 
 void wordModel( Mixer &m ) {
-  static U32 word0 = 0, word1 = 0, word2 = 0, word3 = 0, word4 = 0; // hashes
+  static U32 word0 = 0;
+  static U32 word1 = 0;
+  static U32 word2 = 0;
+  static U32 word3 = 0;
+  static U32 word4 = 0; // hashes
   static ContextMap cm( MEM * 64, 46 );
-  static int nl1 = -3, nl = -2; // previous, current newline position
+  static int nl1 = -3;
+  static int nl = -2; // previous, current newline position
   static U32 t1[256];
   static U16 t2[0x10000];
 
   // Update word hashes
   if( bpos == 0 ) {
-    U32 c = b1, f = 0;
+    U32 c = b1;
+    U32 f = 0;
 
     if( ( spaces & 0x80000000 ) != 0U )
       --spacecount;
@@ -1942,11 +1949,18 @@ void recordModel( Mixer &m ) {
   static int wpos1[0x10000]; // buf(1..2) -> last position
                              ///  static int rlen=2, rlen1=3, rlen2=4;  // run length and 2 candidates
                              ///  static int rcount1=0, rcount2=0;  // candidate counts
-  static ContextMap cm( 32768 / 4, 2 ), cn( 32768 / 2, 5 ), co( 32768, 4 ), cp( 32768 * 2, 3 ), cq( 32768 * 4, 3 );
+  static ContextMap cm( 32768 / 4, 2 );
+  static ContextMap cn( 32768 / 2, 5 );
+  static ContextMap co( 32768, 4 );
+  static ContextMap cp( 32768 * 2, 3 );
+  static ContextMap cq( 32768 * 4, 3 );
 
   // Find record length
   if( bpos == 0 ) {
-    int c = b1, w = ( b2 << 8 ) + c, d = w & 0xf0ff, e = c4 & 0xffffff;
+    int c = b1;
+    int w = ( b2 << 8 ) + c;
+    int d = w & 0xf0ff;
+    int e = c4 & 0xffffff;
 #if 0
     int r=pos-cpos1[c];
     if (r>1 && r==cpos1[c]-cpos2[c]
@@ -2008,9 +2022,16 @@ void recordModel( Mixer &m ) {
 
 void sparseModel( Mixer &m ) {
   static ContextMap cn( MEM * 2, 5 );
-  static SmallStationaryContextMap scm1( 0x20000, 17 ), scm2( 0x20000, 12 ), scm3( 0x20000, 12 ), scm4( 0x20000, 13 ),
-      scm5( 0x10000, 12 ), scm6( 0x20000, 12 ), scm7( 0x2000, 12 ), scm8( 0x8000, 13 ), scm9( 0x1000, 12 ),
-      scma( 0x10000, 16 );
+  static SmallStationaryContextMap scm1( 0x20000, 17 );
+  static SmallStationaryContextMap scm2( 0x20000, 12 );
+  static SmallStationaryContextMap scm3( 0x20000, 12 );
+  static SmallStationaryContextMap scm4( 0x20000, 13 );
+  static SmallStationaryContextMap scm5( 0x10000, 12 );
+  static SmallStationaryContextMap scm6( 0x20000, 12 );
+  static SmallStationaryContextMap scm7( 0x2000, 12 );
+  static SmallStationaryContextMap scm8( 0x8000, 13 );
+  static SmallStationaryContextMap scm9( 0x1000, 12 );
+  static SmallStationaryContextMap scma( 0x10000, 16 );
 
   if( bpos == 0 ) {
     cn.set( words & 0x1ffff );
@@ -2623,7 +2644,9 @@ static U32 WRT_mtt[16] = {0, 0, 1, 2, 3, 4, 5, 5, 6, 6, 6, 6, 6, 7, 7, 7};
 
 int contextModel2() {
   static ContextMap cm( MEM * 32, 7 );
-  static RunContextMap rcm7( MEM / 4, 14 ), rcm9( MEM / 4, 18 ), rcm10( MEM / 2, 20 );
+  static RunContextMap rcm7( MEM / 4, 14 );
+  static RunContextMap rcm9( MEM / 4, 18 );
+  static RunContextMap rcm10( MEM / 2, 20 );
   static Mixer m( 456, 128 * ( 16 + 14 + 14 + 12 + 14 + 16 ), 6, 512 );
   static U32 cxt[16]; // order 0-11 contexts
   static Filetype filetype = DEFAULT;
@@ -2672,7 +2695,8 @@ int contextModel2() {
 
   // Normal model
   if( bpos == 0 ) {
-    int i = 0, f2 = buf( 2 );
+    int i = 0;
+    int f2 = buf( 2 );
 
     if( f2 == '.' || f2 == 'O' || f2 == 'M' || f2 == '!' || f2 == ')' || f2 == ( '}' - '{' + 'P' ) ) {
       if( b1 != f2 && buf( 3 ) != f2 )
@@ -2728,7 +2752,9 @@ int contextModel2() {
   //m.tx[420]=0;
   //m.tx[425]=0;
   //m.tx[430]=0;
-  U32 c1 = b1, c2 = b2, c;
+  U32 c1 = b1;
+  U32 c2 = b2;
+  U32 c;
   if( c1 == 9 || c1 == 10 || c1 == 32 )
     c1 = 16;
   if( c2 == 9 || c2 == 10 || c2 == 32 )
@@ -2783,7 +2809,12 @@ public:
 Predictor::Predictor()  {}
 
 void Predictor::update() {
-  static APM a1( 256 ), a2( 0x8000 ), a3( 0x8000 ), a4( 0x20000 ), a5( 0x10000 ), a6( 0x10000 );
+  static APM a1( 256 );
+  static APM a2( 0x8000 );
+  static APM a3( 0x8000 );
+  static APM a4( 0x20000 );
+  static APM a5( 0x10000 );
+  static APM a6( 0x10000 );
 
   // Update global context: pos, bpos, c0, c4, buf
   c0 += c0 + y;
@@ -2838,7 +2869,10 @@ void Predictor::update() {
   pr = contextModel2();
 
   int rate = 6 + static_cast<int>( pos > 14 * 256 * 1024 ) + static_cast<int>( pos > 28 * 512 * 1024 );
-  int pt, pu = ( a1.p( pr, c0, 3 ) + 7 * pr + 4 ) >> 3, pv, pz = failcount + 1;
+  int pt;
+  int pu = ( a1.p( pr, c0, 3 ) + 7 * pr + 4 ) >> 3;
+  int pv;
+  int pz = failcount + 1;
   pz += tri[( fails >> 5 ) & 3];
   pz += trj[( fails >> 3 ) & 3];
   pz += trj[( fails >> 1 ) & 3];
@@ -3350,7 +3384,8 @@ int TextFilter::decode() {
       if( dtmp == nullptr )
         perror( "WRT tmpfile" ), exit( 1 );
 
-      unsigned int size = 0, i;
+      unsigned int size = 0;
+      unsigned int i;
       for( i = 4; i != 0; --i ) {
         int c = read();
         size = size * 256 + c;
@@ -3427,7 +3462,8 @@ Filter *Filter::make( const char *filename, Encoder *e ) {
 char *getline( FILE *f = stdin ) {
   const int MAXLINE = 512;
   static char s[MAXLINE];
-  int len = 0, c;
+  int len = 0;
+  int c;
   while( ( c = getc( f ) ) != EOF && c != 26 && c != '\n' && len < MAXLINE - 1 ) {
     if( c != '\r' )
       s[len++] = c;
@@ -3572,7 +3608,8 @@ int main( int argc, char **argv ) {
 
   // Read existing archive. Two pointers (header and body) track the
   // current filename and current position in the compressed data.
-  long header, body;             // file positions in header, body
+  long header;
+  long body;             // file positions in header, body
   char *filename = getline( f ); // check header
   if( ( filename == nullptr ) || ( strncmp( filename, PROGNAME " -", strlen( PROGNAME ) + 2 ) != 0 ) )
     fprintf( stderr, "%s: not a " PROGNAME " file\n", argv[1] ), exit( 1 );
@@ -3582,7 +3619,8 @@ int main( int argc, char **argv ) {
     level = DEFAULT_OPTION;
   {
     buf.setsize( MEM * 8 );
-    FILE *dictfile = fopen( "./to_train_models.dic", "rbe" ), *tmpfi = fopen( "./tmp_tmp_tmp_tmp.dic", "wbe" );
+    FILE *dictfile = fopen( "./to_train_models.dic", "rbe" );
+    FILE *tmpfi = fopen( "./tmp_tmp_tmp_tmp.dic", "wbe" );
     filetype = 0;
     Encoder en( COMPRESS, tmpfi );
     en.compress( 0 );

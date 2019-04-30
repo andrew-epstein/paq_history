@@ -1422,8 +1422,10 @@ protected:
   Array<U32> t; // cxt -> prediction in high 22 bits, count in low 10 bits
   inline void update( int limit ) {
     assert( cxt >= 0 && cxt < N );
-    U32 *p = &t[cxt], p0 = p[0];
-    int n = p0 & 1023, pr = p0 >> 10; // count, prediction
+    U32 *p = &t[cxt];
+    U32 p0 = p[0];
+    int n = p0 & 1023;
+    int pr = p0 >> 10; // count, prediction
     if( n < limit )
       ++p0;
     else
@@ -1737,7 +1739,8 @@ public:
 inline U8 *ContextMap::E::get( U16 ch ) {
   if( chk[last & 15] == ch )
     return &bh[last & 15][0];
-  int b = 0xffff, bi = 0;
+  int b = 0xffff;
+  int bi = 0;
   for( int i = 0; i < 7; ++i ) {
     if( chk[i] == ch )
       return last = last << 4 | i, ( U8 * ) &bh[i][0];
@@ -1924,7 +1927,10 @@ int matchModel( Mixer &m ) {
 // into m.
 
 void picModel( Mixer &m ) {
-  static U32 r0, r1, r2, r3;     // last 4 rows, bit 8 is over current pixel
+  static U32 r0;
+  static U32 r1;
+  static U32 r2;
+  static U32 r3;     // last 4 rows, bit 8 is over current pixel
   static Array<U8> t( 0x10200 ); // model: cxt -> state
   const int N = 3;               // number of contexts
   static int cxt[N];             // contexts
@@ -1955,10 +1961,16 @@ void picModel( Mixer &m ) {
 static U32 frstchar = 0, spafdo = 0, spaces = 0, spacecount = 0, words = 0, wordcount = 0;
 
 void wordModel( Mixer &m ) {
-  static U32 word0 = 0, word1 = 0, word2 = 0, word3 = 0, word4 = 0, word5 = 0; // hashes
+  static U32 word0 = 0;
+  static U32 word1 = 0;
+  static U32 word2 = 0;
+  static U32 word3 = 0;
+  static U32 word4 = 0;
+  static U32 word5 = 0; // hashes
   static U32 text0 = 0;                                                        // hash stream of letters
   static ContextMap cm( MEM * 16, 20 + 3 + 3 + 6 + 1 + 1 + 1 + 1 - 1 );
-  static int nl1 = -3, nl = -2; // previous, current newline position
+  static int nl1 = -3;
+  static int nl = -2; // previous, current newline position
   // Update word hashes
   if( bpos == 0 ) {
     int c = c4 & 255;
@@ -1995,7 +2007,8 @@ void wordModel( Mixer &m ) {
       if( c == 10 )
         nl1 = nl, nl = pos - 1;
     }
-    int col = min( 255, pos - nl ), above = buf[nl1 + col]; // text column context
+    int col = min( 255, pos - nl );
+    int above = buf[nl1 + col]; // text column context
     if( col <= 2 ) {
       if( col == 2 )
         frstchar = min( c, 96 );
@@ -2055,15 +2068,26 @@ void wordModel( Mixer &m ) {
 // that include the distance to the last match.
 
 void recordModel( Mixer &m ) {
-  static int cpos1[256], cpos2[256], cpos3[256], cpos4[256];
+  static int cpos1[256];
+  static int cpos2[256];
+  static int cpos3[256];
+  static int cpos4[256];
   static int wpos1[0x10000];                 // buf(1..2) -> last position
-  static int rlen = 2, rlen1 = 3, rlen2 = 4; // run length and 2 candidates
-  static int rcount1 = 0, rcount2 = 0;       // candidate counts
-  static ContextMap cm( 32768, 3 ), cn( 32768 / 2, 3 ), co( 32768 * 2, 3 ), cp( MEM, 3 );
+  static int rlen = 2;
+  static int rlen1 = 3;
+  static int rlen2 = 4; // run length and 2 candidates
+  static int rcount1 = 0;
+  static int rcount2 = 0;       // candidate counts
+  static ContextMap cm( 32768, 3 );
+  static ContextMap cn( 32768 / 2, 3 );
+  static ContextMap co( 32768 * 2, 3 );
+  static ContextMap cp( MEM, 3 );
 
   // Find record length
   if( bpos == 0 ) {
-    int w = c4 & 0xffff, c = w & 255, d = w >> 8;
+    int w = c4 & 0xffff;
+    int c = w & 255;
+    int d = w >> 8;
 #if 1
     int r = pos - cpos1[c];
     if( r > 1 && r == cpos1[c] - cpos2[c] && r == cpos2[c] - cpos3[c] && r == cpos3[c] - cpos4[c]
@@ -2186,7 +2210,9 @@ void sparseModel( Mixer &m, int seenbefore, int howmany ) {
 void distanceModel( Mixer &m ) {
   static ContextMap cr( MEM, 3 );
   if( bpos == 0 ) {
-    static int pos00 = 0, pos20 = 0, posnl = 0;
+    static int pos00 = 0;
+    static int pos20 = 0;
+    static int posnl = 0;
     int c = c4 & 0xff;
     if( c == 0x00 )
       pos00 = pos;
@@ -2211,8 +2237,17 @@ inline int sqrbuf( int i ) {
 }
 void model24bit( Mixer &m, int w = 0 ) {
   const int SC = 0x20000;
-  static SmallStationaryContextMap scm1( SC ), scm2( SC ), scm3( SC ), scm4( SC ), scm5( SC ), scm6( SC ), scm7( SC ),
-      scm8( SC ), scm9( SC ), scm10( SC * 2 ), scm11( SC );
+  static SmallStationaryContextMap scm1( SC );
+  static SmallStationaryContextMap scm2( SC );
+  static SmallStationaryContextMap scm3( SC );
+  static SmallStationaryContextMap scm4( SC );
+  static SmallStationaryContextMap scm5( SC );
+  static SmallStationaryContextMap scm6( SC );
+  static SmallStationaryContextMap scm7( SC );
+  static SmallStationaryContextMap scm8( SC );
+  static SmallStationaryContextMap scm9( SC );
+  static SmallStationaryContextMap scm10( SC * 2 );
+  static SmallStationaryContextMap scm11( SC );
   static ContextMap cm( MEM * 4, 10 );
 
   // Select nearby pixels as context
@@ -2306,7 +2341,10 @@ int bmpModel( Mixer &m ) {
     if( ( tiff != 0U ) && pos - tiff == 200 ) { // most of directory should be read by now
       int dirsize = i2( pos - tiff - 4 );       // number of 12-byte directory entries
       w = 0;
-      int bpp = 0, compression = 0, width = 0, height = 0;
+      int bpp = 0;
+      int compression = 0;
+      int width = 0;
+      int height = 0;
       for( int i = tiff + 6; i < pos - 12 && --dirsize > 0; i += 12 ) {
         int tag = i2( pos - i );        // 256=width, 257==height, 259: 1=no compression
                                         // 277=3 samples/pixel
@@ -2348,7 +2386,8 @@ int bmpModel( Mixer &m ) {
 
 int ppmModel( Mixer &m ) {
   static int h = 0;         // height of image in bytes (pixels)
-  static int w = 0, w1 = 0; // width of image in bytes (pixels)
+  static int w = 0;
+  static int w1 = 0; // width of image in bytes (pixels)
   static int eoi = 0;       // end of image
   static int ppm = 0;       // offset of pgm header
   static int ppm_hdr[3];    // 0 - Width, 1 - Height, 2 - Max value
@@ -2414,8 +2453,14 @@ int ppmModel( Mixer &m ) {
 
 void model8bit( Mixer &m, int w ) {
   const int SC = 0x20000;
-  static SmallStationaryContextMap scm1( SC ), scm2( SC ), scm3( SC ), scm4( SC ), scm5( SC ), scm6( SC * 2 ),
-      scm7( SC ), scm8( SC );
+  static SmallStationaryContextMap scm1( SC );
+  static SmallStationaryContextMap scm2( SC );
+  static SmallStationaryContextMap scm3( SC );
+  static SmallStationaryContextMap scm4( SC );
+  static SmallStationaryContextMap scm5( SC );
+  static SmallStationaryContextMap scm6( SC * 2 );
+  static SmallStationaryContextMap scm7( SC );
+  static SmallStationaryContextMap scm8( SC );
   static ContextMap cm( MEM * 4, 32 + 4 );
 
   // Select nearby pixels as context
@@ -2499,7 +2544,8 @@ void model8bit( Mixer &m, int w ) {
 
 int pgmModel( Mixer &m ) {
   static int h = 0;         // height of image in bytes (pixels)
-  static int w = 0, w1 = 0; // width of image in bytes (pixels)
+  static int w = 0;
+  static int w1 = 0; // width of image in bytes (pixels)
   static int eoi = 0;       // end of image
   static int pgm = 0;       // offset of pgm header
   static int pgm_hdr[3];    // 0 - Width, 1 - Height, 2 - Max value
@@ -2576,7 +2622,8 @@ int bmpModel8( Mixer &m ) {
   static int w = 0;   // width of image in bytes (pixels)
   static int eoi = 0; // end of image
   static int col = 0;
-  static int ibmp = 0, w1 = 0;
+  static int ibmp = 0;
+  static int w1 = 0;
   if( bpos == 0 ) {
     //  8-bit .bmp images               data offset      windows bmp    compression   bpp
     if( buf( 54 ) == 'B' && buf( 53 ) == 'M' && ( i4( 44 ) < 1079 ) && i4( 40 ) == 40 && i4( 24 ) == 0
@@ -2644,7 +2691,10 @@ int rgbModel8( Mixer &m ) {
 // Model for 1 bit image data
 
 void model1bit( Mixer &m, int brow ) {
-  static U32 r0, r1, r2, r3;     // last 4 rows, bit 8 is over current pixel
+  static U32 r0;
+  static U32 r1;
+  static U32 r2;
+  static U32 r3;     // last 4 rows, bit 8 is over current pixel
   static Array<U8> t( 0x10200 ); // model: cxt -> state
   const int N = 4 + 1 + 1;       // number of contexts
   static int cxt[N];             // contexts
@@ -2681,7 +2731,8 @@ void bmpModel1( Mixer &m ) {
   static int h = 0;   // height of image in bytes (pixels)
   static int w = 0;   // width of image in bytes (pixels)
   static int eoi = 0; // end of image
-  static int ibmp = 0, brow = 0;
+  static int ibmp = 0;
+  static int brow = 0;
   if( bpos == 0 ) {
     //  1-bit .bmp images                data offset      windows bmp    compression   bpp
     if( buf( 54 ) == 'B' && buf( 53 ) == 'M' && ( i4( 44 ) == 0x3e ) && i4( 40 ) == 40 && i4( 24 ) == 0
@@ -2713,7 +2764,8 @@ void bmpModel1( Mixer &m ) {
 
 void pbmModel( Mixer &m ) {
   static int h = 0;         // height of image in bytes (pixels)
-  static int w = 0, w1 = 0; // width of image in bytes (pixels)
+  static int w = 0;
+  static int w1 = 0; // width of image in bytes (pixels)
   static int eoi = 0;       // end of image
   static int pbm = 0;       // offset of pgm header
   static int pbm_hdr[2];    // 0 - Width, 1 - Height
@@ -2808,7 +2860,9 @@ struct HUF {
 // coefficient type Tc (0=DC, 1=AC), table Th (0-3), length m+1 (m=0-15)
 
 void update_k( int v1, int v2, int &k1, int &k2 ) {
-  int a, b, c;
+  int a;
+  int b;
+  int c;
   a = abs( v1 * ( k1 - 1 ) + v2 * ( 8 - ( k1 - 1 ) ) ) / 8;
   b = abs( v1 * ( k1 + 0 ) + v2 * ( 8 - ( k1 + 0 ) ) ) / 8;
   c = abs( v1 * ( k1 + 1 ) + v2 * ( 8 - ( k1 + 1 ) ) ) / 8;
@@ -2852,7 +2906,9 @@ int jpegModel( Mixer &m ) {
   static int jpeg = 0;                   // 1 if JPEG is header detected, 2 if image data
   static int next_jpeg = 0;              // updated with jpeg on next byte boundary
   static int app;                        // Bytes remaining to skip in APPx or COM field
-  static int sof = 0, sos = 0, data = 0; // pointers to buf
+  static int sof = 0;
+  static int sos = 0;
+  static int data = 0; // pointers to buf
   static Array<int> ht( 8 );             // pointers to Huffman table headers
   static int htsize = 0;                 // number of pointers in ht
 
@@ -2880,7 +2936,8 @@ int jpegModel( Mixer &m ) {
   static Array<int> pred( 4 );    // component -> last DC value
   static int dc = 0;              // DC value of the current block
   static int width = 0;           // Image width in MCU
-  static int row = 0, column = 0; // in MCU (column 0 to width-1)
+  static int row = 0;
+  static int column = 0; // in MCU (column 0 to width-1)
   static Buf cbuf( 0x20000 );     // Rotating buffer of coefficients, coded as:
                                   // DC: level shifted absolute value, low 4 bits discarded, i.e.
                                   //   [-1023...1024] -> [0...255].
@@ -2890,18 +2947,33 @@ int jpegModel( Mixer &m ) {
                                   //   xx is the first 2 extra bits, and the last 2 bits are 1 (since
                                   //   this never occurs in a valid RS code).
   static int cpos = 0;            // position in cbuf
-  static U32 huff1 = 0, huff2 = 0, huff3 = 0, huff4 = 0; // hashes of last codes
-  static int rs1, rs2, rs3, rs4;                         // last 4 RS codes
-  static int ssum = 0, ssum1 = 0, ssum2 = 0, ssum3 = 0, ssum4 = 0;
+  static U32 huff1 = 0;
+  static U32 huff2 = 0;
+  static U32 huff3 = 0;
+  static U32 huff4 = 0; // hashes of last codes
+  static int rs1;
+  static int rs2;
+  static int rs3;
+  static int rs4;                         // last 4 RS codes
+  static int ssum = 0;
+  static int ssum1 = 0;
+  static int ssum2 = 0;
+  static int ssum3 = 0;
+  static int ssum4 = 0;
   // sum of S in RS codes in block and last 4 values
 
   static IntBuf cbuf2( 0x20000 );
-  static Array<int> adv_pred( 7 ), sumu( 8 ), sumv( 8 );
+  static Array<int> adv_pred( 7 );
+  static Array<int> sumu( 8 );
+  static Array<int> sumv( 8 );
   static Array<int> ls( 10 ); // block -> distance to previous block
-  static Array<int> lcp( 4 ), zpos( 64 );
+  static Array<int> lcp( 4 );
+  static Array<int> zpos( 64 );
 
   //for parsing Quantization tables
-  static int dqt_state = -1, dqt_end = 0, qnum = 0;
+  static int dqt_state = -1;
+  static int dqt_end = 0;
+  static int qnum = 0;
   static Array<U8> qtab( 256 ); // table
   static Array<int> qmap( 10 ); // block -> table number
 
@@ -3027,7 +3099,8 @@ int jpegModel( Mixer &m ) {
         int end = p + buf[p - 2] * 256 + buf[p - 1] - 2; // end of Huffman table
         int count = 0;                                   // sanity check
         while( p < end && end < pos && end < p + 2100 && ++count < 10 ) {
-          int tc = buf[p] >> 4, th = buf[p] & 15;
+          int tc = buf[p] >> 4;
+          int th = buf[p] & 15;
           if( tc >= 2 || th >= 4 )
             break;
           jassert( tc >= 0 && tc < 2 && th >= 0 && th < 4 );
@@ -3197,10 +3270,16 @@ int jpegModel( Mixer &m ) {
 
           // UPDATE_ADV_PRED !!!!
           {
-            const int acomp = mcupos >> 6, q = 64 * qmap[acomp];
-            const int zz = mcupos & 63, cpos_dc = cpos - zz;
+            const int acomp = mcupos >> 6;
+            const int q = 64 * qmap[acomp];
+            const int zz = mcupos & 63;
+            const int cpos_dc = cpos - zz;
             const static int we[8] = {181, 282, 353, 456, 568, 671, 742, 767};
-            static int sumu2[8], sumv2[8], sumu3[8], sumv3[8], kx[32];
+            static int sumu2[8];
+            static int sumv2[8];
+            static int sumu3[8];
+            static int sumv3[8];
+            static int kx[32];
             if( zz == 0 ) {
               for( int i = 0; i < 8; i++ ) {
                 update_k( sumv2[i], sumv3[i], kx[i], kx[i + 16] );
@@ -3264,7 +3343,8 @@ int jpegModel( Mixer &m ) {
             adv_pred[3] = ( x < 0 ? -1 : +1 ) * ilog( 10 * abs( x ) + 1 ) / 10;
 
             for( int i = 0; i < 4; ++i ) {
-              const int a = ( ( i & 1 ) != 0 ? zzv[zz] : zzu[zz] ), b = ( ( i & 2 ) != 0 ? 2 : 1 );
+              const int a = ( ( i & 1 ) != 0 ? zzv[zz] : zzu[zz] );
+              const int b = ( ( i & 2 ) != 0 ? 2 : 1 );
               if( a < b )
                 x = 255;
               else {
@@ -3302,7 +3382,8 @@ int jpegModel( Mixer &m ) {
   static Array<U8 *> cp( N ); // context pointers
   static StateMap sm[N];
   static Mixer m1( 32, 770, 3 );
-  static APM a1( 0x8000 ), a2( 0x10000 );
+  static APM a1( 0x8000 );
+  static APM a2( 0x10000 );
 
   // Update model
   if( cp[N - 1] != nullptr ) {
@@ -3319,7 +3400,8 @@ int jpegModel( Mixer &m ) {
   if( ++hbcount > 2 || huffbits == 0 )
     hbcount = 0;
   jassert( coef >= 0 && coef < 256 );
-  const int zu = zzu[mcupos & 63], zv = zzv[mcupos & 63];
+  const int zu = zzu[mcupos & 63];
+  const int zv = zzv[mcupos & 63];
   if( hbcount == 0 ) {
     int n = 0;
     cxt[0] = hash( ++n, hc, coef, adv_pred[2] );
@@ -3420,13 +3502,30 @@ int wavModel( Mixer &m ) {
   static int bytes;    // bytes per sample
   static int eof = 0;  // end of wav
   static int s = 0;    // size in bytes
-  static int w, K = 256 >> level;
-  static int pr[3][2], n[2], counter[2];
-  int chn, ch, msb, j, k, l, i = 0;
-  double sum, a = 0.996;
-  double F[49][49][2], L[49][49];
+  static int w;
+  static int K = 256 >> level;
+  static int pr[3][2];
+  static int n[2];
+  static int counter[2];
+  int chn;
+  int ch;
+  int msb;
+  int j;
+  int k;
+  int l;
+  int i = 0;
+  double sum;
+  double a = 0.996;
+  double F[49][49][2];
+  double L[49][49];
   const int SC = 0x20000;
-  static SmallStationaryContextMap scm1( SC ), scm2( SC ), scm3( SC ), scm4( SC ), scm5( SC ), scm6( SC ), scm7( SC );
+  static SmallStationaryContextMap scm1( SC );
+  static SmallStationaryContextMap scm2( SC );
+  static SmallStationaryContextMap scm3( SC );
+  static SmallStationaryContextMap scm4( SC );
+  static SmallStationaryContextMap scm5( SC );
+  static SmallStationaryContextMap scm6( SC );
+  static SmallStationaryContextMap scm7( SC );
   static ContextMap cm( MEM * 4, 10 );
 
   // Detect .wav file header
@@ -3532,9 +3631,17 @@ int wavModel( Mixer &m ) {
       pr[0][chn] = int( floor( sum ) );
       counter[chn]++;
     }
-    const int x1 = buf( 1 ), x2 = buf( 2 ), y1 = pr[0][chn], y2 = pr[1][chn], y3 = pr[2][chn];
-    const int t = static_cast<const int>( msb != 0 ), z1 = s2( w + t ), z2 = s2( w * 2 + t ), z3 = s2( w * 3 + t ),
-              z4 = s2( w * 4 + t ), z5 = s2( w * 5 + t );
+    const int x1 = buf( 1 );
+    const int x2 = buf( 2 );
+    const int y1 = pr[0][chn];
+    const int y2 = pr[1][chn];
+    const int y3 = pr[2][chn];
+    const int t = static_cast<const int>( msb != 0 );
+    const int z1 = s2( w + t );
+    const int z2 = s2( w * 2 + t );
+    const int z3 = s2( w * 3 + t );
+    const int z4 = s2( w * 4 + t );
+    const int z5 = s2( w * 5 + t );
     i = ch << 4;
     if( msb == 0 ) {
       cm.set( hash( ++i, y1 & 0xff ) );
@@ -3617,7 +3724,8 @@ void indirectModel( Mixer &m ) {
   static U16 t2[0x10000];
 
   if( bpos == 0 ) {
-    U32 d = c4 & 0xffff, c = d & 255;
+    U32 d = c4 & 0xffff;
+    U32 c = d & 255;
     U32 &r1 = t1[d >> 8];
     r1 = r1 << 8 | c;
     U16 &r2 = t2[c4 >> 8 & 0xffff];
@@ -3657,7 +3765,8 @@ struct DMCNode {                 // 12 bytes
 };
 
 void dmcModel( Mixer &m ) {
-  static int top = 0, curr = 0;       // allocated, current node
+  static int top = 0;
+  static int curr = 0;       // allocated, current node
   static Array<DMCNode> t( MEM * 2 ); // state graph
   static StateMap sm;
   static int threshold = 256;
@@ -3745,11 +3854,21 @@ int vcmap( int c ) {
 }
 
 void nestModel( Mixer &m ) {
-  static int ic = 0, bc = 0, pc = 0, vc = 0, qc = 0, lvc = 0, vcmc = 0, llvc = 0, tmc = 0, wc = 0;
+  static int ic = 0;
+  static int bc = 0;
+  static int pc = 0;
+  static int vc = 0;
+  static int qc = 0;
+  static int lvc = 0;
+  static int vcmc = 0;
+  static int llvc = 0;
+  static int tmc = 0;
+  static int wc = 0;
   static ContextMap cm( MEM, 14 - 10 );
   if( bpos == 0 ) {
     int c = c4 & 255;
-    int matched = 1, vv = vcmap( c );
+    int matched = 1;
+    int vv = vcmap( c );
     vc = ( vc << 3 ) | vv;
     if( vv == lvc || vv == llvc )
       tmc += 1;
@@ -3874,7 +3993,9 @@ static const char *typenames[maxTypes] = {"unkn", "jpeg ", "bmp1 ", "bmp4 ", "bm
 
 int contextModel2() {
   static ContextMap cm( MEM * 32, 9 );
-  static RunContextMap rcm7( MEM ), rcm9( MEM ), rcm10( MEM );
+  static RunContextMap rcm7( MEM );
+  static RunContextMap rcm9( MEM );
+  static RunContextMap rcm10( MEM );
   static Mixer m( 800, 3088, 7, 128 );
   static U32 cxt[16]; // order 0-11 contexts
   static Filetype filetype = DEFAULT;
@@ -4050,7 +4171,10 @@ int contextModel2() {
   if( order < 0 )
     order = 0;
 
-  U32 c1 = buf( 1 ), c2 = buf( 2 ), c3 = buf( 3 ), c;
+  U32 c1 = buf( 1 );
+  U32 c2 = buf( 2 );
+  U32 c3 = buf( 3 );
+  U32 c;
 
   m.set( c1 + 8, 264 );
   m.set( c0, 256 );
@@ -4093,7 +4217,13 @@ public:
 Predictor::Predictor()  {}
 
 void Predictor::update() {
-  static APM1 a( 256 ), a1( 0x10000 ), a2( 0x10000 ), a3( 0x10000 ), a4( 0x10000 ), a5( 0x10000 ), a6( 0x10000 );
+  static APM1 a( 256 );
+  static APM1 a1( 0x10000 );
+  static APM1 a2( 0x10000 );
+  static APM1 a3( 0x10000 );
+  static APM1 a4( 0x10000 );
+  static APM1 a5( 0x10000 );
+  static APM1 a6( 0x10000 );
 
   // Update global context: pos, bpos, c0, c4, buf
   c0 += c0 + y;
@@ -4295,33 +4425,78 @@ U8 GetCWord(FILE *f)
 */
 // Detect EXE or JPEG data
 Filetype detect( FILE *in, int n, Filetype type ) {
-  U32 buf1 = 0, buf0 = 0; // last 8 bytes
+  U32 buf1 = 0;
+  U32 buf0 = 0; // last 8 bytes
   long start = ftell( in );
 
   // For EXE detection
-  Array<int> abspos( 256 ), // CALL/JMP abs. addr. low byte -> last offset
+  Array<int> abspos( 256 );
+  Array<int> // CALL/JMP abs. addr. low byte -> last offset
       relpos( 256 );        // CALL/JMP relative addr. low byte -> last offset
   int e8e9count = 0;        // number of consecutive CALL/JMPs
   int e8e9pos = 0;          // offset of first CALL or JMP instruction
   int e8e9last = 0;         // offset of most recent CALL or JMP
   // For BMP detection
-  int bmp = 0, bmp2 = 0, bmp0 = 0, bsize = 0, imgbpp = 0, bmpx = 0, bmpy = 0, bmpimgoff = 0, imgcomp = -1;
+  int bmp = 0;
+  int bmp2 = 0;
+  int bmp0 = 0;
+  int bsize = 0;
+  int imgbpp = 0;
+  int bmpx = 0;
+  int bmpy = 0;
+  int bmpimgoff = 0;
+  int imgcomp = -1;
   // For PGM detection                                                    PPM    PBM
-  int pgm = 0, psize = 0, pgmcomment = 0, pgmw = 0, pgmh = 0, pgmsize = 0, pgm_ptr = 0, pgmc = 0, pgm6 = 0, pbm = 0;
+  int pgm = 0;
+  int psize = 0;
+  int pgmcomment = 0;
+  int pgmw = 0;
+  int pgmh = 0;
+  int pgmsize = 0;
+  int pgm_ptr = 0;
+  int pgmc = 0;
+  int pgm6 = 0;
+  int pbm = 0;
   char pgm_buf[32];
   // For JPEG detection
-  int soi = 0, sof = 0, sos = 0, app = 0; // position where found
+  int soi = 0;
+  int sof = 0;
+  int sos = 0;
+  int app = 0; // position where found
   // For .RGB detection
-  int rgbi = 0, rgbSTORAGE = -1, rgbBPC = 0, rgbDIMENSION = 0, rgbZSIZE = 0, rgbXSIZE = 0, rgbYSIZE = 0, rgbsize = 0;
+  int rgbi = 0;
+  int rgbSTORAGE = -1;
+  int rgbBPC = 0;
+  int rgbDIMENSION = 0;
+  int rgbZSIZE = 0;
+  int rgbXSIZE = 0;
+  int rgbYSIZE = 0;
+  int rgbsize = 0;
   // For TEXT
-  int txtStart = 0, txtLen = 0, txtOff = 0, txtPrev2 = -1, txtPrev3 = -1, txtIsUTF8 = -1, txtUTF8b2 = 0, txtUTF8b3 = 0;
+  int txtStart = 0;
+  int txtLen = 0;
+  int txtOff = 0;
+  int txtPrev2 = -1;
+  int txtPrev3 = -1;
+  int txtIsUTF8 = -1;
+  int txtUTF8b2 = 0;
+  int txtUTF8b3 = 0;
   const int txtMinLen = 80; // minimal text to be detected
   // For WAVE
   long wavchunkSize = 0;
-  int wavi = 0, wavsize = 0, wavdatas = 0;
-  int wavChannels = 0, iswavcompressible = 0, wavAudioFormat = 0;
+  int wavi = 0;
+  int wavsize = 0;
+  int wavdatas = 0;
+  int wavChannels = 0;
+  int iswavcompressible = 0;
+  int wavAudioFormat = 0;
   // For MRB detection
-  int mrb = 0, mrb0 = 0, mrbsize = 0, mrbPictureType = 0, mrbPackingMethod = 0, mrbTell = 0;
+  int mrb = 0;
+  int mrb0 = 0;
+  int mrbsize = 0;
+  int mrbPictureType = 0;
+  int mrbPackingMethod = 0;
+  int mrbTell = 0;
 
   for( int i = 0; i < n; ++i ) {
     int c = getc( in );
@@ -4878,7 +5053,8 @@ void encode_exe( FILE *in, FILE *out, int len, int begin ) {
 
 int decode_exe( Encoder &en ) {
   const int BLOCK = 0x10000;    // block size
-  static int offset = 0, q = 0; // decode state: file offset, queue size
+  static int offset = 0;
+  static int q = 0; // decode state: file offset, queue size
   static int size = 0;          // where to stop coding
   static int begin = 0;         // offset in file
   static U8 c[5];               // queue of last 5 bytes, c[0] at front
@@ -5049,7 +5225,8 @@ void compress( const char *filename, long filesize, Encoder &en ) {
   en.setFile( tmp );
   fseek( f, savepos, SEEK_SET );
   long j;
-  int c1 = 0, c2 = 0;
+  int c1 = 0;
+  int c2 = 0;
   for( j = 0; j < filesize; ++j )
     if( ( c1 = decode( en ) ) != ( c2 = getc( f ) ) )
       break;
@@ -5174,7 +5351,8 @@ void decompress( const char *filename, long filesize, Encoder &en ) {
 
 const char *getline( FILE *f = stdin ) {
   static String s;
-  int len = 0, c;
+  int len = 0;
+  int c;
   while( ( c = getc( f ) ) != EOF && c != 26 && c != '\n' ) {
     if( len >= s.size() )
       s.resize( len * 2 + 1 );

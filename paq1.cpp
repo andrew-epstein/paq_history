@@ -1008,7 +1008,8 @@ class Predictor {
 
 public:
   U16 p() const {
-    int n0 = 1, n1 = n0;
+    int n0 = 1;
+    int n1 = n0;
     m1.predict( n0, n1 );
     m2.predict( n0, n1 );
     m3.predict( n0, n1 );
@@ -1271,7 +1272,8 @@ int main( int argc, char **argv ) {
 
     // Test end of header for "\f\0"
     {
-      int c1 = 0, c2 = 0;
+      int c1 = 0;
+      int c2 = 0;
       if( ( c1 = getc( archive ) ) != '\f' || ( c2 = getc( archive ) ) != 0 ) {
         printf( "%s: Bad PAQ1 header format %d %d\n", argv[1], c1, c2 );
         return 1;

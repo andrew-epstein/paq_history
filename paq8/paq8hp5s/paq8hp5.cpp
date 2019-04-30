@@ -1243,7 +1243,9 @@ public:
 
 // maps p, cxt -> p initially
 APM::APM( int n ) : index( 0 ), N( n ), t( n * 33 ) {
-  int i, j, k;
+  int i;
+  int j;
+  int k;
   for( j = 0; j < 33; ++j )
     for( i = 0, k = squash( ( j - 16 ) * 128 ) * 16; i < N; ++i )
       t[i * 33 + j] = k;
@@ -1566,7 +1568,8 @@ public:
 inline U8 *ContextMap::E::get( U16 ch ) {
   if( chk[last & 15] == ch )
     return &bh[last & 15][0];
-  int b = 0xffff, bi = 0;
+  int b = 0xffff;
+  int bi = 0;
   for( int i = 0; i < 7; ++i ) {
     if( chk[i] == ch )
       return last = last << 4 | i, &bh[i][0];
@@ -1758,10 +1761,15 @@ static U32 spaces = 0, spacecount = 0, words = 0, wordcount = 0, fails = 0, fail
 // Model English text (words and columns/end of line)
 
 void wordModel( Mixer &m ) {
-  static U32 word0 = 0, word1 = 0, word2 = 0, word3 = 0, word4 = 0; // hashes
+  static U32 word0 = 0;
+  static U32 word1 = 0;
+  static U32 word2 = 0;
+  static U32 word3 = 0;
+  static U32 word4 = 0; // hashes
   static U32 text0 = 0;                                             // hash stream of letters
   static ContextMap cm( MEM * 32, 27 );
-  static int nl1 = -3, nl = -2; // previous, current newline position
+  static int nl1 = -3;
+  static int nl = -2; // previous, current newline position
 
   // Update word hashes
   if( bpos == 0 ) {
@@ -1817,7 +1825,8 @@ void wordModel( Mixer &m ) {
     cm.set( c | buf( 3 ) << 8 | buf( 5 ) << 16 );
     cm.set( buf( 2 ) | buf( 4 ) << 8 | buf( 6 ) << 16 );
 
-    int col = min( 31, pos - nl ), above = buf[nl1 + col]; // text column context
+    int col = min( 31, pos - nl );
+    int above = buf[nl1 + col]; // text column context
     // Text column models
     cm.set( col << 16 | c << 8 | above );
     cm.set( c << 8 | above );
@@ -1845,11 +1854,16 @@ void recordModel( Mixer &m ) {
   static int wpos1[0x10000]; // buf(1..2) -> last position
                              ///  static int rlen=2, rlen1=3, rlen2=4;  // run length and 2 candidates
                              ///  static int rcount1=0, rcount2=0;  // candidate counts
-  static ContextMap cm( 32768, 2 ), cn( 32768 / 2, 4 ), co( 32768 * 2, 3 ), cp( 32768, 3 );
+  static ContextMap cm( 32768, 2 );
+  static ContextMap cn( 32768 / 2, 4 );
+  static ContextMap co( 32768 * 2, 3 );
+  static ContextMap cp( 32768, 3 );
 
   // Find record length
   if( bpos == 0 ) {
-    int w = c4 & 0xffff, c = w & 255, d = w >> 8;
+    int w = c4 & 0xffff;
+    int c = w & 255;
+    int d = w >> 8;
 #if 0
     int r=pos-cpos1[c];
     if (r>1 && r==cpos1[c]-cpos2[c]
@@ -1901,9 +1915,17 @@ void recordModel( Mixer &m ) {
 // Model order 1-2 contexts with gaps.
 
 void sparseModel( Mixer &m ) {
-  static ContextMap cm( MEM * 16, 11 ), cn( MEM * 2, 7 );
-  static SmallStationaryContextMap scm1( 0x20000 ), scm2( 0x20000 ), scm3( 0x20000 ), scm4( 0x20000 ), scm5( 0x20000 ),
-      scm6( 0x20000 ), scm7( 0x20000 ), scm8( 0x20000 ), scm9( 0x20000 );
+  static ContextMap cm( MEM * 16, 11 );
+  static ContextMap cn( MEM * 2, 7 );
+  static SmallStationaryContextMap scm1( 0x20000 );
+  static SmallStationaryContextMap scm2( 0x20000 );
+  static SmallStationaryContextMap scm3( 0x20000 );
+  static SmallStationaryContextMap scm4( 0x20000 );
+  static SmallStationaryContextMap scm5( 0x20000 );
+  static SmallStationaryContextMap scm6( 0x20000 );
+  static SmallStationaryContextMap scm7( 0x20000 );
+  static SmallStationaryContextMap scm8( 0x20000 );
+  static SmallStationaryContextMap scm9( 0x20000 );
   static U32 t1[256];
   static U16 t2[0x10000];
 
@@ -1912,7 +1934,8 @@ void sparseModel( Mixer &m ) {
     cm.set( c4 & 0xff0000ff );
     ///cm.set(c4&0x00ffff00);
     ///cm.set(c4&0xff00ff00);
-    U32 d = c4 & 0xffff, c = d & 255;
+    U32 d = c4 & 0xffff;
+    U32 c = d & 255;
     cm.set( c + buf( 5 ) * 256 + ( 1 << 17 ) );
     cm.set( c + buf( 6 ) * 256 + ( 2 << 17 ) );
     cm.set( buf( 3 ) + buf( 6 ) * 256 + ( 3 << 17 ) );
@@ -2537,7 +2560,9 @@ static char arrdict[411681] = "arrdict";
 
 int contextModel2() {
   static ContextMap cm( MEM * 32, 9 );
-  static RunContextMap rcm7( MEM / 4 ), rcm9( MEM / 4 ), rcm10( MEM / 2 );
+  static RunContextMap rcm7( MEM / 4 );
+  static RunContextMap rcm9( MEM / 4 );
+  static RunContextMap rcm10( MEM / 2 );
   static Mixer m( 411, 8 + 1024 - 320 + 3072 + 256 * ( 1 + 6 + 7 + 8 ), 7, 192 );
   static U32 cxt[16]; // order 0-11 contexts
   static Filetype filetype = DEFAULT;
@@ -2614,7 +2639,12 @@ int contextModel2() {
 
   static U32 WRT_map[16] = {0, 16, 32, 48, 64, 80, 96, 112, 128, 128, 128, 128, 128, 192, 192, 224};
 
-  U32 c1 = buf( 1 ), c2 = buf( 2 ), c3 = buf( 3 ), c, c1a, c2a;
+  U32 c1 = buf( 1 );
+  U32 c2 = buf( 2 );
+  U32 c3 = buf( 3 );
+  U32 c;
+  U32 c1a;
+  U32 c2a;
   if( c1 == 10 || c1 == 32 )
     c1 = 16;
   c1a = WRT_map[c1 >> 4];
@@ -2683,7 +2713,12 @@ public:
 Predictor::Predictor()  {}
 
 void Predictor::update() {
-  static APM a1( 256 ), a2( 0x10000 ), a3( 0x10000 ), a4( 0x10000 ), a5( 0x10000 ), a6( 0x10000 );
+  static APM a1( 256 );
+  static APM a2( 0x10000 );
+  static APM a3( 0x10000 );
+  static APM a4( 0x10000 );
+  static APM a5( 0x10000 );
+  static APM a6( 0x10000 );
 
   // Update global context: pos, bpos, c0, c4, buf
   c0 += c0 + y;
@@ -2704,7 +2739,12 @@ void Predictor::update() {
   // Filter the context model with APMs
   pr = contextModel2();
   int rate = 6 + static_cast<int>( pos > 2048 * 1024 ) + static_cast<int>( pos > 4096 * 1024 );
-  int pr1 = ( a1.p( pr, c0, 8 ) + 3 * pr + 2 ) >> 2, ps = buf( 1 ), pt = buf( 2 ), pu = buf( 3 ), pv, pw;
+  int pr1 = ( a1.p( pr, c0, 8 ) + 3 * pr + 2 ) >> 2;
+  int ps = buf( 1 );
+  int pt = buf( 2 );
+  int pu = buf( 3 );
+  int pv;
+  int pw;
   pw = pt & 0xf8;
   if( pt == 10 || pt == 32 )
     pw = 16;
@@ -3085,7 +3125,8 @@ void ExeFilter::encode( FILE *f, int n ) {
   fprintf( tmp, "%c%c%c%c", n >> 24, n >> 16, n >> 8, n ); // size, MSB first
 
   // Scan for jpeg and mark end
-  U32 buf1 = 0, buf2 = 0;
+  U32 buf1 = 0;
+  U32 buf2 = 0;
   int end;
   for( end = 0; end < n; ++end ) {
     buf2 = buf2 << 8 | buf1 >> 24;
@@ -3196,7 +3237,8 @@ int TextFilter::decode() {
       if( dtmp == nullptr )
         perror( "WRT tmpfile" ), exit( 1 );
 
-      unsigned int size = 0, i;
+      unsigned int size = 0;
+      unsigned int i;
       for( i = 0; i < 4; i++ ) {
         int c = read();
         size = size * 256 + c;
@@ -3273,7 +3315,8 @@ Filter *Filter::make( const char *filename, Encoder *e ) {
 char *getline( FILE *f = stdin ) {
   const int MAXLINE = 512;
   static char s[MAXLINE];
-  int len = 0, c;
+  int len = 0;
+  int c;
   while( ( c = getc( f ) ) != EOF && c != 26 && c != '\n' && len < MAXLINE - 1 ) {
     if( c != '\r' && len < MAXLINE - 1 )
       s[len++] = c;
@@ -3417,7 +3460,8 @@ int main( int argc, char **argv ) {
     f = fopen( argv[1], "rbe" );
   if( f == nullptr )
     perror( argv[1] ), exit( 1 );
-  long header, body;             // file positions in header, body
+  long header;
+  long body;             // file positions in header, body
   char *filename = getline( f ); // check header
   if( ( filename == nullptr ) || ( strncmp( filename, PROGNAME " -", strlen( PROGNAME ) + 2 ) != 0 ) )
     fprintf( stderr, "%s: not a " PROGNAME " file\n", argv[1] ), exit( 1 );

@@ -890,7 +890,8 @@ public:
   }
   void set( U32 h ) {
     short cs = h;
-    U32 lo = ( h >> ( 32 - N ) ) & -16, i = lo;
+    U32 lo = ( h >> ( 32 - N ) ) & -16;
+    U32 i = lo;
     for( ; i < lo + 16; i++ )
       if( *( ( short * ) &table[i].cs[0] ) == cs )
         break;
@@ -982,7 +983,9 @@ public:
 
   void init() {
 #endif
-    int i, j, k;
+    int i;
+    int j;
+    int k;
     for( i = 0; i < en; i++ )
       for( j = 0; j < 66; j++ )
         wt[i][j] = 12;
@@ -1189,7 +1192,8 @@ public:
 
   void upd( int y ) {
     if( mp > 0 ) {
-      int i = 0, j = 16;
+      int i = 0;
+      int j = 16;
 
       if( fsize < 768771 ) {
         if( tf != 0 )
@@ -1281,7 +1285,8 @@ public:
     cxt->c = ch( 1 );
     if( cxt->n < 255 )
       ++( cxt->n );
-    U32 lo = ( h >> ( 32 - N ) ) & -16, i = lo;
+    U32 lo = ( h >> ( 32 - N ) ) & -16;
+    U32 i = lo;
     U16 cs = h & 65535;
     for( ; i < lo + 16; i++ ) {
       cxt = t + i;
@@ -1609,7 +1614,8 @@ public:
       }
       ptr[h] = po;
     }
-    int n0 = 0, n1 = 0;
+    int n0 = 0;
+    int n1 = 0;
     for( int i = 0; i < 4; i++ )
       if( end[i] != 0U ) {
         U32 d = ( ch[end[i]] + 256 ) >> ( 7 - bp );
@@ -1920,7 +1926,10 @@ public:
 
   void model() {
     if( bp == 0 ) {
-      U8 c1, c2, c3, c4;
+      U8 c1;
+      U8 c2;
+      U8 c3;
+      U8 c4;
       c1 = ch( 1 ) / 64;
       c1 = c1 * 4 + ch( 2 ) / 64;
       c1 = c1 * 4 + ch( 3 ) / 64;
@@ -2047,7 +2056,8 @@ public:
 
   void model() {
     if( bp == 0 ) {
-      int i = 0, j = 63;
+      int i = 0;
+      int j = 63;
       t0.upd( hash( ch( 1 ), ch( 2 ), ch( 216 ), i++ ) );
       t1.upd( hash( ch( 1 ), ch( 2 ), ch( 217 ), i++ ) );
       t2.upd( hash( ch( 216 ), i++ ) );
@@ -2553,7 +2563,9 @@ inline void Encoder::encode( int y ) {
   U32 p = predictor.p() * ( 4096 / PSCALE ); // P(1) * 4K
   assert( p < 4096 );
   const U32 xdiff = x2 - x1;
-  U32 a, b, c;
+  U32 a;
+  U32 b;
+  U32 c;
   U32 xmid; // = x1+p*(x2-x1) multiply without overflow, round down
 
   c = 2 * p + 1;
@@ -2597,7 +2609,9 @@ inline int Encoder::decode() {
   const U32 p = predictor.p() * ( 4096 / PSCALE ); // P(1) * 4K
   assert( p < 4096 );
   const U32 xdiff = x2 - x1;
-  U32 a, b, c;
+  U32 a;
+  U32 b;
+  U32 c;
   U32 xmid; // = x1+p*(x2-x1) multiply without overflow, round down
 
   c = 2 * p + 1;
@@ -2722,7 +2736,8 @@ void te8e9( char *, int, int, int * );
 }
 int exe_preprocess( FILE *f, FILE *fw, int type ) // 3=compress, 4=decompress
 {
-  char *st0, *st;
+  char *st0;
+  char *st;
   int data2write[4] = {0, 0, 0, 0};
   int size;
 
@@ -2871,7 +2886,8 @@ int main( int argc, char **argv ) {
   // File names and sizes from input or archive
   vector<string> filename;                          // List of names
   vector<long> filesize;                            // Size or -1 if error
-  int uncompressed_bytes = 0, compressed_bytes = 0; // Input, output sizes
+  int uncompressed_bytes = 0;
+  int compressed_bytes = 0; // Input, output sizes
   FILE *archive = fopen( argv[1], "rbe" );
 
   // Extract files
@@ -2983,7 +2999,9 @@ int main( int argc, char **argv ) {
 			 }
 			 */
 
-      int b, c, d;
+      int b;
+      int c;
+      int d;
       b = c = d = -1;
 
       if( f != nullptr ) {

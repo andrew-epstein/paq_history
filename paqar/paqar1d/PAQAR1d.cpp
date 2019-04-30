@@ -794,7 +794,8 @@ public:
   }
   void set( U32 h ) {
     short cs = h;
-    U32 lo = ( h >> ( 32 - N ) ) & -4, i = lo;
+    U32 lo = ( h >> ( 32 - N ) ) & -4;
+    U32 i = lo;
     for( ; i < lo + 4; i++ )
       if( *( ( short * ) &table[i].cs[0] ) == cs )
         break;
@@ -1021,7 +1022,8 @@ public:
   }
 
   void upd( int y ) {
-    int i = 0, j = 10;
+    int i = 0;
+    int j = 10;
     if( fsize < 0 ) {
       i = 3, j = 64;
     }
@@ -1304,7 +1306,8 @@ public:
       }
       ptr[h] = po;
     }
-    int n0 = 0, n1 = 0;
+    int n0 = 0;
+    int n1 = 0;
     for( int i = 0; i < 4; i++ )
       if( end[i] != 0U ) {
         U32 d = ( ch[end[i]] + 256 ) >> ( 7 - bp );
@@ -1559,7 +1562,8 @@ public:
       tw( SIZE ) {}
   void model() {
     if( bp == 0 ) {
-      int i = 0, j = 63;
+      int i = 0;
+      int j = 63;
       t0.upd( hash( ch( 1 ), ch( 2 ), ch( 216 ), i++ ) );
       t1.upd( hash( ch( 1 ), ch( 2 ), ch( 217 ), i++ ) );
       t2.upd( hash( ch( 216 ), i++ ) );
@@ -1909,7 +1913,9 @@ inline void Encoder::encode( int y ) {
   U32 p = predictor.p() * ( 4096 / PSCALE ); // P(1) * 4K
   assert( p < 4096 );
   const U32 xdiff = x2 - x1;
-  U32 a, b, c;
+  U32 a;
+  U32 b;
+  U32 c;
   U32 xmid; // = x1+p*(x2-x1) multiply without overflow, round down
 
   c = 2 * p + 1;
@@ -1953,7 +1959,9 @@ inline int Encoder::decode() {
   const U32 p = predictor.p() * ( 4096 / PSCALE ); // P(1) * 4K
   assert( p < 4096 );
   const U32 xdiff = x2 - x1;
-  U32 a, b, c;
+  U32 a;
+  U32 b;
+  U32 c;
   U32 xmid; // = x1+p*(x2-x1) multiply without overflow, round down
 
   c = 2 * p + 1;
@@ -2102,7 +2110,8 @@ int main( int argc, char **argv ) {
   // File names and sizes from input or archive
   vector<string> filename;                          // List of names
   vector<long> filesize;                            // Size or -1 if error
-  int uncompressed_bytes = 0, compressed_bytes = 0; // Input, output sizes
+  int uncompressed_bytes = 0;
+  int compressed_bytes = 0; // Input, output sizes
   FILE *archive = fopen( argv[1], "rbe" );
 
   // Extract files

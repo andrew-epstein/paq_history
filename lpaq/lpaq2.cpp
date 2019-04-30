@@ -292,8 +292,10 @@ protected:
   U32 *t;      // cxt -> prediction in high 22 bits, count in low 10 bits
   inline void update( int y, int limit ) {
     assert( cxt >= 0 && cxt < N );
-    U32 *p = &t[cxt], p0 = p[0];
-    int n = p0 & 1023, pr = p0 >> 10; // count, prediction
+    U32 *p = &t[cxt];
+    U32 p0 = p[0];
+    int n = p0 & 1023;
+    int pr = p0 >> 10; // count, prediction
     if( n < limit )
       ++p0;
     //else p0=pr*1024+limit;
@@ -496,9 +498,12 @@ inline U8 *HashTable<B>::operator[]( U32 i ) {
   i *= 123456791;
   i = i << 16 | i >> 16;
   i *= 234567891;
-  U8 *p = t + ( i * B & NB ), *q, *r;
+  U8 *p = t + ( i * B & NB );
+  U8 *q;
+  U8 *r;
   i >>= 24;
-  U8 a, c = i;
+  U8 a;
+  U8 c = i;
   if( *p == c )
     return p;
   q = ( U8 * ) ( ( U64 ) p ^ B );
@@ -642,7 +647,8 @@ void Predictor::update( int y ) {
   static U8 *cp[6] = {t0, t0, t0, t0, t0, t0}; // pointer to bit history
   static int bcount = 0;                       // bit count
   static StateMap sm[6];
-  static APM a1( 0x100 ), a2( 0x4000 );
+  static APM a1( 0x100 );
+  static APM a2( 0x4000 );
   static U32 h[6];
   static Mixer m( 80 );
   static MatchModel mm( MEM ); // predicts next bit by matching context
@@ -706,7 +712,9 @@ void Predictor::update( int y ) {
   cp[0] = t0 + h[0] + c0;
 
   // predict
-  int y22 = y << 22, len = mm.p( y22 ), order;
+  int y22 = y << 22;
+  int len = mm.p( y22 );
+  int order;
   if( len == 0 )
     order = static_cast<int>( *cp[1] != 0 ) + static_cast<int>( *cp[2] != 0 ) + static_cast<int>( *cp[3] != 0 )
             + static_cast<int>( *cp[4] != 0 );

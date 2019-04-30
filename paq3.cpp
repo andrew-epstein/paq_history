@@ -833,7 +833,8 @@ public:
   Predictor();
   ~Predictor();
   U16 p() const {
-    int n0 = 1, n1 = n0;
+    int n0 = 1;
+    int n1 = n0;
     context = m1.getc0();
     m4.predict( n0, n1 );
     context = context * 3 + static_cast<int>( n0 * 2 > n1 ) + static_cast<int>( n0 > n1 * 2 );
@@ -1067,7 +1068,8 @@ int main( int argc, char **argv ) {
   vector<string> filename; // List of names
   vector<long> filesize;   // Size or -1 if error
   int start_time = clock();
-  int uncompressed_bytes = 0, compressed_bytes = 0; // Input, output sizes
+  int uncompressed_bytes = 0;
+  int compressed_bytes = 0; // Input, output sizes
 
   // Extract files
   FILE *archive = fopen( argv[1], "rbe" );
@@ -1100,7 +1102,8 @@ int main( int argc, char **argv ) {
 
     // Test end of header for "\f\0"
     {
-      int c1 = 0, c2 = 0;
+      int c1 = 0;
+      int c2 = 0;
       if( ( c1 = getc( archive ) ) != '\f' || ( c2 = getc( archive ) ) != 0 ) {
         printf( "%s: Bad PAQ3 header format %d %d\n", argv[1], c1, c2 );
         return 1;
