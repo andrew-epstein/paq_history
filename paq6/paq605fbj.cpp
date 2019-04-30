@@ -2194,7 +2194,7 @@ inline void Predictor::update( int y ) {
   if( MEM >= 1 ) {
     context =
         ch( 0 ) * 8 + ( ch( 1 ) / 64 ) * 2 + static_cast<unsigned int>( ch.pos( 0, 3 ) < ch.pos( 32, 3 ) ); // for SSE
-        //	context&=2047;
+    //	context&=2047;
     ssep = ssemap( nextp );
     U32 wt = ssep % SSESCALE;
     U32 i = ssep / SSESCALE;

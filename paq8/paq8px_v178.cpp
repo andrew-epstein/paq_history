@@ -2574,15 +2574,15 @@ Uses (2^(BitsOfContext+1))*((2^InputBits)-1) bytes of memory.
       U16 chk[7]; // byte context checksums
       U8 last;    // last 2 accesses (0-6) in low, high nibble
     public:
-      U8 bh[7][7]; // byte context, 3-bit context -> bit history state
-          // bh[][0] = 1st bit, bh[][1,2] = 2nd bit, bh[][3..6] = 3rd bit
-          // bh[][0] is also a replacement priority, 0 = empty
+      U8 bh[7][7];        // byte context, 3-bit context -> bit history state
+                          // bh[][0] = 1st bit, bh[][1,2] = 2nd bit, bh[][3..6] = 3rd bit
+                          // bh[][0] is also a replacement priority, 0 = empty
       U8 *get( U16 chk ); // Find element (0-6) matching checksum.
                           // If not found, insert or replace lowest priority (not last).
     };
-    Array<E, 64> t; // bit histories for bits 0-1, 2-4, 5-7
-        // For 0-1, also contains a run count in bh[][4] and value in bh[][5]
-        // and pending update count in bh[7]
+    Array<E, 64> t;   // bit histories for bits 0-1, 2-4, 5-7
+                      // For 0-1, also contains a run count in bh[][4] and value in bh[][5]
+                      // and pending update count in bh[7]
     Array<U8 *> cp;   // C pointers to current bit history
     Array<U8 *> cp0;  // First element of 7 element array containing cp[i]
     Array<U32> cxt;   // C whole byte context hashes
@@ -7817,13 +7817,13 @@ void dump(const char* msg, int p) {
     int huffbits = 0; // Number of valid bits in huffcode
     int huffsize = 0; // Number of bits without extra bits
     int rs = -1;      // Decoded huffcode without extra bits.  It represents
-        // 2 packed 4-bit numbers, r=run of zeros, s=number of extra bits for
-        // first nonzero code.  huffcode is complete when rs >= 0.
-        // rs is -1 prior to decoding incomplete huffcode.
+                      // 2 packed 4-bit numbers, r=run of zeros, s=number of extra bits for
+                      // first nonzero code.  huffcode is complete when rs >= 0.
+                      // rs is -1 prior to decoding incomplete huffcode.
 
     int mcupos = 0; // position in MCU (0-639).  The low 6 bits mark
-        // the coefficient in zigzag scan order (0=DC, 1-63=AC).  The high
-        // bits mark the block within the MCU, used to select Huffman tables.
+                    // the coefficient in zigzag scan order (0=DC, 1-63=AC).  The high
+                    // bits mark the block within the MCU, used to select Huffman tables.
 
     // Decoding tables
     Array<HUF> huf{128};    // Tc*64+Th*16+m -> min, max, val
@@ -7832,19 +7832,19 @@ void dump(const char* msg, int p) {
     Array<U8> hbuf{2048};   // Tc*1024+Th*256+hufcode -> RS
 
     // Image state
-    Array<int> color{10};    // block -> component (0-3)
-    Array<int> pred{4};      // component -> last DC value
-    int dc = 0;              // DC value of the current block
-    int width = 0;           // Image width in MCU
-    int row = 0, column = 0; // in MCU (column 0 to width-1)
-    Buf cbuf{0x20000};       // Rotating buffer of coefficients, coded as:
-        // DC: level shifted absolute value, low 4 bits discarded, i.e.
-        //   [-1023...1024] -> [0...255].
-        // AC: as an RS code: a run of R (0-15) zeros followed by an S (0-15)
-        //   bit number, or 00 for end of block (in zigzag order).
-        //   However if R=0, then the format is ssss11xx where ssss is S,
-        //   xx is the first 2 extra bits, and the last 2 bits are 1 (since
-        //   this never occurs in a valid RS code).
+    Array<int> color{10};       // block -> component (0-3)
+    Array<int> pred{4};         // component -> last DC value
+    int dc = 0;                 // DC value of the current block
+    int width = 0;              // Image width in MCU
+    int row = 0, column = 0;    // in MCU (column 0 to width-1)
+    Buf cbuf{0x20000};          // Rotating buffer of coefficients, coded as:
+                                // DC: level shifted absolute value, low 4 bits discarded, i.e.
+                                //   [-1023...1024] -> [0...255].
+                                // AC: as an RS code: a run of R (0-15) zeros followed by an S (0-15)
+                                //   bit number, or 00 for end of block (in zigzag order).
+                                //   However if R=0, then the format is ssss11xx where ssss is S,
+                                //   xx is the first 2 extra bits, and the last 2 bits are 1 (since
+                                //   this never occurs in a valid RS code).
     int cpos = 0;               // position in cbuf
     int rs1 = 0;                // last RS code
     int rstpos = 0, rstlen = 0; // reset position
@@ -7864,9 +7864,9 @@ void dump(const char* msg, int p) {
     // Context model
     static const int N = 32; // size of t, number of contexts
     BH<9> t;                 // context hash -> bit history
-        // As a cache optimization, the context does not include the last 1-2
-        // bits of huffcode if the length (huffbits) is not a multiple of 3.
-        // The 7 mapped values are for context+{"", 0, 00, 01, 1, 10, 11}.
+                             // As a cache optimization, the context does not include the last 1-2
+                             // bits of huffcode if the length (huffbits) is not a multiple of 3.
+                             // The 7 mapped values are for context+{"", 0, 00, 01, 1, 10, 11}.
     IndirectMap MJPEGMap;
     Array<U64> cxt{N}; // context hashes
     Array<U8 *> cp{N}; // context pointers

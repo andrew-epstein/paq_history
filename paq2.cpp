@@ -1472,7 +1472,7 @@ int main( int argc, char **argv ) {
       printf( "Enter names of files to compress, followed by blank line or EOF.\n" );
       while( true ) {
         string s = getline( stdin );
-        if( s.size() == 0 || s == "" )
+        if( s.empty() || s.empty() )
           break;
         else
           filename.push_back( s );
@@ -1491,7 +1491,7 @@ int main( int argc, char **argv ) {
         fclose( f );
       }
     }
-    if( filesize.size() == 0 || *max_element( filesize.begin(), filesize.end() ) < 0 ) {
+    if( filesize.empty() || *max_element( filesize.begin(), filesize.end() ) < 0 ) {
       printf( "No files to compress, no archive created.\n" );
       return 1;
     }

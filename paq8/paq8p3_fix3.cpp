@@ -4076,7 +4076,9 @@ int contextModel2() {
         return m.p(); // Image width (bytes) if RGB8 detected, or 0
       break;
     }
-    default: { break; }
+    default: {
+      break;
+    }
   }
   // Normal model
   if( bpos == 0 ) {
