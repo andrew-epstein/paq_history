@@ -4,11 +4,11 @@
 // 15 April 2007 -- modified predictor to improve speed, Ilia Muraviev
 // 9 January 2008 -- speed and compression improved, Alexander Ratushnyak
 
+#include <cassert>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
-#include <cassert>
 namespace std {} // namespace std
 using namespace std;
 

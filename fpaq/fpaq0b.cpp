@@ -3,11 +3,11 @@
 // To compile: g++ -O fpaq0.cpp
 // 10/01/2006 32 bit encoder modified, Fabio Buffoni
 
+#include <cassert>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
-#include <cassert>
 namespace std {} // namespace std
 using namespace std;
 

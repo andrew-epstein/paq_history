@@ -3,11 +3,11 @@
 // 06.10.2006 Modified by Francesco Antonio Nania ( Italia - Sicilia - Merì (ME) )
 // To compile: g++ -O fpaq0.cpp
 
+#include <cassert>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
-#include <cassert>
 namespace std {} // namespace std
 using namespace std;
 

@@ -166,12 +166,12 @@ To compile (g++ 3.4.5, upx 3.00w):
   upx -qqq lpaq1.exe
 
 */
+#include <ctype.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <math.h>
-#include <ctype.h>
 #define NDEBUG // remove for debugging
 #include <assert.h>
 

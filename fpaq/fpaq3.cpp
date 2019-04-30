@@ -24,11 +24,11 @@
 //  Canterbury corpus concatenated (ISO) =   691.514 Bytes
 //  Calgary corpus concatenated    (ISO) = 1.055.013 Bytes
 ///////////////////////////////////////////////////////////////////////////
+#include <cassert>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
-#include <cassert>
 namespace std {} // namespace std
 using namespace std;
 

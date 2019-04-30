@@ -568,12 +568,12 @@ as context.  PAQ8M was an earlier version of the new JPEG model
 
 #define PROGNAME "paq8n" // Please change this if you change the program.
 
+#include <ctype.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <math.h>
-#include <ctype.h>
 #define NDEBUG // remove for debugging (turns on Array bound checks)
 #include <assert.h>
 

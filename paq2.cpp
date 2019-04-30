@@ -312,19 +312,18 @@ NEWS      377109    104435   27.6    97917  25.97     95938  25.44
 
 */
 
-#include <cstdio>
-#include <cstdlib>
+#include <algorithm>
 #include <cctype>
 #include <cmath>
+#include <cstdio>
+#include <cstdlib>
 #include <ctime>
+#include <map>
 #include <new>
 #include <string>
 #include <vector>
-#include <algorithm>
-#include <map>
 using std::set_new_handler;
 using std::string;
-using std::swap;
 using std::vector;
 
 // 8-32 bit unsigned types, adjust as appropriate

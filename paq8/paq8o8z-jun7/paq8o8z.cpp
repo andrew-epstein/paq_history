@@ -609,12 +609,12 @@ void train_sse2( short *t, short *w, int n, int err );
 #define PROGNAME                                                                                                       \
   "paq8o8z" // Please change this if you change the program.                                                           \
             // (but it won't unpack "paq8o8" due to this!!)
+#include <ctype.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <math.h>
-#include <ctype.h>
 #define NDEBUG // remove for debugging (turns on Array bound checks)
 #include <assert.h>
 

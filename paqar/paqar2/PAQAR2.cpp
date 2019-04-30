@@ -523,13 +523,13 @@ Also, give yourself credit in the help message.
 #define PROGNAME "PAQAR"
 #define min( a, b ) ( ( a ) < ( b ) ? ( a ) : ( b ) )
 #define max( a, b ) ( ( a ) > ( b ) ? ( a ) : ( b ) )
+#include <algorithm>
+#include <cassert>
 #include <cctype>
 #include <cmath>
+#include <ctime>
 #include <string>
 #include <vector>
-#include <algorithm>
-#include <ctime>
-#include <cassert>
 #define au 0xffffffff
 #define bu 0x03ffffff
 #define cu 0x01ffffff

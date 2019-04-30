@@ -606,11 +606,11 @@ Removed pic model
 
 #define PROGNAME "paq8px" // Please change this if you change the program.
 
+#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
-#include <cmath>
 #include <ctype.h>
 #define NDEBUG // remove for debugging (turns on Array bound checks)
 #include <cassert>

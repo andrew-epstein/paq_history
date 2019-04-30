@@ -176,16 +176,16 @@ Also, give yourself credit in the help message.
 
 #define PROGNAME "PAQ4" // Please change this if you change the program
 
-#include <cstdio>
-#include <cstdlib>
+#include <algorithm>
+#include <cassert>
 #include <cctype>
 #include <cmath>
+#include <cstdio>
+#include <cstdlib>
 #include <ctime>
-#include <cassert>
 #include <new>
 #include <string>
 #include <vector>
-#include <algorithm>
 
 using std::max;
 using std::min;

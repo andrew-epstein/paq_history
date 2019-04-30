@@ -618,12 +618,12 @@ dynamic dict preprocess (modified version of XWRT)
 
 #define PROGNAME "paq8pxd" // Please change this if you change the program.
 
+#include <ctype.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <math.h>
-#include <ctype.h>
 #define NDEBUG // remove for debugging (turns on Array bound checks)
 #include <assert.h>
 
@@ -4651,11 +4651,11 @@ int decode_exe( Encoder &en, int size, FILE *out, FMode mode, int &diffFound, lo
   }
   return size;
 }
-#include "XWRT.h"
-#include "MemBuffer.cpp"
 #include "Common.cpp"
-#include "Encoder.cpp"
 #include "Decoder.cpp"
+#include "Encoder.cpp"
+#include "MemBuffer.cpp"
+#include "XWRT.h"
 XWRT_Encoder *wrt;
 XWRT_Decoder *wrt2;
 

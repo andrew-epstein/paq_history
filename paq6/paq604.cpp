@@ -563,20 +563,19 @@ Also, give yourself credit in the help message.
 #define PROGNAME "PAQ604" // Please change this if you change the program
 
 #define hash ___hash // To avoid Digital MARS name collision
-#include <cstdio>
-#include <cstdlib>
+#include "bit_bytm.cpp"
+#include <algorithm>
+#include <cassert>
 #include <cctype>
 #include <cmath>
+#include <cstdio>
+#include <cstdlib>
 #include <ctime>
-#include <cassert>
+#include <map>
 #include <new>
 #include <string>
 #include <vector>
-#include <algorithm>
-#include <map>
-#include "bit_bytm.cpp"
 #undef hash
-using std::set_new_handler;
 using std::string;
 using std::swap;
 using std::vector;

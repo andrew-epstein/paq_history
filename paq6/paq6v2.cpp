@@ -559,17 +559,17 @@ Also, give yourself credit in the help message.
 #define PROGNAME "PAQ6" // Please change this if you change the program
 
 #define hash ___hash // To avoid Digital MARS name collision
-#include <cstdio>
-#include <cstdlib>
+#include <algorithm>
+#include <cassert>
 #include <cctype>
 #include <cmath>
+#include <cstdio>
+#include <cstdlib>
 #include <ctime>
-#include <cassert>
+#include <map>
 #include <new>
 #include <string>
 #include <vector>
-#include <algorithm>
-#include <map>
 #undef hash
 using std::max;
 using std::min;

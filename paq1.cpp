@@ -286,19 +286,18 @@ max_element().  The last two bugs caused PAQ1 to crash when compiled
 with Borland but not g++.  Archive compatibility is not affected.
 */
 
-#include <cstdio>
-#include <cstdlib>
+#include <algorithm>
 #include <cctype>
 #include <cmath>
+#include <cstdio>
+#include <cstdlib>
 #include <ctime>
+#include <map>
 #include <new>
 #include <string>
 #include <vector>
-#include <algorithm>
-#include <map>
 using std::set_new_handler;
 using std::string;
-using std::swap;
 using std::vector;
 
 // 8-32 bit unsigned types, adjust as appropriate

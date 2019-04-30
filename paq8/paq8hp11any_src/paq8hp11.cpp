@@ -475,14 +475,13 @@ dictionary preprocesor like PAQ8B/C/D/E.
 
 #define PROGNAME "paq8h" // Please change this if you change the program.
 
+#include <algorithm>
+#include <ctype.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <math.h>
-#include <ctype.h>
-#include <algorithm>
-using std::set_new_handler;
 using std::string;
 using std::swap;
 #define NDEBUG // remove for debugging (turns on Array bound checks)

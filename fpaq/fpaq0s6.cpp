@@ -4,11 +4,11 @@
 // 10/01/2006 32 bit encoder modified, Fabio Buffoni
 // jan 16 2006 improved compression, David Scott
 // 30/10/2006 modified encoder , Nania Francesco Antonio (Italy - Sicilia - MERI' (ME) )
+#include <cassert>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
-#include <cassert>
 namespace std {} // namespace std
 using namespace std;
 

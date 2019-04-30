@@ -37,18 +37,17 @@ PAQ3 uses an improved SSE implementation, and adds update exclusion to
 the NonstationaryPPM and WordModel models.
 */
 
-#include <cstdio>
-#include <cstdlib>
+#include <algorithm>
 #include <cctype>
 #include <cmath>
+#include <cstdio>
+#include <cstdlib>
 #include <ctime>
 #include <new>
 #include <string>
 #include <vector>
-#include <algorithm>
 using std::set_new_handler;
 using std::string;
-using std::swap;
 using std::vector;
 
 const int MEM = 6; // 0-8 = 1M, 2M ... 256M memory model.  6 = 64M

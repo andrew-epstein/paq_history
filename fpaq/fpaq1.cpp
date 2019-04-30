@@ -2,12 +2,12 @@
 // (C) 2006, Matt Mahoney under GPL, http://www.gnu.org/licenses/gpl.txt
 // To compile: g++ -O2 fpaq1.cpp
 
+#include <cassert>
+#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
-#include <cassert>
-#include <cmath>
 namespace std {} // namespace std
 using namespace std;
 

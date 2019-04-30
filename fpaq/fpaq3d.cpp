@@ -2,11 +2,11 @@
 // (C) 2002, Matt Mahoney under GPL, http://www.gnu.org/licenses/gpl.txt
 // To compile: g++ -O fpaq3d.cpp
 // 28/12/2006 modified by Nania Francesco Antonio (Italia - Merì (ME))
+#include <cassert>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
-#include <cassert>
 namespace std {} // namespace std
 using namespace std;
 using U32 = unsigned int; // 32 bit type

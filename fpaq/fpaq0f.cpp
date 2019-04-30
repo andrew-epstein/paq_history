@@ -10,11 +10,11 @@ modeled in the context of the previous bits in the current byte, plus
 the bit history (as an 8 bit state) observed in this context.
 */
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <assert.h>
 
 // 8, 16, 32 bit unsigned types (adjust as appropriate)
 using U8 = unsigned char;

@@ -74,10 +74,10 @@
 // Platform-specific includes
 #ifdef UNIX
 #  include <dirent.h> //opendir(), readdir(), dirent()
-#  include <string.h> //strlen(), strcpy(), strcat(), strerror(), memset(), memcpy(), memmove()
-#  include <limits.h> //PATH_MAX (for OSX)
-#  include <unistd.h> //isatty()
 #  include <errno.h>  //errno
+#  include <limits.h> //PATH_MAX (for OSX)
+#  include <string.h> //strlen(), strcpy(), strcat(), strerror(), memset(), memcpy(), memmove()
+#  include <unistd.h> //isatty()
 #else
 #  ifndef NOMINMAX
 #    define NOMINMAX
@@ -87,10 +87,10 @@
 #endif
 
 // Platform-independent includes
-#include <sys/stat.h> //stat(), mkdir()
+#include <algorithm>
 #include <math.h>     //floor(), sqrt()
 #include <stdexcept>  //std::exception
-#include <algorithm>
+#include <sys/stat.h> //stat(), mkdir()
 
 #ifdef USE_ZLIB
 #  include <zlib.h>

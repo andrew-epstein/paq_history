@@ -514,16 +514,16 @@ Still in development.
 #define PROGNAME "PAQ6D" // Please change this if you change the program
 
 #define hash ___hash // To avoid Digital MARS name collision
-#include <cstdio>
-#include <cstdlib>
+#include <algorithm>
+#include <cassert>
 #include <cctype>
 #include <cmath>
+#include <cstdio>
+#include <cstdlib>
 #include <ctime>
-#include <cassert>
 #include <new>
 #include <string>
 #include <vector>
-#include <algorithm>
 #undef hash
 
 using std::set_new_handler;

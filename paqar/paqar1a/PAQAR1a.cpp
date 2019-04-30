@@ -515,14 +515,14 @@ Also, give yourself credit in the help message.
 */
 
 #define PROGNAME "PAQAR"
+#include <algorithm>
+#include <cassert>
 #include <cctype>
 #include <cmath>
+#include <cstring>
+#include <ctime>
 #include <string>
 #include <vector>
-#include <algorithm>
-#include <ctime>
-#include <cassert>
-#include <cstring>
 #define au 0xffffffff
 #define bu 0x1ffffff
 #define cu 0xffffff

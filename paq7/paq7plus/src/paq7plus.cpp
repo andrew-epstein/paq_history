@@ -382,12 +382,12 @@ which computes 8 elements at a time, is not any faster).
 
 #define PROGNAME "PAQ7" // Please change this if you change the program.
 
+#include <ctype.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <math.h>
-#include <ctype.h>
 #define NDEBUG // uncomment for debugging (turns on Array bound checks)
 #include <assert.h>
 
@@ -2184,13 +2184,13 @@ void Predictor::upd() {
 #define CREATION_DATE "11.01.2006"
 #define PROGNAME_FULLLINE LONG_PROGNAME " by M.Mahoney+A.Ratushnyak+P.Skibinski," CREATION_DATE
 #define PAQ_TEMP "pasqda_tmp.tmp"
+#include <algorithm>
+#include <cassert>
 #include <cctype>
 #include <cmath>
+#include <ctime>
 #include <string>
 #include <vector>
-#include <algorithm>
-#include <ctime>
-#include <cassert>
 #define FILE_BIB 111261
 #define FILE_BOOK1 768771
 #define FILE_BOOK2 610856

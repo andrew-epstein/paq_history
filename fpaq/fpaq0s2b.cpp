@@ -3,11 +3,11 @@
 // To compile: g++ -O fpaq0.cpp
 // modified predictor 01.10.2006 by Francesco Antonio Nania (Italy - Sicilia - Merì (ME) )
 
+#include <cassert>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
-#include <cassert>
 namespace std {} // namespace std
 using namespace std;
 

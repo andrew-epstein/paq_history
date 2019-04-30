@@ -5,11 +5,11 @@
 // jan 16 2006 improved compression, David Scott
 // 08.10.2006 modified predictor to 24 bit by Francesco Antonio Nania (Italy Sicilia Merì (ME))//
 
+#include <cassert>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
-#include <cassert>
 namespace std {} // namespace std
 using namespace std;
 
