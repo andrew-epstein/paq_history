@@ -465,7 +465,7 @@ Encoder::Encoder( Mode m, FILE *f ) : mode( m ), archive( f ), x( 0 ), n( 0 ), e
             x1 = ( ( ( w + 1 ) << N ) - 1 ) / ( ( 1 << N ) - q );
           if( x1 < ( 2 << N ) )
             break;
-          else
+          
             w >>= 1, ++k;
         }
         enc[i][j] = k << 12 | x1 - ( 1 << N );

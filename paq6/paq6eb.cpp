@@ -644,7 +644,7 @@ public:
       i = 0;
     if( i >= 24 )
       return table[i] ^= table[i - 24];
-    else
+    
       return table[i] ^= table[i + 31];
   }
 } rnd;
@@ -1067,7 +1067,7 @@ public:
   U32 hi() const {
     if( bp > 3 )
       return buf[p & N1] & 15;
-    else
+    
       return buf[( p - 1 ) & N1] >> 4;
   }
   U32 lo() const {
@@ -1120,7 +1120,7 @@ public:
       if( table[i].checksum == checksum ) { // found
         cxt = i;
         break;
-      } else if( table[i].c[0].priority() == 0 ) { // empty bucket
+      } if( table[i].c[0].priority() == 0 ) { // empty bucket
         table[i].checksum = checksum;
         cxt = i;
         break;
@@ -1369,7 +1369,7 @@ public:
     if( MEM >= MINMEM ) {
       U32 p2 = m2.predict( ( ch( 1 ) >> 5 ) + 8 * ( ch( 2 ) >> 6 ) + ( ch( 3 ) >> 6 ) * 32 );
       return ( p1 + p2 ) >> 1;
-    } else
+    } 
       return p1;
   }
   void update( int y ) {
@@ -2659,7 +2659,7 @@ public:
 // first control character except tab.  Skips CR in CR LF.
 string getline( FILE *f = stdin ) {
   int c;
-  string result = "";
+  string result;
   while( ( c = getc( f ) ) != EOF && ( c >= 32 || c == '\t' ) )
     result += char( c );
   if( c == '\r' )
@@ -2813,7 +2813,7 @@ int main( int argc, char **argv ) {
         string s = getline( stdin );
         if( s == "" )
           break;
-        else
+        
           filename.push_back( s );
       }
     }

@@ -957,7 +957,7 @@ Ilog::Ilog() : t( 65536 ) {
 inline int llog( U32 x ) {
   if( x >= 0x1000000 )
     return 256 + ilog( x >> 16 );
-  else if( x >= 0x10000 )
+  if( x >= 0x10000 )
     return 128 + ilog( x >> 8 );
   else
     return ilog( x );
@@ -1342,9 +1342,9 @@ public:
       }
       mp->set( 0, 1 );
       return mp->p();
-    } else { // S=1 context
+    } // S=1 context
       return pr[0] = squash( dot_product( &tx[0], &wx[0], nx ) >> 8 );
-    }
+    
   }
   ~Mixer();
 };
@@ -1662,7 +1662,7 @@ public:
   int p() { // predict next bit
     if( ( cp[1] + 256 ) >> ( 8 - bpos ) == c0 )
       return ( ( cp[1] >> ( 7 - bpos ) & 1 ) * 2 - 1 ) * ilog( cp[0] + 1 ) * 8 /*mulc*/;
-    else
+    
       return 0;
   }
   int mix( Mixer &m ) { // return run length
@@ -2468,7 +2468,7 @@ int ppmModel( Mixer &m ) {
       ppm = pos;
       ppm_ptr = 0;
       return w = 0;                           // PPM header just detected, not enough info to get header yet
-    } else if( ( ppm != 0 ) && ppm_ptr != 3 ) // PPM detected, let's parse header records
+    } if( ( ppm != 0 ) && ppm_ptr != 3 ) // PPM detected, let's parse header records
     {
       for( int i = ppm; i < pos - 1 && ppm_ptr < 3; i++ ) {
         // Skip white spaces
@@ -2626,7 +2626,7 @@ int pgmModel( Mixer &m ) {
       pgm = pos;
       pgm_ptr = 0;
       return w = 0;                           // PGM header just detected, not enough info to get header yet
-    } else if( ( pgm != 0 ) && pgm_ptr != 3 ) // PGM detected, let's parse header records
+    } if( ( pgm != 0 ) && pgm_ptr != 3 ) // PGM detected, let's parse header records
     {
       for( int i = pgm; i < pos - 1 && pgm_ptr < 3; i++ ) {
         // Skip white spaces
@@ -2850,7 +2850,7 @@ void pbmModel( Mixer &m ) {
       pbm = pos;
       pbm_ptr = 0;
       return;                                 // w = 0; // PBM header just detected, not enough info to get header yet
-    } else if( ( pbm != 0 ) && pbm_ptr != 2 ) // PBM detected, let's parse header records
+    } if( ( pbm != 0 ) && pbm_ptr != 2 ) // PBM detected, let's parse header records
     {
       for( int i = pbm; i < pos - 1 && pbm_ptr < 2; i++ ) {
         // Skip white spaces
@@ -3522,14 +3522,14 @@ inline int X( int i, int j ) {
   if( wmode == 18 ) {
     if( i <= S )
       return s2( ( i + j ) << 2 );
-    else
+    
       return s2( ( ( i + j - S ) << 2 ) - 2 );
   } else if( wmode == 17 )
     return s2( ( i + j ) << 1 );
   else if( wmode == 10 ) {
     if( i <= S )
       return buf( ( i + j ) << 1 );
-    else
+    
       return buf( ( ( i + j - S ) << 1 ) - 1 );
   } else
     return buf( i + j );
@@ -4404,7 +4404,7 @@ public:
     if( mode == COMPRESS ) {
       assert( alt );
       return getc( alt );
-    } else if( level == 0 )
+    } if( level == 0 )
       return getc( archive );
     else {
       int c = 0;
@@ -5005,7 +5005,7 @@ Filetype detect( FILE *in, int n, Filetype type ) {
 
         if( txtIsUTF8 == 1 )
           return fseek( in, start + txtOff, SEEK_SET ), TXTUTF8;
-        else
+        
           return fseek( in, start + txtOff, SEEK_SET ), TEXT;
       }
     }
@@ -5019,7 +5019,7 @@ Filetype detect( FILE *in, int n, Filetype type ) {
 
       if( txtIsUTF8 == 1 )
         return fseek( in, start + txtOff, SEEK_SET ), TXTUTF8;
-      else
+      
         return fseek( in, start + txtOff, SEEK_SET ), TEXT;
     }
   }
@@ -5435,7 +5435,7 @@ const char *getline( FILE *f = stdin ) {
   s[len] = 0;
   if( c == EOF || c == 26 )
     return 0;
-  else
+  
     return s.c_str();
 }
 

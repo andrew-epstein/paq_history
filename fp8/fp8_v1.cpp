@@ -954,9 +954,9 @@ inline int llog( U32 x ) {
   }
   if( x >= 0x10000 ) {
     return 128 + ilog( x >> 8 );
-  } else {
+  } 
     return ilog( x );
-  }
+  
 }
 
 ///////////////////////// state table ////////////////////////
@@ -3465,13 +3465,13 @@ public:
     }
     if( level == 0 ) {
       return getc( archive );
-    } else {
+    } 
       int c = 0;
       for( int i = 0; i < 8; ++i ) {
         c += c + code();
       }
       return c;
-    }
+    
   }
 };
 
@@ -3685,9 +3685,9 @@ int expand_cd_sector( U8 *data, int a, int test ) {
   for( int i = 0; i < 2352; i++ ) {
     if( d2[i] != data[i] && ( test != 0 ) ) {
       return 0;
-    } else {
+    } 
       data[i] = d2[i];
-    }
+    
   }
   return mode + form - 1;
 }
@@ -3986,7 +3986,7 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
           }
           if( imgbpp == 8 ) {
             IMG_DET( IMAGE8, bmp - 1, bmpof, ( bmpx + 3 ) & -4, bmpy );
-          } else if( imgbpp == 24 ) {
+          } if( imgbpp == 24 ) {
             IMG_DET( IMAGE24, bmp - 1, bmpof, ( ( bmpx * 3 ) + 3 ) & -4, bmpy );
           }
         }
@@ -4135,7 +4135,7 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
           }
           if( tifz == 1 && tifzb == 8 ) {
             IMG_DET( IMAGE8, i - 7, tifofs, tifx, tify );
-          } else if( tifz == 3 && tifzb == 8 ) {
+          } if( tifz == 3 && tifzb == 8 ) {
             IMG_DET( IMAGE24, i - 7, tifofs, tifx * 3, tify );
           }
         }
@@ -4161,7 +4161,7 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
           }
           if( tgat == 2 ) {
             IMG_DET( IMAGE24, tga - 7, 18, tgax * 3, tgay );
-          } else if( tgat == 3 ) {
+          } if( tgat == 3 ) {
             IMG_DET( IMAGE8, tga - 7, 18, tgax, tgay );
           }
         }

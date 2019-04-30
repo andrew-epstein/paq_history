@@ -929,7 +929,7 @@ Ilog::Ilog() : t( 65536 ) {
 inline int llog( U32 x ) {
   if( x >= 0x1000000 )
     return 256 + ilog( x >> 16 );
-  else if( x >= 0x10000 )
+  if( x >= 0x10000 )
     return 128 + ilog( x >> 8 );
   else
     return ilog( x );
@@ -1339,9 +1339,9 @@ public:
       }
       mp->set( 0, 1 );
       return mp->p();
-    } else { // S=1 context
+    } // S=1 context
       return pr[0] = squash( dot_product( &tx[0], &wx[0], nx ) >> 8 );
-    }
+    
   }
   ~Mixer();
 };
@@ -1631,7 +1631,7 @@ public:
   int p() { // predict next bit
     if( ( cp[1] + 256 ) >> ( 8 - bpos ) == c0 )
       return ( ( cp[1] >> ( 7 - bpos ) & 1 ) * 2 - 1 ) * ilog( cp[0] + 1 ) * 8;
-    else
+    
       return 0;
   }
   int mix( Mixer &m ) { // return run length
@@ -4330,7 +4330,7 @@ public:
     if( mode == COMPRESS ) {
       assert( alt );
       return getc( alt );
-    } else if( level == 0 )
+    } if( level == 0 )
       return getc( archive );
     else {
       int c = 0;
@@ -4610,7 +4610,7 @@ int parse_zlib_header( int header ) {
 int zlib_inflateInit( z_streamp strm, int zh ) {
   if( zh == -1 )
     return inflateInit2( strm, -MAX_WBITS );
-  else
+  
     return inflateInit( strm );
 }
 
@@ -4728,7 +4728,7 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
   static Filetype dett;          // detected block type
   if( deth != 0 )
     return fseek( in, start + deth, SEEK_SET ), deth = 0, dett;
-  else if( detd != 0 )
+  if( detd != 0 )
     return fseek( in, start + detd, SEEK_SET ), detd = 0, DEFAULT;
 
   for( int i = 0; i < n; ++i ) {
@@ -5048,7 +5048,7 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
 
           if( imgbpp == 1 )
             IMG_DET( IMAGE1, bmp - 1, bmpof, ( ( ( bmpx - 1 ) >> 5 ) + 1 ) * 4, bmpy );
-          else if( imgbpp == 8 ) {
+          if( imgbpp == 8 ) {
             fseek( in, start + bmp + 53, SEEK_SET );
             IMG_DET( ( IsGrayscalePalette( in, ( buf0 ) ? bswap( buf0 ) : 1 << imgbpp, 1 ) ) ? IMAGE8GRAY : IMAGE8,
                      bmp - 1, bmpof, ( bmpx + 3 ) & -4, bmpy );
@@ -5181,7 +5181,7 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
         if( (tifofs != 0) && tifofs < ( 1 << 18 ) && tifofs + i < n ) {
           if( tifz == 1 && tifzb == 1 )
             IMG_DET( IMAGE1, i - 7, tifofs, ( ( tifx - 1 ) >> 3 ) + 1, tify );
-          else if( tifz == 1 && tifzb == 8 )
+          if( tifz == 1 && tifzb == 8 )
             IMG_DET( IMAGE8, i - 7, tifofs, tifx, tify );
           else if( tifz == 3 && tifzb == 8 )
             IMG_DET( IMAGE24, i - 7, tifofs, tifx * 3, tify );
@@ -5205,7 +5205,7 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
           if( tgat == 1 ) {
             fseek( in, start + tga + 11, SEEK_SET );
             IMG_DET( ( IsGrayscalePalette( in ) ) ? IMAGE8GRAY : IMAGE8, tga - 7, 18 + 256 * 3, tgax, tgay );
-          } else if( tgat == 2 )
+          } if( tgat == 2 )
             IMG_DET( IMAGE24, tga - 7, 18, tgax * 3, tgay );
           else if( tgat == 3 )
             IMG_DET( IMAGE8, tga - 7, 18, tgax, tgay );
@@ -5847,9 +5847,9 @@ inline char valueb( char c ) {
   const char *p = strchr( table1, c );
   if( p != nullptr ) {
     return p - table1;
-  } else {
+  } 
     return 0;
-  }
+  
 }
 
 void encode_base64( FILE *in, FILE *out, int len ) {

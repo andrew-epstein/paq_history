@@ -784,7 +784,7 @@ public:
 int llog( uint32 x ) {
   if( x >= 0x1000000 )
     return 256 + ilog( x >> 16 );
-  else if( x >= 0x10000 )
+  if( x >= 0x10000 )
     return 128 + ilog( x >> 8 );
   else
     return ilog( x );
@@ -1301,11 +1301,11 @@ public:
         mp->add( dp );
       }
       return mp->p();
-    } else { // S=1 context
+    } // S=1 context
       int z = dot_product( &tx[0], &wx[0], nx );
       base = squash( ( z * 15 ) >> 13 );
       return squash( z >> 9 );
-    }
+    
   }
 };
 
@@ -1532,7 +1532,7 @@ public:
   int p() { // predict next bit
     if( ( cp[1] + 256 ) >> ( 8 - bpos ) == c0 )
       return ( ( cp[1] >> ( 7 - bpos ) & 1 ) * 2 - 1 ) * ilog( cp[0] + 1 ) * mulc;
-    else
+    
       return 0;
   }
   int mix( Mixer &m ) { // return run length
@@ -2380,7 +2380,7 @@ public:
     if( mode == COMPRESS ) {
       assert( alt );
       return getc( alt );
-    } else if( level == 0 )
+    } if( level == 0 )
       return getc( archive );
     else {
       int c = 0;
@@ -2757,7 +2757,7 @@ Filter *Filter::make( const char *filename, Encoder *e ) {
     ///else
     if( filetype == TEXT || filetype == BINTEXT )
       return new TextFilter( e );
-    else
+    
       return new DefaultFilter( e );
   }
   return NULL;

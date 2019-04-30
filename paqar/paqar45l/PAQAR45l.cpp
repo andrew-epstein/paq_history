@@ -1292,7 +1292,7 @@ public:
       cxt = t + i;
       if( cxt->csum == cs )
         break;
-      else if( cxt->n == 0 ) {
+      if( cxt->n == 0 ) {
         cxt->csum = cs;
         break;
       }
@@ -2722,7 +2722,7 @@ public:
 // first control character except tab.  Skips CR in CR LF.
 string getline( FILE *f = stdin ) {
   int c;
-  string result = "";
+  string result;
   while( ( c = getc( f ) ) != EOF && ( c >= 32 || c == '\t' ) )
     result += char( c );
   if( c == '\r' )
@@ -3090,7 +3090,7 @@ int main( int argc, char **argv ) {
         string s = getline( stdin );
         if( s == "" )
           break;
-        else
+        
           filename.push_back( s );
       }
     }

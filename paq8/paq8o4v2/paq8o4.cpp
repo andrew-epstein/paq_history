@@ -901,7 +901,7 @@ Ilog::Ilog() : t( 65536 ) {
 inline int llog( U32 x ) {
   if( x >= 0x1000000 )
     return 256 + ilog( x >> 16 );
-  else if( x >= 0x10000 )
+  if( x >= 0x10000 )
     return 128 + ilog( x >> 8 );
   else
     return ilog( x );
@@ -1286,9 +1286,9 @@ public:
       }
       mp->set( 0, 1 );
       return mp->p();
-    } else { // S=1 context
+    } // S=1 context
       return pr[0] = squash( dot_product( &tx[0], &wx[0], nx ) >> 8 );
-    }
+    
   }
   ~Mixer();
 };
@@ -1526,7 +1526,7 @@ public:
   int p() { // predict next bit
     if( ( cp[1] + 256 ) >> ( 8 - bpos ) == c0 )
       return ( ( cp[1] >> ( 7 - bpos ) & 1 ) * 2 - 1 ) * ilog( cp[0] + 1 ) * 8;
-    else
+    
       return 0;
   }
   int mix( Mixer &m ) { // return run length
@@ -2233,7 +2233,7 @@ int pgmModel( Mixer &m ) {
       pgm = pos;
       pgm_ptr = 0;
       return w = 0;                           // PGM header just detected, not enough info to get header yet
-    } else if( ( pgm != 0 ) && pgm_ptr != 3 ) // PGM detected, let's parse header records
+    } if( ( pgm != 0 ) && pgm_ptr != 3 ) // PGM detected, let's parse header records
     {
       for( int i = pgm; i < pos - 1 && pgm_ptr < 3; i++ ) {
         // Skip white spaces
@@ -3110,7 +3110,7 @@ int contextModel2() {
     m.set( isjpeg - 1, 257 );
     m.set( buf( 1 ), 256 );
     return m.p();
-  } else if( isbmp > 0 ) {
+  } if( isbmp > 0 ) {
     static int col = 0;
     if( ++col >= 24 )
       col = 0;
@@ -3327,7 +3327,7 @@ public:
     if( mode == COMPRESS ) {
       assert( alt );
       return getc( alt );
-    } else if( level == 0 )
+    } if( level == 0 )
       return getc( archive );
     else {
       int c = 0;
@@ -3800,7 +3800,7 @@ const char *getline( FILE *f = stdin ) {
   s[len] = 0;
   if( c == EOF || c == 26 )
     return 0;
-  else
+  
     return s.c_str();
 }
 

@@ -606,7 +606,7 @@ static int examinepath( const char *path ) {
       char lastchar = path[len - 1];
       if( lastchar != '/' && lastchar != '\\' )
         return 3; //looks like a file
-      else
+      
         return 4; //looks like a directory
     }
     return 0; //error
@@ -876,11 +876,11 @@ public:
     if( content_in_ram != nullptr ) {
       if( filepos >= filesize )
         return EOF;
-      else {
+      
         U8 c = ( *content_in_ram )[( U32 ) filepos];
         filepos++;
         return c;
-      }
+      
     } else
       return file_on_disk->getchar();
   }
@@ -894,7 +894,7 @@ public:
           ( *content_in_ram )[( U32 ) filepos] = c;
         filepos++;
         return;
-      } else
+      } 
         ram_to_disk();
     }
     file_on_disk->putchar( c );
@@ -908,7 +908,7 @@ public:
         memcpy( ptr, &( ( *content_in_ram )[( U32 ) filepos] ), count );
       filepos += count;
       return count;
-    } else
+    } 
       return file_on_disk->blockread( ptr, count );
   }
   void blockwrite( U8 *ptr, U64 count ) {
@@ -920,7 +920,7 @@ public:
         filesize += count;
         filepos += count;
         return;
-      } else
+      } 
         ram_to_disk();
     }
     file_on_disk->blockwrite( ptr, count );
@@ -945,13 +945,13 @@ public:
   U64 curpos() {
     if( content_in_ram != nullptr )
       return filepos;
-    else
+    
       return file_on_disk->curpos();
   }
   bool eof() {
     if( content_in_ram != nullptr )
       return filepos >= filesize;
-    else
+    
       return file_on_disk->eof();
   }
 };
@@ -1268,7 +1268,7 @@ public:
   inline int llog( U32 x ) {
     if( x >= 0x1000000 )
       return 256 + ilog( U16( x >> 16 ) );
-    else if( x >= 0x10000 )
+    if( x >= 0x10000 )
       return 128 + ilog( U16( x >> 8 ) );
     else
       return ilog( U16( x ) );
@@ -1841,7 +1841,7 @@ StateTable::StateTable() : ns( 1024 ) {
         }
         mp->set( 0, 1 );
         return mp->p( shift0, shift1 );
-      } else { // S=1 context
+      } // S=1 context
         int dp;
         if( simd == SIMD_NONE )
           dp = dot_product_simd_none( &tx[0], &wx[cxt[0] * N], nx ) >> ( 8 + shift1 );
@@ -1850,7 +1850,7 @@ StateTable::StateTable() : ns( 1024 ) {
         if( simd == SIMD_AVX2 )
           dp = dot_product_simd_avx2( &tx[0], &wx[cxt[0] * N], nx ) >> ( 8 + shift1 );
         return pr[0] = squash( dp );
-      }
+      
     }
     ~SIMDMixer();
   };
@@ -3483,7 +3483,7 @@ states to provide additional states that are then mapped to predictions.
         if( IsVowel( W->Letters[i] ) ) {
           hasVowel = true;
           continue;
-        } else if( hasVowel )
+        } if( hasVowel )
           return i - W->Start + 1;
       }
       return W->Start + W->Length();
@@ -3653,7 +3653,7 @@ states to provide additional states that are then mapped to predictions.
     bool EndsInShortSyllable( const Word *W ) {
       if( W->End == W->Start )
         return false;
-      else if( W->End == W->Start + 1 )
+      if( W->End == W->Start + 1 )
         return IsVowel( ( *W )( 1 ) ) && IsConsonant( ( *W )( 0 ) );
       else
         return ( IsConsonant( ( *W )( 2 ) ) && IsVowel( ( *W )( 1 ) ) && IsConsonant( ( *W )( 0 ) )
@@ -4011,12 +4011,12 @@ states to provide additional states that are then mapped to predictions.
       if( W->EndsWith( "logi" ) && SuffixInRn( W, R1, "ogi" ) ) {
         W->End--;
         return true;
-      } else if( W->EndsWith( "li" ) ) {
+      } if( W->EndsWith( "li" ) ) {
         if( SuffixInRn( W, R1, "li" ) && IsLiEnding( ( *W )( 2 ) ) ) {
           W->End -= 2;
           W->Type |= English::AdverbOfManner;
           return true;
-        } else if( W->Length() > 3 ) {
+        } if( W->Length() > 3 ) {
           switch( ( *W )( 2 ) ) {
             case 'b': {
               W->Letters[W->End] = 'e';
@@ -4118,7 +4118,7 @@ states to provide additional states that are then mapped to predictions.
         } else
           return false;
         return true;
-      } else if( W->Length() > 1 && ( *W )( 0 ) == 'l' && SuffixInRn( W, R2, "l" ) && ( *W )( 1 ) == 'l' ) {
+      } if( W->Length() > 1 && ( *W )( 0 ) == 'l' && SuffixInRn( W, R2, "l" ) && ( *W )( 1 ) == 'l' ) {
         W->End--; //l -> delete if in R2 and preceded by l
         return true;
       }
@@ -4326,12 +4326,12 @@ states to provide additional states that are then mapped to predictions.
           && ( ( IsVowel( W->Letters[W->Start] ) && IsVowel( W->Letters[W->Start + 1] ) ) || W->StartsWith( "par" )
                || W->StartsWith( "col" ) || W->StartsWith( "tap" ) ) )
         return W->Start + 3;
-      else {
+      
         for( int i = W->Start + 1; i <= W->End; i++ ) {
           if( IsVowel( W->Letters[i] ) )
             return i + 1;
         }
-      }
+      
       return res;
     }
     bool Step1( Word *W, const U32 RV, const U32 R1, const U32 R2, bool *ForceStep2a ) {
@@ -4430,7 +4430,7 @@ states to provide additional states that are then mapped to predictions.
           if( SuffixInRn( W, R2, SuffixesStep1[i] ) ) {
             W->End -= U8( strlen( SuffixesStep1[i] ) );
             return true;
-          } else if( SuffixInRn( W, R1, SuffixesStep1[i] ) ) {
+          } if( SuffixInRn( W, R1, SuffixesStep1[i] ) ) {
             W->ChangeSuffix( SuffixesStep1[i], "eux" );
             return true;
           }
@@ -4448,7 +4448,7 @@ states to provide additional states that are then mapped to predictions.
         W->End--;
         W->Type |= French::Plural;
         return true;
-      } else if( W->EndsWith( "aux" ) && SuffixInRn( W, R1, "aux" ) ) {
+      } if( W->EndsWith( "aux" ) && SuffixInRn( W, R1, "aux" ) ) {
         W->End--, W->Letters[W->End] = 'l';
         W->Type |= French::Plural;
         return true;
@@ -4814,7 +4814,7 @@ states to provide additional states that are then mapped to predictions.
       while( true ) {
         if( table[i] < 0 ) //free slot?
           return -i - 1;
-        else if( entries[table[i]].prefix == prefix && entries[table[i]].suffix == suffix ) //is it the entry we want?
+        if( entries[table[i]].prefix == prefix && entries[table[i]].suffix == suffix ) //is it the entry we want?
           return table[i];
         i -= offset;
         if( i < 0 )
@@ -6373,7 +6373,7 @@ states to provide additional states that are then mapped to predictions.
                 rcount[0] >>= 1;
                 rcount[1] >>= 1;
                 continue;
-              } else if( ( rlen[i + 1] > rlen[0] ) && ( rlen[i + 1] % rlen[0] == 0 ) ) {
+              } if( ( rlen[i + 1] > rlen[0] ) && ( rlen[i + 1] % rlen[0] == 0 ) ) {
                 // maybe we found a multiple of the real record size..?
                 // in that case, it is probably an immediate multiple (2x).
                 // that is probably more likely the bigger the length, so
@@ -6663,7 +6663,7 @@ states to provide additional states that are then mapped to predictions.
     int pNW = abs( p - ( int ) NW );
     if( pW <= pN && pW <= pNW )
       return W;
-    else if( pN <= pNW )
+    if( pN <= pNW )
       return N;
     return NW;
   }
@@ -11460,7 +11460,7 @@ void dump(const char* msg, int p) {
         do {
           if( i == CARRIAGE_RETURN )
             continue;
-          else if( i == NEW_LINE ) {
+          if( i == NEW_LINE ) {
             i = SPACE;
             reset();
           }
@@ -11632,7 +11632,7 @@ void dump(const char* msg, int p) {
       recordModel( *m, Stats );
       if( ( blockinfo & 2 ) == 0 )
         return audio8bModel( *m, blockinfo, Stats ), m->p( 1, 1 );
-      else
+      
         return wavModel( *m, blockinfo, Stats ), m->p( 0, 1 );
     }
 #endif //USE_WAVMODEL
@@ -11951,7 +11951,7 @@ void dump(const char* msg, int p) {
       if( mode == COMPRESS ) {
         assert( alt );
         return alt->getchar();
-      } else if( level == 0 )
+      } if( level == 0 )
         return archive->getchar();
       else {
         int c = 0;
@@ -12260,7 +12260,7 @@ void dump(const char* msg, int p) {
   int zlib_inflateInit( z_streamp strm, int zh ) {
     if( zh == -1 )
       return inflateInit2( strm, -MAX_WBITS );
-    else
+    
       return inflateInit( strm );
   }
 #endif //USE_ZLIB
@@ -12504,7 +12504,7 @@ void dump(const char* msg, int p) {
       in->setpos( start + deth );
       deth = 0;
       return dett;
-    } else if( detd != 0 ) {
+    } if( detd != 0 ) {
       in->setpos( start + min( blocksize, ( U64 ) detd ) );
       detd = 0;
       return DEFAULT;
@@ -13128,7 +13128,7 @@ void dump(const char* msg, int p) {
             if( tifc == 1 ) {
               if( tifz == 1 && tifzb == 1 )
                 IMG_DET( IMAGE1, i - 7, tifofs, ( ( tifx - 1 ) >> 3 ) + 1, tify );
-              else if( tifz == 1 && tifzb == 8 )
+              if( tifz == 1 && tifzb == 8 )
                 IMG_DET( IMAGE8, i - 7, tifofs, tifx, tify );
               else if( tifz == 3 && tifzb == 8 )
                 IMG_DET( IMAGE24, i - 7, tifofs, tifx * 3, tify );
@@ -13164,7 +13164,7 @@ void dump(const char* msg, int p) {
               in->setpos( start + tga + 11 + tgaid );
               IMG_DET( ( IsGrayscalePalette( in ) ) ? IMAGE8GRAY : IMAGE8, tga - 7, 18 + tgaid + 256 * tgamap, tgax,
                        tgay );
-            } else if( tgat == 2 )
+            } if( tgat == 2 )
               IMG_DET( ( tgaz == 24 ) ? IMAGE24 : IMAGE32, tga - 7, 18 + tgaid, tgax * ( tgaz >> 3 ), tgay );
             else if( tgat == 3 )
               IMG_DET( IMAGE8GRAY, tga - 7, 18 + tgaid, tgax, tgay );
@@ -13187,7 +13187,7 @@ void dump(const char* msg, int p) {
                 if( c == 0x80 ) {
                   c = b;
                   continue;
-                } else if( c > 0x7F ) {
+                } if( c > 0x7F ) {
                   total -= ( c = ( c & 0x7F ) + 1 );
                   line += c;
                   c = in->getchar();
@@ -13201,13 +13201,13 @@ void dump(const char* msg, int p) {
                 }
                 if( line > tgax )
                   break;
-                else if( line == tgax )
+                if( line == tgax )
                   line = 0;
               }
               if( total == 0 ) {
                 in->setpos( start + tga + 11 + tgaid + 256 * tgamap );
                 return dett = RLE;
-              } else
+              } 
                 in->setpos( savedpos );
             }
           }
@@ -13414,7 +13414,7 @@ void dump(const char* msg, int p) {
             if( blk[j] != out->getchar() && (diffFound == 0U) )
               diffFound = nextblockpos + j + 1;
         return nextblockpos + residual;
-      } else if( i == 0 ) { //first sector
+      } if( i == 0 ) { //first sector
         in->blockread(
             blk + 12,
             4 ); //header (4 bytes) consisting of address (Minutes, Seconds, Sectors) and mode (1 = Mode1, 2 = Mode2/Form1, 3 = Mode2/Form2)
@@ -13691,7 +13691,7 @@ void dump(const char* msg, int p) {
       if( c == 0x80 ) {
         c = b;
         continue;
-      } else if( c > 0x7F ) {
+      } if( c > 0x7F ) {
         for( int j = 0; j <= ( c & 0x7F ); j++ )
           out->putchar( b );
         c = in->getchar(), i++;
@@ -13820,7 +13820,7 @@ void dump(const char* msg, int p) {
       while( true ) {
         if( table[i] < 0 ) //free slot?
           return -i - 1;
-        else if( dictionary[table[i]].prefix == prefix
+        if( dictionary[table[i]].prefix == prefix
                  && dictionary[table[i]].suffix == suffix ) //is it the entry we want?
           return table[i];
         i -= offset;
@@ -13868,7 +13868,7 @@ void dump(const char* msg, int p) {
           if( code == LZW_EOF_CODE ) {
             done = true;
             break;
-          } else if( code == LZW_RESET_CODE ) {
+          } if( code == LZW_RESET_CODE ) {
             dic.reset();
             parent = -1;
             bitsPerCode = 9;
@@ -14712,7 +14712,7 @@ void dump(const char* msg, int p) {
   U64 decode_func( Blocktype type, Encoder &en, File *tmp, U64 len, int info, File *out, FMode mode, U64 &diffFound ) {
     if( type == IMAGE24 )
       return decode_bmp( en, len, info, out, mode, diffFound );
-    else if( type == IMAGE32 )
+    if( type == IMAGE32 )
       return decode_im32( en, len, info, out, mode, diffFound );
     else if( type == EXE )
       return decode_exe( en, len, out, mode, diffFound );

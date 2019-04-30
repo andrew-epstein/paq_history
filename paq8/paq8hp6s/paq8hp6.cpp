@@ -796,7 +796,7 @@ Ilog::Ilog() {
 inline int llog( U32 x ) {
   if( x >= 0x1000000 )
     return 256 + ilog( x >> 16 );
-  else if( x >= 0x10000 )
+  if( x >= 0x10000 )
     return 128 + ilog( x >> 8 );
   else
     return ilog( x );
@@ -1186,9 +1186,9 @@ public:
       }
       mp->set( 0, 1 );
       return mp->p();
-    } else { // S=1 context
+    } // S=1 context
       return pr[0] = squash( dot_product( &tx[0], &wx[0], nx ) >> 8 );
-    }
+    
   }
   ~Mixer();
 };
@@ -1454,7 +1454,7 @@ public:
   int p() { // predict next bit
     if( ( cp[1] + 256 ) >> ( 8 - bpos ) == c0 )
       return ( ( cp[1] >> ( 7 - bpos ) & 1 ) * 2 - 1 ) * ilog( cp[0] + 1 ) * 16;
-    else
+    
       return 0;
   }
   int mix( Mixer &m ) { // return run length
@@ -2874,7 +2874,7 @@ public:
     if( mode == COMPRESS ) {
       assert( alt );
       return getc( alt );
-    } else if( level == 0 )
+    } if( level == 0 )
       return getc( archive );
     else {
       int c = 0;
@@ -3332,7 +3332,7 @@ Filter *Filter::make( const char *filename, Encoder *e ) {
   if( e != nullptr ) {
     if( filetype == EXE )
       return new ExeFilter( e );
-    else if( filetype == TEXT || filetype == BINTEXT )
+    if( filetype == TEXT || filetype == BINTEXT )
       return new TextFilter( e );
     else
       return new DefaultFilter( e );
@@ -3357,7 +3357,7 @@ char *getline( FILE *f = stdin ) {
   s[len] = 0;
   if( c == EOF || c == 26 )
     return 0;
-  else
+  
     return s;
 }
 

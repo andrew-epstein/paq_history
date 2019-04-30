@@ -743,7 +743,7 @@ public:
   U32 hi() {
     if( bp > 3 )
       return buf[po & N] & 15;
-    else
+    
       return buf[( po - 1 ) & N] / 16;
   }
 } ch;
@@ -1970,7 +1970,7 @@ public:
 // first control character except tab.  Skips CR in CR LF.
 string getline( FILE *f = stdin ) {
   int c;
-  string result = "";
+  string result;
   while( ( c = getc( f ) ) != EOF && ( c >= 32 || c == '\t' ) )
     result += char( c );
   if( c == '\r' )
@@ -2127,7 +2127,7 @@ int main( int argc, char **argv ) {
         string s = getline( stdin );
         if( s == "" )
           break;
-        else
+        
           filename.push_back( s );
       }
     }

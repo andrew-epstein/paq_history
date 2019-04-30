@@ -542,7 +542,7 @@ Ilog::Ilog() : t( 65536 ) {
 inline int llog( U32 x ) {
   if( x >= 0x1000000 )
     return 256 + ilog( x >> 16 );
-  else if( x >= 0x10000 )
+  if( x >= 0x10000 )
     return 128 + ilog( x >> 8 );
   else
     return ilog( x );
@@ -920,9 +920,9 @@ public:
       }
       mp->set( 0, 1 );
       return mp->p();
-    } else { // S=1 context
+    } // S=1 context
       return pr[0] = squash( dot_product( &tx[0], &wx[0], nx ) >> 8 );
-    }
+    
   }
 };
 
@@ -1064,7 +1064,7 @@ public:
       p = &t[( i ^ j ) * B];
       if( p[0] == chk )
         return p; // match
-      else if( p[1] == 0 )
+      if( p[1] == 0 )
         return p[0] = chk, p; // empty
       else if( p[1] < b )
         b = p[1], bi = i ^ j; // best replacement so far
@@ -1219,7 +1219,7 @@ public:
   int p() { // predict next bit
     if( ( cp[1] + 256 ) >> ( 8 - bpos ) == c0 )
       return ( ( cp[1] >> ( 7 - bpos ) & 1 ) * 2 - 1 ) * ilog( cp[0] + 1 ) * 8;
-    else
+    
       return 0;
   }
   int mix( Mixer &m ) { // return run length
@@ -2153,7 +2153,7 @@ int contextModel2() {
   if( ismatch > 400 ) {          // Model long matches directly
     m.set( 0, 8 );
     return m.p();
-  } else if( isjpeg != 0 ) {
+  } if( isjpeg != 0 ) {
     m.set( 1, 8 );
     m.set( c0, 256 );
     m.set( buf( 1 ), 256 );
@@ -2554,7 +2554,7 @@ public:
 // first control character except tab.  Skips CR in CR LF.
 string getline( FILE *f = stdin ) {
   int c;
-  string result = "";
+  string result;
   while( ( c = getc( f ) ) != EOF && ( c >= 32 || c == '\t' ) )
     result += char( c );
   if( c == '\r' )
@@ -2861,7 +2861,7 @@ int main( int argc, char **argv ) {
         string s = getline( stdin );
         if( s == "" )
           break;
-        else
+        
           filename.push_back( s );
       }
     }

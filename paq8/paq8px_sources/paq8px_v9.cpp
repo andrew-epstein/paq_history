@@ -928,7 +928,7 @@ Ilog::Ilog() : t( 65536 ) {
 inline int llog( U32 x ) {
   if( x >= 0x1000000 )
     return 256 + ilog( x >> 16 );
-  else if( x >= 0x10000 )
+  if( x >= 0x10000 )
     return 128 + ilog( x >> 8 );
   else
     return ilog( x );
@@ -1313,9 +1313,9 @@ public:
       }
       mp->set( 0, 1 );
       return mp->p();
-    } else { // S=1 context
+    } // S=1 context
       return pr[0] = squash( dot_product( &tx[0], &wx[0], nx ) >> 8 );
-    }
+    
   }
   ~Mixer();
 };
@@ -1606,7 +1606,7 @@ public:
   int p() { // predict next bit
     if( cp[1] + 256 >> 8 - bpos == c0 )
       return ( ( cp[1] >> 7 - bpos & 1 ) * 2 - 1 ) * ilog( cp[0] + 1 ) * 8;
-    else
+    
       return 0;
   }
   int mix( Mixer &m ) { // return run length
@@ -3006,14 +3006,14 @@ inline int X( int i, int j ) {
   if( wmode == 18 ) {
     if( i <= S )
       return s2( i + j << 2 );
-    else
+    
       return s2( ( i + j - S << 2 ) - 2 );
   } else if( wmode == 17 )
     return s2( i + j << 1 );
   else if( wmode == 10 ) {
     if( i <= S )
       return buf( i + j << 1 );
-    else
+    
       return buf( ( i + j - S << 1 ) - 1 );
   } else
     return buf( i + j );
@@ -3770,7 +3770,7 @@ public:
     if( mode == COMPRESS ) {
       assert( alt );
       return getc( alt );
-    } else if( level == 0 )
+    } if( level == 0 )
       return getc( archive );
     else {
       int c = 0;
@@ -3896,7 +3896,7 @@ Filetype detect( FILE *in, int n, Filetype type, int &imgw ) {
   static Filetype imgt;          // image type
   if( imgh != 0 )
     return fseek( in, start + imgh, SEEK_SET ), imgh = 0, imgt;
-  else if( imgd != 0 )
+  if( imgd != 0 )
     return fseek( in, start + imgd, SEEK_SET ), imgd = 0, DEFAULT;
 
   for( int i = 0; i < n; ++i ) {
@@ -4443,7 +4443,7 @@ const char *getline( FILE *f = stdin ) {
   s[len] = 0;
   if( c == EOF || c == 26 )
     return 0;
-  else
+  
     return s.c_str();
 }
 

@@ -928,7 +928,7 @@ Ilog::Ilog() : t( 65536 ) {
 inline int llog( U32 x ) {
   if( x >= 0x1000000 )
     return 256 + ilog( x >> 16 );
-  else if( x >= 0x10000 )
+  if( x >= 0x10000 )
     return 128 + ilog( x >> 8 );
   else
     return ilog( x );
@@ -1313,9 +1313,9 @@ public:
       }
       mp->set( 0, 1 );
       return mp->p();
-    } else { // S=1 context
+    } // S=1 context
       return pr[0] = squash( dot_product( &tx[0], &wx[0], nx ) >> 8 );
-    }
+    
   }
   ~Mixer();
 };
@@ -1606,7 +1606,7 @@ public:
   int p() { // predict next bit
     if( ( cp[1] + 256 ) >> ( 8 - bpos ) == c0 )
       return ( ( cp[1] >> ( 7 - bpos ) & 1 ) * 2 - 1 ) * ilog( cp[0] + 1 ) * 8;
-    else
+    
       return 0;
   }
   int mix( Mixer &m ) { // return run length
@@ -2241,7 +2241,7 @@ int im24bitModel( Mixer &m ) {
       ppm = pos;
       ppm_ptr = 0;
       return w = 0;                             // PPM header just detected, not enough info to get header yet
-    } else if( ( ppm != 0 ) && ppm_ptr != 3 ) { // parse header records
+    } if( ( ppm != 0 ) && ppm_ptr != 3 ) { // parse header records
       for( int i = ppm; i < pos - 1 && ppm_ptr < 3; i++ ) {
         while( ( ( isws = ISWHITESPACE( pos - i ) ) != 0 ) && i < pos - 1 )
           i++; // Skip white spaces
@@ -2486,7 +2486,7 @@ int pgmModel( Mixer &m ) {
       pgm = pos;
       pgm_ptr = 0;
       return w = 0;                             // PGM header just detected, not enough info to get header yet
-    } else if( ( pgm != 0 ) && pgm_ptr != 3 ) { // PGM detected, let's parse header records
+    } if( ( pgm != 0 ) && pgm_ptr != 3 ) { // PGM detected, let's parse header records
       for( int i = pgm; i < pos - 1 && pgm_ptr < 3; i++ ) {
         while( ( ( isws = ISWHITESPACE( pos - i ) ) != 0 ) && i < pos - 1 )
           i++; // Skip white spaces
@@ -2668,7 +2668,7 @@ void pbmModel( Mixer &m ) {
       pbm = pos;
       pbm_ptr = 0;
       return;                                   // PBM header just detected, not enough info to get header yet
-    } else if( ( pbm != 0 ) && pbm_ptr != 2 ) { // parse header records
+    } if( ( pbm != 0 ) && pbm_ptr != 2 ) { // parse header records
       for( int i = pbm; i < pos - 1 && pbm_ptr < 2; i++ ) {
         while( ( ( isws = ISWHITESPACE( pos - i ) ) != 0 ) && i < pos - 1 )
           i++; // Skip white spaces
@@ -3321,14 +3321,14 @@ inline int X( int i, int j ) {
   if( wmode == 18 ) {
     if( i <= S )
       return s2( ( i + j ) << 2 );
-    else
+    
       return s2( ( ( i + j - S ) << 2 ) - 2 );
   } else if( wmode == 17 )
     return s2( ( i + j ) << 1 );
   else if( wmode == 10 ) {
     if( i <= S )
       return buf( ( i + j ) << 1 );
-    else
+    
       return buf( ( ( i + j - S ) << 1 ) - 1 );
   } else
     return buf( i + j );
@@ -4117,7 +4117,7 @@ public:
     if( mode == COMPRESS ) {
       assert( alt );
       return getc( alt );
-    } else if( level == 0 )
+    } if( level == 0 )
       return getc( archive );
     else {
       int c = 0;
@@ -4340,19 +4340,19 @@ Filetype detect( FILE *in, int n, Filetype type ) {
       if( ( pgmw != 0 ) && ( pgmh != 0 ) && ( pgmc == 0 ) && pgmn == 4 ) {
         if( type == PBMFILE )
           return fseek( in, start + ( ( pgmw + 7 ) / 8 ) * pgmh + pgm + i - 1, SEEK_SET ), DEFAULT;
-        else
+        
           return fseek( in, start + pgm - 2, SEEK_SET ), PBMFILE;
       }
       if( ( pgmw != 0 ) && ( pgmh != 0 ) && ( pgmc != 0 ) && pgmn == 5 ) {
         if( type == PGMFILE )
           return fseek( in, start + pgmw * pgmh + pgm + i - 1, SEEK_SET ), DEFAULT;
-        else
+        
           return fseek( in, start + pgm - 2, SEEK_SET ), PGMFILE;
       }
       if( ( pgmw != 0 ) && ( pgmh != 0 ) && ( pgmc != 0 ) && pgmn == 6 ) {
         if( type == PPMFILE )
           return fseek( in, start + ( pgmw * pgmh * 3 ) + pgm + i - 1, SEEK_SET ), DEFAULT;
-        else
+        
           return fseek( in, start + pgm - 2, SEEK_SET ), PPMFILE;
       }
     }
@@ -4383,7 +4383,7 @@ Filetype detect( FILE *in, int n, Filetype type ) {
       if( rgb_size != 0 && p > 0 && ( p > rgb_size ) ) {
         if( type == RGBFILE )
           return fseek( in, start + rgb_size, SEEK_SET ), DEFAULT;
-        else
+        
           return fseek( in, start + rgbi - 1, SEEK_SET ), RGBFILE;
       }
     }
@@ -4741,7 +4741,7 @@ const char *getline( FILE *f = stdin ) {
   s[len] = 0;
   if( c == EOF || c == 26 )
     return 0;
-  else
+  
     return s.c_str();
 }
 

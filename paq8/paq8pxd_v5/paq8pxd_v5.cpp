@@ -848,7 +848,7 @@ Ilog::Ilog() : t( 65536 ) {
 inline int llog( U32 x ) {
   if( x >= 0x1000000 )
     return 256 + ilog( x >> 16 );
-  else if( x >= 0x10000 )
+  if( x >= 0x10000 )
     return 128 + ilog( x >> 8 );
   else
     return ilog( x );
@@ -1243,13 +1243,13 @@ public:
       if( filetype != DICTTXT )
         mp->set( 0, 1 );
       return mp->p();
-    } else { // S=1 context
+    } // S=1 context
       if( filetype != DICTTXT )
         return pr[0] = squash( dot_product( &tx[0], &wx[0], nx ) >> 8 );
       int z = dot_product( &tx[0], &wx[0], nx );
       base = squash( ( z * 15 ) >> 13 );
       return squash( z >> 9 );
-    }
+    
   }
   ~Mixer();
 };
@@ -1540,7 +1540,7 @@ public:
   int p() { // predict next bit
     if( ( cp[1] + 256 ) >> ( 8 - bpos ) == c0 )
       return ( ( cp[1] >> ( 7 - bpos ) & 1 ) * 2 - 1 ) * ilog( cp[0] + 1 ) * 8;
-    else
+    
       return 0;
   }
   int mix( Mixer &m ) { // return run length
@@ -4036,7 +4036,7 @@ public:
     if( mode == COMPRESS ) {
       assert( alt );
       return getc( alt );
-    } else if( level == 0 )
+    } if( level == 0 )
       return getc( archive );
     else {
       int c = 0;
@@ -4332,7 +4332,7 @@ Filetype detect( FILE *in, int n, Filetype type, int &info, int &info2, int it =
   static Filetype dett;          // detected block type
   if( deth > 1 )
     return fseek( in, start + deth, SEEK_SET ), deth = 0, dett;
-  else if( deth == -1 )
+  if( deth == -1 )
     return fseek( in, start, SEEK_SET ), deth = 0, dett;
   else if( detd != 0 )
     return fseek( in, start + detd, SEEK_SET ), detd = 0, DEFAULT;
@@ -4533,7 +4533,7 @@ Filetype detect( FILE *in, int n, Filetype type, int &info, int &info2, int it =
         if( imgbpp != 0 && buf0 == 0 ) {
           if( imgbpp == 1 )
             IMG_DET( IMAGE1, bmp - 1, bmpof, ( ( ( bmpx - 1 ) >> 5 ) + 1 ) * 4, bmpy );
-          else if( imgbpp == 4 )
+          if( imgbpp == 4 )
             IMG_DET( IMAGE4, bmp - 1, bmpof, ( ( bmpx >> 1 ) + 3 ) & -4, bmpy );
           else if( imgbpp == 8 )
             IMG_DET( IMAGE8, bmp - 1, bmpof, ( bmpx + 3 ) & -4, bmpy );
@@ -4664,7 +4664,7 @@ Filetype detect( FILE *in, int n, Filetype type, int &info, int &info2, int it =
         if( (tifofs != 0) && tifofs < ( 1 << 18 ) && tifofs + i < n ) {
           if( tifz == 1 && tifzb == 1 )
             IMG_DET( IMAGE1, i - 7, tifofs, ( ( tifx - 1 ) >> 3 ) + 1, tify );
-          else if( tifz == 1 && tifzb == 8 )
+          if( tifz == 1 && tifzb == 8 )
             IMG_DET( IMAGE8, i - 7, tifofs, tifx, tify );
           else if( tifz == 3 && tifzb == 8 )
             IMG_DET( IMAGE24, i - 7, tifofs, tifx * 3, tify );
@@ -4687,7 +4687,7 @@ Filetype detect( FILE *in, int n, Filetype type, int &info, int &info2, int it =
         if( tgaz == ( int ) ( ( buf0 & 0xffff ) >> 8 ) && (tgax != 0) && (tgay != 0) ) {
           if( tgat == 1 )
             IMG_DET( IMAGE8, tga - 7, 18 + 256 * 3, tgax, tgay );
-          else if( tgat == 2 )
+          if( tgat == 2 )
             IMG_DET( IMAGE24, tga - 7, 18, tgax * 3, tgay );
           else if( tgat == 3 )
             IMG_DET( IMAGE8, tga - 7, 18, tgax, tgay );
@@ -4832,7 +4832,7 @@ Filetype detect( FILE *in, int n, Filetype type, int &info, int &info2, int it =
               return fseek( in, start + txtLen, SEEK_SET ), DEFAULT;
             if( txtIsUTF8 == 1 )
               return fseek( in, start + txtOff, SEEK_SET ), TXTUTF8;
-            else
+            
               return fseek( in, start + txtOff, SEEK_SET ), TEXT;
           }
         }
@@ -4852,7 +4852,7 @@ Filetype detect( FILE *in, int n, Filetype type, int &info, int &info2, int it =
 
           if( txtIsUTF8 == 1 )
             return fseek( in, start + txtOff, SEEK_SET ), TXTUTF8;
-          else
+          
 
             return fseek( in, start + txtOff, SEEK_SET ), TEXT;
         }
@@ -4867,7 +4867,7 @@ Filetype detect( FILE *in, int n, Filetype type, int &info, int &info2, int it =
         return fseek( in, start + txtLen, SEEK_SET ), DEFAULT;
       if( txtIsUTF8 == 1 )
         return fseek( in, start + txtOff, SEEK_SET ), TXTUTF8;
-      else
+      
         return fseek( in, start + txtOff, SEEK_SET ), TEXT;
     }
   }
@@ -5205,9 +5205,9 @@ inline char valueb( char c ) {
   const char *p = strchr( table1, c );
   if( p != nullptr ) {
     return p - table1;
-  } else {
+  } 
     return 0;
-  }
+  
 }
 
 void encode_base64( FILE *in, FILE *out, int len ) {
