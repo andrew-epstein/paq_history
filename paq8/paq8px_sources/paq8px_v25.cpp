@@ -3020,8 +3020,8 @@ inline int X1( int i ) {
     return buf( i << 1 ) - 128;
   if( wmode == 9 )
     return buf( i ) - 128;
-  else
-    return ( buf( i ) ^ 128 ) - 128;
+
+  return ( buf( i ) ^ 128 ) - 128;
 }
 
 inline int X2( int i ) {
@@ -3033,8 +3033,8 @@ inline int X2( int i ) {
     return buf( ( i << 1 ) - 1 ) - 128;
   if( wmode == 9 )
     return buf( i + S ) - 128;
-  else
-    return ( buf( i + S ) ^ 128 ) - 128;
+
+  return ( buf( i + S ) ^ 128 ) - 128;
 }
 
 void wavModel( Mixer &m, int info ) {

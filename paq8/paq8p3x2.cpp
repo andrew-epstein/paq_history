@@ -3070,8 +3070,8 @@ inline int X( int i, int j ) {
       return buf( ( i + j ) << 1 );
 
     return buf( ( ( i + j - S ) << 1 ) - 1 );
-  } else
-    return buf( i + j );
+  }
+  return buf( i + j );
 }
 
 int wavModel( Mixer &m, int info ) {

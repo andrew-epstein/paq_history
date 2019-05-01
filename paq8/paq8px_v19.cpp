@@ -3011,7 +3011,8 @@ inline int X( int i, int j ) {
       return buf( i + j << 1 );
 
     return buf( ( i + j - S << 1 ) - 1 );
-  } else if( wmode == 9 )
+  }
+  if( wmode == 9 )
     return buf( i + j );
   else
     return ( buf( i + j ) + 128 ) & 255;

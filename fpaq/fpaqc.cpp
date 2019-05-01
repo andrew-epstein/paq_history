@@ -318,7 +318,7 @@ private:
 public:
   Encoder( Mode m, FILE *f );
   int decode();         // Uncompress and return bit y
-  void encode( int y ); // Compress bit y
+  void encode( int d ); // Compress bit y
   void flush();         // Call when done compressing
 };
 

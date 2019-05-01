@@ -1566,7 +1566,7 @@ class ContextMap {
     U8 bh[7][7];               // byte context, 3-bit context -> bit history state
                                // bh[][0] = 1st bit, bh[][1,2] = 2nd bit, bh[][3..6] = 3rd bit
                                // bh[][0] is also a replacement priority, 0 = empty
-    U8 *get( U16 chk, int i ); // Find element (0-6) matching checksum.
+    U8 *get( U16 chk, int j ); // Find element (0-6) matching checksum.
                                // If not found, insert or replace lowest priority (not last).
   };
   Array<E, 64> t;               // bit histories for bits 0-1, 2-4, 5-7
@@ -3231,11 +3231,11 @@ public:
   DefaultFilter( Encoder *e ) : Filter( e ) {}
 
 protected:
-  void encode( FILE *f, int n ) { // not executed if filetype is 0
+  void encode( FILE *f, int n ) override { // not executed if filetype is 0
     while( ( n-- ) != 0 )
       putc( getc( f ), tmp );
   }
-  int decode() {
+  int decode() override {
     return read();
   }
 };
@@ -3354,12 +3354,12 @@ public:
     reset();
     WRTd_filter = this;
   }
-  ~TextFilter() {
+  ~TextFilter() override {
     reset();
     tmp = NULL;
   };
-  void encode( FILE *f, int n );
-  int decode();
+  void encode( FILE *f, int n ) override;
+  int decode() override;
   void reset() {
     first = true;
     wrt.WRT_prepare_decoding();

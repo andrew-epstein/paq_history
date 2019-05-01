@@ -1494,7 +1494,7 @@ public:
 
 class DefaultModel : public Model {
 public:
-  void model() {
+  void model() override {
     mixer.write( 1, 1 );
   }
 };
@@ -1531,7 +1531,7 @@ public:
     memset( t0, 0, 256 * sizeof( Counter ) );
     memset( t1, 0, 65536 * sizeof( Counter ) );
   }
-  void model(); // Update and predict
+  void model() override; // Update and predict
 };
 
 // Update with bit y, put array of 0 counts in n0 and 1 counts in n1
@@ -1602,7 +1602,7 @@ public:
     for( int i = 0; i < M; ++i )
       begin[i] = end[i] = 0;
   }
-  void model();
+  void model() override;
 };
 
 inline void MatchModel::model() {
@@ -1689,7 +1689,7 @@ public:
       t2( SIZE ),
       t3( SIZE ),
       t4( SIZE ) {}
-  void model();
+  void model() override;
 };
 
 // Update the model with bit y, then put predictions of the next update
@@ -1748,7 +1748,7 @@ public:
       t6( SIZE ),
       t7( SIZE ),
       t8( SIZE ) {}
-  void model(); // Update and predict
+  void model() override; // Update and predict
 };
 
 inline void SparseModel::model() {
@@ -1800,7 +1800,7 @@ public:
       t4( SIZE ),
       t5( SIZE ),
       t6( SIZE ) {}
-  void model() {
+  void model() override {
     if( ch.bpos() == 0 ) {
       if( ++pos3 == 3 )
         pos3 = 0;
@@ -1846,7 +1846,7 @@ public:
     for( int i = 0; i < N; ++i )
       cxt[i] = word[i] = 0;
   }
-  void model() {
+  void model() override {
     if( ch.bpos() == 0 ) {
       int c = ch( 1 );
       if( c > 32 ) {

@@ -1252,7 +1252,7 @@ public:
 
 class DefaultModel : public Model {
 public:
-  void model() {
+  void model() override {
     mixer.write( 1, 1 );
   }
 } defaultModel;
@@ -1284,7 +1284,7 @@ public:
     memset( t0, 0, 256 * sizeof( Counter ) );
     memset( t1, 0, 65536 * sizeof( Counter ) );
   }
-  void model(); // Update and predict
+  void model() override; // Update and predict
 } charModel;
 
 // Update with bit y, put array of 0 counts in n0 and 1 counts in n1
@@ -1340,7 +1340,7 @@ public:
     for( int i = 0; i < M; ++i )
       begin[i] = end[i] = 0;
   }
-  void model();
+  void model() override;
 } matchModel;
 
 inline void MatchModel::model() {
@@ -1419,7 +1419,7 @@ class RecordModel : public Model {
   int repeat{1};     // Cycle length
 public:
   RecordModel() : t0( 14 + MEM ), t1( 14 + MEM ) {}
-  void model();
+  void model() override;
 } recordModel;
 
 // Update the model with bit y, then put predictions of the next update
@@ -1461,7 +1461,7 @@ public:
       t7( 14 + MEM ),
       t8( 14 + MEM ),
       t9( 14 + MEM ) {}
-  void model(); // Update and predict
+  void model() override; // Update and predict
 } sparseModel;
 
 // Update with bit y, put array of 0 counts in n0 and 1 counts in n1
@@ -1507,7 +1507,7 @@ class AnalogModel : public Model {
   int pos3{0}; // pos % 3
 public:
   AnalogModel() : t0( 14 + MEM ), t1( 14 + MEM ), t2( 14 + MEM ), t3( 14 + MEM ), t4( 14 + MEM ), t5( 14 + MEM ) {}
-  void model() {
+  void model() override {
     if( ch.bpos() == 0 ) {
       if( ++pos3 == 3 )
         pos3 = 0;
@@ -1542,7 +1542,7 @@ public:
     for( int i = 0; i < N; ++i )
       cxt[i] = 0;
   }
-  void model() {
+  void model() override {
     if( ch.bpos() == 0 ) {
       int c = ch( 1 );
       if( c > 32 ) {

@@ -746,10 +746,10 @@ public:
   FileDisk() {
     file = 0;
   }
-  ~FileDisk() {
+  ~FileDisk() override {
     close();
   }
-  bool open( const char *filename, bool must_succeed ) {
+  bool open( const char *filename, bool must_succeed ) override {
     assert( file == 0 );
     file = fopen( filename, "rbe" );
     bool success = ( file != 0 );
@@ -759,7 +759,7 @@ public:
     }
     return success;
   }
-  void create( const char *filename ) {
+  void create( const char *filename ) override {
     assert( file == 0 );
     makedirectories( filename );
     file = fopen( filename, "wb+e" );
@@ -776,33 +776,33 @@ public:
       quit();
     }
   }
-  void close() {
+  void close() override {
     if( file != nullptr )
       fclose( file );
     file = 0;
   }
-  int getchar() {
+  int getchar() override {
     return fgetc( file );
   }
-  void putchar( U8 c ) {
+  void putchar( U8 c ) override {
     fputc( c, file );
   }
-  U64 blockread( U8 *ptr, U64 count ) {
+  U64 blockread( U8 *ptr, U64 count ) override {
     return fread( ptr, 1, count, file );
   }
-  void blockwrite( U8 *ptr, U64 count ) {
+  void blockwrite( U8 *ptr, U64 count ) override {
     fwrite( ptr, 1, count, file );
   }
-  void setpos( U64 newpos ) {
+  void setpos( U64 newpos ) override {
     fseeko( file, newpos, SEEK_SET );
   }
-  void setend() {
+  void setend() override {
     fseeko( file, 0, SEEK_END );
   }
-  U64 curpos() {
+  U64 curpos() override {
     return ftello( file );
   }
-  bool eof() {
+  bool eof() override {
     return feof( file ) != 0;
   }
 };
@@ -858,21 +858,21 @@ public:
     filesize = 0;
     file_on_disk = 0;
   }
-  ~FileTmp() {
+  ~FileTmp() override {
     close();
   }
-  bool open( const char *filename, bool must_succeed ) {
+  bool open( const char *filename, bool must_succeed ) override {
     assert( false );
     return false;
   } //this method is forbidden for temporary files
-  void create( const char *filename ) {
+  void create( const char *filename ) override {
     assert( false );
   } //this method is forbidden for temporary files
-  void close() {
+  void close() override {
     forget_content_in_ram();
     forget_file_on_disk();
   }
-  int getchar() {
+  int getchar() override {
     if( content_in_ram != nullptr ) {
       if( filepos >= filesize )
         return EOF;
@@ -883,7 +883,7 @@ public:
     }
     return file_on_disk->getchar();
   }
-  void putchar( U8 c ) {
+  void putchar( U8 c ) override {
     if( content_in_ram != nullptr ) {
       if( filepos < MAX_RAM_FOR_TMP_CONTENT ) {
         if( filepos == filesize ) {
@@ -898,7 +898,7 @@ public:
     }
     file_on_disk->putchar( c );
   }
-  U64 blockread( U8 *ptr, U64 count ) {
+  U64 blockread( U8 *ptr, U64 count ) override {
     if( content_in_ram != nullptr ) {
       U64 available = filesize - filepos;
       if( available < count )
@@ -910,7 +910,7 @@ public:
     }
     return file_on_disk->blockread( ptr, count );
   }
-  void blockwrite( U8 *ptr, U64 count ) {
+  void blockwrite( U8 *ptr, U64 count ) override {
     if( content_in_ram != nullptr ) {
       if( filepos + count <= MAX_RAM_FOR_TMP_CONTENT ) {
         content_in_ram->resize( ( U32 )( filepos + count ) );
@@ -924,7 +924,7 @@ public:
     }
     file_on_disk->blockwrite( ptr, count );
   }
-  void setpos( U64 newpos ) {
+  void setpos( U64 newpos ) override {
     if( content_in_ram != nullptr ) {
       if( newpos > filesize )
         ram_to_disk(); //panic: we don't support seeking past end of file (but stdio does) - let's switch to disk
@@ -935,19 +935,19 @@ public:
     }
     file_on_disk->setpos( newpos );
   }
-  void setend() {
+  void setend() override {
     if( content_in_ram != nullptr )
       filepos = filesize;
     else
       file_on_disk->setend();
   }
-  U64 curpos() {
+  U64 curpos() override {
     if( content_in_ram != nullptr )
       return filepos;
 
     return file_on_disk->curpos();
   }
-  bool eof() {
+  bool eof() override {
     if( content_in_ram != nullptr )
       return filepos >= filesize;
 
@@ -1757,7 +1757,7 @@ StateTable::StateTable() : ns( 1024 ) {
     SIMDMixer( int n, int m, int s = 1 );
 
     // Adjust weights to minimize coding cost of last prediction
-    void update() {
+    void update() override {
       int target = y << 12;
       if( nx > 0 )
         for( int i = 0; i < ncxt; ++i ) {
@@ -1795,14 +1795,14 @@ StateTable::StateTable() : ns( 1024 ) {
     }
 
     // Input x (call up to N times)
-    void add( const int x ) {
+    void add( const int x ) override {
       assert( nx < N );
       assert( x == short( x ) );
       tx[nx++] = ( short ) x;
     }
 
     // Set a context (call S times, sum of ranges <= M)
-    void set( const int cx, const int range, const int rate = DEFAULT_LEARNING_RATE ) {
+    void set( const int cx, const int range, const int rate = DEFAULT_LEARNING_RATE ) override {
       assert( range >= 0 );
       assert( ncxt < S );
       assert( 0 <= cx && cx < range );
@@ -1813,12 +1813,12 @@ StateTable::StateTable() : ns( 1024 ) {
       base += range;
     }
 
-    void reset() {
+    void reset() override {
       nx = base = ncxt = 0;
     }
 
     // predict next bit
-    int p( const int shift0, const int shift1 ) {
+    int p( const int shift0, const int shift1 ) override {
       while( nx & ( simd_width() - 1 ) )
         tx[nx++] = 0; // pad
       if( mp ) {      // combine outputs
@@ -1850,7 +1850,7 @@ StateTable::StateTable() : ns( 1024 ) {
         dp = dot_product_simd_avx2( &tx[0], &wx[cxt[0] * N], nx ) >> ( 8 + shift1 );
       return pr[0] = squash( dp );
     }
-    ~SIMDMixer();
+    ~SIMDMixer() override;
   };
 
   template <SIMD simd>
@@ -2211,7 +2211,7 @@ StateTable::StateTable() : ns( 1024 ) {
     BH( int i ) : t( i * B ), mask( i - 1 ), hashbits( ilog2( mask + 1 ) ) {
       assert( B >= 2 && i > 0 && ispowerof2( i ) );
     }
-    U8 *operator[]( const U64 i );
+    U8 *operator[]( const U64 ctx );
   };
 
   template <int B>
@@ -3443,7 +3443,7 @@ states to provide additional states that are then mapped to predictions.
       PrefixOver = ( 1 << 23 ),
       PrefixUnder = ( 1 << 24 )
     };
-    bool IsAbbreviation( Word *W ) {
+    bool IsAbbreviation( Word *W ) override {
       return W->MatchesAny( Abbreviations, NUM_ABBREV );
     };
   };
@@ -3455,7 +3455,7 @@ states to provide additional states that are then mapped to predictions.
 
   public:
     enum Flags { Adjective = ( 1 << 2 ), Plural = ( 1 << 3 ) };
-    bool IsAbbreviation( Word *W ) {
+    bool IsAbbreviation( Word *W ) override {
       return W->MatchesAny( Abbreviations, NUM_ABBREV );
     };
   };
@@ -3467,7 +3467,7 @@ states to provide additional states that are then mapped to predictions.
 
   public:
     enum Flags { Adjective = ( 1 << 2 ), Plural = ( 1 << 3 ), Female = ( 1 << 4 ) };
-    bool IsAbbreviation( Word *W ) {
+    bool IsAbbreviation( Word *W ) override {
       return W->MatchesAny( Abbreviations, NUM_ABBREV );
     };
   };
@@ -4135,7 +4135,7 @@ states to provide additional states that are then mapped to predictions.
     inline bool IsVowel( const char c ) final {
       return CharInArray( c, Vowels, NUM_VOWELS );
     }
-    bool Stem( Word *W ) {
+    bool Stem( Word *W ) override {
       if( W->Length() < 2 ) {
         W->CalculateStemHash();
         //W->print(); //for debugging
@@ -4578,7 +4578,7 @@ states to provide additional states that are then mapped to predictions.
     inline bool IsVowel( const char c ) final {
       return CharInArray( c, Vowels, NUM_VOWELS );
     }
-    bool Stem( Word *W ) {
+    bool Stem( Word *W ) override {
       ConvertUTF8( W );
       if( W->Length() < 2 ) {
         W->CalculateStemHash();
@@ -4762,7 +4762,7 @@ states to provide additional states that are then mapped to predictions.
     inline bool IsVowel( const char c ) final {
       return CharInArray( c, Vowels, NUM_VOWELS );
     }
-    bool Stem( Word *W ) {
+    bool Stem( Word *W ) override {
       ConvertUTF8( W );
       if( W->Length() < 2 ) {
         W->CalculateStemHash();
@@ -14836,7 +14836,7 @@ void dump(const char* msg, int p) {
       return decode_exe( en, len, out, mode, diffFound );
     if( type == TEXT_EOL )
       return decode_eol( en, len, out, mode, diffFound );
-    else if( type == CD )
+    if( type == CD )
       return decode_cd( tmp, len, out, mode, diffFound );
 #ifdef USE_ZLIB
     else if( type == ZLIB )

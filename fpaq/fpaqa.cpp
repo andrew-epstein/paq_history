@@ -415,7 +415,7 @@ private:
   int ch;                          // Input byte (decompression)
 public:
   Encoder( Mode m, FILE *f );
-  void encode( int y ); // Compress bit y
+  void encode( int d ); // Compress bit y
   int decode();         // Uncompress and return bit y
   void flush();         // Call when done compressing
 };

@@ -507,8 +507,8 @@ class NonstationaryPPM : public Model {
   Counter *cp[N];                        // Pointers to current counters
   U32 hash[N];                           // Hashes of last 0 to N-1 bytes
 public:
-  inline void predict( int &c0, int &c1 ) const; // Add to counts of 0s and 1s
-  inline void update( int y );                   // Append bit y (0 or 1) to model
+  inline void predict( int &n0, int &n1 ) const override; // Add to counts of 0s and 1s
+  inline void update( int y ) override;                   // Append bit y (0 or 1) to model
   NonstationaryPPM();
   int getc0() const {
     return c0;
@@ -576,7 +576,7 @@ class MatchModel : public Model {
   int end{0};      // Points to last matching byte + 1, 0 if no match
 public:
   MatchModel() : buf( 0x10000 * ( 1 << MEM ) ), ptr( 0x4000 * ( 1 << MEM ) ) {}
-  void predict( int &n0, int &n1 ) const {
+  void predict( int &n0, int &n1 ) const override {
     if( end != 0 ) {
       int wt = end - begin;
       if( wt > 1000 )
@@ -593,7 +593,7 @@ public:
   // Append bit y to buf and check that it matches at the end.
   // After a byte is completed, compute a new hash and store it.
   // If there is no current match, search for one.
-  void update( int y ) {
+  void update( int y ) override {
     ( buf[pos] <<= 1 ) += y; // Store bit
     ++bpos;
     if( ( end != 0 ) && ( buf[end] >> ( 8 - bpos ) ) != buf[pos] ) // Does it match?
@@ -726,7 +726,7 @@ public:
       cp( &t[0] ),
       cp1( &t1[0] ) {}
 
-  void predict( int &n0, int &n1 ) const {
+  void predict( int &n0, int &n1 ) const override {
     if( cycle > 0 ) {
       int wt = 16;
       n0 += cp->get0() * wt;
@@ -737,7 +737,7 @@ public:
     }
   }
 
-  void update( int y ) {
+  void update( int y ) override {
     if( ++column >= cycle )
       column = 0;
     if( size > 0 && --size == 0 )
@@ -910,7 +910,7 @@ private:
   U32 x;           // Last 4 input bytes of archive.
 public:
   Encoder( Mode m, FILE *f );
-  void encode( int bit );
+  void encode( int y );
   int decode();
   void flush();
 };

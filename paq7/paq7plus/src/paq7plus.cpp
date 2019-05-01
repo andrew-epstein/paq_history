@@ -2347,7 +2347,7 @@ public:
   Encoder();
   ~Encoder();
   void start( Mode m, FILE *f );
-  void encode( int y ); // Compress bit y
+  void encode( int z ); // Compress bit y
   int decode();         // Uncompress and return bit y
   void flush();         // Call when done compressing
   void bit_plus_follow( int bit );

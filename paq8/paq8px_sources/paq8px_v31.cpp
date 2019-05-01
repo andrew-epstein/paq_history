@@ -3024,7 +3024,7 @@ inline int X1( int i ) {
     return buf( i << 1 ) - 128;
   if( wmode == 0 )
     return buf( i ) - 128;
-  else if( wmode == 4 )
+  if( wmode == 4 )
     return ( buf( i ) ^ 128 ) - 128;
   else if( wmode == 7 )
     return t2( i << 2 );
@@ -3042,7 +3042,7 @@ inline int X2( int i ) {
     return buf( ( i << 1 ) - 1 ) - 128;
   if( wmode == 0 )
     return buf( i + S ) - 128;
-  else if( wmode == 4 )
+  if( wmode == 4 )
     return ( buf( i + S ) ^ 128 ) - 128;
   else if( wmode == 7 )
     return t2( ( i << 2 ) - 2 );

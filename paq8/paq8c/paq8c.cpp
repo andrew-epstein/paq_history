@@ -2751,11 +2751,11 @@ public:
   DefaultFilter( Encoder *e ) : Filter( e ) {}
 
 protected:
-  void encode( FILE *f, int n ) { // not executed if filetype is 0
+  void encode( FILE *f, int n ) override { // not executed if filetype is 0
     while( ( n-- ) != 0 )
       putc( getc( f ), tmp );
   }
-  int decode() {
+  int decode() override {
     return read();
   }
 };
@@ -2779,8 +2779,8 @@ class ExeFilter : public Filter {
   U8 c[5];                  // queue of last 5 bytes, c[0] at front
 public:
   ExeFilter( Encoder *e ) : Filter( e ), offset( -8 ), size( 0 ), q( 0 ), end( 0 ) {}
-  void encode( FILE *f, int n );
-  int decode();
+  void encode( FILE *f, int n ) override;
+  int decode() override;
 };
 
 void ExeFilter::encode( FILE *f, int n ) {
@@ -2867,13 +2867,13 @@ public:
     reset();
     WRTd_filter = this;
   }
-  ~TextFilter() {
+  ~TextFilter() override {
     wrt.WRT_deinitialize();
     reset();
     tmp = NULL;
   };
-  void encode( FILE *f, int n );
-  int decode();
+  void encode( FILE *f, int n ) override;
+  int decode() override;
   void reset() {
     first = true;
     wrt.WRT_prepare_decoding();
