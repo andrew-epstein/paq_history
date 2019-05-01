@@ -451,9 +451,9 @@ checksum matches the upper bits of i, creating or replacing if needed.
 template <class T, int N, int M = 3>
 class Hashtable {
 private:
-  T *table;                                  // Array of 2^N+M elements
-  Hashtable( const Hashtable & );            // No copy
-  Hashtable &operator=( const Hashtable & ); // No assignment
+  T *table;                                           // Array of 2^N+M elements
+  Hashtable( const Hashtable & ) = delete;            // No copy
+  Hashtable &operator=( const Hashtable & ) = delete; // No assignment
 public:
   Hashtable() : table( new Counter[( 1 << N ) + M] ) {}
   T &operator[]( U32 i );

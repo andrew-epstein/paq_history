@@ -747,8 +747,8 @@ public:
   }                             // decrement size
   void push_back( const T &x ); // increment size, append x
 private:
-  Array( const Array & ); // no copy or assignment
-  Array &operator=( const Array & );
+  Array( const Array & ) = delete; // no copy or assignment
+  Array &operator=( const Array & ) = delete;
 };
 
 template <class T, int ALIGN>
@@ -3028,8 +3028,8 @@ inline int X( int i, int j ) {
   }
   if( wmode == 9 )
     return buf( i + j );
-  else
-    return ( buf( i + j ) + 128 ) & 255;
+
+  return ( buf( i + j ) + 128 ) & 255;
 }
 
 void wavModel( Mixer &m, int info ) {

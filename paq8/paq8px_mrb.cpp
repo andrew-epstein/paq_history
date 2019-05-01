@@ -747,8 +747,8 @@ public:
   }                             // decrement size
   void push_back( const T &x ); // increment size, append x
 private:
-  Array( const Array & ); // no copy or assignment
-  Array &operator=( const Array & );
+  Array( const Array & ) = delete; // no copy or assignment
+  Array &operator=( const Array & ) = delete;
 };
 
 template <class T, int ALIGN>
@@ -3223,7 +3223,7 @@ inline int X1( int i ) {
     return buf( i ) - 128;
   if( wmode == 4 )
     return ( buf( i ) ^ 128 ) - 128;
-  else if( wmode == 7 )
+  if( wmode == 7 )
     return t2( i << 2 );
   else
     return t2( i << 1 );
@@ -3241,7 +3241,7 @@ inline int X2( int i ) {
     return buf( i + S ) - 128;
   if( wmode == 4 )
     return ( buf( i + S ) ^ 128 ) - 128;
-  else if( wmode == 7 )
+  if( wmode == 7 )
     return t2( ( i << 2 ) - 2 );
   else
     return t2( ( i + S ) << 1 );

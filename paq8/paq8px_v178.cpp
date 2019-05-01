@@ -374,7 +374,7 @@ public:
     assert( false );
   } //prevent copying - this method must be public (gcc must see it but actually won't use it)
 private:
-  Array &operator=( const Array & ); //prevent assignment
+  Array &operator=( const Array & ) = delete; //prevent assignment
 };
 
 template <class T, const int Align>
@@ -14839,7 +14839,7 @@ void dump(const char* msg, int p) {
     if( type == CD )
       return decode_cd( tmp, len, out, mode, diffFound );
 #ifdef USE_ZLIB
-    else if( type == ZLIB )
+    if( type == ZLIB )
       return decode_zlib( tmp, len, out, mode, diffFound );
 #endif //USE_ZLIB
     else if( type == BASE64 )

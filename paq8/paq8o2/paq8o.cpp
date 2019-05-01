@@ -709,8 +709,8 @@ public:
   }                             // decrement size
   void push_back( const T &x ); // increment size, append x
 private:
-  Array( const Array & ); // no copy or assignment
-  Array &operator=( const Array & );
+  Array( const Array & ) = delete; // no copy or assignment
+  Array &operator=( const Array & ) = delete;
 };
 
 template <class T, int ALIGN>
