@@ -2091,13 +2091,13 @@ void recordModel( Mixer &m ) {
       if( rlenc[i] > 15 && rlen != rlenl[i] ) {
         rlen = rlenl[i];
         // printf("R: %d\n", rlen); //print dynamic rlen
-        for( int j = 0; j < rlencount; ++j ) {
-          if( rlenc[j] > 10 ) //favor larger counts
-            rlenc[j] = rlenc[j] - 1;
-          else if( rlenc[j] > 5 )
-            rlenc[j] = rlenc[j] - 2;
+        for( int &j: rlenc ) {
+          if( j > 10 ) //favor larger counts
+            j = j - 1;
+          else if( j > 5 )
+            j = j - 2;
           else
-            rlenc[j] = 0; //discard lower counts
+            j = 0; //discard lower counts
         }
         rlenl[i] = rlen; //preserve current best count
         break;
@@ -3736,7 +3736,7 @@ public:
   void update();
 };
 
-Predictor::Predictor() {}
+Predictor::Predictor() = default;
 
 void Predictor::update() {
   static APM1 a( 256 );
@@ -4299,8 +4299,8 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
           fseek( in, start + s3mi - 31 + i1 * 16, SEEK_SET );
           i1 = getc( in );
           if( i1 == 1 ) { // type: sample
-            for( int k = 0; k < 31; k++ )
-              b[k] = fgetc( in );
+            for( int &k: b )
+              k = fgetc( in );
             int len = b[15] + ( b[16] << 8 );
             int ofs = b[13] + ( b[14] << 8 );
             if( b[30] > 1 )
@@ -4432,8 +4432,8 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
       int b[12];
       if( getc( in ) == 0 ) {
         for( int i = 0; i < dirsize; i++ ) {
-          for( int j = 0; j < 12; j++ )
-            b[j] = getc( in );
+          for( int &j: b )
+            j = getc( in );
           if( b[11] == EOF )
             break;
           int tag = b[0] + ( b[1] << 8 );

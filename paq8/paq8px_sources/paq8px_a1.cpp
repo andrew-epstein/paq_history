@@ -3693,7 +3693,7 @@ public:
   void update();
 };
 
-Predictor::Predictor() {}
+Predictor::Predictor() = default;
 
 void Predictor::update() {
   static APM1 a( 256 );

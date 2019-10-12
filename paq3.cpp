@@ -101,7 +101,7 @@ class Model {
 public:
   virtual void predict( int &n0, int &n1 ) const = 0;
   virtual void update( int y ) = 0;
-  virtual ~Model() {}
+  virtual ~Model() = default;
 };
 
 /* Hash table element base class.  It contains an 8-bit checksum to
@@ -707,7 +707,7 @@ as were in the table. */
 class CyclicModel : public Model {
   struct E {
     int p{0}, n{0}, r{0}; // Position of last match, number of matches, interval
-    E() {}
+    E() = default;
   };
   vector<E> cpos;           // Table of repeat patterns by char
   int pos{0};               // Current bit position in input
@@ -871,9 +871,9 @@ Predictor::Predictor() {
       n = 254;
     int c1 = ( i * n + N / 2 ) / N;
     for( int j = oldp - 1; j >= p; --j ) {
-      for( int k = 0; k < SSE1; ++k ) {
-        sse[k][j].n = n;
-        sse[k][j].c1 = c1;
+      for( auto &k: sse ) {
+        k[j].n = n;
+        k[j].c1 = c1;
       }
     }
     oldp = p;
@@ -1168,10 +1168,10 @@ int main( int argc, char **argv ) {
     }
 
     // Get file sizes
-    for( int i = 0; i < int( filename.size() ); ++i ) {
-      FILE *f = fopen( filename[i].c_str(), "rbe" );
+    for( auto &i: filename ) {
+      FILE *f = fopen( i.c_str(), "rbe" );
       if( f == nullptr ) {
-        printf( "File not found, skipping: %s\n", filename[i].c_str() );
+        printf( "File not found, skipping: %s\n", i.c_str() );
         filesize.push_back( -1 );
       } else {
         fseek( f, 0L, SEEK_END );

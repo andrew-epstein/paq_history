@@ -608,7 +608,7 @@ class Counter {
   };
   static E table[150]; // State table								emilcont
 public:
-  Counter() {}
+  Counter() = default;
   int get0() const {
     return table[state].n0;
   }
@@ -1127,7 +1127,7 @@ class CounterMap1 {
   struct S {
     U8 c{0}; // char
     U8 n{0}; // count
-    S() {}
+    S() = default;
   };
   S *t; // cxt -> c repeated last n times
   U32 cxt;
@@ -1181,8 +1181,8 @@ public:
 };
 
 CounterMap2::CounterMap2( int n ) : N2( n ), cxt( 0 ), ht2( N2 ) {
-  for( int i = 0; i < 8; ++i )
-    cp[i] = 0;
+  for( auto &i: cp )
+    i = 0;
 }
 
 // Predict the next bit given the bits so far in ch()
@@ -1243,7 +1243,7 @@ public:
 class Model {
 public:
   virtual void model() = 0;
-  virtual ~Model() {}
+  virtual ~Model() = default;
 };
 
 //////////////////////////// defaultModel ////////////////////////////
@@ -1350,9 +1350,9 @@ inline void MatchModel::model() {
     U32 h = hash[0] >> ( 18 - MEM );
     if( ( hash[0] >> 28 ) == 0 )
       h = hash[1] >> ( 18 - MEM ); // 1/16 of 8-contexts are hashed to 32 bytes
-    for( int i = 0; i < M; ++i ) {
-      if( ( end[i] != 0U ) && ch( 1 ) == ch[end[i]] )
-        ++end[i];
+    for( unsigned int &i: end ) {
+      if( ( i != 0U ) && ch( 1 ) == ch[i] )
+        ++i;
     }
     for( int i = 0; i < M; ++i ) {
       if( end[i] == 0U ) { // Search for a matching context
@@ -1539,8 +1539,8 @@ class WordModel : public Model {
   U32 cxt[N]; // Hashes of last N words
 public:
   WordModel() : t0( 16 + MEM ), t1( 15 + MEM ), t2( 15 + MEM ) {
-    for( int i = 0; i < N; ++i )
-      cxt[i] = 0;
+    for( unsigned int &i: cxt )
+      i = 0;
   }
   void model() override {
     if( ch.bpos() == 0 ) {
@@ -1612,7 +1612,7 @@ class Predictor {
         n /= 2;
       }
     }
-    SSEContext() {}
+    SSEContext() = default;
   };
 
   SSEContext ( *sse )[SSE2 + 1]; // [SSE1][SSE2+1] context, mapped probability
@@ -1957,10 +1957,10 @@ int main( int argc, char **argv ) {
     }
 
     // Get file sizes
-    for( int i = 0; i < int( filename.size() ); ++i ) {
-      FILE *f = fopen( filename[i].c_str(), "rbe" );
+    for( auto &i: filename ) {
+      FILE *f = fopen( i.c_str(), "rbe" );
       if( f == nullptr ) {
-        printf( "File not found, skipping: %s\n", filename[i].c_str() );
+        printf( "File not found, skipping: %s\n", i.c_str() );
         filesize.push_back( -1 );
       } else {
         fseek( f, 0L, SEEK_END );

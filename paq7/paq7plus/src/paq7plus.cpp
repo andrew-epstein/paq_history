@@ -1353,8 +1353,8 @@ void picModel( Mixer &m ) {
   static StateMap sm[N];
 
   // update the model
-  for( int i = 0; i < N; ++i )
-    t[cxt[i]] = nex01( t[cxt[i]], y );
+  for( int i: cxt )
+    t[i] = nex01( t[i], y );
 
   // update the contexts (pixels surrounding the predicted one)
   r0 += r0 + y;
@@ -2232,7 +2232,7 @@ public:
   void upd();
 };
 
-Predictor::Predictor() {}
+Predictor::Predictor() = default;
 
 void Predictor::upd() {
   static APM a1( 256 );
@@ -2384,9 +2384,10 @@ inline int Encoder::input_bit( void ) {
 }
 
 // Constructor
-Encoder::Encoder() {}
+Encoder::Encoder() = default;
 
-Encoder::~Encoder(){};
+Encoder::~Encoder() = default;
+;
 
 void Encoder::start( Mode m, FILE *f ) {
   mode = m;
@@ -2529,7 +2530,8 @@ class Transformer {
   Encoder e;
 
 public:
-  Transformer(){};
+  Transformer() = default;
+  ;
   void start( Mode mode, FILE *f ) {
     e.start( mode, f );
   };

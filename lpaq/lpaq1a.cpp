@@ -630,7 +630,7 @@ public:
   void update( int y );
 };
 
-Predictor::Predictor() {}
+Predictor::Predictor() = default;
 
 void Predictor::update( int y ) {
   static U8 t0[0x10000];                       // order 1 cxt -> state

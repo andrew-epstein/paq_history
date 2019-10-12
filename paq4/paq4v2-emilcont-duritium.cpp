@@ -282,7 +282,7 @@ class Counter2 {
   };
   static E table[150]; // State table
 public:
-  Counter2() {}
+  Counter2() = default;
   int get0() const {
     return table[state].n0;
   }
@@ -875,7 +875,7 @@ class Predictor {
         n /= 2;
       }
     }
-    SSEContext() {}
+    SSEContext() = default;
   };
 
   vector<vector<SSEContext>> sse; // [SSE1][SSE2+1] context, mapped prob
@@ -1223,10 +1223,10 @@ int main( int argc, char **argv ) {
     }
 
     // Get file sizes
-    for( int i = 0; i < int( filename.size() ); ++i ) {
-      FILE *f = fopen( filename[i].c_str(), "rbe" );
+    for( auto &i: filename ) {
+      FILE *f = fopen( i.c_str(), "rbe" );
       if( f == nullptr ) {
-        printf( "File not found, skipping: %s\n", filename[i].c_str() );
+        printf( "File not found, skipping: %s\n", i.c_str() );
         filesize.push_back( -1 );
       } else {
         fseek( f, 0L, SEEK_END );

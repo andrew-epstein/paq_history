@@ -1780,8 +1780,8 @@ void picModel( Mixer &m ) {
   static StateMap sm[N];
 
   // update the model
-  for( int i = 0; i < N; ++i )
-    t[cxt[i]] = nex( t[cxt[i]], y );
+  for( int i: cxt )
+    t[i] = nex( t[i], y );
 
   // update the contexts (pixels surrounding the predicted one)
   r0 += r0 + y;
@@ -2886,7 +2886,7 @@ public:
   void update();
 };
 
-Predictor::Predictor() {}
+Predictor::Predictor() = default;
 
 void Predictor::update() {
   static APM a( 256 );

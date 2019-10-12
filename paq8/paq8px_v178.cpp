@@ -690,7 +690,8 @@ FILE *maketmpfile( void ) {
 
 class File {
 public:
-  virtual ~File(){};
+  virtual ~File() = default;
+  ;
   virtual bool open( const char *filename, bool must_succeed ) = 0;
   virtual void create( const char *filename ) = 0;
   virtual void close() = 0;
@@ -1721,7 +1722,8 @@ StateTable::StateTable() : ns( 1024 ) {
   typedef enum { SIMD_NONE, SIMD_SSE2, SIMD_AVX2 } SIMD;
   class Mixer {
   public:
-    virtual ~Mixer(){};
+    virtual ~Mixer() = default;
+    ;
     virtual void update() = 0;
     virtual void add( const int x ) = 0;
     virtual void set( const int cx, const int range, const int rate = DEFAULT_LEARNING_RATE ) = 0;
@@ -3408,7 +3410,8 @@ states to provide additional states that are then mapped to predictions.
   public:
     enum Flags { Verb = ( 1 << 0 ), Noun = ( 1 << 1 ) };
     enum Ids { Unknown, English, French, German, Count };
-    virtual ~Language(){};
+    virtual ~Language() = default;
+    ;
     virtual bool IsAbbreviation( Word *W ) = 0;
   };
 
@@ -3493,7 +3496,8 @@ states to provide additional states that are then mapped to predictions.
     }
 
   public:
-    virtual ~Stemmer(){};
+    virtual ~Stemmer() = default;
+    ;
     virtual bool IsVowel( const char c ) = 0;
     virtual bool Stem( Word *W ) = 0;
   };
@@ -3644,9 +3648,9 @@ states to provide additional states that are then mapped to predictions.
       return CharInArray( c, LiEndings, NUM_LI_ENDINGS );
     }
     U32 GetRegion1( const Word *W ) {
-      for( int i = 0; i < NUM_EXCEPTION_REGION1; i++ ) {
-        if( W->StartsWith( ExceptionsRegion1[i] ) )
-          return U32( strlen( ExceptionsRegion1[i] ) );
+      for( auto &i: ExceptionsRegion1 ) {
+        if( W->StartsWith( i ) )
+          return U32( strlen( i ) );
       }
       return GetRegion( W, 0 );
     }
@@ -3788,9 +3792,9 @@ states to provide additional states that are then mapped to predictions.
     //Search for the longest among the suffixes, 's' or 's or ' and remove if found.
     //Examples: Children's toys / Vice presidents' duties
     bool Step0( Word *W ) {
-      for( int i = 0; i < NUM_SUFFIXES_STEP0; i++ ) {
-        if( W->EndsWith( SuffixesStep0[i] ) ) {
-          W->End -= U8( strlen( SuffixesStep0[i] ) );
+      for( auto &i: SuffixesStep0 ) {
+        if( W->EndsWith( i ) ) {
+          W->End -= U8( strlen( i ) );
           W->Type |= English::Plural;
           return true;
         }
@@ -4553,8 +4557,8 @@ states to provide additional states that are then mapped to predictions.
       return res;
     }
     bool Step5( Word *W ) {
-      for( int i = 0; i < NUM_SUFFIXES_STEP5; i++ ) {
-        if( W->EndsWith( SuffixesStep5[i] ) ) {
+      for( auto &i: SuffixesStep5 ) {
+        if( W->EndsWith( i ) ) {
           W->End--;
           return true;
         }
@@ -4703,9 +4707,9 @@ states to provide additional states that are then mapped to predictions.
       return false;
     }
     bool Step2( Word *W, const U32 R1 ) {
-      for( int i = 0; i < NUM_SUFFIXES_STEP2; i++ ) {
-        if( W->EndsWith( SuffixesStep2[i] ) && SuffixInRn( W, R1, SuffixesStep2[i] ) ) {
-          W->End -= U8( strlen( SuffixesStep2[i] ) );
+      for( auto &i: SuffixesStep2 ) {
+        if( W->EndsWith( i ) && SuffixInRn( W, R1, i ) ) {
+          W->End -= U8( strlen( i ) );
           return true;
         }
       }
@@ -5721,8 +5725,8 @@ states to provide additional states that are then mapped to predictions.
           length = index = 0;
       }
       // update position information in hashtable
-      for( U32 i = 0; i < NumHashes; i++ )
-        Table[hashes[i]] = pos;
+      for( unsigned int hashe: hashes )
+        Table[hashe] = pos;
       expectedByte = buffer[index];
       iCtx += y, iCtx = ( buffer( 1 ) << 8 ) | expectedByte;
       SCM[0].set( expectedByte );
@@ -5779,8 +5783,8 @@ states to provide additional states that are then mapped to predictions.
       }
 
       if( !( canBypass && Bypass ) ) {
-        for( U32 i = 0; i < NumCtxs; i++ )
-          ctx[i] = 0;
+        for( unsigned int &i: ctx )
+          i = 0;
         if( length > 0 ) {
           if( length <= 16 )
             ctx[0] = ( length - 1 ) * 2 + expectedBit; // 0..31
@@ -5887,8 +5891,8 @@ states to provide additional states that are then mapped to predictions.
         }
       }
       // update position information in hashtable
-      for( U32 i = 0; i < NumHashes; i++ )
-        Table[hashes[i]] = pos;
+      for( unsigned int hashe: hashes )
+        Table[hashe] = pos;
 
       expectedByte = buffer[index];
       if( valid )
@@ -5948,8 +5952,8 @@ states to provide additional states that are then mapped to predictions.
           m.add( 0 );
           m.add( 0 );
         }
-        for( int i = 0; i < 4; i++ )
-          Maps[i].mix( m, 1, 2 );
+        for( auto &Map: Maps )
+          Map.mix( m, 1, 2 );
       } else
         for( int i = 0; i < 11; i++, m.add( 0 ) )
           ;
@@ -6565,10 +6569,10 @@ states to provide additional states that are then mapped to predictions.
     cn.mix( m );
     co.mix( m );
     cp.mix( m );
-    for( int i = 0; i < nMaps; i++ )
-      Maps[i].mix( m, 1, 3 );
-    for( int i = 0; i < 3; i++ )
-      iMap[i].mix( m, 1, 3, 255 );
+    for( auto &Map: Maps )
+      Map.mix( m, 1, 3 );
+    for( auto &i: iMap )
+      i.mix( m, 1, 3, 255 );
     sMap[0].mix( m, 6, 1, 3 );
     sMap[1].mix( m, 6, 1, 3 );
     sMap[2].mix( m, 5, 1, 2 );
@@ -6835,8 +6839,8 @@ states to provide additional states that are then mapped to predictions.
         columns[0] = max( 1, w / max( 1, ilog2( w ) * 3 ) );
         columns[1] = max( 1, columns[0] / max( 1, ilog2( columns[0] ) ) );
         if( lastPos > 0 && lastWasPNG != isPNG ) {
-          for( int i = 0; i < nMaps; i++ )
-            Map[i].Reset();
+          for( auto &i: Map )
+            i.Reset();
         }
         lastWasPNG = isPNG;
         buffer.Fill( 0x7F );
@@ -7287,10 +7291,10 @@ states to provide additional states that are then mapped to predictions.
     // Predict next bit
     if( x > 0 || ( isPNG == 0 ) ) {
       cm.mix( m );
-      for( int i = 0; i < nMaps; i++ )
-        Map[i].mix( m, 1, 3 );
-      for( int i = 0; i < nSCMaps; i++ )
-        SCMap[i].mix( m, 9, 1, 3 );
+      for( auto &i: Map )
+        i.mix( m, 1, 3 );
+      for( auto &i: SCMap )
+        i.mix( m, 9, 1, 3 );
       static int col = 0;
       if( ++col >= stride * 8 )
         col = 0;
@@ -7424,8 +7428,8 @@ states to provide additional states that are then mapped to predictions.
         columns[1] = max( 1, columns[0] / max( 1, ilog2( columns[0] ) ) );
         if( gray != 0 ) {
           if( ( lastPos != 0 ) && lastWasPNG != isPNG ) {
-            for( int i = 0; i < nMaps; i++ )
-              Map[i].Reset();
+            for( auto &i: Map )
+              i.Reset();
           }
           lastWasPNG = isPNG;
         }
@@ -7630,8 +7634,8 @@ states to provide additional states that are then mapped to predictions.
           cm.set( hash( ++i, px ) );
           cm.set( hash( ++i, N, px, column[1] ) );
           cm.set( hash( ++i, W, px, column[1] ) );
-          for( int j = 0; j < nPltMaps; j++ )
-            cm.set( hash( ++i, iCtx[j](), px ) );
+          for( auto &j: iCtx )
+            cm.set( hash( ++i, j(), px ) );
 
           ctx = min( 0x1F, ( x - isPNG ) / min( 0x20, columns[0] ) );
           res = W;
@@ -7787,16 +7791,16 @@ states to provide additional states that are then mapped to predictions.
     if( ( x != 0 ) || ( isPNG == 0 ) ) {
       cm.mix( m );
       if( gray != 0 ) {
-        for( int i = 0; i < nMaps; i++ )
-          Map[i].mix( m );
+        for( auto &i: Map )
+          i.mix( m );
       } else {
         for( int i = 0; i < nPltMaps; i++ ) {
           pltMap[i].set( ( bpos << 8 ) | iCtx[i]() );
           pltMap[i].mix( m );
         }
       }
-      for( int i = 0; i < 5; i++ )
-        sceneMap[i].mix( m, static_cast<int>( prevFramePos > 0 && prevFrameWidth == w ), 4, 255 );
+      for( auto &i: sceneMap )
+        i.mix( m, static_cast<int>( prevFramePos > 0 && prevFrameWidth == w ), 4, 255 );
 
       col = ( col + 1 ) & 7;
       m.set( 5 + ctx, 2048 + 5 );
@@ -7855,8 +7859,8 @@ states to provide additional states that are then mapped to predictions.
       for( int i = 0; i < S; i++ )
         cp[i] = t[263 * i]; //set the initial context to an arbitrary slot in the hashtable
     }
-    for( int i = 0; i < S; i++ )
-      *cp[i] = nex( *cp[i], y ); //update hashtable item priorities using predicted counts
+    for( auto &i: cp )
+      *i = nex( *i, y ); //update hashtable item priorities using predicted counts
 
     if( bpos == 0 || bpos == 4 ) {
       WW = W;
@@ -7916,8 +7920,8 @@ states to provide additional states that are then mapped to predictions.
     } else {
       px += px + y;
       int j = ( y + 1 ) << ( bpos & 3 );
-      for( int i = 0; i < S; i++ )
-        cp[i] += j;
+      for( auto &i: cp )
+        i += j;
     }
 
     // predict
@@ -10286,15 +10290,15 @@ void dump(const char* msg, int p) {
     U64 BrkCtx; // hash
     bool Valid;
     inline bool IsInvalidX64Op( const U8 Op ) {
-      for( int i = 0; i < 19; i++ ) {
-        if( Op == InvalidX64Ops[i] )
+      for( unsigned char InvalidX64Op: InvalidX64Ops ) {
+        if( Op == InvalidX64Op )
           return true;
       }
       return false;
     }
     inline bool IsValidX64Prefix( const U8 Prefix ) {
-      for( int i = 0; i < 8; i++ ) {
-        if( Prefix == X64Prefixes[i] )
+      for( unsigned char X64Prefixe: X64Prefixes ) {
+        if( Prefix == X64Prefixe )
           return true;
       }
       return ( ( Prefix >= 0x40 && Prefix <= 0x4F ) || ( Prefix >= 0x64 && Prefix <= 0x67 ) );
@@ -12972,8 +12976,8 @@ void dump(const char* msg, int p) {
             in->setpos( start + s3mi - 31 + i1 * 16 );
             i1 = in->getchar();
             if( i1 == 1 ) { // type: sample
-              for( int k = 0; k < 31; k++ )
-                b[k] = in->getchar();
+              for( int &k: b )
+                k = in->getchar();
               int len = b[15] + ( b[16] << 8 );
               int ofs = b[13] + ( b[14] << 8 );
               if( b[30] > 1 )
@@ -13198,8 +13202,8 @@ void dump(const char* msg, int p) {
         int b[12];
         if( in->getchar() == 0 ) {
           for( int i = 0; i < dirsize; i++ ) {
-            for( int j = 0; j < 12; j++ )
-              b[j] = in->getchar();
+            for( int &j: b )
+              j = in->getchar();
             if( b[11] == EOF )
               break;
             int tag = b[0] + ( b[1] << 8 );
@@ -14842,9 +14846,9 @@ void dump(const char* msg, int p) {
     if( type == ZLIB )
       return decode_zlib( tmp, len, out, mode, diffFound );
 #endif //USE_ZLIB
-    else if( type == BASE64 )
+    if( type == BASE64 )
       return decode_base64( tmp, out, mode, diffFound );
-    else if( type == GIF )
+    if( type == GIF )
       return decode_gif( tmp, len, out, mode, diffFound );
     else if( type == RLE )
       return decode_rle( tmp, len, out, mode, diffFound );

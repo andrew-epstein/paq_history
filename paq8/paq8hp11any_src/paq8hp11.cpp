@@ -2789,7 +2789,7 @@ public:
   void update();
 };
 
-Predictor::Predictor() {}
+Predictor::Predictor() = default;
 
 void Predictor::update() {
   static APM a1( 256 );
@@ -3089,7 +3089,7 @@ protected:
 
 public:
   Filter( Encoder *e ) : en( e ), reads( 0 ), tmp( 0 ) {}
-  virtual ~Filter() {}
+  virtual ~Filter() = default;
   void decompress( FILE *f, int n );
   void compare( FILE *f, int n );
   void skip( int n );

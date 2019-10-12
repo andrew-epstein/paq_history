@@ -113,8 +113,8 @@ public:
 };
 
 Predictor::Predictor() : sm( 0x10000 ) {
-  for( int i = 0; i < 0x100; ++i )
-    state[i] = 0x66;
+  for( int &i: state )
+    i = 0x66;
 }
 
 //////////////////////////// Encoder ////////////////////////////

@@ -621,7 +621,7 @@ public:
   void update( int y );
 };
 
-Predictor::Predictor() {}
+Predictor::Predictor() = default;
 
 bool use_order1, use_order2, use_order3, use_order4, use_order5, use_word, use_match, use_apm;
 

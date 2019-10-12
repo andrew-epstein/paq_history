@@ -32,8 +32,8 @@ public:
   int cxt{1}; // Context: last 0-7 bits with a leading 1
 
   Predictor() {
-    for( int i = 0; i < 256; i++ )
-      p[i] = 1 << ( PSCALE - 1 );
+    for( int &i: p )
+      i = 1 << ( PSCALE - 1 );
   }
 
   // Assume a stationary order 0 stream of 8-bit symbols

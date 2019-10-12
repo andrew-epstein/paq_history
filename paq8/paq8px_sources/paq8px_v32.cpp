@@ -3028,8 +3028,8 @@ inline int X1( int i ) {
     return ( buf( i ) ^ 128 ) - 128;
   if( wmode == 7 )
     return t2( i << 2 );
-  else
-    return t2( i << 1 );
+
+  return t2( i << 1 );
   ;
 }
 
@@ -3046,8 +3046,8 @@ inline int X2( int i ) {
     return ( buf( i + S ) ^ 128 ) - 128;
   if( wmode == 7 )
     return t2( ( i << 2 ) - 2 );
-  else
-    return t2( ( i + S ) << 1 );
+
+  return t2( ( i + S ) << 1 );
 }
 
 void wavModel( Mixer &m, int info ) {
@@ -3661,7 +3661,7 @@ public:
   void update();
 };
 
-Predictor::Predictor() {}
+Predictor::Predictor() = default;
 
 void Predictor::update() {
   static APM1 a( 256 );
@@ -4056,8 +4056,8 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
           fseek( in, start + s3mi - 31 + i1 * 16, SEEK_SET );
           i1 = getc( in );
           if( i1 == 1 ) { // type: sample
-            for( int k = 0; k < 31; k++ )
-              b[k] = fgetc( in );
+            for( int &k: b )
+              k = fgetc( in );
             int len = b[15] + ( b[16] << 8 );
             int ofs = b[13] + ( b[14] << 8 );
             if( b[30] > 1 )
@@ -4191,8 +4191,8 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
       int b[12];
       if( getc( in ) == 0 ) {
         for( int i = 0; i < dirsize; i++ ) {
-          for( int j = 0; j < 12; j++ )
-            b[j] = getc( in );
+          for( int &j: b )
+            j = getc( in );
           if( b[11] == EOF )
             break;
           int tag = b[0] + ( b[1] << 8 );

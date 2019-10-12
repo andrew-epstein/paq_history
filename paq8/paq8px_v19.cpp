@@ -3622,7 +3622,7 @@ public:
   void update();
 };
 
-Predictor::Predictor() {}
+Predictor::Predictor() = default;
 
 void Predictor::update() {
   static APM1 a( 256 );
@@ -4084,8 +4084,8 @@ Filetype detect( FILE *in, int n, Filetype type, int &info ) {
       int b[12];
       if( getc( in ) == 0 ) {
         for( int i = 0; i < dirsize; i++ ) {
-          for( int j = 0; j < 12; j++ )
-            b[j] = getc( in );
+          for( int &j: b )
+            j = getc( in );
           if( b[11] == EOF )
             break;
           int tag = b[0] + ( b[1] << 8 );

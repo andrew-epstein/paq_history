@@ -652,7 +652,7 @@ class Counter {
   static E table[];
 
 public:
-  Counter() {}
+  Counter() = default;
   int get0() {
     return table[state].n0;
   }
@@ -706,7 +706,7 @@ class Ch {
   U32 lpos[4][256];
 
 public:
-  Ch() {}
+  Ch() = default;
   void init() {
     lon = 1;
     po = bp = 0;
@@ -1060,8 +1060,8 @@ class CounterMap2 {
 
 public:
   CounterMap2( int n ) : ht2( n + MEM - 10 ) {
-    for( int i = 0; i < 8; i++ )
-      cp[i] = 0;
+    for( auto &i: cp )
+      i = 0;
     cxt = 0;
   }
   // After 8 predictions, update the models with the last input char, ch(1),
@@ -1213,9 +1213,9 @@ public:
       U32 h = hash[0] >> 11;
       if( ( h >> 17 ) == 0U )
         h = hash[1] >> 11;
-      for( int i = 0; i < 4; i++ )
-        if( ( end[i] != 0U ) && ch( 1 ) == ch[end[i]] )
-          ++end[i];
+      for( unsigned int &i: end )
+        if( ( i != 0U ) && ch( 1 ) == ch[i] )
+          ++i;
       for( int i = 0; i < 4; i++ ) {
         if( end[i] == 0U ) {
           int j;

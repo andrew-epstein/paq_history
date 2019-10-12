@@ -715,7 +715,7 @@ class Counter {
   static E table[];
 
 public:
-  Counter() {}
+  Counter() = default;
   int get0() {
     return table[state].n0;
   }
@@ -764,7 +764,7 @@ class Ch {
   U32 lpos[4][256];
 
 public:
-  Ch() {}
+  Ch() = default;
 
   void init() {
     lon = 1;
@@ -1129,9 +1129,9 @@ public:
       mb.init();
     }
 #endif
-    for( int i = 0; i < 8; i++ )
+    for( auto &i: mxwt )
       for( int j = 0; j < 64; j++ )
-        mxwt[i][j] = 4;
+        i[j] = 4;
   }
   void wri( int n0, int n1 ) {
     n++;
@@ -1344,8 +1344,8 @@ public:
     if( fnu )
       ht2.init();
 #endif
-    for( int i = 0; i < 8; i++ )
-      cp[i] = 0;
+    for( auto &i: cp )
+      i = 0;
     cxt = 0;
   }
 
@@ -2525,9 +2525,10 @@ inline int Encoder::input_bit( void ) {
 }
 
 // Constructor
-Encoder::Encoder() {}
+Encoder::Encoder() = default;
 
-Encoder::~Encoder(){};
+Encoder::~Encoder() = default;
+;
 
 #ifdef CALGARY_CORPUS_OPTIM
 void Encoder::restart() {
@@ -2681,7 +2682,8 @@ class Transformer {
   Encoder e;
 
 public:
-  Transformer(){};
+  Transformer() = default;
+  ;
   void start( Mode mode, FILE *f ) {
     e.start( mode, f );
   };

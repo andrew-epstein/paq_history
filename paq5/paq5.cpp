@@ -1263,8 +1263,8 @@ public:
 };
 
 CounterMap2::CounterMap2( int n ) : N2( n ), cxt( 0 ), ht2( N2 ) {
-  for( int i = 0; i < 8; ++i )
-    cp[i] = nullptr;
+  for( auto &i: cp )
+    i = nullptr;
 }
 
 // Predict the next bit given the bits so far in ch()
@@ -1432,9 +1432,9 @@ inline void MatchModel::model() {
     U32 h = hash[0] >> ( 18 - MEM );
     if( ( hash[0] >> 28 ) == 0 )
       h = hash[1] >> ( 18 - MEM ); // 1/16 of 8-contexts are hashed to 32 bytes
-    for( int i = 0; i < M; ++i ) {
-      if( ( end[i] != 0U ) && ch( 1 ) == ch[end[i]] )
-        ++end[i];
+    for( unsigned int &i: end ) {
+      if( ( i != 0U ) && ch( 1 ) == ch[i] )
+        ++i;
     }
     for( int i = 0; i < M; ++i ) {
       if( end[i] == 0U ) { // Search for a matching context
@@ -1601,8 +1601,8 @@ class WordModel : public Model {
   U32 cxt[N]{}; // Hashes of last N words
 public:
   WordModel() : t0( 16 + MEM ), t1( 15 + MEM ), t2( 15 + MEM ) {
-    for( int i = 0; i < N; ++i )
-      cxt[i] = 0;
+    for( unsigned int &i: cxt )
+      i = 0;
   }
   void model() override {
     if( ch.bpos() == 0 ) {
@@ -2021,10 +2021,10 @@ int main( int argc, char **argv ) {
     }
 
     // Get file sizes
-    for( int i = 0; i < int( filename.size() ); ++i ) {
-      FILE *f = fopen( filename[i].c_str(), "rbe" );
+    for( auto &i: filename ) {
+      FILE *f = fopen( i.c_str(), "rbe" );
       if( f == nullptr ) {
-        printf( "File not found, skipping: %s\n", filename[i].c_str() );
+        printf( "File not found, skipping: %s\n", i.c_str() );
         filesize.push_back( -1 );
       } else {
         fseek( f, 0L, SEEK_END );

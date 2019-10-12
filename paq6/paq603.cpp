@@ -706,7 +706,7 @@ class Counter {
   };
   static E table[]; // State table
 public:
-  Counter() {}
+  Counter() = default;
   int get0() const {
     return table[state].n0;
   }
@@ -1100,7 +1100,7 @@ private:
   struct HashElement {
     U8 checksum{0}; // Checksum of context, used to detect collisions
     T c[15];        // 1-byte counters in minor context c
-    HashElement() {}
+    HashElement() = default;
   };
   HashElement *table; // [2^(N-4)]
   U32 cxt;            // major context
@@ -1451,8 +1451,8 @@ public:
 };
 
 CounterMap2::CounterMap2( int n ) : N2( n ), cxt( 0 ), ht2( N2 ) {
-  for( int i = 0; i < 8; ++i )
-    cp[i] = 0;
+  for( auto &i: cp )
+    i = 0;
 }
 
 // Predict the next bit given the bits so far in ch()
@@ -1517,7 +1517,7 @@ public:
 class Model {
 public:
   virtual void model() = 0;
-  virtual ~Model() {}
+  virtual ~Model() = default;
 };
 
 //////////////////////////// defaultModel ////////////////////////////
@@ -1925,7 +1925,7 @@ class ExeModel {
   struct S {
     U32 a{0}; // absolute address, indexed on 8 low order bytes
     U8 n{0};  // how many times?
-    S() {}
+    S() = default;
   };
   S t[256]; // E8 history indexed on low order byte
 public:
@@ -2059,7 +2059,7 @@ class Predictor {
         n /= 2;
       }
     }
-    SSEContext() {}
+    SSEContext() = default;
   };
 
   SSEContext ( *sse )[SSE2 + 1]{0}; // [SSE1][SSE2+1] context, mapped probability

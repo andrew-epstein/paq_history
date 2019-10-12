@@ -349,7 +349,7 @@ class Model {
 public:
   virtual void predict( int &n0, int &n1 ) const = 0;
   virtual void update( int y ) = 0;
-  virtual ~Model() {}
+  virtual ~Model() = default;
 };
 
 /* Hash table element base class.  It contains an 8-bit checksum to
@@ -778,9 +778,9 @@ void NonstationaryPPM::predict( int &n0, int &n1 ) const {
 // Add bit y (0 or 1) to model
 void NonstationaryPPM::update( int y ) {
   // Count y by context
-  for( int i = 0; i < N; ++i )
-    if( cp[i] != nullptr )
-      cp[i]->add( y );
+  for( auto &i: cp )
+    if( i != nullptr )
+      i->add( y );
 
   // Store bit y
   cn += cn + y;
@@ -932,7 +932,7 @@ as were in the table. */
 class CyclicModel : public Model {
   struct E {
     int p{0}, n{0}, r{0}; // Position of last match, number of matches, interval
-    E() {}
+    E() = default;
   };
   vector<E> cpos;           // Table of repeat patterns by char
   int pos{0};               // Current bit position in input
@@ -1339,10 +1339,10 @@ int main( int argc, char **argv ) {
     }
 
     // Get file sizes
-    for( int i = 0; i < int( filename.size() ); ++i ) {
-      FILE *f = fopen( filename[i].c_str(), "rbe" );
+    for( auto &i: filename ) {
+      FILE *f = fopen( i.c_str(), "rbe" );
       if( f == nullptr ) {
-        printf( "File not found, skipping: %s\n", filename[i].c_str() );
+        printf( "File not found, skipping: %s\n", i.c_str() );
         filesize.push_back( -1 );
       } else {
         fseek( f, 0L, SEEK_END );

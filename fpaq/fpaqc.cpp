@@ -60,8 +60,8 @@ private:
 
 public:
   Predictor() {
-    for( int i = 0; i < 512; i++ )
-      t[i] = 32768;
+    for( unsigned int &i: t )
+      i = 32768;
   }
 
   // Assume a stationary order 0 stream of 9-bit symbols
