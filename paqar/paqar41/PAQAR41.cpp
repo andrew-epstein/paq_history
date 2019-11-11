@@ -790,7 +790,7 @@ public:
     U8 *p = ( U8 * ) calloc( ( 17 << N ) + 64, 1 );
     if( !p )
       handler();
-    p += 64 - ( ( int ) p & 63 );
+    p += 64 - ( ( int64_t ) p & 63 );
     table = ( HashElement * ) p;
     Tcxt = &( table[0].c[-1] );
   }
@@ -881,7 +881,7 @@ public:
       for( int j = 0; j < 65; j++ )
         wt[i][j] = ( j > 3 && j < 12 ) ? 8 : 16;
     int oldp = 33;
-    for( i = 4095; i >= 0; i-- ) {
+    for( int i = 4095; i >= 0; i-- ) {
       int p = ( ssemap( i ) + 16 ) / 32;
       int m = 1 + 4096 * 4096 / ( ( i + 1 ) * ( 4096 - i ) );
       if( m > 254 )
@@ -1322,7 +1322,7 @@ public:
       for( int i = 0; i < 4; i++ )
         if( end[i] && ch( 1 ) == ch[end[i]] )
           ++end[i];
-      for( i = 0; i < 4; i++ ) {
+      for( int i = 0; i < 4; i++ ) {
         if( !end[i] ) {
           int j;
           for( j = 0; j < 4; j++ )
@@ -2345,7 +2345,7 @@ int main( int argc, char **argv ) {
 
             if( ( st0 = ( char * ) malloc( CONSTA + 2 * flen + 256 ) ) == NULL )
               handler();
-            st = st0 + 256 - ( ( int ) st0 & 255 ); // 256-byte-alignment
+            st = st0 + 256 - ( ( int64_t ) st0 & 255 ); // 256-byte-alignment
             flen = fread( st + CONSTA - 32768, 1, flen, f );
             fclose( f );
             f = fopen( filename[i].c_str(), "wb" );
@@ -2438,7 +2438,7 @@ int main( int argc, char **argv ) {
 
           if( ( st0 = ( char * ) malloc( CONSTA + 2 * flen + 256 ) ) == NULL )
             handler();
-          st = st0 + 256 - ( ( int ) st0 & 255 ); // 256-byte-alignment
+          st = st0 + 256 - ( ( int64_t ) st0 & 255 ); // 256-byte-alignment
           flen = fread( st + CONSTA - 32768, 1, flen, f );
 
           if( flen )

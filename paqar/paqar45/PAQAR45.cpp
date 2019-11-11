@@ -843,7 +843,7 @@ public:
     if( !alc )
       handler();
 
-    table = ( HashElement * ) ( alc + 64 - ( ( int ) alc & 63 ) );
+    table = ( HashElement * ) ( alc + 64 - ( ( int64_t ) alc & 63 ) );
     Tcxt = &( table[0].c[-1] );
   }
 
@@ -986,7 +986,7 @@ public:
       for( int j = 0; j < 66; j++ )
         wt[i][j] = 12;
     int oldp = 33;
-    for( i = 4095; i >= 0; i-- ) {
+    for( int i = 4095; i >= 0; i-- ) {
       int p = ( ssemap( i ) + 16 ) / 32;
       int m = 1 + 4096 * 4096 / ( ( i + 1 ) * ( 4096 - i ) );
       if( m > 254 )
@@ -1585,7 +1585,7 @@ public:
       for( int i = 0; i < 4; i++ )
         if( end[i] && ch( 1 ) == ch[end[i]] )
           ++end[i];
-      for( i = 0; i < 4; i++ ) {
+      for( int i = 0; i < 4; i++ ) {
         if( !end[i] ) {
           int j;
           for( j = 0; j < 4; j++ )
@@ -2730,7 +2730,7 @@ int exe_preprocess( FILE *f, FILE *fw, int type ) // 3=compress, 4=decompress
 
   if( ( st0 = ( char * ) malloc( CONSTA + 2 * flen + 256 ) ) == NULL )
     handler();
-  st = st0 + 256 - ( ( int ) st0 & 255 ); // 256-byte-alignment
+  st = st0 + 256 - ( ( int64_t ) st0 & 255 ); // 256-byte-alignment
   flen = fread( st + CONSTA - 32768, 1, flen, f );
 
   if( flen )
