@@ -55,7 +55,7 @@ void alloc( T *&p, int n ) {
 
 class Predictor {
 private:
-  int cxt{1};          // Context: last 0-8 bits with a leading 1
+  int cxt{ 1 };        // Context: last 0-8 bits with a leading 1
   unsigned int t[512]; // Probability of 1
 
 public:
@@ -324,12 +324,7 @@ public:
 
 // Initialize
 Encoder::Encoder( Mode m, FILE *f ) :
-    mode( m ),
-    archive( f ),
-    x( 1 << N ),
-    n( static_cast<int>( mode == DECOMPRESS ) ),
-    ins( 0 ),
-    outs( 0 ) {
+    mode( m ), archive( f ), x( 1 << N ), n( static_cast<int>( mode == DECOMPRESS ) ), ins( 0 ), outs( 0 ) {
   if( mode == COMPRESS ) {
     alloc( ins, B );
     alloc( outs, BO );

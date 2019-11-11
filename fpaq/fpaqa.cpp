@@ -57,9 +57,9 @@ void alloc( T *&p, int n ) {
 
 // return p = 1/(1 + exp(-d)), d scaled by 8 bits, p scaled by 12 bits
 int squash( int d ) {
-  static const int t[33] = {1,    2,    3,    6,    10,   16,   27,   45,   73,   120,  194,
-                            310,  488,  747,  1101, 1546, 2047, 2549, 2994, 3348, 3607, 3785,
-                            3901, 3975, 4022, 4050, 4068, 4079, 4085, 4089, 4092, 4093, 4094};
+  static const int t[33] = { 1,    2,    3,    6,    10,   16,   27,   45,   73,   120,  194,
+                             310,  488,  747,  1101, 1546, 2047, 2549, 2994, 3348, 3607, 3785,
+                             3901, 3975, 4022, 4050, 4068, 4079, 4085, 4089, 4092, 4093, 4094 };
   if( d > 2047 )
     return 4095;
   if( d < -2047 )
@@ -103,7 +103,7 @@ Stretch::Stretch() {
 
 class Predictor {
 private:
-  int cxt{1};          // Context: last 0-8 bits with a leading 1
+  int cxt{ 1 };        // Context: last 0-8 bits with a leading 1
   unsigned int t[512]; // Probability of 1
 
 public:

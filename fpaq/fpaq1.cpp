@@ -23,7 +23,7 @@ using U64 = unsigned long long;
 */
 
 class Predictor {
-  int cxt{1};     // Context: last 0-8 bits with a leading 1
+  int cxt{ 1 };   // Context: last 0-8 bits with a leading 1
   int ct[512][2]; // 0 and 1 counts in context cxt
 public:
   Predictor() {
@@ -73,11 +73,7 @@ public:
 // Constructor
 Encoder::Encoder( Mode m, FILE *f ) :
 
-    mode( m ),
-    archive( f ),
-    low( 0 ),
-    high( 0xffffffffffffffffLL ),
-    x( 0 ) {
+    mode( m ), archive( f ), low( 0 ), high( 0xffffffffffffffffLL ), x( 0 ) {
   // In DECOMPRESS mode, initialize x to the first 6 bytes of the archive
   if( mode == DECOMPRESS ) {
     for( int i = 0; i < 8; ++i ) {

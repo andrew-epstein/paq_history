@@ -39,7 +39,7 @@ void alloc( T *&p, int n ) {
 class StateMap {
 protected:
   const int N;        // Number of contexts
-  int cxt{0};         // Context of last prediction
+  int cxt{ 0 };       // Context of last prediction
   U32 *t;             // cxt -> prediction in high 24 bits, count in low 8 bits
   static int dt[256]; // reciprocal table: i -> 16K/(i+1.5)
 public:
@@ -66,7 +66,7 @@ public:
   }
 };
 
-int StateMap::dt[256] = {0};
+int StateMap::dt[256] = { 0 };
 
 // Initialize assuming low 8 bits of context is a bit history.
 StateMap::StateMap( int n ) : N( n ) {
@@ -91,7 +91,7 @@ StateMap::StateMap( int n ) : N( n ) {
 */
 
 class Predictor {
-  int cxt{0}; // Context: 0=not EOF, 1..255=last 0-7 bits with a leading 1
+  int cxt{ 0 }; // Context: 0=not EOF, 1..255=last 0-7 bits with a leading 1
   StateMap sm;
   int state[256];
 

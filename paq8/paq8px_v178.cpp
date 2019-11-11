@@ -171,7 +171,7 @@ static inline int64_t xgetbv( int ctr ) {
  : AVX512 //TODO
 */
 int simd_detect() {
-  int cpuid_result[4] = {0, 0, 0, 0};
+  int cpuid_result[4] = { 0, 0, 0, 0 };
   cpuid( cpuid_result, 0 ); // call cpuid function 0 ("Get vendor ID and highest basic calling parameter")
   if( cpuid_result[0] == 0 )
     return 0;               //cpuid is not supported
@@ -271,8 +271,8 @@ void quit( const char *const message = 0 ) {
 // Remark: only Array<T> reports its memory usage, we don't know about other types
 class ProgramChecker {
 private:
-  U64 memused{0};     // Bytes currently in use (all allocated-all freed)
-  U64 maxmem{0};      // Most bytes allocated ever
+  U64 memused{ 0 };   // Bytes currently in use (all allocated-all freed)
+  U64 maxmem{ 0 };    // Most bytes allocated ever
   clock_t start_time; // in ticks
 public:
   void alloc( U64 n ) {
@@ -1343,70 +1343,70 @@ inline U32 ilog2( U32 x ) {
 
 #if 1 // change to #if 0 to generate this table at run time (4% slower)
   static const U8 State_table[256][4] = {
-      {1, 2, 0, 0},      {3, 5, 1, 0},      {4, 6, 0, 1},      {7, 10, 2, 0},     // 0-3
-      {8, 12, 1, 1},     {9, 13, 1, 1},     {11, 14, 0, 2},    {15, 19, 3, 0},    // 4-7
-      {16, 23, 2, 1},    {17, 24, 2, 1},    {18, 25, 2, 1},    {20, 27, 1, 2},    // 8-11
-      {21, 28, 1, 2},    {22, 29, 1, 2},    {26, 30, 0, 3},    {31, 33, 4, 0},    // 12-15
-      {32, 35, 3, 1},    {32, 35, 3, 1},    {32, 35, 3, 1},    {32, 35, 3, 1},    // 16-19
-      {34, 37, 2, 2},    {34, 37, 2, 2},    {34, 37, 2, 2},    {34, 37, 2, 2},    // 20-23
-      {34, 37, 2, 2},    {34, 37, 2, 2},    {36, 39, 1, 3},    {36, 39, 1, 3},    // 24-27
-      {36, 39, 1, 3},    {36, 39, 1, 3},    {38, 40, 0, 4},    {41, 43, 5, 0},    // 28-31
-      {42, 45, 4, 1},    {42, 45, 4, 1},    {44, 47, 3, 2},    {44, 47, 3, 2},    // 32-35
-      {46, 49, 2, 3},    {46, 49, 2, 3},    {48, 51, 1, 4},    {48, 51, 1, 4},    // 36-39
-      {50, 52, 0, 5},    {53, 43, 6, 0},    {54, 57, 5, 1},    {54, 57, 5, 1},    // 40-43
-      {56, 59, 4, 2},    {56, 59, 4, 2},    {58, 61, 3, 3},    {58, 61, 3, 3},    // 44-47
-      {60, 63, 2, 4},    {60, 63, 2, 4},    {62, 65, 1, 5},    {62, 65, 1, 5},    // 48-51
-      {50, 66, 0, 6},    {67, 55, 7, 0},    {68, 57, 6, 1},    {68, 57, 6, 1},    // 52-55
-      {70, 73, 5, 2},    {70, 73, 5, 2},    {72, 75, 4, 3},    {72, 75, 4, 3},    // 56-59
-      {74, 77, 3, 4},    {74, 77, 3, 4},    {76, 79, 2, 5},    {76, 79, 2, 5},    // 60-63
-      {62, 81, 1, 6},    {62, 81, 1, 6},    {64, 82, 0, 7},    {83, 69, 8, 0},    // 64-67
-      {84, 71, 7, 1},    {84, 71, 7, 1},    {86, 73, 6, 2},    {86, 73, 6, 2},    // 68-71
-      {44, 59, 5, 3},    {44, 59, 5, 3},    {58, 61, 4, 4},    {58, 61, 4, 4},    // 72-75
-      {60, 49, 3, 5},    {60, 49, 3, 5},    {76, 89, 2, 6},    {76, 89, 2, 6},    // 76-79
-      {78, 91, 1, 7},    {78, 91, 1, 7},    {80, 92, 0, 8},    {93, 69, 9, 0},    // 80-83
-      {94, 87, 8, 1},    {94, 87, 8, 1},    {96, 45, 7, 2},    {96, 45, 7, 2},    // 84-87
-      {48, 99, 2, 7},    {48, 99, 2, 7},    {88, 101, 1, 8},   {88, 101, 1, 8},   // 88-91
-      {80, 102, 0, 9},   {103, 69, 10, 0},  {104, 87, 9, 1},   {104, 87, 9, 1},   // 92-95
-      {106, 57, 8, 2},   {106, 57, 8, 2},   {62, 109, 2, 8},   {62, 109, 2, 8},   // 96-99
-      {88, 111, 1, 9},   {88, 111, 1, 9},   {80, 112, 0, 10},  {113, 85, 11, 0},  // 100-103
-      {114, 87, 10, 1},  {114, 87, 10, 1},  {116, 57, 9, 2},   {116, 57, 9, 2},   // 104-107
-      {62, 119, 2, 9},   {62, 119, 2, 9},   {88, 121, 1, 10},  {88, 121, 1, 10},  // 108-111
-      {90, 122, 0, 11},  {123, 85, 12, 0},  {124, 97, 11, 1},  {124, 97, 11, 1},  // 112-115
-      {126, 57, 10, 2},  {126, 57, 10, 2},  {62, 129, 2, 10},  {62, 129, 2, 10},  // 116-119
-      {98, 131, 1, 11},  {98, 131, 1, 11},  {90, 132, 0, 12},  {133, 85, 13, 0},  // 120-123
-      {134, 97, 12, 1},  {134, 97, 12, 1},  {136, 57, 11, 2},  {136, 57, 11, 2},  // 124-127
-      {62, 139, 2, 11},  {62, 139, 2, 11},  {98, 141, 1, 12},  {98, 141, 1, 12},  // 128-131
-      {90, 142, 0, 13},  {143, 95, 14, 0},  {144, 97, 13, 1},  {144, 97, 13, 1},  // 132-135
-      {68, 57, 12, 2},   {68, 57, 12, 2},   {62, 81, 2, 12},   {62, 81, 2, 12},   // 136-139
-      {98, 147, 1, 13},  {98, 147, 1, 13},  {100, 148, 0, 14}, {149, 95, 15, 0},  // 140-143
-      {150, 107, 14, 1}, {150, 107, 14, 1}, {108, 151, 1, 14}, {108, 151, 1, 14}, // 144-147
-      {100, 152, 0, 15}, {153, 95, 16, 0},  {154, 107, 15, 1}, {108, 155, 1, 15}, // 148-151
-      {100, 156, 0, 16}, {157, 95, 17, 0},  {158, 107, 16, 1}, {108, 159, 1, 16}, // 152-155
-      {100, 160, 0, 17}, {161, 105, 18, 0}, {162, 107, 17, 1}, {108, 163, 1, 17}, // 156-159
-      {110, 164, 0, 18}, {165, 105, 19, 0}, {166, 117, 18, 1}, {118, 167, 1, 18}, // 160-163
-      {110, 168, 0, 19}, {169, 105, 20, 0}, {170, 117, 19, 1}, {118, 171, 1, 19}, // 164-167
-      {110, 172, 0, 20}, {173, 105, 21, 0}, {174, 117, 20, 1}, {118, 175, 1, 20}, // 168-171
-      {110, 176, 0, 21}, {177, 105, 22, 0}, {178, 117, 21, 1}, {118, 179, 1, 21}, // 172-175
-      {110, 180, 0, 22}, {181, 115, 23, 0}, {182, 117, 22, 1}, {118, 183, 1, 22}, // 176-179
-      {120, 184, 0, 23}, {185, 115, 24, 0}, {186, 127, 23, 1}, {128, 187, 1, 23}, // 180-183
-      {120, 188, 0, 24}, {189, 115, 25, 0}, {190, 127, 24, 1}, {128, 191, 1, 24}, // 184-187
-      {120, 192, 0, 25}, {193, 115, 26, 0}, {194, 127, 25, 1}, {128, 195, 1, 25}, // 188-191
-      {120, 196, 0, 26}, {197, 115, 27, 0}, {198, 127, 26, 1}, {128, 199, 1, 26}, // 192-195
-      {120, 200, 0, 27}, {201, 115, 28, 0}, {202, 127, 27, 1}, {128, 203, 1, 27}, // 196-199
-      {120, 204, 0, 28}, {205, 115, 29, 0}, {206, 127, 28, 1}, {128, 207, 1, 28}, // 200-203
-      {120, 208, 0, 29}, {209, 125, 30, 0}, {210, 127, 29, 1}, {128, 211, 1, 29}, // 204-207
-      {130, 212, 0, 30}, {213, 125, 31, 0}, {214, 137, 30, 1}, {138, 215, 1, 30}, // 208-211
-      {130, 216, 0, 31}, {217, 125, 32, 0}, {218, 137, 31, 1}, {138, 219, 1, 31}, // 212-215
-      {130, 220, 0, 32}, {221, 125, 33, 0}, {222, 137, 32, 1}, {138, 223, 1, 32}, // 216-219
-      {130, 224, 0, 33}, {225, 125, 34, 0}, {226, 137, 33, 1}, {138, 227, 1, 33}, // 220-223
-      {130, 228, 0, 34}, {229, 125, 35, 0}, {230, 137, 34, 1}, {138, 231, 1, 34}, // 224-227
-      {130, 232, 0, 35}, {233, 125, 36, 0}, {234, 137, 35, 1}, {138, 235, 1, 35}, // 228-231
-      {130, 236, 0, 36}, {237, 125, 37, 0}, {238, 137, 36, 1}, {138, 239, 1, 36}, // 232-235
-      {130, 240, 0, 37}, {241, 125, 38, 0}, {242, 137, 37, 1}, {138, 243, 1, 37}, // 236-239
-      {130, 244, 0, 38}, {245, 135, 39, 0}, {246, 137, 38, 1}, {138, 247, 1, 38}, // 240-243
-      {140, 248, 0, 39}, {249, 135, 40, 0}, {250, 69, 39, 1},  {80, 251, 1, 39},  // 244-247
-      {140, 252, 0, 40}, {249, 135, 41, 0}, {250, 69, 40, 1},  {80, 251, 1, 40},  // 248-251
-      {140, 252, 0, 41}};                                                         // 252, 253-255 are reserved
+      { 1, 2, 0, 0 },      { 3, 5, 1, 0 },      { 4, 6, 0, 1 },      { 7, 10, 2, 0 },     // 0-3
+      { 8, 12, 1, 1 },     { 9, 13, 1, 1 },     { 11, 14, 0, 2 },    { 15, 19, 3, 0 },    // 4-7
+      { 16, 23, 2, 1 },    { 17, 24, 2, 1 },    { 18, 25, 2, 1 },    { 20, 27, 1, 2 },    // 8-11
+      { 21, 28, 1, 2 },    { 22, 29, 1, 2 },    { 26, 30, 0, 3 },    { 31, 33, 4, 0 },    // 12-15
+      { 32, 35, 3, 1 },    { 32, 35, 3, 1 },    { 32, 35, 3, 1 },    { 32, 35, 3, 1 },    // 16-19
+      { 34, 37, 2, 2 },    { 34, 37, 2, 2 },    { 34, 37, 2, 2 },    { 34, 37, 2, 2 },    // 20-23
+      { 34, 37, 2, 2 },    { 34, 37, 2, 2 },    { 36, 39, 1, 3 },    { 36, 39, 1, 3 },    // 24-27
+      { 36, 39, 1, 3 },    { 36, 39, 1, 3 },    { 38, 40, 0, 4 },    { 41, 43, 5, 0 },    // 28-31
+      { 42, 45, 4, 1 },    { 42, 45, 4, 1 },    { 44, 47, 3, 2 },    { 44, 47, 3, 2 },    // 32-35
+      { 46, 49, 2, 3 },    { 46, 49, 2, 3 },    { 48, 51, 1, 4 },    { 48, 51, 1, 4 },    // 36-39
+      { 50, 52, 0, 5 },    { 53, 43, 6, 0 },    { 54, 57, 5, 1 },    { 54, 57, 5, 1 },    // 40-43
+      { 56, 59, 4, 2 },    { 56, 59, 4, 2 },    { 58, 61, 3, 3 },    { 58, 61, 3, 3 },    // 44-47
+      { 60, 63, 2, 4 },    { 60, 63, 2, 4 },    { 62, 65, 1, 5 },    { 62, 65, 1, 5 },    // 48-51
+      { 50, 66, 0, 6 },    { 67, 55, 7, 0 },    { 68, 57, 6, 1 },    { 68, 57, 6, 1 },    // 52-55
+      { 70, 73, 5, 2 },    { 70, 73, 5, 2 },    { 72, 75, 4, 3 },    { 72, 75, 4, 3 },    // 56-59
+      { 74, 77, 3, 4 },    { 74, 77, 3, 4 },    { 76, 79, 2, 5 },    { 76, 79, 2, 5 },    // 60-63
+      { 62, 81, 1, 6 },    { 62, 81, 1, 6 },    { 64, 82, 0, 7 },    { 83, 69, 8, 0 },    // 64-67
+      { 84, 71, 7, 1 },    { 84, 71, 7, 1 },    { 86, 73, 6, 2 },    { 86, 73, 6, 2 },    // 68-71
+      { 44, 59, 5, 3 },    { 44, 59, 5, 3 },    { 58, 61, 4, 4 },    { 58, 61, 4, 4 },    // 72-75
+      { 60, 49, 3, 5 },    { 60, 49, 3, 5 },    { 76, 89, 2, 6 },    { 76, 89, 2, 6 },    // 76-79
+      { 78, 91, 1, 7 },    { 78, 91, 1, 7 },    { 80, 92, 0, 8 },    { 93, 69, 9, 0 },    // 80-83
+      { 94, 87, 8, 1 },    { 94, 87, 8, 1 },    { 96, 45, 7, 2 },    { 96, 45, 7, 2 },    // 84-87
+      { 48, 99, 2, 7 },    { 48, 99, 2, 7 },    { 88, 101, 1, 8 },   { 88, 101, 1, 8 },   // 88-91
+      { 80, 102, 0, 9 },   { 103, 69, 10, 0 },  { 104, 87, 9, 1 },   { 104, 87, 9, 1 },   // 92-95
+      { 106, 57, 8, 2 },   { 106, 57, 8, 2 },   { 62, 109, 2, 8 },   { 62, 109, 2, 8 },   // 96-99
+      { 88, 111, 1, 9 },   { 88, 111, 1, 9 },   { 80, 112, 0, 10 },  { 113, 85, 11, 0 },  // 100-103
+      { 114, 87, 10, 1 },  { 114, 87, 10, 1 },  { 116, 57, 9, 2 },   { 116, 57, 9, 2 },   // 104-107
+      { 62, 119, 2, 9 },   { 62, 119, 2, 9 },   { 88, 121, 1, 10 },  { 88, 121, 1, 10 },  // 108-111
+      { 90, 122, 0, 11 },  { 123, 85, 12, 0 },  { 124, 97, 11, 1 },  { 124, 97, 11, 1 },  // 112-115
+      { 126, 57, 10, 2 },  { 126, 57, 10, 2 },  { 62, 129, 2, 10 },  { 62, 129, 2, 10 },  // 116-119
+      { 98, 131, 1, 11 },  { 98, 131, 1, 11 },  { 90, 132, 0, 12 },  { 133, 85, 13, 0 },  // 120-123
+      { 134, 97, 12, 1 },  { 134, 97, 12, 1 },  { 136, 57, 11, 2 },  { 136, 57, 11, 2 },  // 124-127
+      { 62, 139, 2, 11 },  { 62, 139, 2, 11 },  { 98, 141, 1, 12 },  { 98, 141, 1, 12 },  // 128-131
+      { 90, 142, 0, 13 },  { 143, 95, 14, 0 },  { 144, 97, 13, 1 },  { 144, 97, 13, 1 },  // 132-135
+      { 68, 57, 12, 2 },   { 68, 57, 12, 2 },   { 62, 81, 2, 12 },   { 62, 81, 2, 12 },   // 136-139
+      { 98, 147, 1, 13 },  { 98, 147, 1, 13 },  { 100, 148, 0, 14 }, { 149, 95, 15, 0 },  // 140-143
+      { 150, 107, 14, 1 }, { 150, 107, 14, 1 }, { 108, 151, 1, 14 }, { 108, 151, 1, 14 }, // 144-147
+      { 100, 152, 0, 15 }, { 153, 95, 16, 0 },  { 154, 107, 15, 1 }, { 108, 155, 1, 15 }, // 148-151
+      { 100, 156, 0, 16 }, { 157, 95, 17, 0 },  { 158, 107, 16, 1 }, { 108, 159, 1, 16 }, // 152-155
+      { 100, 160, 0, 17 }, { 161, 105, 18, 0 }, { 162, 107, 17, 1 }, { 108, 163, 1, 17 }, // 156-159
+      { 110, 164, 0, 18 }, { 165, 105, 19, 0 }, { 166, 117, 18, 1 }, { 118, 167, 1, 18 }, // 160-163
+      { 110, 168, 0, 19 }, { 169, 105, 20, 0 }, { 170, 117, 19, 1 }, { 118, 171, 1, 19 }, // 164-167
+      { 110, 172, 0, 20 }, { 173, 105, 21, 0 }, { 174, 117, 20, 1 }, { 118, 175, 1, 20 }, // 168-171
+      { 110, 176, 0, 21 }, { 177, 105, 22, 0 }, { 178, 117, 21, 1 }, { 118, 179, 1, 21 }, // 172-175
+      { 110, 180, 0, 22 }, { 181, 115, 23, 0 }, { 182, 117, 22, 1 }, { 118, 183, 1, 22 }, // 176-179
+      { 120, 184, 0, 23 }, { 185, 115, 24, 0 }, { 186, 127, 23, 1 }, { 128, 187, 1, 23 }, // 180-183
+      { 120, 188, 0, 24 }, { 189, 115, 25, 0 }, { 190, 127, 24, 1 }, { 128, 191, 1, 24 }, // 184-187
+      { 120, 192, 0, 25 }, { 193, 115, 26, 0 }, { 194, 127, 25, 1 }, { 128, 195, 1, 25 }, // 188-191
+      { 120, 196, 0, 26 }, { 197, 115, 27, 0 }, { 198, 127, 26, 1 }, { 128, 199, 1, 26 }, // 192-195
+      { 120, 200, 0, 27 }, { 201, 115, 28, 0 }, { 202, 127, 27, 1 }, { 128, 203, 1, 27 }, // 196-199
+      { 120, 204, 0, 28 }, { 205, 115, 29, 0 }, { 206, 127, 28, 1 }, { 128, 207, 1, 28 }, // 200-203
+      { 120, 208, 0, 29 }, { 209, 125, 30, 0 }, { 210, 127, 29, 1 }, { 128, 211, 1, 29 }, // 204-207
+      { 130, 212, 0, 30 }, { 213, 125, 31, 0 }, { 214, 137, 30, 1 }, { 138, 215, 1, 30 }, // 208-211
+      { 130, 216, 0, 31 }, { 217, 125, 32, 0 }, { 218, 137, 31, 1 }, { 138, 219, 1, 31 }, // 212-215
+      { 130, 220, 0, 32 }, { 221, 125, 33, 0 }, { 222, 137, 32, 1 }, { 138, 223, 1, 32 }, // 216-219
+      { 130, 224, 0, 33 }, { 225, 125, 34, 0 }, { 226, 137, 33, 1 }, { 138, 227, 1, 33 }, // 220-223
+      { 130, 228, 0, 34 }, { 229, 125, 35, 0 }, { 230, 137, 34, 1 }, { 138, 231, 1, 34 }, // 224-227
+      { 130, 232, 0, 35 }, { 233, 125, 36, 0 }, { 234, 137, 35, 1 }, { 138, 235, 1, 35 }, // 228-231
+      { 130, 236, 0, 36 }, { 237, 125, 37, 0 }, { 238, 137, 36, 1 }, { 138, 239, 1, 36 }, // 232-235
+      { 130, 240, 0, 37 }, { 241, 125, 38, 0 }, { 242, 137, 37, 1 }, { 138, 243, 1, 37 }, // 236-239
+      { 130, 244, 0, 38 }, { 245, 135, 39, 0 }, { 246, 137, 38, 1 }, { 138, 247, 1, 38 }, // 240-243
+      { 140, 248, 0, 39 }, { 249, 135, 40, 0 }, { 250, 69, 39, 1 },  { 80, 251, 1, 39 },  // 244-247
+      { 140, 252, 0, 40 }, { 249, 135, 41, 0 }, { 250, 69, 40, 1 },  { 80, 251, 1, 40 },  // 248-251
+      { 140, 252, 0, 41 } };                                                              // 252, 253-255 are reserved
 
 #  define nex( state, sel ) State_table[state][sel]
 
@@ -1430,7 +1430,7 @@ public:
   StateTable();
 } nex;
 
-const int StateTable::b[B] = {42, 41, 13, 6, 5}; // x -> max y, y -> max x
+const int StateTable::b[B] = { 42, 41, 13, 6, 5 }; // x -> max y, y -> max x
 U8 StateTable::t[N][N][2];
 
 int StateTable::num_states( int x, int y ) {
@@ -1555,9 +1555,9 @@ StateTable::StateTable() : ns( 1024 ) {
 
   // return p = 1/(1 + exp(-d)), d scaled by 8 bits, p scaled by 12 bits
   int squash( int d ) {
-    static const int t[33] = {1,    2,    3,    6,    10,   16,   27,   45,   73,   120,  194,
-                              310,  488,  747,  1101, 1546, 2047, 2549, 2994, 3348, 3607, 3785,
-                              3901, 3975, 4022, 4050, 4068, 4079, 4085, 4089, 4092, 4093, 4094};
+    static const int t[33] = { 1,    2,    3,    6,    10,   16,   27,   45,   73,   120,  194,
+                               310,  488,  747,  1101, 1546, 2047, 2549, 2994, 3348, 3607, 3785,
+                               3901, 3975, 4022, 4050, 4068, 4079, 4085, 4089, 4092, 4093, 4094 };
     if( d > 2047 )
       return 4095;
     if( d < -2047 )
@@ -1958,7 +1958,7 @@ StateTable::StateTable() : ns( 1024 ) {
   class StateMap {
   protected:
     const int N;  // Number of contexts
-    int cxt{0};   // Context of last prediction
+    int cxt{ 0 }; // Context of last prediction
     Array<U32> t; // cxt -> prediction in high 22 bits, count in low 10 bits
     inline void update( const int limit ) {
       assert( cxt >= 0 && cxt < N );
@@ -3418,7 +3418,7 @@ states to provide additional states that are then mapped to predictions.
   class English : public Language {
   private:
     static const int NUM_ABBREV = 6;
-    const char *Abbreviations[NUM_ABBREV] = {"mr", "mrs", "ms", "dr", "st", "jr"};
+    const char *Abbreviations[NUM_ABBREV] = { "mr", "mrs", "ms", "dr", "st", "jr" };
 
   public:
     enum Flags {
@@ -3454,7 +3454,7 @@ states to provide additional states that are then mapped to predictions.
   class French : public Language {
   private:
     static const int NUM_ABBREV = 2;
-    const char *Abbreviations[NUM_ABBREV] = {"m", "mm"};
+    const char *Abbreviations[NUM_ABBREV] = { "m", "mm" };
 
   public:
     enum Flags { Adjective = ( 1 << 2 ), Plural = ( 1 << 3 ) };
@@ -3466,7 +3466,7 @@ states to provide additional states that are then mapped to predictions.
   class German : public Language {
   private:
     static const int NUM_ABBREV = 3;
-    const char *Abbreviations[NUM_ABBREV] = {"fr", "hr", "hrn"};
+    const char *Abbreviations[NUM_ABBREV] = { "fr", "hr", "hrn" };
 
   public:
     enum Flags { Adjective = ( 1 << 2 ), Plural = ( 1 << 3 ), Female = ( 1 << 4 ) };
@@ -3516,125 +3516,126 @@ states to provide additional states that are then mapped to predictions.
   class EnglishStemmer : public Stemmer {
   private:
     static const int NUM_VOWELS = 6;
-    const char Vowels[NUM_VOWELS] = {'a', 'e', 'i', 'o', 'u', 'y'};
+    const char Vowels[NUM_VOWELS] = { 'a', 'e', 'i', 'o', 'u', 'y' };
     static const int NUM_DOUBLES = 9;
-    const char Doubles[NUM_DOUBLES] = {'b', 'd', 'f', 'g', 'm', 'n', 'p', 'r', 't'};
+    const char Doubles[NUM_DOUBLES] = { 'b', 'd', 'f', 'g', 'm', 'n', 'p', 'r', 't' };
     static const int NUM_LI_ENDINGS = 10;
-    const char LiEndings[NUM_LI_ENDINGS] = {'c', 'd', 'e', 'g', 'h', 'k', 'm', 'n', 'r', 't'};
+    const char LiEndings[NUM_LI_ENDINGS] = { 'c', 'd', 'e', 'g', 'h', 'k', 'm', 'n', 'r', 't' };
     static const int NUM_NON_SHORT_CONSONANTS = 3;
-    const char NonShortConsonants[NUM_NON_SHORT_CONSONANTS] = {'w', 'x', 'Y'};
+    const char NonShortConsonants[NUM_NON_SHORT_CONSONANTS] = { 'w', 'x', 'Y' };
     static const int NUM_MALE_WORDS = 9;
-    const char *MaleWords[NUM_MALE_WORDS] = {"he", "him", "his", "himself", "man", "men", "boy", "husband", "actor"};
+    const char *MaleWords[NUM_MALE_WORDS] = { "he", "him", "his", "himself", "man", "men", "boy", "husband", "actor" };
     static const int NUM_FEMALE_WORDS = 8;
-    const char *FemaleWords[NUM_FEMALE_WORDS] = {"she", "her", "herself", "woman", "women", "girl", "wife", "actress"};
+    const char *FemaleWords[NUM_FEMALE_WORDS] = { "she",   "her",  "herself", "woman",
+                                                  "women", "girl", "wife",    "actress" };
     static const int NUM_COMMON_WORDS = 12;
-    const char *CommonWords[NUM_COMMON_WORDS] = {"the",  "be",  "to",   "of",   "and",  "in",
-                                                 "that", "you", "have", "with", "from", "but"};
+    const char *CommonWords[NUM_COMMON_WORDS] = { "the",  "be",  "to",   "of",   "and",  "in",
+                                                  "that", "you", "have", "with", "from", "but" };
     static const int NUM_SUFFIXES_STEP0 = 3;
-    const char *SuffixesStep0[NUM_SUFFIXES_STEP0] = {"'s'", "'s", "'"};
+    const char *SuffixesStep0[NUM_SUFFIXES_STEP0] = { "'s'", "'s", "'" };
     static const int NUM_SUFFIXES_STEP1b = 6;
-    const char *SuffixesStep1b[NUM_SUFFIXES_STEP1b] = {"eedly", "eed", "ed", "edly", "ing", "ingly"};
+    const char *SuffixesStep1b[NUM_SUFFIXES_STEP1b] = { "eedly", "eed", "ed", "edly", "ing", "ingly" };
     const U32 TypesStep1b[NUM_SUFFIXES_STEP1b] = {
         English::AdverbOfManner,    0,
         English::PastTense,         English::AdverbOfManner | English::PastTense,
-        English::PresentParticiple, English::AdverbOfManner | English::PresentParticiple};
+        English::PresentParticiple, English::AdverbOfManner | English::PresentParticiple };
     static const int NUM_SUFFIXES_STEP2 = 22;
     const char *( SuffixesStep2[NUM_SUFFIXES_STEP2] )[2] = {
-        {"ization", "ize"}, {"ational", "ate"}, {"ousness", "ous"}, {"iveness", "ive"}, {"fulness", "ful"},
-        {"tional", "tion"}, {"lessli", "less"}, {"biliti", "ble"},  {"entli", "ent"},   {"ation", "ate"},
-        {"alism", "al"},    {"aliti", "al"},    {"fulli", "ful"},   {"ousli", "ous"},   {"iviti", "ive"},
-        {"enci", "ence"},   {"anci", "ance"},   {"abli", "able"},   {"izer", "ize"},    {"ator", "ate"},
-        {"alli", "al"},     {"bli", "ble"}};
-    const U32 TypesStep2[NUM_SUFFIXES_STEP2] = {English::SuffixION,
-                                                English::SuffixION | English::SuffixAL,
-                                                English::SuffixNESS,
-                                                English::SuffixNESS,
-                                                English::SuffixNESS,
-                                                English::SuffixION | English::SuffixAL,
-                                                English::AdverbOfManner,
-                                                English::AdverbOfManner | English::SuffixITY,
-                                                English::AdverbOfManner,
-                                                English::SuffixION,
-                                                0,
-                                                English::SuffixITY,
-                                                English::AdverbOfManner,
-                                                English::AdverbOfManner,
-                                                English::SuffixITY,
-                                                0,
-                                                0,
-                                                English::AdverbOfManner,
-                                                0,
-                                                0,
-                                                English::AdverbOfManner,
-                                                English::AdverbOfManner};
+        { "ization", "ize" }, { "ational", "ate" }, { "ousness", "ous" }, { "iveness", "ive" }, { "fulness", "ful" },
+        { "tional", "tion" }, { "lessli", "less" }, { "biliti", "ble" },  { "entli", "ent" },   { "ation", "ate" },
+        { "alism", "al" },    { "aliti", "al" },    { "fulli", "ful" },   { "ousli", "ous" },   { "iviti", "ive" },
+        { "enci", "ence" },   { "anci", "ance" },   { "abli", "able" },   { "izer", "ize" },    { "ator", "ate" },
+        { "alli", "al" },     { "bli", "ble" } };
+    const U32 TypesStep2[NUM_SUFFIXES_STEP2] = { English::SuffixION,
+                                                 English::SuffixION | English::SuffixAL,
+                                                 English::SuffixNESS,
+                                                 English::SuffixNESS,
+                                                 English::SuffixNESS,
+                                                 English::SuffixION | English::SuffixAL,
+                                                 English::AdverbOfManner,
+                                                 English::AdverbOfManner | English::SuffixITY,
+                                                 English::AdverbOfManner,
+                                                 English::SuffixION,
+                                                 0,
+                                                 English::SuffixITY,
+                                                 English::AdverbOfManner,
+                                                 English::AdverbOfManner,
+                                                 English::SuffixITY,
+                                                 0,
+                                                 0,
+                                                 English::AdverbOfManner,
+                                                 0,
+                                                 0,
+                                                 English::AdverbOfManner,
+                                                 English::AdverbOfManner };
     static const int NUM_SUFFIXES_STEP3 = 8;
-    const char *( SuffixesStep3[NUM_SUFFIXES_STEP3] )[2] = {{"ational", "ate"}, {"tional", "tion"}, {"alize", "al"},
-                                                            {"icate", "ic"},    {"iciti", "ic"},    {"ical", "ic"},
-                                                            {"ful", ""},        {"ness", ""}};
-    const U32 TypesStep3[NUM_SUFFIXES_STEP3] = {English::SuffixION | English::SuffixAL,
-                                                English::SuffixION | English::SuffixAL,
-                                                0,
-                                                0,
-                                                English::SuffixITY,
-                                                English::SuffixAL,
-                                                English::AdjectiveFull,
-                                                English::SuffixNESS};
+    const char *( SuffixesStep3[NUM_SUFFIXES_STEP3] )[2] = {
+        { "ational", "ate" }, { "tional", "tion" }, { "alize", "al" }, { "icate", "ic" },
+        { "iciti", "ic" },    { "ical", "ic" },     { "ful", "" },     { "ness", "" } };
+    const U32 TypesStep3[NUM_SUFFIXES_STEP3] = { English::SuffixION | English::SuffixAL,
+                                                 English::SuffixION | English::SuffixAL,
+                                                 0,
+                                                 0,
+                                                 English::SuffixITY,
+                                                 English::SuffixAL,
+                                                 English::AdjectiveFull,
+                                                 English::SuffixNESS };
     static const int NUM_SUFFIXES_STEP4 = 20;
-    const char *SuffixesStep4[NUM_SUFFIXES_STEP4] = {"al",  "ance",  "ence", "er",  "ic",   "able", "ible",
-                                                     "ant", "ement", "ment", "ent", "ou",   "ism",  "ate",
-                                                     "iti", "ous",   "ive",  "ize", "sion", "tion"};
-    const U32 TypesStep4[NUM_SUFFIXES_STEP4] = {English::SuffixAL,
-                                                English::SuffixNCE,
-                                                English::SuffixNCE,
-                                                0,
-                                                English::SuffixIC,
-                                                English::SuffixCapable,
-                                                English::SuffixCapable,
-                                                English::SuffixNT,
-                                                0,
-                                                0,
-                                                English::SuffixNT,
-                                                0,
-                                                0,
-                                                0,
-                                                English::SuffixITY,
-                                                English::SuffixOUS,
-                                                English::SuffixIVE,
-                                                0,
-                                                English::SuffixION,
-                                                English::SuffixION};
+    const char *SuffixesStep4[NUM_SUFFIXES_STEP4] = { "al",  "ance",  "ence", "er",  "ic",   "able", "ible",
+                                                      "ant", "ement", "ment", "ent", "ou",   "ism",  "ate",
+                                                      "iti", "ous",   "ive",  "ize", "sion", "tion" };
+    const U32 TypesStep4[NUM_SUFFIXES_STEP4] = { English::SuffixAL,
+                                                 English::SuffixNCE,
+                                                 English::SuffixNCE,
+                                                 0,
+                                                 English::SuffixIC,
+                                                 English::SuffixCapable,
+                                                 English::SuffixCapable,
+                                                 English::SuffixNT,
+                                                 0,
+                                                 0,
+                                                 English::SuffixNT,
+                                                 0,
+                                                 0,
+                                                 0,
+                                                 English::SuffixITY,
+                                                 English::SuffixOUS,
+                                                 English::SuffixIVE,
+                                                 0,
+                                                 English::SuffixION,
+                                                 English::SuffixION };
     static const int NUM_EXCEPTION_REGION1 = 3;
-    const char *ExceptionsRegion1[NUM_EXCEPTION_REGION1] = {"gener", "arsen", "commun"};
+    const char *ExceptionsRegion1[NUM_EXCEPTION_REGION1] = { "gener", "arsen", "commun" };
     static const int NUM_EXCEPTIONS1 = 19;
     const char *( Exceptions1[NUM_EXCEPTIONS1] )[2] = {
-        {"skis", "ski"},      {"skies", "sky"},    {"dying", "die"},   {"lying", "lie"},   {"tying", "tie"},
-        {"idly", "idl"},      {"gently", "gentl"}, {"ugly", "ugli"},   {"early", "earli"}, {"only", "onli"},
-        {"singly", "singl"},  {"sky", "sky"},      {"news", "news"},   {"howe", "howe"},   {"atlas", "atlas"},
-        {"cosmos", "cosmos"}, {"bias", "bias"},    {"andes", "andes"}, {"texas", "texas"}};
-    const U32 TypesExceptions1[NUM_EXCEPTIONS1] = {English::Noun | English::Plural,
-                                                   English::Noun | English::Plural | English::Verb,
-                                                   English::PresentParticiple,
-                                                   English::PresentParticiple,
-                                                   English::PresentParticiple,
-                                                   English::AdverbOfManner,
-                                                   English::AdverbOfManner,
-                                                   English::Adjective,
-                                                   English::Adjective | English::AdverbOfManner,
-                                                   0,
-                                                   English::AdverbOfManner,
-                                                   English::Noun,
-                                                   English::Noun,
-                                                   0,
-                                                   English::Noun,
-                                                   English::Noun,
-                                                   English::Noun,
-                                                   English::Noun | English::Plural,
-                                                   English::Noun};
+        { "skis", "ski" },      { "skies", "sky" },    { "dying", "die" },   { "lying", "lie" },   { "tying", "tie" },
+        { "idly", "idl" },      { "gently", "gentl" }, { "ugly", "ugli" },   { "early", "earli" }, { "only", "onli" },
+        { "singly", "singl" },  { "sky", "sky" },      { "news", "news" },   { "howe", "howe" },   { "atlas", "atlas" },
+        { "cosmos", "cosmos" }, { "bias", "bias" },    { "andes", "andes" }, { "texas", "texas" } };
+    const U32 TypesExceptions1[NUM_EXCEPTIONS1] = { English::Noun | English::Plural,
+                                                    English::Noun | English::Plural | English::Verb,
+                                                    English::PresentParticiple,
+                                                    English::PresentParticiple,
+                                                    English::PresentParticiple,
+                                                    English::AdverbOfManner,
+                                                    English::AdverbOfManner,
+                                                    English::Adjective,
+                                                    English::Adjective | English::AdverbOfManner,
+                                                    0,
+                                                    English::AdverbOfManner,
+                                                    English::Noun,
+                                                    English::Noun,
+                                                    0,
+                                                    English::Noun,
+                                                    English::Noun,
+                                                    English::Noun,
+                                                    English::Noun | English::Plural,
+                                                    English::Noun };
     static const int NUM_EXCEPTIONS2 = 8;
-    const char *Exceptions2[NUM_EXCEPTIONS2] = {"inning",  "outing",  "canning", "herring",
-                                                "earring", "proceed", "exceed",  "succeed"};
-    const U32 TypesExceptions2[NUM_EXCEPTIONS2] = {English::Noun, English::Noun, English::Noun, English::Noun,
-                                                   English::Noun, English::Verb, English::Verb, English::Verb};
+    const char *Exceptions2[NUM_EXCEPTIONS2] = { "inning",  "outing",  "canning", "herring",
+                                                 "earring", "proceed", "exceed",  "succeed" };
+    const U32 TypesExceptions2[NUM_EXCEPTIONS2] = { English::Noun, English::Noun, English::Noun, English::Noun,
+                                                    English::Noun, English::Verb, English::Verb, English::Verb };
     inline bool IsConsonant( const char c ) {
       return !IsVowel( c );
     }
@@ -3895,7 +3896,7 @@ states to provide additional states that are then mapped to predictions.
                         break;
                       }
                       case 'd': {
-                        static const char nAllowed[4] = {'a', 'e', 'i', 'o'};
+                        static const char nAllowed[4] = { 'a', 'e', 'i', 'o' };
                         W->End +=
                             static_cast<int>( IsVowel( ( *W )( 1 ) ) && ( !CharInArray( ( *W )( 2 ), nAllowed, 4 ) ) );
                         break;
@@ -3905,8 +3906,8 @@ states to provide additional states that are then mapped to predictions.
                         break;
                       }
                       case 'l': {
-                        static const char Allowed1[10] = {'b', 'c', 'd', 'f', 'g', 'k', 'p', 't', 'y', 'z'};
-                        static const char Allowed2[4] = {'a', 'i', 'o', 'u'};
+                        static const char Allowed1[10] = { 'b', 'c', 'd', 'f', 'g', 'k', 'p', 't', 'y', 'z' };
+                        static const char Allowed2[4] = { 'a', 'i', 'o', 'u' };
                         W->End += static_cast<int>(
                             CharInArray( ( *W )( 1 ), Allowed1, 10 )
                             || ( CharInArray( ( *W )( 1 ), Allowed2, 4 ) && IsConsonant( ( *W )( 2 ) ) ) );
@@ -3921,7 +3922,7 @@ states to provide additional states that are then mapped to predictions.
                         break;
                       }
                       case 'g': {
-                        static const char Allowed[7] = {'a', 'd', 'e', 'i', 'l', 'r', 'u'};
+                        static const char Allowed[7] = { 'a', 'd', 'e', 'i', 'l', 'r', 'u' };
                         if( CharInArray( ( *W )( 1 ), Allowed, 7 )
                             || ( ( *W )( 1 ) == 'n'
                                  && ( ( *W )( 2 ) == 'e'
@@ -4217,18 +4218,18 @@ states to provide additional states that are then mapped to predictions.
   class FrenchStemmer : public Stemmer {
   private:
     static const int NUM_VOWELS = 17;
-    const char Vowels[NUM_VOWELS] = {'a',    'e',    'i',    'o',    'u',    'y',    '\xE2', '\xE0', '\xEB',
-                                     '\xE9', '\xEA', '\xE8', '\xEF', '\xEE', '\xF4', '\xFB', '\xF9'};
+    const char Vowels[NUM_VOWELS] = { 'a',    'e',    'i',    'o',    'u',    'y',    '\xE2', '\xE0', '\xEB',
+                                      '\xE9', '\xEA', '\xE8', '\xEF', '\xEE', '\xF4', '\xFB', '\xF9' };
     static const int NUM_COMMON_WORDS = 10;
-    const char *CommonWords[NUM_COMMON_WORDS] = {"de", "la", "le", "et", "en", "un", "une", "du", "que", "pas"};
+    const char *CommonWords[NUM_COMMON_WORDS] = { "de", "la", "le", "et", "en", "un", "une", "du", "que", "pas" };
     static const int NUM_EXCEPTIONS = 3;
     const char *( Exceptions[NUM_EXCEPTIONS] )[2] = {
-        {"monument", "monument"},
-        {"yeux", "oeil"},
-        {"travaux", "travail"},
+        { "monument", "monument" },
+        { "yeux", "oeil" },
+        { "travaux", "travail" },
     };
-    const U32 TypesExceptions[NUM_EXCEPTIONS] = {French::Noun, French::Noun | French::Plural,
-                                                 French::Noun | French::Plural};
+    const U32 TypesExceptions[NUM_EXCEPTIONS] = { French::Noun, French::Noun | French::Plural,
+                                                  French::Noun | French::Plural };
     static const int NUM_SUFFIXES_STEP1 = 39;
     const char *SuffixesStep1[NUM_SUFFIXES_STEP1] = {
         "ance",     "iqUe",      "isme",   "able",    "iste",   "eux",
@@ -4249,54 +4250,54 @@ states to provide additional states that are then mapped to predictions.
         "issaIent", "issantes", "iraIent", "issante", "issants", "issions", "irions", "issais", "issait",
         "issant",   "issent",   "issiez",  "issons",  "irais",   "irait",   "irent",  "iriez",  "irons",
         "iront",    "isses",    "issez",   "\xEEmes", "\xEEtes", "irai",    "iras",   "irez",   "isse",
-        "ies",      "ira",      "\xEEt",   "ie",      "ir",      "is",      "it",     "i"};
+        "ies",      "ira",      "\xEEt",   "ie",      "ir",      "is",      "it",     "i" };
     static const int NUM_SUFFIXES_STEP2b = 38;
-    const char *SuffixesStep2b[NUM_SUFFIXES_STEP2b] = {"eraIent",
-                                                       "assions",
-                                                       "erions",
-                                                       "assent",
-                                                       "assiez",
-                                                       "\xE8rent",
-                                                       "erais",
-                                                       "erait",
-                                                       "eriez",
-                                                       "erons",
-                                                       "eront",
-                                                       "aIent",
-                                                       "antes",
-                                                       "asses",
-                                                       "ions",
-                                                       "erai",
-                                                       "eras",
-                                                       "erez",
-                                                       "\xE2mes",
-                                                       "\xE2tes",
-                                                       "ante",
-                                                       "ants",
-                                                       "asse",
-                                                       "\xE9"
-                                                       "es",
-                                                       "era",
-                                                       "iez",
-                                                       "ais",
-                                                       "ait",
-                                                       "ant",
-                                                       "\xE9"
-                                                       "e",
-                                                       "\xE9s",
-                                                       "er",
-                                                       "ez",
-                                                       "\xE2t",
-                                                       "ai",
-                                                       "as",
-                                                       "\xE9",
-                                                       "a"};
+    const char *SuffixesStep2b[NUM_SUFFIXES_STEP2b] = { "eraIent",
+                                                        "assions",
+                                                        "erions",
+                                                        "assent",
+                                                        "assiez",
+                                                        "\xE8rent",
+                                                        "erais",
+                                                        "erait",
+                                                        "eriez",
+                                                        "erons",
+                                                        "eront",
+                                                        "aIent",
+                                                        "antes",
+                                                        "asses",
+                                                        "ions",
+                                                        "erai",
+                                                        "eras",
+                                                        "erez",
+                                                        "\xE2mes",
+                                                        "\xE2tes",
+                                                        "ante",
+                                                        "ants",
+                                                        "asse",
+                                                        "\xE9"
+                                                        "es",
+                                                        "era",
+                                                        "iez",
+                                                        "ais",
+                                                        "ait",
+                                                        "ant",
+                                                        "\xE9"
+                                                        "e",
+                                                        "\xE9s",
+                                                        "er",
+                                                        "ez",
+                                                        "\xE2t",
+                                                        "ai",
+                                                        "as",
+                                                        "\xE9",
+                                                        "a" };
     static const int NUM_SET_STEP4 = 6;
-    const char SetStep4[NUM_SET_STEP4] = {'a', 'i', 'o', 'u', '\xE8', 's'};
+    const char SetStep4[NUM_SET_STEP4] = { 'a', 'i', 'o', 'u', '\xE8', 's' };
     static const int NUM_SUFFIXES_STEP4 = 7;
-    const char *SuffixesStep4[NUM_SUFFIXES_STEP4] = {"i\xE8re", "I\xE8re", "ion", "ier", "Ier", "e", "\xEB"};
+    const char *SuffixesStep4[NUM_SUFFIXES_STEP4] = { "i\xE8re", "I\xE8re", "ion", "ier", "Ier", "e", "\xEB" };
     static const int NUM_SUFFIXES_STEP5 = 5;
-    const char *SuffixesStep5[NUM_SUFFIXES_STEP5] = {"enn", "onn", "ett", "ell", "eill"};
+    const char *SuffixesStep5[NUM_SUFFIXES_STEP5] = { "enn", "onn", "ett", "ell", "eill" };
     inline bool IsConsonant( const char c ) {
       return !IsVowel( c );
     }
@@ -4639,19 +4640,19 @@ states to provide additional states that are then mapped to predictions.
   class GermanStemmer : public Stemmer {
   private:
     static const int NUM_VOWELS = 9;
-    const char Vowels[NUM_VOWELS] = {'a', 'e', 'i', 'o', 'u', 'y', '\xE4', '\xF6', '\xFC'};
+    const char Vowels[NUM_VOWELS] = { 'a', 'e', 'i', 'o', 'u', 'y', '\xE4', '\xF6', '\xFC' };
     static const int NUM_COMMON_WORDS = 10;
-    const char *CommonWords[NUM_COMMON_WORDS] = {"der", "die", "das",  "und", "sie",
-                                                 "ich", "mit", "sich", "auf", "nicht"};
+    const char *CommonWords[NUM_COMMON_WORDS] = { "der", "die", "das",  "und", "sie",
+                                                  "ich", "mit", "sich", "auf", "nicht" };
     static const int NUM_ENDINGS = 10;
-    const char Endings[NUM_ENDINGS] = {'b', 'd', 'f', 'g', 'h',
-                                       'k', 'l', 'm', 'n', 't'}; //plus 'r' for words ending in 's'
+    const char Endings[NUM_ENDINGS] = { 'b', 'd', 'f', 'g', 'h',
+                                        'k', 'l', 'm', 'n', 't' }; //plus 'r' for words ending in 's'
     static const int NUM_SUFFIXES_STEP1 = 6;
-    const char *SuffixesStep1[NUM_SUFFIXES_STEP1] = {"em", "ern", "er", "e", "en", "es"};
+    const char *SuffixesStep1[NUM_SUFFIXES_STEP1] = { "em", "ern", "er", "e", "en", "es" };
     static const int NUM_SUFFIXES_STEP2 = 3;
-    const char *SuffixesStep2[NUM_SUFFIXES_STEP2] = {"en", "er", "est"};
+    const char *SuffixesStep2[NUM_SUFFIXES_STEP2] = { "en", "er", "est" };
     static const int NUM_SUFFIXES_STEP3 = 7;
-    const char *SuffixesStep3[NUM_SUFFIXES_STEP3] = {"end", "ung", "ik", "ig", "isch", "lich", "heit"};
+    const char *SuffixesStep3[NUM_SUFFIXES_STEP3] = { "end", "ung", "ik", "ig", "isch", "lich", "heit" };
     void ConvertUTF8( Word *W ) {
       for( int i = W->Start; i < W->End; i++ ) {
         U8 c = W->Letters[i + 1] + ( ( W->Letters[i + 1] < 0x9F ) ? 0x60 : 0x40 );
@@ -4818,7 +4819,7 @@ states to provide additional states that are then mapped to predictions.
     const static int32_t HashSize = 81929;
     Array<Entry> entries;
     Array<int16_t> table;
-    int32_t index{0};
+    int32_t index{ 0 };
 #  ifndef NVERBOSE
     uint32_t requests, hits;
 #  endif
@@ -4987,29 +4988,29 @@ states to provide additional states that are then mapped to predictions.
 */
 
   const U8 AsciiGroupC0[2][254] = {
-      {0,  10, 0,  1,  10, 10, 0,  4,  2,  3,  10, 10, 10, 10, 0,  0,  5,  4,  2,  2,  3,  3,  10, 10, 10, 10,
-       10, 10, 10, 10, 0,  0,  0,  0,  5,  5,  9,  4,  2,  2,  2,  2,  3,  3,  3,  3,  10, 10, 10, 10, 10, 10,
-       10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 0,  0,  0,  0,  0,  0,  0,  0,  5,  8,  8,  5,  9,  9,  6,  5,
-       2,  2,  2,  2,  2,  2,  2,  8,  3,  3,  3,  3,  3,  3,  3,  8,  10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
-       10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 0,  0,  0,  0,
-       0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  7,  8,  8,  8,  8,  8,  5,  5,  9,  9,  9,  9,  9,  7,
-       8,  5,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  8,  8,  3,  3,  3,  3,  3,  3,  3,  3,
-       3,  3,  3,  3,  3,  3,  8,  8,  10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
-       10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
-       10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-      {0, 6, 0, 1, 6, 6, 4, 5, 1, 1, 6, 6, 6, 6, 4, 0, 3, 2, 1, 1, 1, 1, 6, 6, 6, 6, 6, 6, 6, 6, 0, 4, 0, 0, 3, 3, 2,
-       5, 1, 1, 1, 1, 1, 1, 1, 1, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 0, 0, 4, 4, 0, 0, 0, 0, 3, 3, 3, 3,
-       2, 2, 5, 5, 1, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 3, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
-       6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 0, 0, 0, 0, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3,
-       3, 3, 2, 2, 2, 2, 2, 3, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-       1, 1, 1, 3, 3, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
-       6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6}};
-  const U8 AsciiGroup[128] = {0,  5,  5,  5,  5,  5,  5,  5,  5,  5, 4, 5, 5, 4,  5,  5,  5,  5,  5,  5,  5,  5,
-                              5,  5,  5,  5,  5,  5,  5,  5,  5,  5, 6, 7, 8, 17, 17, 9,  17, 10, 11, 12, 17, 17,
-                              13, 14, 15, 16, 1,  1,  1,  1,  1,  1, 1, 1, 1, 1,  18, 19, 20, 23, 21, 22, 23, 2,
-                              2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 2, 2, 2, 2,  2,  2,  2,  2,  2,  2,  2,  2,
-                              2,  2,  2,  24, 27, 25, 27, 26, 27, 3, 3, 3, 3, 3,  3,  3,  3,  3,  3,  3,  3,  3,
-                              3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 3, 3, 3, 28, 30, 29, 30, 30};
+      { 0,  10, 0,  1,  10, 10, 0,  4,  2,  3,  10, 10, 10, 10, 0,  0,  5,  4,  2,  2,  3,  3,  10, 10, 10, 10,
+        10, 10, 10, 10, 0,  0,  0,  0,  5,  5,  9,  4,  2,  2,  2,  2,  3,  3,  3,  3,  10, 10, 10, 10, 10, 10,
+        10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 0,  0,  0,  0,  0,  0,  0,  0,  5,  8,  8,  5,  9,  9,  6,  5,
+        2,  2,  2,  2,  2,  2,  2,  8,  3,  3,  3,  3,  3,  3,  3,  8,  10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+        10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 0,  0,  0,  0,
+        0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  7,  8,  8,  8,  8,  8,  5,  5,  9,  9,  9,  9,  9,  7,
+        8,  5,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  8,  8,  3,  3,  3,  3,  3,  3,  3,  3,
+        3,  3,  3,  3,  3,  3,  8,  8,  10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+        10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+        10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10 },
+      { 0, 6, 0, 1, 6, 6, 4, 5, 1, 1, 6, 6, 6, 6, 4, 0, 3, 2, 1, 1, 1, 1, 6, 6, 6, 6, 6, 6, 6, 6, 0, 4, 0, 0, 3, 3, 2,
+        5, 1, 1, 1, 1, 1, 1, 1, 1, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 0, 0, 4, 4, 0, 0, 0, 0, 3, 3, 3, 3,
+        2, 2, 5, 5, 1, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 3, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
+        6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 0, 0, 0, 0, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3,
+        3, 3, 2, 2, 2, 2, 2, 3, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 3, 3, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
+        6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6 } };
+  const U8 AsciiGroup[128] = { 0,  5,  5,  5,  5,  5,  5,  5,  5,  5, 4, 5, 5, 4,  5,  5,  5,  5,  5,  5,  5,  5,
+                               5,  5,  5,  5,  5,  5,  5,  5,  5,  5, 6, 7, 8, 17, 17, 9,  17, 10, 11, 12, 17, 17,
+                               13, 14, 15, 16, 1,  1,  1,  1,  1,  1, 1, 1, 1, 1,  18, 19, 20, 23, 21, 22, 23, 2,
+                               2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 2, 2, 2, 2,  2,  2,  2,  2,  2,  2,  2,  2,
+                               2,  2,  2,  24, 27, 25, 27, 26, 27, 3, 3, 3, 3, 3,  3,  3,  3,  3,  3,  3,  3,  3,
+                               3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 3, 3, 3, 28, 30, 29, 30, 30 };
 
   class TextModel {
   private:
@@ -5092,7 +5093,7 @@ states to provide additional states that are then mapped to predictions.
         WordPos( 0x10000 ),
         State( Parse::Unknown ),
         pState( State ),
-        Lang{{0}, {0}, Language::Unknown, Language::Unknown},
+        Lang{ { 0 }, { 0 }, Language::Unknown, Language::Unknown },
         Info{},
         ParseCtx( 0 ) {
       Stemmers[Language::English - 1] = new EnglishStemmer();
@@ -5744,12 +5745,12 @@ states to provide additional states that are then mapped to predictions.
     U16 BypassPrediction; // prediction for bypass mode
     MatchModel( const U64 Size, const bool AllowBypass = false ) :
         Table( Size / sizeof( U32 ) ),
-        StateMaps{56 * 256, 8 * 256 * 256 + 1, 256 * 256},
-        SCM{{8, 8}, {11, 1}, {8, 8}},
-        Maps{{16}, {22, 1}, {4, 1}},
-        iCtx{19, 1},
-        hashes{0},
-        ctx{0},
+        StateMaps{ 56 * 256, 8 * 256 * 256 + 1, 256 * 256 },
+        SCM{ { 8, 8 }, { 11, 1 }, { 8, 8 } },
+        Maps{ { 16 }, { 22, 1 }, { 4, 1 } },
+        iCtx{ 19, 1 },
+        hashes{ 0 },
+        ctx{ 0 },
         length( 0 ),
         mask( U32( Size / sizeof( U32 ) - 1 ) ),
         hashbits( ilog2( mask + 1 ) ),
@@ -5840,7 +5841,8 @@ states to provide additional states that are then mapped to predictions.
       U32 minLen = MinLen;
       U32 bitMask = 0xFF; // match every byte according to this bit mask
     };
-    const sparseConfig sparse[NumHashes] = {{0, 1, 0, 5, 0xDF}, {1, 1, 0, 4}, {0, 2, 0, 4, 0xDF}, {0, 1, 0, 5, 0x0F}};
+    const sparseConfig sparse[NumHashes] = {
+        { 0, 1, 0, 5, 0xDF }, { 1, 1, 0, 4 }, { 0, 2, 0, 4, 0xDF }, { 0, 1, 0, 5, 0x0F } };
     Array<U32> Table;
     StationaryMap Maps[4];
     IndirectContext<U8> iCtx8;
@@ -5910,11 +5912,11 @@ states to provide additional states that are then mapped to predictions.
   public:
     SparseMatchModel( const U64 Size, const bool AllowBypass = false ) :
         Table( Size / sizeof( U32 ) ),
-        Maps{{22, 1}, {17, 4}, {8, 1}, {19, 1}},
-        iCtx8{19, 1},
-        iCtx16{16},
+        Maps{ { 22, 1 }, { 17, 4 }, { 8, 1 }, { 19, 1 } },
+        iCtx8{ 19, 1 },
+        iCtx16{ 16 },
         list( NumHashes ),
-        hashes{0},
+        hashes{ 0 },
         hashIndex( 0 ),
         length( 0 ),
         mask( U32( Size / sizeof( U32 ) - 1 ) ),
@@ -6333,8 +6335,8 @@ states to provide additional states that are then mapped to predictions.
     static Array<int> cpos3( 256 );
     static Array<int> cpos4( 256 );
     static Array<int> wpos1( 256 * 256 ); // buf(1..2) -> last position
-    static int rlen[3] = {2, 0, 0};       // run length and 2 candidates
-    static int rcount[2] = {0, 0};        // candidate counts
+    static int rlen[3] = { 2, 0, 0 };     // run length and 2 candidates
+    static int rcount[2] = { 0, 0 };      // candidate counts
     static U8 padding = 0;                // detected padding byte
     static U8 N = 0;
     static U8 NN = 0;
@@ -6351,13 +6353,13 @@ states to provide additional states that are then mapped to predictions.
     static ContextMap co( 32768 * 2, 3 );
     static ContextMap cp( MEM * 2, 16 ); // cm,cn,co: memory pressure is advantageous
     static const int nMaps = 6;
-    static StationaryMap Maps[nMaps]{10, 10, 8, 8, 8, {11, 1}};
-    static SmallStationaryContextMap sMap[3]{{11, 1}, {3, 1}, {19, 1}};
-    static IndirectMap iMap[3]{8, 8, 8};
+    static StationaryMap Maps[nMaps]{ 10, 10, 8, 8, 8, { 11, 1 } };
+    static SmallStationaryContextMap sMap[3]{ { 11, 1 }, { 3, 1 }, { 19, 1 } };
+    static IndirectMap iMap[3]{ 8, 8, 8 };
     static bool MayBeImg24b = false;
     static dBASE dbase{};
     static const int nIndCtxs = 5;
-    static IndirectContext<U16> iCtx[nIndCtxs]{{16}, {16}, {16}, {20}, {11, 1}};
+    static IndirectContext<U16> iCtx[nIndCtxs]{ { 16 }, { 16 }, { 16 }, { 20 }, { 11, 1 } };
 
     // Find record length
     if( bpos == 0 ) {
@@ -6588,9 +6590,9 @@ states to provide additional states that are then mapped to predictions.
   void linearPredictionModel( Mixer &m ) {
     static const int nOLS = 3;
     static const int nLnrPrd = nOLS + 2;
-    static SmallStationaryContextMap sMap[nLnrPrd]{{11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}};
-    static OLS<double, U8> ols[nOLS]{{32, 4, 0.995}, {32, 4, 0.995}, {32, 4, 0.995}};
-    static U8 prd[nLnrPrd]{0};
+    static SmallStationaryContextMap sMap[nLnrPrd]{ { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 } };
+    static OLS<double, U8> ols[nOLS]{ { 32, 4, 0.995 }, { 32, 4, 0.995 }, { 32, 4, 0.995 } };
+    static U8 prd[nLnrPrd]{ 0 };
 
     if( bpos == 0 ) {
       const U8 W = buf( 1 );
@@ -6687,7 +6689,7 @@ states to provide additional states that are then mapped to predictions.
 
   class RingBuffer {
     Array<U8> b;
-    U32 offset{0};
+    U32 offset{ 0 };
 
   public:
     RingBuffer( const int i = 0 ) : b( i ) {}
@@ -6725,21 +6727,23 @@ states to provide additional states that are then mapped to predictions.
     static const int nSCMaps = 59;
     static ContextMap cm( MEM * 4, 45 );
     static SmallStationaryContextMap SCMap[nSCMaps] = {
-        {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1},
-        {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1},
-        {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1},
-        {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1},
-        {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {0, 8}};
+        { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 },
+        { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 },
+        { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 },
+        { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 },
+        { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 },
+        { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 0, 8 } };
     static StationaryMap Map[nMaps] = {
-        8,       8,       8,       2,       0,       {15, 1}, {15, 1}, {15, 1}, {15, 1}, {15, 1}, {17, 1}, {17, 1},
-        {17, 1}, {17, 1}, {13, 1}, {13, 1}, {13, 1}, {13, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1},
-        {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1},
-        {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1},
-        {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1},
-        {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1},
-        {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1},
-        {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1},
-        {11, 1}, {11, 1}, {11, 1}, {11, 1}};
+        8,         8,         8,         2,         0,         { 15, 1 }, { 15, 1 }, { 15, 1 }, { 15, 1 }, { 15, 1 },
+        { 17, 1 }, { 17, 1 }, { 17, 1 }, { 17, 1 }, { 13, 1 }, { 13, 1 }, { 13, 1 }, { 13, 1 }, { 11, 1 }, { 11, 1 },
+        { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 },
+        { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 },
+        { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 },
+        { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 },
+        { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 },
+        { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 },
+        { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 },
+        { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 } };
     static RingBuffer buffer( 0x100000 ); // internal rotating buffer for (PNG unfiltered) pixel data
     //pixel neighborhood
     static U8 WWWWWW;
@@ -6802,32 +6806,33 @@ states to provide additional states that are then mapped to predictions.
     static int R1 = 0;
     static int R2 = 0;
     static bool filterOn = false;
-    static int columns[2] = {1, 1};
+    static int columns[2] = { 1, 1 };
     static int column[2];
-    static U8 MapCtxs[nMaps1] = {0};
-    static U8 SCMapCtxs[nSCMaps - 1] = {0};
-    static U8 pOLS[nOLS] = {0};
-    static const double lambda[nOLS] = {0.98, 0.87, 0.9, 0.8, 0.9, 0.7};
-    static const int num[nOLS] = {32, 12, 15, 10, 14, 8};
+    static U8 MapCtxs[nMaps1] = { 0 };
+    static U8 SCMapCtxs[nSCMaps - 1] = { 0 };
+    static U8 pOLS[nOLS] = { 0 };
+    static const double lambda[nOLS] = { 0.98, 0.87, 0.9, 0.8, 0.9, 0.7 };
+    static const int num[nOLS] = { 32, 12, 15, 10, 14, 8 };
     static OLS<double, U8> ols[nOLS][4] = {
-        {{num[0], 1, lambda[0]}, {num[0], 1, lambda[0]}, {num[0], 1, lambda[0]}, {num[0], 1, lambda[0]}},
-        {{num[1], 1, lambda[1]}, {num[1], 1, lambda[1]}, {num[1], 1, lambda[1]}, {num[1], 1, lambda[1]}},
-        {{num[2], 1, lambda[2]}, {num[2], 1, lambda[2]}, {num[2], 1, lambda[2]}, {num[2], 1, lambda[2]}},
-        {{num[3], 1, lambda[3]}, {num[3], 1, lambda[3]}, {num[3], 1, lambda[3]}, {num[3], 1, lambda[3]}},
-        {{num[4], 1, lambda[4]}, {num[4], 1, lambda[4]}, {num[4], 1, lambda[4]}, {num[4], 1, lambda[4]}},
-        {{num[5], 1, lambda[5]}, {num[5], 1, lambda[5]}, {num[5], 1, lambda[5]}, {num[5], 1, lambda[5]}}};
-    static const U8 *ols_ctx1[32] = {&WWWWWW, &WWWWW, &WWWW,  &WWW,   &WW,   &W,     &NWWWW, &NWWW,
-                                     &NWW,    &NW,    &N,     &NE,    &NEE,  &NEEE,  &NEEEE, &NNWWW,
-                                     &NNWW,   &NNW,   &NN,    &NNE,   &NNEE, &NNEEE, &NNNWW, &NNNW,
-                                     &NNN,    &NNNE,  &NNNEE, &NNNNW, &NNNN, &NNNNE, &NNNNN, &NNNNNN};
-    static const U8 *ols_ctx2[12] = {&WWW, &WW, &W, &NWW, &NW, &N, &NE, &NEE, &NNW, &NN, &NNE, &NNN};
-    static const U8 *ols_ctx3[15] = {&N,     &NE,  &NEE,  &NEEE,  &NEEEE, &NN,    &NNE,  &NNEE,
-                                     &NNEEE, &NNN, &NNNE, &NNNEE, &NNNN,  &NNNNE, &NNNNN};
-    static const U8 *ols_ctx4[10] = {&N, &NE, &NEE, &NEEE, &NN, &NNE, &NNEE, &NNN, &NNNE, &NNNN};
-    static const U8 *ols_ctx5[14] = {&WWWW, &WWW, &WW, &W, &NWWW, &NWW, &NW, &N, &NNWW, &NNW, &NN, &NNNW, &NNN, &NNNN};
-    static const U8 *ols_ctx6[8] = {&WWW, &WW, &W, &NNN, &NN, &N, &p1, &p2};
-    static const U8 **ols_ctxs[nOLS] = {&ols_ctx1[0], &ols_ctx2[0], &ols_ctx3[0],
-                                        &ols_ctx4[0], &ols_ctx5[0], &ols_ctx6[0]};
+        { { num[0], 1, lambda[0] }, { num[0], 1, lambda[0] }, { num[0], 1, lambda[0] }, { num[0], 1, lambda[0] } },
+        { { num[1], 1, lambda[1] }, { num[1], 1, lambda[1] }, { num[1], 1, lambda[1] }, { num[1], 1, lambda[1] } },
+        { { num[2], 1, lambda[2] }, { num[2], 1, lambda[2] }, { num[2], 1, lambda[2] }, { num[2], 1, lambda[2] } },
+        { { num[3], 1, lambda[3] }, { num[3], 1, lambda[3] }, { num[3], 1, lambda[3] }, { num[3], 1, lambda[3] } },
+        { { num[4], 1, lambda[4] }, { num[4], 1, lambda[4] }, { num[4], 1, lambda[4] }, { num[4], 1, lambda[4] } },
+        { { num[5], 1, lambda[5] }, { num[5], 1, lambda[5] }, { num[5], 1, lambda[5] }, { num[5], 1, lambda[5] } } };
+    static const U8 *ols_ctx1[32] = { &WWWWWW, &WWWWW, &WWWW,  &WWW,   &WW,   &W,     &NWWWW, &NWWW,
+                                      &NWW,    &NW,    &N,     &NE,    &NEE,  &NEEE,  &NEEEE, &NNWWW,
+                                      &NNWW,   &NNW,   &NN,    &NNE,   &NNEE, &NNEEE, &NNNWW, &NNNW,
+                                      &NNN,    &NNNE,  &NNNEE, &NNNNW, &NNNN, &NNNNE, &NNNNN, &NNNNNN };
+    static const U8 *ols_ctx2[12] = { &WWW, &WW, &W, &NWW, &NW, &N, &NE, &NEE, &NNW, &NN, &NNE, &NNN };
+    static const U8 *ols_ctx3[15] = { &N,     &NE,  &NEE,  &NEEE,  &NEEEE, &NN,    &NNE,  &NNEE,
+                                      &NNEEE, &NNN, &NNNE, &NNNEE, &NNNN,  &NNNNE, &NNNNN };
+    static const U8 *ols_ctx4[10] = { &N, &NE, &NEE, &NEEE, &NN, &NNE, &NNEE, &NNN, &NNNE, &NNNN };
+    static const U8 *ols_ctx5[14] = { &WWWW, &WWW,  &WW,  &W,  &NWWW, &NWW, &NW,
+                                      &N,    &NNWW, &NNW, &NN, &NNNW, &NNN, &NNNN };
+    static const U8 *ols_ctx6[8] = { &WWW, &WW, &W, &NNN, &NN, &N, &p1, &p2 };
+    static const U8 **ols_ctxs[nOLS] = { &ols_ctx1[0], &ols_ctx2[0], &ols_ctx3[0],
+                                         &ols_ctx4[0], &ols_ctx5[0], &ols_ctx6[0] };
 
     if( bpos == 0 ) {
       if( ( color < 0 ) || ( pos - lastPos != 1 ) ) {
@@ -7169,11 +7174,11 @@ states to provide additional states that are then mapped to predictions.
                    | ( ( LogMeanDiffQt( Clip( N + NE - NNE ), Clip( N + NW - NNW ) ) >> 1 ) << 2 )
                    | min( color, stride - 1 );
         } else {
-          int residuals[5] = {( ( int8_t ) buf( stride + static_cast<int>( x <= stride ) ) ) + 128,
-                              ( ( int8_t ) buf( 1 + static_cast<int>( x < 2 ) ) ) + 128,
-                              ( ( int8_t ) buf( stride + 1 + static_cast<int>( x <= stride ) ) ) + 128,
-                              ( ( int8_t ) buf( 2 + static_cast<int>( x < 3 ) ) ) + 128,
-                              ( ( int8_t ) buf( stride + 2 + static_cast<int>( x <= stride ) ) ) + 128};
+          int residuals[5] = { ( ( int8_t ) buf( stride + static_cast<int>( x <= stride ) ) ) + 128,
+                               ( ( int8_t ) buf( 1 + static_cast<int>( x < 2 ) ) ) + 128,
+                               ( ( int8_t ) buf( stride + 1 + static_cast<int>( x <= stride ) ) ) + 128,
+                               ( ( int8_t ) buf( 2 + static_cast<int>( x < 3 ) ) ) + 128,
+                               ( ( int8_t ) buf( stride + 2 + static_cast<int>( x <= stride ) ) ) + 128 };
           R1 = ( residuals[1] * residuals[0] ) / max( 1, residuals[2] );
           R2 = ( residuals[3] * residuals[0] ) / max( 1, residuals[4] );
 
@@ -7335,16 +7340,17 @@ states to provide additional states that are then mapped to predictions.
     static const int nMaps = nMaps0 + nMaps1 + nOLS;
     static const int nPltMaps = 4;
     static ContextMap cm( MEM * 4, 49 + nPltMaps );
-    static StationaryMap Map[nMaps] = {0,       {15, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1},
-                                       {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1},
-                                       {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1},
-                                       {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1},
-                                       {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1},
-                                       {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1},
-                                       {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}, {11, 1}};
-    static SmallStationaryContextMap pltMap[nPltMaps] = {{11, 1}, {11, 1}, {11, 1}, {11, 1}};
-    static IndirectMap sceneMap[5]{{8}, {8}, {22, 1}, {11, 1}, {11, 1}};
-    static IndirectContext<U8> iCtx[nPltMaps] = {16, 16, 16, 16};
+    static StationaryMap Map[nMaps] = {
+        0,         { 15, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 },
+        { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 },
+        { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 },
+        { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 },
+        { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 },
+        { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 },
+        { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 } };
+    static SmallStationaryContextMap pltMap[nPltMaps] = { { 11, 1 }, { 11, 1 }, { 11, 1 }, { 11, 1 } };
+    static IndirectMap sceneMap[5]{ { 8 }, { 8 }, { 22, 1 }, { 11, 1 }, { 11, 1 } };
+    static IndirectContext<U8> iCtx[nPltMaps] = { 16, 16, 16, 16 };
     static RingBuffer buffer( 0x100000 ); // internal rotating buffer for (PNG unfiltered) pixel data
     static Array<short> jumps( 0x8000 );
     //pixel neighborhood
@@ -7397,28 +7403,29 @@ states to provide additional states that are then mapped to predictions.
     static int frameWidth = 0;
     static int prevFrameWidth = 0;
     static bool filterOn = false;
-    static int columns[2] = {1, 1};
+    static int columns[2] = { 1, 1 };
     static int column[2];
-    static U8 MapCtxs[nMaps1] = {0};
-    static U8 pOLS[nOLS] = {0};
-    static const double lambda[nOLS] = {0.996, 0.87, 0.93, 0.8, 0.9};
-    static const int num[nOLS] = {32, 12, 15, 10, 14};
-    static OLS<double, U8> ols[nOLS] = {{num[0], 1, lambda[0]},
-                                        {num[1], 1, lambda[1]},
-                                        {num[2], 1, lambda[2]},
-                                        {num[3], 1, lambda[3]},
-                                        {num[4], 1, lambda[4]}};
+    static U8 MapCtxs[nMaps1] = { 0 };
+    static U8 pOLS[nOLS] = { 0 };
+    static const double lambda[nOLS] = { 0.996, 0.87, 0.93, 0.8, 0.9 };
+    static const int num[nOLS] = { 32, 12, 15, 10, 14 };
+    static OLS<double, U8> ols[nOLS] = { { num[0], 1, lambda[0] },
+                                         { num[1], 1, lambda[1] },
+                                         { num[2], 1, lambda[2] },
+                                         { num[3], 1, lambda[3] },
+                                         { num[4], 1, lambda[4] } };
     static OLS<double, U8> sceneOls( 13, 1, 0.994 );
-    static const U8 *ols_ctx1[32] = {&WWWWWW, &WWWWW, &WWWW,  &WWW,   &WW,   &W,     &NWWWW, &NWWW,
-                                     &NWW,    &NW,    &N,     &NE,    &NEE,  &NEEE,  &NEEEE, &NNWWW,
-                                     &NNWW,   &NNW,   &NN,    &NNE,   &NNEE, &NNEEE, &NNNWW, &NNNW,
-                                     &NNN,    &NNNE,  &NNNEE, &NNNNW, &NNNN, &NNNNE, &NNNNN, &NNNNNN};
-    static const U8 *ols_ctx2[12] = {&WWW, &WW, &W, &NWW, &NW, &N, &NE, &NEE, &NNW, &NN, &NNE, &NNN};
-    static const U8 *ols_ctx3[15] = {&N,     &NE,  &NEE,  &NEEE,  &NEEEE, &NN,    &NNE,  &NNEE,
-                                     &NNEEE, &NNN, &NNNE, &NNNEE, &NNNN,  &NNNNE, &NNNNN};
-    static const U8 *ols_ctx4[10] = {&N, &NE, &NEE, &NEEE, &NN, &NNE, &NNEE, &NNN, &NNNE, &NNNN};
-    static const U8 *ols_ctx5[14] = {&WWWW, &WWW, &WW, &W, &NWWW, &NWW, &NW, &N, &NNWW, &NNW, &NN, &NNNW, &NNN, &NNNN};
-    static const U8 **ols_ctxs[nOLS] = {&ols_ctx1[0], &ols_ctx2[0], &ols_ctx3[0], &ols_ctx4[0], &ols_ctx5[0]};
+    static const U8 *ols_ctx1[32] = { &WWWWWW, &WWWWW, &WWWW,  &WWW,   &WW,   &W,     &NWWWW, &NWWW,
+                                      &NWW,    &NW,    &N,     &NE,    &NEE,  &NEEE,  &NEEEE, &NNWWW,
+                                      &NNWW,   &NNW,   &NN,    &NNE,   &NNEE, &NNEEE, &NNNWW, &NNNW,
+                                      &NNN,    &NNNE,  &NNNEE, &NNNNW, &NNNN, &NNNNE, &NNNNN, &NNNNNN };
+    static const U8 *ols_ctx2[12] = { &WWW, &WW, &W, &NWW, &NW, &N, &NE, &NEE, &NNW, &NN, &NNE, &NNN };
+    static const U8 *ols_ctx3[15] = { &N,     &NE,  &NEE,  &NEEE,  &NEEEE, &NN,    &NNE,  &NNEE,
+                                      &NNEEE, &NNN, &NNNE, &NNNEE, &NNNN,  &NNNNE, &NNNNN };
+    static const U8 *ols_ctx4[10] = { &N, &NE, &NEE, &NEEE, &NN, &NNE, &NNEE, &NNN, &NNNE, &NNNN };
+    static const U8 *ols_ctx5[14] = { &WWWW, &WWW,  &WW,  &W,  &NWWW, &NWW, &NW,
+                                      &N,    &NNWW, &NNW, &NN, &NNNW, &NNN, &NNNN };
+    static const U8 **ols_ctxs[nOLS] = { &ols_ctx1[0], &ols_ctx2[0], &ols_ctx3[0], &ols_ctx4[0], &ols_ctx5[0] };
     // Select nearby pixels as context
     if( bpos == 0 ) {
       if( pos != lastPos + 1 ) {
@@ -8088,18 +8095,18 @@ void dump(const char* msg, int p) {
                     // bits mark the block within the MCU, used to select Huffman tables.
 
     // Decoding tables
-    Array<HUF> huf{128};    // Tc*64+Th*16+m -> min, max, val
-    int mcusize = 0;        // number of coefficients in an MCU
-    int hufsel[2][10]{{0}}; // DC/AC, mcupos/64 -> huf decode table
-    Array<U8> hbuf{2048};   // Tc*1024+Th*256+hufcode -> RS
+    Array<HUF> huf{ 128 };      // Tc*64+Th*16+m -> min, max, val
+    int mcusize = 0;            // number of coefficients in an MCU
+    int hufsel[2][10]{ { 0 } }; // DC/AC, mcupos/64 -> huf decode table
+    Array<U8> hbuf{ 2048 };     // Tc*1024+Th*256+hufcode -> RS
 
     // Image state
-    Array<int> color{10};       // block -> component (0-3)
-    Array<int> pred{4};         // component -> last DC value
+    Array<int> color{ 10 };     // block -> component (0-3)
+    Array<int> pred{ 4 };       // component -> last DC value
     int dc = 0;                 // DC value of the current block
     int width = 0;              // Image width in MCU
     int row = 0, column = 0;    // in MCU (column 0 to width-1)
-    Buf cbuf{0x20000};          // Rotating buffer of coefficients, coded as:
+    Buf cbuf{ 0x20000 };        // Rotating buffer of coefficients, coded as:
                                 // DC: level shifted absolute value, low 4 bits discarded, i.e.
                                 //   [-1023...1024] -> [0...255].
                                 // AC: as an RS code: a run of R (0-15) zeros followed by an S (0-15)
@@ -8113,12 +8120,12 @@ void dump(const char* msg, int p) {
     int ssum = 0, ssum1 = 0, ssum2 = 0, ssum3 = 0;
     // sum of S in RS codes in block and sum of S in first component
 
-    IntBuf cbuf2{0x20000};
-    Array<int> adv_pred{4}, sumu{8}, sumv{8}, run_pred{6};
+    IntBuf cbuf2{ 0x20000 };
+    Array<int> adv_pred{ 4 }, sumu{ 8 }, sumv{ 8 }, run_pred{ 6 };
     int prev_coef = 0, prev_coef2 = 0, prev_coef_rs = 0;
-    Array<int> ls{10}; // block -> distance to previous block
-    Array<int> blockW{10}, blockN{10}, SamplingFactors{4};
-    Array<int> lcp{7}, zpos{64};
+    Array<int> ls{ 10 }; // block -> distance to previous block
+    Array<int> blockW{ 10 }, blockN{ 10 }, SamplingFactors{ 4 };
+    Array<int> lcp{ 7 }, zpos{ 64 };
 
     //for parsing Quantization tables
     int dqt_state = -1, dqt_end = 0, qnum = 0;
@@ -8130,11 +8137,11 @@ void dump(const char* msg, int p) {
                              // bits of huffcode if the length (huffbits) is not a multiple of 3.
                              // The 7 mapped values are for context+{"", 0, 00, 01, 1, 10, 11}.
     IndirectMap MJPEGMap;
-    Array<U64> cxt{N}; // context hashes
-    Array<U8 *> cp{N}; // context pointers
+    Array<U64> cxt{ N }; // context hashes
+    Array<U8 *> cp{ N }; // context pointers
     StateMap sm[N]{};
     Mixer *m1;
-    APM a1{0x8000}, a2{0x20000};
+    APM a1{ 0x8000 }, a2{ 0x20000 };
 
   public:
     JpegModel() : t( MEM ), MJPEGMap( 21, 3 ) {
@@ -8145,23 +8152,23 @@ void dump(const char* msg, int p) {
     }
 
     int jpegModel( Mixer &m ) {
-      const static U8 zzu[64] = {// zigzag coef -> u,v
-                                 0, 1, 0, 0, 1, 2, 3, 2, 1, 0, 0, 1, 2, 3, 4, 5, 4, 3, 2, 1, 0, 0,
-                                 1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1, 0, 1, 2, 3, 4, 5, 6, 7, 7,
-                                 6, 5, 4, 3, 2, 3, 4, 5, 6, 7, 7, 6, 5, 4, 5, 6, 7, 7, 6, 7};
-      const static U8 zzv[64] = {0, 0, 1, 2, 1, 0, 0, 1, 2, 3, 4, 3, 2, 1, 0, 0, 1, 2, 3, 4, 5, 6,
-                                 5, 4, 3, 2, 1, 0, 0, 1, 2, 3, 4, 5, 6, 7, 7, 6, 5, 4, 3, 2, 1, 2,
-                                 3, 4, 5, 6, 7, 7, 6, 5, 4, 3, 4, 5, 6, 7, 7, 6, 5, 6, 7, 7};
+      const static U8 zzu[64] = { // zigzag coef -> u,v
+                                  0, 1, 0, 0, 1, 2, 3, 2, 1, 0, 0, 1, 2, 3, 4, 5, 4, 3, 2, 1, 0, 0,
+                                  1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1, 0, 1, 2, 3, 4, 5, 6, 7, 7,
+                                  6, 5, 4, 3, 2, 3, 4, 5, 6, 7, 7, 6, 5, 4, 5, 6, 7, 7, 6, 7 };
+      const static U8 zzv[64] = { 0, 0, 1, 2, 1, 0, 0, 1, 2, 3, 4, 3, 2, 1, 0, 0, 1, 2, 3, 4, 5, 6,
+                                  5, 4, 3, 2, 1, 0, 0, 1, 2, 3, 4, 5, 6, 7, 7, 6, 5, 4, 3, 2, 1, 2,
+                                  3, 4, 5, 6, 7, 7, 6, 5, 4, 3, 4, 5, 6, 7, 7, 6, 5, 6, 7, 7 };
 
       // Standard Huffman tables (cf. JPEG standard section K.3)
       // IMPORTANT: these are only valid for 8-bit data precision
-      const static U8 bits_dc_luminance[16] = {0, 1, 5, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0};
-      const static U8 values_dc_luminance[12] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+      const static U8 bits_dc_luminance[16] = { 0, 1, 5, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0 };
+      const static U8 values_dc_luminance[12] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
 
-      const static U8 bits_dc_chrominance[16] = {0, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0};
-      const static U8 values_dc_chrominance[12] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+      const static U8 bits_dc_chrominance[16] = { 0, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0 };
+      const static U8 values_dc_chrominance[12] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
 
-      const static U8 bits_ac_luminance[16] = {0, 2, 1, 3, 3, 2, 4, 3, 5, 5, 4, 4, 0, 0, 1, 0x7d};
+      const static U8 bits_ac_luminance[16] = { 0, 2, 1, 3, 3, 2, 4, 3, 5, 5, 4, 4, 0, 0, 1, 0x7d };
       const static U8 values_ac_luminance[162] = {
           0x01, 0x02, 0x03, 0x00, 0x04, 0x11, 0x05, 0x12, 0x21, 0x31, 0x41, 0x06, 0x13, 0x51, 0x61, 0x07, 0x22, 0x71,
           0x14, 0x32, 0x81, 0x91, 0xa1, 0x08, 0x23, 0x42, 0xb1, 0xc1, 0x15, 0x52, 0xd1, 0xf0, 0x24, 0x33, 0x62, 0x72,
@@ -8171,9 +8178,9 @@ void dump(const char* msg, int p) {
           0x84, 0x85, 0x86, 0x87, 0x88, 0x89, 0x8a, 0x92, 0x93, 0x94, 0x95, 0x96, 0x97, 0x98, 0x99, 0x9a, 0xa2, 0xa3,
           0xa4, 0xa5, 0xa6, 0xa7, 0xa8, 0xa9, 0xaa, 0xb2, 0xb3, 0xb4, 0xb5, 0xb6, 0xb7, 0xb8, 0xb9, 0xba, 0xc2, 0xc3,
           0xc4, 0xc5, 0xc6, 0xc7, 0xc8, 0xc9, 0xca, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8, 0xd9, 0xda, 0xe1, 0xe2,
-          0xe3, 0xe4, 0xe5, 0xe6, 0xe7, 0xe8, 0xe9, 0xea, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8, 0xf9, 0xfa};
+          0xe3, 0xe4, 0xe5, 0xe6, 0xe7, 0xe8, 0xe9, 0xea, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8, 0xf9, 0xfa };
 
-      const static U8 bits_ac_chrominance[16] = {0, 2, 1, 2, 4, 4, 3, 4, 7, 5, 4, 4, 0, 1, 2, 0x77};
+      const static U8 bits_ac_chrominance[16] = { 0, 2, 1, 2, 4, 4, 3, 4, 7, 5, 4, 4, 0, 1, 2, 0x77 };
       const static U8 values_ac_chrominance[162] = {
           0x00, 0x01, 0x02, 0x03, 0x11, 0x04, 0x05, 0x21, 0x31, 0x06, 0x12, 0x41, 0x51, 0x07, 0x61, 0x71, 0x13, 0x22,
           0x32, 0x81, 0x08, 0x14, 0x42, 0x91, 0xa1, 0xb1, 0xc1, 0x09, 0x23, 0x33, 0x52, 0xf0, 0x15, 0x62, 0x72, 0xd1,
@@ -8183,7 +8190,7 @@ void dump(const char* msg, int p) {
           0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88, 0x89, 0x8a, 0x92, 0x93, 0x94, 0x95, 0x96, 0x97, 0x98, 0x99, 0x9a,
           0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7, 0xa8, 0xa9, 0xaa, 0xb2, 0xb3, 0xb4, 0xb5, 0xb6, 0xb7, 0xb8, 0xb9, 0xba,
           0xc2, 0xc3, 0xc4, 0xc5, 0xc6, 0xc7, 0xc8, 0xc9, 0xca, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8, 0xd9, 0xda,
-          0xe2, 0xe3, 0xe4, 0xe5, 0xe6, 0xe7, 0xe8, 0xe9, 0xea, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8, 0xf9, 0xfa};
+          0xe2, 0xe3, 0xe4, 0xe5, 0xe6, 0xe7, 0xe8, 0xe9, 0xea, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8, 0xf9, 0xfa };
 
       if( idx < 0 ) {
         memset( &images[0], 0, sizeof( images ) );
@@ -8903,17 +8910,17 @@ void dump(const char* msg, int p) {
     static const int nOLS = 8;
     static const int nLnrPrd = nOLS + 3;
     static SmallStationaryContextMap sMap1b[nLnrPrd][3]{
-        {{11, 1}, {11, 1}, {11, 1}}, {{11, 1}, {11, 1}, {11, 1}}, {{11, 1}, {11, 1}, {11, 1}},
-        {{11, 1}, {11, 1}, {11, 1}}, {{11, 1}, {11, 1}, {11, 1}}, {{11, 1}, {11, 1}, {11, 1}},
-        {{11, 1}, {11, 1}, {11, 1}}, {{11, 1}, {11, 1}, {11, 1}}, {{11, 1}, {11, 1}, {11, 1}},
-        {{11, 1}, {11, 1}, {11, 1}}, {{11, 1}, {11, 1}, {11, 1}}};
+        { { 11, 1 }, { 11, 1 }, { 11, 1 } }, { { 11, 1 }, { 11, 1 }, { 11, 1 } }, { { 11, 1 }, { 11, 1 }, { 11, 1 } },
+        { { 11, 1 }, { 11, 1 }, { 11, 1 } }, { { 11, 1 }, { 11, 1 }, { 11, 1 } }, { { 11, 1 }, { 11, 1 }, { 11, 1 } },
+        { { 11, 1 }, { 11, 1 }, { 11, 1 } }, { { 11, 1 }, { 11, 1 }, { 11, 1 } }, { { 11, 1 }, { 11, 1 }, { 11, 1 } },
+        { { 11, 1 }, { 11, 1 }, { 11, 1 } }, { { 11, 1 }, { 11, 1 }, { 11, 1 } } };
     static OLS<double, int8_t> ols[nOLS][2]{
-        {{128, 24, 0.9975}, {128, 24, 0.9975}}, {{90, 30, 0.9965}, {90, 30, 0.9965}},
-        {{90, 31, 0.996}, {90, 31, 0.996}},     {{90, 32, 0.995}, {90, 32, 0.995}},
-        {{90, 33, 0.995}, {90, 33, 0.995}},     {{90, 34, 0.9985}, {90, 34, 0.9985}},
-        {{28, 4, 0.98}, {28, 4, 0.98}},         {{28, 3, 0.992}, {28, 3, 0.992}}};
-    static int prd[nLnrPrd][2][2]{0};
-    static int residuals[nLnrPrd][2]{0};
+        { { 128, 24, 0.9975 }, { 128, 24, 0.9975 } }, { { 90, 30, 0.9965 }, { 90, 30, 0.9965 } },
+        { { 90, 31, 0.996 }, { 90, 31, 0.996 } },     { { 90, 32, 0.995 }, { 90, 32, 0.995 } },
+        { { 90, 33, 0.995 }, { 90, 33, 0.995 } },     { { 90, 34, 0.9985 }, { 90, 34, 0.9985 } },
+        { { 28, 4, 0.98 }, { 28, 4, 0.98 } },         { { 28, 3, 0.992 }, { 28, 3, 0.992 } } };
+    static int prd[nLnrPrd][2][2]{ 0 };
+    static int residuals[nLnrPrd][2]{ 0 };
     static int stereo = 0;
     static int ch = 0;
     static U32 mask = 0;
@@ -9027,10 +9034,10 @@ void dump(const char* msg, int p) {
 
   void wavModel( Mixer &m, int info, ModelStats *Stats ) {
     static int col = 0;
-    static Array<int> pr{3 * 2}; // [3][2]
-    static Array<int> counter{2};
-    static Array<double> F{49 * 49 * 2}; //[49][49][2]
-    static Array<double> L{49 * 49};     //[49][49]
+    static Array<int> pr{ 3 * 2 }; // [3][2]
+    static Array<int> counter{ 2 };
+    static Array<double> F{ 49 * 49 * 2 }; //[49][49][2]
+    static Array<double> L{ 49 * 49 };     //[49][49]
     static const double a = 0.996;
     static const double a2 = 1.0 / a;
     static SmallStationaryContextMap scm1( 8, 8 );
@@ -11027,8 +11034,8 @@ void dump(const char* msg, int p) {
   class dmcForest {
   private:
     const U32 MODELS = 10; // 8 fast and 2 slow models
-    U32 dmcparams[10] = {2, 32, 64, 4, 128, 8, 256, 16, 1024, 1536};
-    U64 dmcmem[10] = {6, 10, 11, 7, 12, 8, 13, 9, 2, 2};
+    U32 dmcparams[10] = { 2, 32, 64, 4, 128, 8, 256, 16, 1024, 1536 };
+    U64 dmcmem[10] = { 6, 10, 11, 7, 12, 8, 13, 9, 2, 2 };
     Array<dmcModel *> dmcmodels;
 
   public:
@@ -11578,7 +11585,8 @@ void dump(const char* msg, int p) {
     }
 
   public:
-    normalModel( const U64 size ) : cm( size, 10 ), rcm7( MEM ), rcm9( MEM ), rcm10( MEM ), StateMaps{256, 256 * 256} {
+    normalModel( const U64 size ) :
+        cm( size, 10 ), rcm7( MEM ), rcm9( MEM ), rcm10( MEM ), StateMaps{ 256, 256 * 256 } {
       assert( ispowerof2( size ) );
       if( ( options & OPTION_TRAINTXT ) != 0 ) {
         reset();
@@ -11611,7 +11619,7 @@ void dump(const char* msg, int p) {
   class ContextModel {
     normalModel normalmodel;
     ExeModel exeModel;
-    JpegModel *jpegModel{0};
+    JpegModel *jpegModel{ 0 };
     dmcForest dmcforest;
 #ifdef USE_TEXTMODEL
     TextModel textModel;
@@ -11619,12 +11627,12 @@ void dump(const char* msg, int p) {
     MatchModel matchModel;
     SparseMatchModel sparseMatchModel;
     Mixer *m;
-    Blocktype next_blocktype{DEFAULT}, blocktype{DEFAULT};
-    int blocksize{0}, blockinfo{0}, bytesread{0};
-    bool readsize{false};
+    Blocktype next_blocktype{ DEFAULT }, blocktype{ DEFAULT };
+    int blocksize{ 0 }, blockinfo{ 0 }, bytesread{ 0 };
+    bool readsize{ false };
 
   public:
-    bool Bypass{false};
+    bool Bypass{ false };
     ContextModel() :
         normalmodel( MEM * 32 ),
         exeModel( MEM * 4 ),
@@ -11802,7 +11810,7 @@ void dump(const char* msg, int p) {
   // update(y) trains the predictor with the actual bit (0 or 1).
 
   class Predictor {
-    int pr{2048}; // next prediction
+    int pr{ 2048 }; // next prediction
     ContextModel contextModel;
     struct {
       APM APMs[4];
@@ -11832,13 +11840,13 @@ void dump(const char* msg, int p) {
 
   Predictor::Predictor() :
 
-      Text{{0x10000, 0x10000, 0x10000, 0x10000}, {0x10000, 0x10000, 0x10000}},
+      Text{ { 0x10000, 0x10000, 0x10000, 0x10000 }, { 0x10000, 0x10000, 0x10000 } },
       Image{
-          {{0x1000, 0x10000, 0x10000, 0x10000}, {0x10000, 0x10000}}, // color
-          {{0x1000, 0x10000, 0x10000, 0x10000}, {0x10000, 0x10000}}, // palette
-          {{0x1000, 0x10000, 0x10000}}                               //gray
+          { { 0x1000, 0x10000, 0x10000, 0x10000 }, { 0x10000, 0x10000 } }, // color
+          { { 0x1000, 0x10000, 0x10000, 0x10000 }, { 0x10000, 0x10000 } }, // palette
+          { { 0x1000, 0x10000, 0x10000 } }                                 //gray
       },
-      Generic{{0x2000, 0x10000, 0x10000, 0x10000, 0x10000, 0x10000, 0x10000}} {
+      Generic{ { 0x2000, 0x10000, 0x10000, 0x10000, 0x10000, 0x10000, 0x10000 } } {
     memset( &stats, 0, sizeof( ModelStats ) );
   }
 
@@ -12566,12 +12574,12 @@ void dump(const char* msg, int p) {
     int cda = 0;
     int cdm = 0; // For CD sectors detection
     U32 cdf = 0;
-    unsigned char zbuf[256 + 32] = {0};
-    unsigned char zin[1 << 16] = {0};
-    unsigned char zout[1 << 16] = {0}; // For ZLIB stream detection
+    unsigned char zbuf[256 + 32] = { 0 };
+    unsigned char zin[1 << 16] = { 0 };
+    unsigned char zout[1 << 16] = { 0 }; // For ZLIB stream detection
     int zbufpos = 0;
     int zzippos = -1;
-    int histogram[256] = {0};
+    int histogram[256] = { 0 };
     int pdfim = 0;
     int pdfimw = 0;
     int pdfimh = 0;
@@ -13836,8 +13844,8 @@ void dump(const char* msg, int p) {
   }
 
   U64 decode_rle( File *in, U64 size, File *out, FMode mode, U64 &diffFound ) {
-    U8 inBuffer[0x10000] = {0};
-    U8 outBuffer[0x10200] = {0};
+    U8 inBuffer[0x10000] = { 0 };
+    U8 outBuffer[0x10200] = { 0 };
     U64 pos = 0;
     int maxBlockSize = ( int ) in->getVLI();
     enum { BASE, LITERAL, RUN, LITERAL_RUN } state;
@@ -13923,7 +13931,7 @@ void dump(const char* msg, int p) {
     uint8_t buffer[4096];
 
   public:
-    int32_t index{0};
+    int32_t index{ 0 };
     LZWDictionary() {
       reset();
     }
@@ -14949,8 +14957,8 @@ void dump(const char* msg, int p) {
     static const char *typenames[24] = {
         "default",   "filecontainer",    "jpeg",    "hdr",     "1b-image", "4b-image",   "8b-image", "8b-img-grayscale",
         "24b-image", "32b-image",        "audio",   "exe",     "cd",       "zlib",       "base64",   "gif",
-        "png-8b",    "png-8b-grayscale", "png-24b", "png-32b", "text",     "text - eol", "rle",      "lzw"};
-    static const char *audiotypes[4] = {"8b-mono", "8b-stereo", "16b-mono", "16b-stereo"};
+        "png-8b",    "png-8b-grayscale", "png-24b", "png-32b", "text",     "text - eol", "rle",      "lzw" };
+    static const char *audiotypes[4] = { "8b-mono", "8b-stereo", "16b-mono", "16b-stereo" };
     Blocktype type = DEFAULT;
     int blnum = 0;
     int info = 0; // image width or audio type
@@ -15155,7 +15163,7 @@ void dump(const char* msg, int p) {
   class ListOfFiles {
   private:
     typedef enum { IN_HEADER, FINISHED_A_FILENAME, FINISHED_A_LINE, PROCESSING_FILENAME } STATE;
-    STATE state{IN_HEADER}; //parsing state
+    STATE state{ IN_HEADER }; //parsing state
     FileName basepath;
     String
         list_of_files; //path/file list in first column, columns separated by tabs, rows separated by newlines, with header in 1st row
@@ -15457,8 +15465,8 @@ void dump(const char* msg, int p) {
         printf( "\nHighest SIMD vectorization support on this system: " );
         if( detected_simd_iset < 0 || detected_simd_iset > 9 )
           quit( "Oops, sorry. Unexpected result." );
-        static const char *vectorization_string[10] = {"None",  "MMX",    "SSE",    "SSE2", "SSE3",
-                                                       "SSSE3", "SSE4.1", "SSE4.2", "AVX",  "AVX2"};
+        static const char *vectorization_string[10] = { "None",  "MMX",    "SSE",    "SSE2", "SSE3",
+                                                        "SSSE3", "SSE4.1", "SSE4.2", "AVX",  "AVX2" };
         printf( "%s.\n", vectorization_string[detected_simd_iset] );
 
         printf( "Using " );

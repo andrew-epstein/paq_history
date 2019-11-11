@@ -29,7 +29,7 @@ private:
   int p[256]; // Probability of 1
 
 public:
-  int cxt{1}; // Context: last 0-7 bits with a leading 1
+  int cxt{ 1 }; // Context: last 0-7 bits with a leading 1
 
   Predictor() {
     for( int &i: p )

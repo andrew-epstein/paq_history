@@ -1038,8 +1038,8 @@ inline int MatchModel::p() {
 
 int MEM = 0; // Global memory usage = 3*MEM bytes (1<<20 .. 1<<29)
 
-U8 t0[0x10000];                                   // order 1 cxt -> state
-U8 *t0c1 = t0, *cp[6] = {t0, t0, t0, t0, t0, t0}; // pointer to bit history
+U8 t0[0x10000];                                     // order 1 cxt -> state
+U8 *t0c1 = t0, *cp[6] = { t0, t0, t0, t0, t0, t0 }; // pointer to bit history
 U32 h[6], pw = 0, c8 = 0, cc = 0, prevfail = 0;
 U8 fails = 0;
 StateMap sm[6];
