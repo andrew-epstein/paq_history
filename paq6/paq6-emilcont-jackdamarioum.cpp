@@ -899,7 +899,7 @@ public:
     const U8 checksum = ( h >> 24 ) ^ h;
     const U32 lo = ( h >> ( 32 - N ) ) & -4;
     const U32 hi = lo + 4;
-    U32 i;
+    U32 i = 0;
     for( i = lo; i < hi; ++i ) {
       U32 pri = table[i].c[0].priority();
       if( table[i].checksum == checksum ) { // found
@@ -1356,7 +1356,7 @@ inline void MatchModel::model() {
     }
     for( int i = 0; i < M; ++i ) {
       if( end[i] == 0U ) { // Search for a matching context
-        int j;
+        int j = 0;
         for( j = 0; j < M; ++j ) // Search for duplicate match
           if( ptr[h] == end[j] )
             break;
@@ -1826,7 +1826,7 @@ void compress( Encoder &e, int c ) {
 // Read and return a line of input from FILE f (default stdin) up to
 // first control character except tab.  Skips CR in CR LF.
 string getline( FILE *f = stdin ) {
-  int c;
+  int c = 0;
   string result;
   while( ( c = getc( f ) ) != EOF && ( c >= 32 || c == '\t' ) )
     result += char( c );
@@ -1997,7 +1997,7 @@ int main( int argc, char **argv ) {
         uncompressed_bytes += size;
         printf( "%-23s %10ld -> ", filename[i].c_str(), size );
         FILE *f = fopen( filename[i].c_str(), "rbe" );
-        int c;
+        int c = 0;
         for( long j = 0; j < size; ++j ) {
           if( f != nullptr )
             c = getc( f );

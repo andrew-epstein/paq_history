@@ -1172,7 +1172,7 @@ void handler() {
 // Read and return a line of input from FILE f (default stdin) up to
 // first control character except tab.  Skips CR in CR LF.
 string getline( FILE *f = stdin ) {
-  int c;
+  int c = 0;
   string result;
   while( ( c = getc( f ) ) != EOF && ( c >= 32 || c == '\t' ) )
     result += char( c );
@@ -1353,7 +1353,7 @@ int main( int argc, char **argv ) {
         uncompressed_bytes += size;
         printf( "%-23s %10ld -> ", filename[i].c_str(), size );
         FILE *f = fopen( filename[i].c_str(), "rbe" );
-        int c;
+        int c = 0;
         for( long j = 0; j < size; ++j ) {
           if( f != nullptr )
             c = getc( f );

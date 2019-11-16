@@ -9,7 +9,7 @@
 #include "bit_bytm.h"
 
 int bit_byts::rc() { /* FILE of ASCII ones and zeroes only */
-  int ch;
+  int ch = 0;
   if( f == NULL )
     return -2;
   if( bn == 2 ) {
@@ -46,7 +46,7 @@ int bit_byts::rc() { /* FILE of ASCII ones and zeroes only */
 int bit_byts::r() {
   /* return -1 on last bit which is last one in file -2 thereafter */
   /* return 0 on zero return 1 most of the time one */
-  int ch;
+  int ch = 0;
   if( f == NULL )
     return -2;
   if( ( l >>= 1 ) == 0 ) {

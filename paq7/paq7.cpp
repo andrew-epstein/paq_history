@@ -1004,7 +1004,7 @@ public:
     i &= n;
     int bi = i;
     int b = 1024; // best replacement so far
-    U8 *p;
+    U8 *p = nullptr;
     for( int j = 0; j < M; ++j ) {
       p = &t[( i ^ j ) * B];
       if( p[0] == chk )
@@ -1269,7 +1269,7 @@ int matchModel( Mixer &m ) {
   // predict
   if( len > MAXLEN )
     len = MAXLEN;
-  int sgn;
+  int sgn = 0;
   if( ( len != 0 ) && buf( 1 ) == buf[ptr - 1] && c0 == ( buf[ptr] + 256 ) >> ( 8 - bpos ) ) {
     if( ( buf[ptr] >> ( 7 - bpos ) & 1 ) != 0 )
       sgn = 1;
@@ -2119,7 +2119,7 @@ int contextModel2() {
 
   // Normal model
   if( bpos == 0 ) {
-    U32 h;
+    U32 h = 0;
     int i = 0;
     cm0.set( 0 );
     cm1.set( buf( 1 ) );
@@ -2290,7 +2290,7 @@ char *getline( FILE *f = stdin ) {
   const int MAXLINE = 512;
   static char s[MAXLINE];
   int len = 0;
-  int c;
+  int c = 0;
   while( ( c = getc( f ) ) != EOF && c != 26 && c != '\n' && len < MAXLINE - 1 ) {
     if( c != '\r' && len < MAXLINE - 1 )
       s[len++] = c;
@@ -2362,7 +2362,7 @@ int main( int argc, char **argv ) {
       printf( "Enter names of files to compress, followed by blank line\n" );
     int i = 2;
     while( true ) {
-      char *filename;
+      char *filename = nullptr;
       if( argc == 2 ) {
         filename = getline();
         if( ( filename == nullptr ) || ( filename[0] == 0 ) )
@@ -2405,8 +2405,8 @@ int main( int argc, char **argv ) {
     f = fopen( argv[1], "rbe" );
   if( f == nullptr )
     perror( argv[1] ), exit( 1 );
-  long header;
-  long body;                     // file positions in header, body
+  long header = 0;
+  long body = 0;                     // file positions in header, body
   char *filename = getline( f ); // check header
   if( ( filename == nullptr ) || ( strncmp( filename, PROGNAME " -", strlen( PROGNAME ) + 2 ) != 0 ) )
     fprintf( stderr, "%s: not a " PROGNAME " file\n", argv[1] ), exit( 1 );
@@ -2418,7 +2418,7 @@ int main( int argc, char **argv ) {
   if( mode == COMPRESS )
     fseek( f, 0, SEEK_END );
   else { // body starts after ^Z in file
-    int c;
+    int c = 0;
     while( ( c = getc( f ) ) != EOF && c != 26 )
       ;
     if( c != 26 )
@@ -2461,8 +2461,8 @@ int main( int argc, char **argv ) {
       printf( " -> %4ld  \n", ftell( f ) - body );
     } else {                // DECOMPRESS
       if( fi != nullptr ) { // compare
-        int c1;
-        int c2;
+        int c1 = 0;
+        int c2 = 0;
         bool diff = false;
         for( long i = 0; i < size; ++i ) {
           print_status( i );

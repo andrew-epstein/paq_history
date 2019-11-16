@@ -1157,8 +1157,8 @@ Encoder::Encoder( Mode m, FILE *f ) :
   }
 
   // Initialize SSE contexts
-  int i;
-  int j;
+  int i = 0;
+  int j = 0;
   for( i = 0; i < 4096; i++ ) {
     for( int j = 0; j < 64; j++ ) {
       sse[i][j].init( 1024 * j + 512 );
@@ -1353,7 +1353,7 @@ void handler() {
 // Read and return a line of input from FILE f (default stdin) up to
 // first control character.  Skips CR in CR LF.
 string getline( FILE *f = stdin ) {
-  int c;
+  int c = 0;
   string result;
   while( ( c = getc( f ) ) != EOF && c >= 32 )
     result += char( c );
@@ -1517,7 +1517,7 @@ int main( int argc, char **argv ) {
       if( size >= 0 ) {
         printf( "%s: ", filename[i].c_str() );
         FILE *f = fopen( filename[i].c_str(), "rbe" );
-        int c;
+        int c = 0;
         for( long j = 0; j < size; ++j ) {
           if( f != nullptr )
             c = getc( f );

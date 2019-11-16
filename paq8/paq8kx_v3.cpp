@@ -3278,8 +3278,7 @@ int chartModel( Mixer &m, int ismatch ) {
     cn.set( w4 | g ); // <--Guesses next "c4&0xFF0000FF"
 
     for( int i = 0, s = 0, e = a[0], k = chart[0];
-
-         i<20; s = ++i> > 3, e = a[s],
+         i<20; s = ++i >> 3, e = a[s],
              k = chart[i] ) {                                    //   k   e
       cm.set( k << s );                                          //  111 000
       cm.set( hash( e, k, s ) );                                 //  111 111

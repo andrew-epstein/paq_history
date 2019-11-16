@@ -1214,7 +1214,7 @@ void handler() {
 // Read and return a line of input from FILE f (default stdin) up to
 // first control character.  Skips CR in CR LF.
 string getline( FILE *f = stdin ) {
-  int c;
+  int c = 0;
   string result;
   while( ( c = getc( f ) ) != EOF && c >= 32 )
     result += char( c );
@@ -1377,7 +1377,7 @@ int main( int argc, char **argv ) {
       if( size >= 0 ) {
         printf( "%s: ", filename[i].c_str() );
         FILE *f = fopen( filename[i].c_str(), "rbe" );
-        int c;
+        int c = 0;
         for( long j = 0; j < size; ++j ) {
           if( f != nullptr )
             c = getc( f );

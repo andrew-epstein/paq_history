@@ -1115,7 +1115,7 @@ public:
     const U8 checksum = h + ( h >> 16 );
     const U32 lo = ( h >> ( 32 - N ) ) & -4;
     const U32 hi = lo + 4;
-    U32 i;
+    U32 i = 0;
     for( i = lo; i < hi; ++i ) {
       if( table[i].checksum == checksum ) { // found
         cxt = i;
@@ -1254,7 +1254,7 @@ int Mixer::predict( int c_ ) {
 }
 
 Mixer::Mixer( int C_ ) : C( C_ ), bc0( new U32[N] ), bc1( new U32[N] ), wt( new U32[C_][N] ), n( -1 ), c( 0 ) {
-  int i;
+  int i = 0;
   for( i = 0; i < C; ++i ) {
     for( int j = 0; j < N; ++j )
       wt[i][j] = 1;
@@ -1286,8 +1286,8 @@ class Mixer1 : public Mixer {
 public:
   Mixer1( int _C ) : Mixer( _C ) {}
   void update( int y ) override {
-    U32 s0;
-    U32 s1;
+    U32 s0 = 0;
+    U32 s1 = 0;
     s0 = _b0;
     s1 = _b1;
 
@@ -1314,8 +1314,8 @@ class Mixer2 : public Mixer {
 public:
   Mixer2( int _C ) : Mixer( _C ) {}
   void update( int y ) override {
-    U32 s0;
-    U32 s1;
+    U32 s0 = 0;
+    U32 s1 = 0;
     s0 = _b0;
     s1 = _b1;
 
@@ -1359,7 +1359,7 @@ public:
       m2.add( n0, n1 );
   }
   int predict() {
-    U32 u1;
+    U32 u1 = 0;
     if( ch.pos( 0, 3 ) < ch.pos( 32, 3 ) )
       u1 = ( ch( 2 ) >> 5 ) + 8 * ( ch( 1 ) >> 5 ) + 64 * static_cast<int>( _wlen == _clen );
     else if( ch.pos( 0, 3 ) > ch.pos( 167, 3 ) )
@@ -1703,14 +1703,14 @@ inline void MatchModel::model() {
     U32 h = hash[0] >> ( 32 - N );
     if( ( hash[0] >> 28 ) == 0 )
       h = hash[1] >> ( 32 - N ); // 1/16 of 8-contexts are hashed to 32 bytes
-    int i;
+    int i = 0;
     for( i = 0; i < M; ++i ) {
       if( ( end[i] != 0U ) && ch( 1 ) == ch[end[i]] )
         ++end[i];
     }
     for( i = 0; i < M; ++i ) {
       if( end[i] == 0U ) { // Search for a matching context
-        int j;
+        int j = 0;
         for( j = 0; j < M; ++j ) // Search for duplicate match
           if( ptr[h] == end[j] )
             break;
@@ -2517,10 +2517,10 @@ inline void Encoder::encode( int y ) {
   U32 p = predictor.p() * ( 4096 / PSCALE ); // P(1) * 4K
   assert( p < 4096 );
   const U32 xdiff = x2 - x1;
-  U32 a;
-  U32 b;
-  U32 c;
-  U32 xmid; // = x1+p*(x2-x1) multiply without overflow, round down
+  U32 a = 0;
+  U32 b = 0;
+  U32 c = 0;
+  U32 xmid = 0; // = x1+p*(x2-x1) multiply without overflow, round down
 
   c = 2 * p + 1;
   a = xdiff >> 13;
@@ -2563,10 +2563,10 @@ inline int Encoder::decode() {
   const U32 p = predictor.p() * ( 4096 / PSCALE ); // P(1) * 4K
   assert( p < 4096 );
   const U32 xdiff = x2 - x1;
-  U32 a;
-  U32 b;
-  U32 c;
-  U32 xmid; // = x1+p*(x2-x1) multiply without overflow, round down
+  U32 a = 0;
+  U32 b = 0;
+  U32 c = 0;
+  U32 xmid = 0; // = x1+p*(x2-x1) multiply without overflow, round down
 
   c = 2 * p + 1;
   a = xdiff >> 13;
@@ -2655,7 +2655,7 @@ public:
 // Read and return a line of input from FILE f (default stdin) up to
 // first control character except tab.  Skips CR in CR LF.
 string getline( FILE *f = stdin ) {
-  int c;
+  int c = 0;
   string result;
   while( ( c = getc( f ) ) != EOF && ( c >= 32 || c == '\t' ) )
     result += char( c );
@@ -2829,7 +2829,7 @@ int main( int argc, char **argv ) {
     }
 
     // Get file sizes
-    int i;
+    int i = 0;
     for( i = 0; i < int( filename.size() ); ++i ) {
       FILE *f = fopen( filename[i].c_str(), "rbe" );
       if( f == nullptr ) {
@@ -2870,7 +2870,7 @@ int main( int argc, char **argv ) {
         uncompressed_bytes += size;
         printf( "%-23s %10ld -> ", filename[i].c_str(), size );
         FILE *f = fopen( filename[i].c_str(), "rbe" );
-        int c;
+        int c = 0;
         printf( "      " );
         long step = ceil( ( double ) size / 1000 );
         for( long j = 0; j < size; ++j ) {

@@ -1104,7 +1104,7 @@ public:
     const U8 checksum = ( h >> 8 ) ^ h;
     const U32 lo = ( h >> ( 32 - N ) ) & -4;
     const U32 hi = lo + 4;
-    U32 i;
+    U32 i = 0;
     for( i = lo; i < hi; ++i ) {
       if( table[i].checksum == checksum ) { // found
         cxt = i;
@@ -1232,8 +1232,8 @@ int Mixer::predict( int c_ ) {
 
 // Adjust the weights by gradient descent to reduce cost of bit y
 void Mixer::update( int y ) {
-  U32 s0;
-  U32 s1;
+  U32 s0 = 0;
+  U32 s1 = 0;
   s0 = _b0;
   s1 = _b1;
 
@@ -1259,7 +1259,7 @@ void Mixer::update( int y ) {
 }
 
 Mixer::Mixer( int C_ ) : C( C_ ), bc0( new U32[N] ), bc1( new U32[N] ), wt( new U32[C_][N] ), n( -1 ), c( 0 ) {
-  int i;
+  int i = 0;
   for( i = 0; i < C; ++i ) {
     for( int j = 0; j < N; ++j )
       wt[i][j] = 1;
@@ -1612,14 +1612,14 @@ inline void MatchModel::model() {
     U32 h = hash[0] >> ( 32 - N );
     if( ( hash[0] >> 28 ) == 0 )
       h = hash[1] >> ( 32 - N ); // 1/16 of 8-contexts are hashed to 32 bytes
-    int i;
+    int i = 0;
     for( i = 0; i < M; ++i ) {
       if( ( end[i] != 0U ) && ch( 1 ) == ch[end[i]] )
         ++end[i];
     }
     for( i = 0; i < M; ++i ) {
       if( end[i] == 0U ) { // Search for a matching context
-        int j;
+        int j = 0;
         for( j = 0; j < M; ++j ) // Search for duplicate match
           if( ptr[h] == end[j] )
             break;
@@ -2276,7 +2276,7 @@ public:
 // Read and return a line of input from FILE f (default stdin) up to
 // first control character except tab.  Skips CR in CR LF.
 string getline( FILE *f = stdin ) {
-  int c;
+  int c = 0;
   string result;
   while( ( c = getc( f ) ) != EOF && ( c >= 32 || c == '\t' ) )
     result += char( c );
@@ -2438,7 +2438,7 @@ int main( int argc, char **argv ) {
     }
 
     // Get file sizes
-    int i;
+    int i = 0;
     for( i = 0; i < int( filename.size() ); ++i ) {
       FILE *f = fopen( filename[i].c_str(), "rbe" );
       if( f == nullptr ) {
@@ -2479,7 +2479,7 @@ int main( int argc, char **argv ) {
         uncompressed_bytes += size;
         printf( "%-23s %10ld -> ", filename[i].c_str(), size );
         FILE *f = fopen( filename[i].c_str(), "rbe" );
-        int c;
+        int c = 0;
         for( long j = 0; j < size; ++j ) {
           if( f != nullptr )
             c = getc( f );
