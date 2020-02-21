@@ -341,7 +341,7 @@ static U8 *buf;        // input buffer
 
 U32 smt[256 * 67], cxt0 = 0, cxt1 = 0, cxt2 = 0, cxt3 = 0, cxt4 = 0, cxt5 = 0, cxtm = 0;
 U8 t0[0x10000];                                                // order 1 cxt -> state
-U8 *t0c1 = t0, *cp[6] = {t0, t0, t0, t0, t0, t0};              // pointer to bit history
+U8 *t0c1 = t0, *cp[6] = { t0, t0, t0, t0, t0, t0 };            // pointer to bit history
 U32 h5 = 0, hh[6], bc4cp0 = 0, pw = 0, c4 = 0, c8 = 0, cc = 0; // last 4, 8, 12 bytes
 int pos = 0;                                                   // number of bytes in buf
 int c1 = 0, c2 = 0;                                            // last two higher 4-bit nibbles
@@ -1094,9 +1094,9 @@ int len;           // length of match
 enum { MAXLEN = 62 }; // maximum match length, at most 62
 U32 len2cxt[MAXLEN * 4 + 4], len2order[MAXLEN + 1], len2order7[MAXLEN + 1];
 
-U8 len2cxt0[] = {0,  0,  0,  0,  0,  0,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14,
-                 15, 15, 16, 16, 17, 17, 18, 18, 19, 19, 20, 20, 20, 21, 21, 21, 22, 22, 22, 22, 23,
-                 23, 23, 23, 24, 24, 24, 24, 25, 25, 25, 25, 25, 26, 26, 26, 26, 26, 26, 26, 26, 27};
+U8 len2cxt0[] = { 0,  0,  0,  0,  0,  0,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14,
+                  15, 15, 16, 16, 17, 17, 18, 18, 19, 19, 20, 20, 20, 21, 21, 21, 22, 22, 22, 22, 23,
+                  23, 23, 23, 24, 24, 24, 24, 25, 25, 25, 25, 25, 26, 26, 26, 26, 26, 26, 26, 26, 27 };
 
 #define SEARCH                                                                                                         \
   {                                                                                                                    \

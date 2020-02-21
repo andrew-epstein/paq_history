@@ -4844,9 +4844,5 @@ int main( int argc, char **argv ) {
     if( s != nullptr )
       printf( "%s\n", s );
   }
-  if( pause ) {
-    printf( "\nClose this window or press ENTER to continue...\n" );
-    getchar();
-  }
   return 0;
 }

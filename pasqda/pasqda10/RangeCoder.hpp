@@ -67,7 +67,7 @@ public:
 
   inline void ReallocTgtBuf( uint len ) {
     uc *NewTargetBuf = new uc[len];
-    memcpy( NewTargetBuf, TargetBuf, min( TgtPtr, len ) );
+    memcpy( NewTargetBuf, TargetBuf, std::min( TgtPtr, len ) );
     TgtLen = len;
     delete( TargetBuf );
     TargetBuf = NewTargetBuf;

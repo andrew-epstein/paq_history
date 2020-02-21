@@ -12,8 +12,12 @@ import string
 import colorama
 import glob
 
-CompressionParams = namedtuple('CompressionParams',
-                               'arg1_type, arg2_type, arg3_type, arg4_type, min_level, max_level, other_1, other_2, other_3, other_4')
+CompressionParams = namedtuple(
+    'CompressionParams',
+    'arg1_type, arg2_type, arg3_type, arg4_type, min_level, max_level, other_1, other_2, other_3, other_4')
+
+DecompressionParams = namedtuple('DecompressionParams',
+                                 'arg1_type, arg2_type, arg3_type, arg4_type, other_1, other_2, other_3, other_4')
 
 query = '''
 INSERT INTO compression_result (
@@ -26,7 +30,7 @@ VALUES (
   '{}', {}, '{}', '{}', {} :: BIGINT,
   '{}', '{}', {} :: BIGINT,
   to_timestamp({} / 1000), to_timestamp({} / 1000), {} :: DOUBLE PRECISION, {} :: DOUBLE PRECISION, {} :: DOUBLE PRECISION, {} :: DOUBLE PRECISION,
-  '', 0, 0
+  '{}', {}, 0
 );
 '''
 
@@ -85,16 +89,21 @@ def calculate_timeout(original_size):
 def remove_file(f):
     try:
         os.remove(f)
-    except:
+    except BaseException:
         pass
 
 
-def evaluate_one_command_one_file(command, outfile, infile, program_id):
+def evaluate_one_command_one_file(command, outfile, infile, program_id, decompression_command):
     original_size = get_size(infile)
     original_hash = get_hash(infile)
     start_time = get_milli()
     try:
-        p = subprocess.run(command, stdout=subprocess.PIPE, shell=True, check=True, timeout=calculate_timeout(original_size))
+        p = subprocess.run(
+            command,
+            stdout=subprocess.PIPE,
+            shell=True,
+            check=True,
+            timeout=calculate_timeout(original_size))
     except subprocess.CalledProcessError as e:
         print(colorama.Fore.RED + '{} # exited with nonzero error code'.format(command) + colorama.Fore.RESET)
         with open('nonzero.log') as f:
@@ -110,7 +119,7 @@ def evaluate_one_command_one_file(command, outfile, infile, program_id):
     try:
         outfiles = glob.glob(outfile + '*')
         if len(outfiles) != 1:
-            print(colorama.Fore.RED + command +' # BAD OUTFILE(S)' + colorama.Fore.RESET)
+            print(colorama.Fore.RED + command + ' # BAD OUTFILE(S)' + colorama.Fore.RESET)
             return False
         outfile = outfiles[0]
         new_size = get_size(outfile)
@@ -121,7 +130,28 @@ def evaluate_one_command_one_file(command, outfile, infile, program_id):
         print(colorama.Fore.GREEN + command + colorama.Fore.RESET)
         print('Duration: {:.2f}s, Ratio: {:.2f}, kB/s: {:.2f}, bpb: {:.2f}, ({}/{})'.format(
             duration, ratio, kb_per_sec, bits_per_byte, new_size, original_size))
-
+        '''
+        start_time = get_milli()
+        try:
+            p = subprocess.run(decompression_command, stdout=subprocess.PIPE, shell=True,
+                               check=True, timeout=calculate_timeout(original_size))
+        except subprocess.CalledProcessError as e:
+            print(
+                colorama.Fore.RED +
+                '{} # exited with nonzero error code'.format(decompression_command) +
+                colorama.Fore.RESET)
+            with open('nonzero.log') as f:
+                f.write(decompression_command)
+            remove_file(outfile)
+            return False
+        except subprocess.TimeoutExpired:
+            print(colorama.Fore.RED + '{} # TIMEOUT'.format(decompression_command) + colorama.Fore.RESET)
+            remove_file(outfile)
+            return False
+        end_time = get_milli()
+        decompression_duration = (end_time - start_time) / 1000
+        print(colorama.Fore.BLUE + decompression_command + colorama.Fore.RESET)
+        '''
         remove_file(outfile)
         conn = get_connection()
         cursor = conn.cursor()
@@ -140,7 +170,9 @@ def evaluate_one_command_one_file(command, outfile, infile, program_id):
                 duration,
                 ratio,
                 kb_per_sec,
-                bits_per_byte))
+                bits_per_byte,
+                '',
+                0))
         conn.close()
         return True
     except Exception as e:
@@ -150,8 +182,7 @@ def evaluate_one_command_one_file(command, outfile, infile, program_id):
 
 
 def insert_program(executable, program_hash):
-    """ Create a row in `compression_program` for this executable
-    if one doesn't yet exist.
+    """ Create a row in `compression_program` for this executable if one doesn't yet exist.
     Returns the id of the row.
     """
     select_query = '''
@@ -201,6 +232,25 @@ def get_params(executable):
         return None
 
 
+def get_decompression_params(executable):
+    query = '''
+    SELECT t.arg1_type, t.arg2_type, t.arg3_type, t.arg4_type, other_1, other_2, other_3, other_4
+    FROM (SELECT * FROM decompression_params) AS t
+    WHERE regexp_match('{}', program_name_pattern) IS NOT NULL;
+    '''
+
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(query.format(executable))
+    try:
+        result = cursor.fetchone()
+        conn.close()
+        return DecompressionParams(*result)
+    except BaseException:
+        conn.close()
+        return None
+
+
 def substitute_arg(arg_type, testfile, outfile, level, other=None):
     if arg_type == 'LEVEL_HYPHEN':
         return '-{}'.format(level)
@@ -238,8 +288,8 @@ def construct_command(executable, params, testfile, outfile, level):
 
 def worker_main(queue):
     while True:
-        command, outfile, infile, program_id = queue.get(True)
-        evaluate_one_command_one_file(command, outfile, infile, program_id)
+        command, outfile, infile, program_id, decompression_command = queue.get(True)
+        evaluate_one_command_one_file(command, outfile, infile, program_id, decompression_command)
 
 
 testfiles = get_test_files()
@@ -252,6 +302,7 @@ for executable in executables:
     program_hash = get_hash(executable)
     program_id = insert_program(executable, program_hash)
     compression_params = get_params(executable[4:])
+    decompression_params = get_decompression_params(executable[4:])
     if not compression_params:
         print(colorama.Fore.RED + 'No compression params for executable: {}'.format(executable) + colorama.Fore.RESET)
         continue
@@ -262,7 +313,8 @@ for executable in executables:
         for level in range(min_level, max_level + 1):
             outfile = make_outfilename()
             command = construct_command(executable, compression_params, testfile, outfile, level)
-            the_queue.put((command, outfile, testfile, program_id))
+            decompression_command = construct_command(executable, decompression_params, testfile, outfile, level)
+            the_queue.put((command, outfile, testfile, program_id, decompression_command))
 
 
 while not the_queue.empty():

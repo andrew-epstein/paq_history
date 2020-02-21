@@ -2467,12 +2467,12 @@ typedef enum { COMPRESS, DECOMPRESS } Mode;
 class Encoder {
 private:
   Predictor predictor;
-  Mode mode;                 // Compress or decompress?
-  FILE *archive;             // Compressed data file
-  U32 x1{0}, x2{0xffffffff}; // Range, initially [0, 1), scaled by 2^32
-  U32 x{0};                  // Last 4 input bytes of archive.
-  U32 bits_to_follow{0};
-  U8 bptr{128}, bout{0}, bptrin{1};
+  Mode mode;                     // Compress or decompress?
+  FILE *archive;                 // Compressed data file
+  U32 x1{ 0 }, x2{ 0xffffffff }; // Range, initially [0, 1), scaled by 2^32
+  U32 x{ 0 };                    // Last 4 input bytes of archive.
+  U32 bits_to_follow{ 0 };
+  U8 bptr{ 128 }, bout{ 0 }, bptrin{ 1 };
   int bin;
 
 public:
@@ -2740,7 +2740,7 @@ int exe_preprocess( FILE *f, FILE *fw, int type ) // 3=compress, 4=decompress
 {
   char *st0;
   char *st;
-  int data2write[4] = {0, 0, 0, 0};
+  int data2write[4] = { 0, 0, 0, 0 };
   int size;
 
   fseek( f, 0L, SEEK_END );

@@ -2406,7 +2406,7 @@ int main( int argc, char **argv ) {
   if( f == nullptr )
     perror( argv[1] ), exit( 1 );
   long header = 0;
-  long body = 0;                     // file positions in header, body
+  long body = 0;                 // file positions in header, body
   char *filename = getline( f ); // check header
   if( ( filename == nullptr ) || ( strncmp( filename, PROGNAME " -", strlen( PROGNAME ) + 2 ) != 0 ) )
     fprintf( stderr, "%s: not a " PROGNAME " file\n", argv[1] ), exit( 1 );

@@ -3,7 +3,7 @@
     Copyright (C) 2008 Matt Mahoney, Serge Osnach, Alexander Ratushnyak,
     Bill Pettis, Przemyslaw Skibinski, Matthew Fite, wowtiger, Andrew Paterson,
     Jan Ondrus, Andreas Morphis, Pavel L. Holoborodko, Kaido Orav, Simon Berger,
-    Neill Corlett, Márcio Pais
+    Neill Corlett, Mï¿½rcio Pais
     LICENSE
 
     This program is free software; you can redistribute it and/or
@@ -6396,10 +6396,6 @@ int main( int argc, char **argv ) {
   } catch( const char *s ) {
     if( s != nullptr )
       printf( "%s\n", s );
-  }
-  if( pause ) {
-    printf( "\nClose this window or press ENTER to continue...\n" );
-    getchar();
   }
   return 0;
 }

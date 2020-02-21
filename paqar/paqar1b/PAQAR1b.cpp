@@ -1,5 +1,4 @@
-/*
-PAQAR 1.1 - Experimental version by Alexander Ratushnyak - File archiver and compressor.
+/* PAQAR 1.0 - Experimental version by Alexander Ratushnyak - File archiver and compressor.
 (C) 2004, Matt Mahoney, mmahoney@cs.fit.edu, Alexander Ratushnyak, artest@inbox.ru
           Fabio Buffoni, David Scott, Jason Schmidt, Berto Destasio
 
@@ -25,15 +24,15 @@ end of file.
 
 The -3 is optional, and is used to trade off compression vs. speed
 and memory.  Valid options are -0 to -9.  Higher numbers compress better
-but run slower and use more memory.  -6 is the default, and gives a
+but run slower and use more memory.  -3 is the default, and gives a
 reasonable tradeoff.  Recommended options are:
 
-  -0 to -2 for fast but not very good compression, uses ~8-15 Mb memory
-  -3 for reasonably fast and good compression,
-  -4 better compression but slower,
-  -5 slightly better compression,
-  -6 the default, uses ~230 Mb,
-  -7 to -9 use ~460 Mb, ~920 Mb, ~1840 Mb, about the same speed as -6
+  -0 to -2 for fast (2X over -3) but poor compression, uses 2-6 MB memory
+  -3 for reasonably fast and good compression, uses 18 MB (default)
+  -4 better compression but 3.5X slower, uses 64 MB
+  -5 slightly better compression, 6X slower than -3, uses 154 MB 
+  -6 about like -5, uses 202 MB memory
+  -7 to -9 use 404 MB, 808 MB, 1616 MB, about the same speed as -5
 
 Decompression:  No file names are specified.  The archive must exist.
 If a path is stored, the file is extracted to the appropriate directory,
@@ -50,16 +49,16 @@ create a new archive with just the files you want.
 
 TO COMPILE
 
-gxx -O PAQAR.cpp	DJGPP 2.95.2
-bcc32 -O2 PAQAR.cpp	Borland 5.5.1
-sc -o PAQAR.cpp		Digital Mars 8.35n
+gxx -O PAQAR.cpp        DJGPP 2.95.2
+bcc32 -O2 PAQAR.cpp     Borland 5.5.1
+sc -o PAQAR.cpp         Digital Mars 8.35n
 
 g++ -O produces the fastest executable among free compilers, followed
 by Borland and Mars.  However Intel 8 will produce the fastest and smallest
 Windows executable overall, followed by Microsoft VC++ .net 7.1 /O2 /G7
 
 
-PAQ6 DESCRIPTION    // to be updated for PAQAR
+PAQ6 DESCRIPTION  // to be updated for PAQAR
 
 1. OVERVIEW
 
@@ -457,7 +456,7 @@ input and output, with the output receiving 3/4 of the weight:
 Results on the Calgary corpos are shown below for some top data compressors
 as of Dec. 30, 2003.  Options are set for maximum compression.  When
 possible, the files are all compressed into a single archive.  Run times
-are on a 705 MHz Duron with 256 Mb memory, and include 3 seconds to run
+are on a 705 MHz Duron with 256 MB memory, and include 3 seconds to run
 WRT when applicable.  PAQAR was compiled with DJGPP (g++) 2.95.2 -O.
 
   Original size   Options        3,141,622  Time   Author
@@ -518,13 +517,13 @@ Also, give yourself credit in the help message.
 #define PROGNAME "PAQAR"
 #define min( a, b ) ( ( a ) < ( b ) ? ( a ) : ( b ) )
 #define max( a, b ) ( ( a ) > ( b ) ? ( a ) : ( b ) )
-#include <algorithm>
-#include <cassert>
 #include <cctype>
 #include <cmath>
-#include <ctime>
 #include <string>
 #include <vector>
+#include <algorithm>
+#include <ctime>
+#include <cassert>
 #define au 0xffffffff
 #define bu 0x1ffffff
 #define cu 0xffffff
@@ -542,9 +541,9 @@ inline int size( const T &t ) {
 }
 
 // 8-32 bit unsigned types, adjust as appropriate
-using U8 = unsigned char;
-using U16 = unsigned short;
-using U32 = unsigned int;
+typedef unsigned char U8;
+typedef unsigned short U16;
+typedef uint32_t U32;
 
 #define Top_value U32( 0XFFFFFFFF ) /* Largest code value */
 /* HALF AND QUARTER POINTS IN THE CODE VALUE RANGE. */
@@ -651,7 +650,7 @@ class Counter {
   static E table[];
 
 public:
-  Counter() = default;
+  Counter() {}
   int get0() {
     return table[state].n0;
   }
@@ -662,7 +661,7 @@ public:
     return 4096 * ( table[state].n0 + table[state].n1 ) + state;
   }
   void add( int y ) {
-    if( y != 0 ) {
+    if( y ) {
       if( state < 214 || rnd() <= table[state].p1 )
         state = table[state].s11;
       else
@@ -705,13 +704,13 @@ class Ch {
   U32 lpos[4][256];
 
 public:
-  Ch() = default;
+  Ch() {}
   void init() {
     lon = 1;
     po = bp = 0;
-    N = 1 << ( 16 + MEM + static_cast<int>( MEM > 6 ) );
+    N = 1 << ( 16 + MEM + ( MEM > 6 ) );
     buf = ( U8 * ) calloc( N--, 1 );
-    if( buf == nullptr )
+    if( !buf )
       handler();
     buf[0] = 1;
     memset( lpos, 0, 4096 );
@@ -729,10 +728,10 @@ public:
     ++bp;
     if( ( lon = lon * 2 + y ) > 15 ) {
       lon = 1;
-      if( ( bp &= 7 ) == 0 ) {
+      if( !( bp &= 7 ) ) {
         lpos[++lidx[r] &= 3][r] = po++;
         buf[po & N] = 1;
-        z += static_cast<int>( l8 > 127 );
+        z += ( l8 > 127 );
       }
     }
   }
@@ -742,8 +741,8 @@ public:
   U32 hi() {
     if( bp > 3 )
       return buf[po & N] & 15;
-
-    return buf[( po - 1 ) & N] / 16;
+    else
+      return buf[( po - 1 ) & N] / 16;
   }
 } ch;
 
@@ -777,9 +776,9 @@ class Hashtable {
 public:
   Hashtable( U32 n ) : N( n ) {
     U8 *p = ( U8 * ) calloc( ( 17 << N ) + 64, 1 );
-    if( p == nullptr )
+    if( !p )
       handler();
-    p += 64 - ( ( long ) p & 63 );
+    p += 64 - ( ( int64_t ) p & 63 );
     table = ( HashElement * ) p;
     Tcxt = &( table[0].c[-1] );
   }
@@ -788,12 +787,11 @@ public:
   }
   void set( U32 h ) {
     short cs = h;
-    U32 lo = ( h >> ( 32 - N ) ) & -4;
-    U32 i = lo;
+    U32 lo = ( h >> ( 32 - N ) ) & -4, i = lo;
     for( ; i < lo + 4; i++ )
       if( *( ( short * ) &table[i].cs[0] ) == cs )
         break;
-      else if( table[i].c[0].priority() == 0 ) {
+      else if( !table[i].c[0].priority() ) {
         *( ( short * ) &table[i].cs[0] ) = cs;
         break;
       }
@@ -818,7 +816,7 @@ U32 bc0[64], bc1[64];
 struct SSEContext {
   U8 c, n;
   int p() {
-    return 4096 * c / ( n + static_cast<int>( n == 0U ) );
+    return 4096 * c / ( n + ( !n ) );
   }
   void upd( int y ) {
     c += y;
@@ -896,7 +894,7 @@ public:
       b1 += bc1[i] * m;
     }
     int p = ( int ) ( ( double ) b1 * 4096 / ( b0 + b1 ) );
-    if( ( z == 0 ) || ( fsize == 0 ) ) {
+    if( !z || !fsize ) {
       return p;
     }
     ssep = ssemap( p );
@@ -910,12 +908,12 @@ public:
       sse[c][ssep].upd( y );
       sse[c][ssep + 1].upd( y );
       U32 s = b0 + b1;
-      U32 sy = y != 0 ? b1 : b0;
+      U32 sy = y ? b1 : b0;
       U32 rn = rnd();
       U32 s1 = ( au / s + ( ( rn >> ( d - 7 ) ) & 127 ) ) / 128 + e * 32;
       U32 syd = ( au * ( 1.0 / sy - 1.0 / s ) + ( rn & 127 ) ) / 128;
-      int m0 = y != 0 ? -s1 : syd;
-      int m1 = y != 0 ? syd : -s1;
+      int m0 = y ? -s1 : syd;
+      int m1 = y ? syd : -s1;
       rn = ( rn >> d ) & 32767;
       for( int i = n; i >= 0; i-- ) {
         int dw = int( rn + bc0[i] * m0 + bc1[i] * m1 ) >> 15;
@@ -960,9 +958,9 @@ public:
   int predict() {
     int c = ch( 1 );
     U32 p4 = m6.predict( c ) * 3 + 5 * m7.predict( c );
-    c = ch( 2 ) / 16 + tf * 16 * ( ch( 1 ) / 32 + 8 * static_cast<int>( wlen == clen ) );
+    c = ch( 2 ) / 16 + tf * 16 * ( ch( 1 ) / 32 + 8 * ( wlen == clen ) );
     U32 p1 = m0.predict( c ) * 3 + 5 * m2.predict( c );
-    c = ch( 0 ) * 8 + ( ch( 1 ) / 64 ) * 2 + tf * static_cast<int>( wlen == clen );
+    c = ch( 0 ) * 8 + ( ch( 1 ) / 64 ) * 2 + tf * ( wlen == clen );
     U32 pb = ma.predict( c ) * 3 + 5 * mb.predict( c );
     c = ch( 1 ) / 32 + 8 * ( ch( 2 ) / 32 ) + ( ch( 3 ) & 192 );
     U32 p2 = m3.predict( c ) * 3 + 5 * m1.predict( c );
@@ -970,13 +968,12 @@ public:
     U32 p5 = m8.predict( c ) * 3 + 5 * m9.predict( c );
     c = bp * 256 + ( ( ch( 0 ) << ( 8 - bp ) ) + ( ch( 1 ) >> bp ) & 255 );
     U32 p3 = m4.predict( c ) * 3 + 5 * m5.predict( c );
-    if( tf != 0 )
+    if( tf )
       return ( 5 * p1 + 5 * p2 + 6 * p3 + 6 * pb + 3 * p4 + 5 * p5 ) / 240;
     return ( 5 * p1 + 5 * p2 + 2 * p3 + 2 * pb + 4 * p4 + 4 * p5 ) / 176;
   }
   void upd( int y ) {
-    int i = 0;
-    int j = 4;
+    int i = 0, j = 4;
     if( fsize < 0 ) {
       i = 2, j = 24;
     }
@@ -1030,7 +1027,7 @@ class CounterMap1 {
 
 public:
   CounterMap1( int n ) : N( n + MEM - 9 ) {
-    if( ( t = ( S * ) calloc( 1 << N, 2 ) ) == nullptr )
+    if( !( t = ( S * ) calloc( 1 << N, 2 ) ) )
       handler();
     cxt = t;
   }
@@ -1044,7 +1041,7 @@ public:
   }
   void add() {
     U32 d = ( cxt->c + 256 ) >> ( 7 - bp );
-    if( ( d ^= ch( 0 ) * 2 ) == 0U )
+    if( !( d ^= ch( 0 ) * 2 ) )
       mixer.add( cxt->n, 0 );
     else if( d == 1 )
       mixer.add( 0, cxt->n );
@@ -1059,8 +1056,8 @@ class CounterMap2 {
 
 public:
   CounterMap2( int n ) : ht2( n + MEM - 10 ) {
-    for( auto &i: cp )
-      i = 0;
+    for( int i = 0; i < 8; i++ )
+      cp[i] = 0;
     cxt = 0;
   }
   // After 8 predictions, update the models with the last input char, ch(1),
@@ -1068,7 +1065,7 @@ public:
   void upd( U32 h ) {
     int c = ch( 1 );
     for( int i = 0; i < 8; i++ )
-      if( cp[i] != nullptr ) {
+      if( cp[i] ) {
         cp[i]->add( ( c >> ( 7 - i ) ) & 1 ), cp[i] = 0;
       }
     ht2.set( cxt = h );
@@ -1146,12 +1143,12 @@ public:
     memset( cxt, 0, 44 );
   }
   void model() {
-    int y = ch( static_cast<int>( static_cast<int>( bp ) == 0 ) ) & 1;
+    int y = ch( !bp ) & 1;
     cp0->add( y );
     cp1->add( y );
-    if( bp == 0 ) {
+    if( !bp ) {
       for( int i = 10; i != 0; i-- )
-        cxt[i] = cxt[i - 1] ^ hash( ch( 1 ), i, tf * static_cast<int>( wlen == i ) );
+        cxt[i] = cxt[i - 1] ^ hash( ch( 1 ), i, tf * ( wlen == i ) );
       t2.upd( cxt[2] );
       t3.upd( cxt[3] );
       t4.upd( cxt[4] );
@@ -1165,10 +1162,10 @@ public:
     cp0 = t0 + ch( 0 );
     cp1 = t0 + 256 + ch( 1 ) * 256 + ch( 0 );
     mixer.wri( cp0->get0(), cp0->get1() );
-    if( tf != 0 )
+    if( tf )
       mixer.mul( 3 );
     mixer.wri( cp1->get0(), cp1->get1() );
-    if( tf != 0 )
+    if( tf )
       mixer.mul( 2 );
     t2.wri();
     t3.wri();
@@ -1206,17 +1203,17 @@ public:
       begin[i] = end[i] = 0;
   }
   void model() {
-    if( bp == 0 ) {
+    if( !bp ) {
       hash[0] = hash[0] * 908754512 + ch( 1 ) + 1;
       hash[1] = hash[1] * 91368434 + ch( 1 ) + 1;
       U32 h = hash[0] >> 11;
-      if( ( h >> 17 ) == 0U )
+      if( !( h >> 17 ) )
         h = hash[1] >> 11;
-      for( unsigned int &i: end )
-        if( ( i != 0U ) && ch( 1 ) == ch[i] )
-          ++i;
+      for( int i = 0; i < 4; i++ )
+        if( end[i] && ch( 1 ) == ch[end[i]] )
+          ++end[i];
       for( int i = 0; i < 4; i++ ) {
-        if( end[i] == 0U ) {
+        if( !end[i] ) {
           int j;
           for( j = 0; j < 4; j++ )
             if( end[j] == ptr[h] )
@@ -1224,10 +1221,10 @@ public:
           if( j < 4 )
             break;
           end[i] = ptr[h];
-          if( end[i] != 0U ) {
+          if( end[i] ) {
             U32 p = po;
             begin[i] = end[i];
-            while( ( begin[i] != 0U ) && ( p != 0U ) && begin[i] != p + 1 && ch[begin[i] - 1] == ch[--p] )
+            while( begin[i] && p && begin[i] != p + 1 && ch[begin[i] - 1] == ch[--p] )
               --begin[i];
           }
           if( end[i] == begin[i] )
@@ -1237,17 +1234,16 @@ public:
       }
       ptr[h] = po;
     }
-    int n0 = 0;
-    int n1 = 0;
+    int n0 = 0, n1 = 0;
     for( int i = 0; i < 4; i++ )
-      if( end[i] != 0U ) {
+      if( end[i] ) {
         U32 d = ( ch[end[i]] + 256 ) >> ( 7 - bp );
         if( ( d >> 1 ) != ch( 0 ) )
           begin[i] = end[i] = 0;
         else {
           U32 wt = end[i] - begin[i];
           wt = min( int( wt * wt / 4 ), 1020 );
-          if( ( d & 1 ) != 0U )
+          if( d & 1 )
             n1 += wt;
           else
             n0 += wt;
@@ -1268,10 +1264,10 @@ occurrence of a byte occuring 4 times in a row equally spaced, e.g.
 the 2 most recent, different record lengths of at least 2. */
 
 class RecordModel {
-  enum { SIZE = 20 };
-  CounterMap3 t0, t1, t3, t4, t5, t6, t7, t8, t9, ta;
+  enum { SIZE = 21 };
+  CounterMap3 t0, t1, t3, t4, t5, t6, t7;
   CounterMap2 t2;
-  int r1{2}, r2{3}, r3{2}, r4{3}, c1{0}, c2{0};
+  int r1, r2, c1, c2;
 
 public:
   RecordModel() :
@@ -1283,11 +1279,12 @@ public:
       t5( SIZE ),
       t6( SIZE ),
       t7( SIZE ),
-      t8( SIZE ),
-      t9( SIZE ),
-      ta( SIZE ) {}
+      r1( 2 ),
+      r2( 3 ),
+      c1( 0 ),
+      c2( 0 ) {}
   void model() {
-    if( bp == 0 ) {
+    if( !bp ) {
       int c = ch( 1 );
       int d = ch.pos( c, 0 ) - ch.pos( c, 1 );
       if( d > 2 && d == ch.pos( c, 1 ) - ch.pos( c, 2 ) && d == ch.pos( c, 2 ) - ch.pos( c, 3 ) )
@@ -1307,12 +1304,6 @@ public:
           r1 = d;
           c1 = 0;
         }
-      if( d > 2 ) {
-        if( d == r3 )
-          swap( r3, r4 );
-        if( d != r4 )
-          r3 = d;
-      }
       t0.upd( hash( ch( 1 ), 0 ) );
       t1.upd( hash( ch( 1 ), ch( 2 ), 1 ) );
       t2.upd( hash( ch( 1 ), ch( 2 ), ch( 3 ), 2 ) );
@@ -1321,12 +1312,9 @@ public:
       t5.upd( hash( ch( r2 ), po % r2 ) );
       t6.upd( hash( ch( r1 ), ch( r1 * 2 ), r1 ) );
       t7.upd( hash( ch( 1 ), ch( r1 ), ch( r1 + 1 ), r1 ) );
-      t8.upd( hash( ch( r4 ), ch( r4 * 2 ), r4 ) );
-      t9.upd( hash( ch( 1 ), ch( r4 ), ch( r4 + 1 ), r4 ) );
-      ta.upd( hash( ch( r4 ), r4 ) );
     }
     if( fsize != 0 ) {
-      if( tf != 0 ) {
+      if( tf ) {
         t0.mul( 2 );
         t1.mul( 2 );
         t2.mul( 4 );
@@ -1335,12 +1323,9 @@ public:
         t1.mul( 2 );
         t2.mul( 2 );
       }
-      t8.wri();
-      t9.wri();
-      ta.wri();
-      t4.wri();
     }
     t3.wri();
+    t4.wri();
     t5.wri();
     t6.wri();
     t7.wri();
@@ -1369,7 +1354,7 @@ public:
       t9( SIZE ),
       ta( SIZE ) {}
   void model() {
-    if( bp == 0 ) {
+    if( !bp ) {
       int i = min( int( po - ch.pos( ch( 1 ), 1 ) ), 192 ) / 4;
       int j = min( int( po - ch.pos( ch( 2 ), 1 ) ), 192 ) / 4;
       if( j > 8 )
@@ -1387,7 +1372,7 @@ public:
       t7.upd( hash( ch( 3 ), ch( 4 ), k ) );
       t8.upd( hash( ch( 2 ), ch( 4 ), ch( 6 ), k ) );
       t9.upd( hash( ch( 1 ), ch( 2 ), i, k ) );
-      ta.upd( hash( ch( 1 ), ch( 2 ), j + 64, k ) );
+      ta.upd( hash( ch( 1 ), ch( 2 ), j, k ) );
     }
     t0.wri();
     t1.wri();
@@ -1410,7 +1395,7 @@ class SparseModel2 {
 public:
   SparseModel2() : t0( SIZE ), t1( SIZE ), t2( SIZE ), t3( SIZE ), t4( SIZE ) {}
   void model() {
-    if( bp == 0 ) {
+    if( !bp ) {
       t0.upd( hash( ch( 1 ), ch( 7 ), ch( 9 ), ch( 13 ) ) );
       t1.upd( hash( ch( 2 ), ch( 5 ), ch( 10 ), ch( 14 ) ) );
       t2.upd( hash( ch( 3 ), ch( 8 ), ch( 12 ), ch( 15 ) ) );
@@ -1438,7 +1423,7 @@ class AnalogModel {
 public:
   AnalogModel() : t0( SIZE ), t1( SIZE ), t2( SIZE ), t3( SIZE ) {}
   void model() {
-    if( bp == 0 ) {
+    if( !bp ) {
       t0.upd( hash( ch( 2 ) / 16, ch( 4 ) / 16, po % 2 ) );
       t1.upd( hash( ch( 4 ) / 4, ( ch( 2 ) - ch( 6 ) ) / 4, ( ch( 4 ) - ch( 8 ) ) / 4 ) );
       t2.upd( hash( ch( 1 ) / 2, ch( 2 ) / 8, ch( 3 ) / 32, 5 ) );
@@ -1492,9 +1477,8 @@ public:
       tv( SIZE ),
       tw( SIZE ) {}
   void model() {
-    if( bp == 0 ) {
-      int i = 0;
-      int j = 63;
+    if( !bp ) {
+      int i = 0, j = 63;
       t0.upd( hash( ch( 1 ), ch( 2 ), ch( 216 ), i++ ) );
       t1.upd( hash( ch( 1 ), ch( 2 ), ch( 217 ), i++ ) );
       t2.upd( hash( ch( 216 ), i++ ) );
@@ -1597,17 +1581,17 @@ public:
     clen = 0;
   }
   void model() {
-    if( bp == 0 ) {
+    if( !bp ) {
       int c = ch( 1 );
       if( c > 32 )
         cxt[0] ^= hash( cxt[0], cxt[0] >> 8, c, clen++ );
-      else if( cxt[0] != 0U ) {
+      else if( cxt[0] ) {
         for( int i = 5; i != 0; i-- )
           cxt[i] = cxt[i - 1];
         cxt[0] = 0;
         clen = 0;
       }
-      if( isalpha( c ) != 0 ) {
+      if( isalpha( c ) ) {
         wxt[0] ^= hash( wxt[0], tolower( c ), wlen++ );
       } else {
         wlen = 0;
@@ -1626,7 +1610,7 @@ public:
       t8.upd( wxt[2] - wxt[0] );
       t9.upd( wxt[3] - wxt[0] );
     }
-    if( tf != 0 ) {
+    if( tf ) {
       t0.mul( 3 );
       t1.mul( 4 );
       t2.mul( 4 );
@@ -1719,7 +1703,7 @@ public:
     ss3[c3][ssep].upd( y );
     ss4[c4][ssep].upd( y );
     ch.upd( y );
-    tf = static_cast<int>( ch.pos( 0, 0 ) < ch.pos( 32, 3 ) && ch.pos( 255, 0 ) < ch.pos( 32, 3 ) );
+    tf = ch.pos( 0, 0 ) < ch.pos( 32, 3 ) && ch.pos( 255, 0 ) < ch.pos( 32, 3 );
     mixer.upd( y );
     charModel.model();
     recordModel.model();
@@ -1737,14 +1721,14 @@ public:
     U32 wt = ssep & 31;
     ssep /= 32;
     c4 = ch( 1 ) * 8 + ch( 2 ) / 32;
-    c1 = ch( 0 ) * 8 + ( ch( 1 ) / 64 ) * 2 + tf * static_cast<int>( wlen == clen );
+    c1 = ch( 0 ) * 8 + ( ch( 1 ) / 64 ) * 2 + tf * ( wlen == clen );
     c2 = bp * 256 + l8;
     c3 = bp * 256 + ch( 1 ) / 32 + 8 * ( ch( 2 ) / 32 ) + ( ch( 3 ) & 192 );
     U32 p1 = sse[c1][ssep].p() * ( 32 - wt ) + sse[c1][ssep + 1].p() * wt;
     U32 p2 = ss2[c2][ssep].p() * ( 32 - wt ) + ss2[c2][ssep + 1].p() * wt;
     U32 p3 = ss3[c3][ssep].p() * ( 32 - wt ) + ss3[c3][ssep + 1].p() * wt;
     U32 p4 = ss4[c4][ssep].p() * ( 32 - wt ) + ss4[c4][ssep + 1].p() * wt;
-    if( tf != 0 )
+    if( tf )
       nextp = ( ( 3 * p3 + 6 * p1 + 5 * p2 + 1 * p4 ) * 11 / 32 + 7 + nextp * 15 ) / 180;
     else
       nextp = ( ( 3 * p3 + 5 * p1 + 4 * p2 + 2 * p4 ) * 14 / 32 + 7 + nextp * 14 ) / 210;
@@ -1786,18 +1770,18 @@ public:
 };
 
 void Encoder::bit_plus_follow( int bit ) {
-  if( bit != 0 )
+  if( bit )
     bout |= bptr;
-  if( ( bptr >>= 1 ) == 0U ) {
+  if( !( bptr >>= 1 ) ) {
     putc( bout, archive );
     bptr = 128;
     bout = 0;
   }
   bit ^= 1;
   for( ; bits_to_follow > 0; bits_to_follow-- ) {
-    if( bit != 0 )
+    if( bit )
       bout |= bptr;
-    if( ( bptr >>= 1 ) == 0U ) {
+    if( !( bptr >>= 1 ) ) {
       putc( bout, archive );
       bptr = 128;
       bout = 0;
@@ -1805,18 +1789,18 @@ void Encoder::bit_plus_follow( int bit ) {
   }
 }
 inline int Encoder::input_bit( void ) {
-  if( ( bptrin >>= 1 ) == 0U ) {
+  if( !( bptrin >>= 1 ) ) {
     bin = getc( archive );
     if( bin == EOF )
       bin = 0;
     bptrin = 128;
   }
-  return static_cast<int>( ( bin & bptrin ) != 0 );
+  return ( ( bin & bptrin ) != 0 );
 }
 
 // Constructor
 Encoder::Encoder( Mode m, FILE *f ) :
-
+    predictor(),
     mode( m ),
     archive( f ),
     x1( 0 ),
@@ -1844,9 +1828,7 @@ inline void Encoder::encode( int y ) {
   U32 p = predictor.p() * ( 4096 / PSCALE ); // P(1) * 4K
   assert( p < 4096 );
   const U32 xdiff = x2 - x1;
-  U32 a;
-  U32 b;
-  U32 c;
+  U32 a, b, c;
   U32 xmid; // = x1+p*(x2-x1) multiply without overflow, round down
 
   c = 2 * p + 1;
@@ -1855,7 +1837,7 @@ inline void Encoder::encode( int y ) {
   xmid = x1 + a * c + ( ( c * b ) >> 13 );
 
   // Update the range
-  if( y != 0 )
+  if( y )
     x2 = xmid;
   else
     x1 = xmid + 1;
@@ -1890,9 +1872,7 @@ inline int Encoder::decode() {
   const U32 p = predictor.p() * ( 4096 / PSCALE ); // P(1) * 4K
   assert( p < 4096 );
   const U32 xdiff = x2 - x1;
-  U32 a;
-  U32 b;
-  U32 c;
+  U32 a, b, c;
   U32 xmid; // = x1+p*(x2-x1) multiply without overflow, round down
 
   c = 2 * p + 1;
@@ -1938,7 +1918,7 @@ void Encoder::flush() {
       bit_plus_follow( 0 );
     else
       bit_plus_follow( 1 );
-    if( bout != 0U )
+    if( bout )
       putc( bout, archive );
   }
 }
@@ -1977,16 +1957,13 @@ public:
   }
 };
 
-#define CONSTA 292 * 1024 + 512
-int exe = 1;
-
 //////////////////////////// main ////////////////////////////
 
 // Read and return a line of input from FILE f (default stdin) up to
 // first control character except tab.  Skips CR in CR LF.
 string getline( FILE *f = stdin ) {
   int c;
-  string result;
+  string result = "";
   while( ( c = getc( f ) ) != EOF && ( c >= 32 || c == '\t' ) )
     result += char( c );
   if( c == '\r' )
@@ -1998,7 +1975,7 @@ string getline( FILE *f = stdin ) {
 int main( int argc, char **argv ) {
   // Check arguments
   if( argc < 2 ) {
-    printf( PROGNAME " v1.1 file compressor/archiver, (C)2004, Matt Mahoney, mmahoney@cs.fit.edu\n"
+    printf( PROGNAME " v1.0 file compressor/archiver, (C)2004, Matt Mahoney, mmahoney@cs.fit.edu\n"
                      "                                        & Alexander Ratushnyak, artest@inbox.ru\n"
                      "This program is free software distributed without warranty under the terms\n"
                      "of the GNU General Public License, see http://www.gnu.org/licenses/gpl.txt\n"
@@ -2010,22 +1987,22 @@ int main( int argc, char **argv ) {
                      "\n"
                      "Compression option  Memory needed to compress/decompress\n"
                      "------------------  ------------------------------------\n"
-                     " -0                  ~8 Mb (fastest)\n"
-                     " -1                 ~12 Mb\n"
-                     " -2                 ~15 Mb\n"
-                     " -3                 ~30 Mb\n"
-                     " -4                 <60 Mb\n"
-                     " -5                <120 Mb\n"
-                     " -6                <230 Mb (default)\n"
-                     " -7                <460 Mb\n"
-                     " -8                <920 Mb\n"
-                     " -9               <1840 Mb (best compression, slowest)\n" );
+                     " -0                  ~5 MB (fastest)\n"
+                     " -1                 ~10 MB\n"
+                     " -2                 ~15 MB\n"
+                     " -3                 ~30 MB\n"
+                     " -4                 <60 MB\n"
+                     " -5                <120 MB\n"
+                     " -6                <240 MB (default)\n"
+                     " -7                <480 MB\n"
+                     " -8                <960 MB\n"
+                     " -9               <1920 MB (best compression, slowest)\n" );
     return 1;
   }
 
   // Read and remove -MEM option
   if( argc > 1 && argv[1][0] == '-' ) {
-    if( ( isdigit( argv[1][1] ) != 0 ) && argv[1][2] == 0 ) {
+    if( isdigit( argv[1][1] ) && argv[1][2] == 0 ) {
       MEM = argv[1][1] - '0';
     } else
       printf( "Option %s ignored\n", argv[1] );
@@ -2034,14 +2011,13 @@ int main( int argc, char **argv ) {
   }
 
   // File names and sizes from input or archive
-  vector<string> filename; // List of names
-  vector<long> filesize;   // Size or -1 if error
-  int uncompressed_bytes = 0;
-  int compressed_bytes = 0; // Input, output sizes
+  vector<string> filename;                          // List of names
+  vector<long> filesize;                            // Size or -1 if error
+  int uncompressed_bytes = 0, compressed_bytes = 0; // Input, output sizes
 
   // Extract files
-  FILE *archive = fopen( argv[1], "rbe" );
-  if( archive != nullptr ) {
+  FILE *archive = fopen( argv[1], "rb" );
+  if( archive ) {
     if( argc > 2 ) {
       printf( "File %s already exists\n", argv[1] );
       return 1;
@@ -2069,9 +2045,9 @@ int main( int argc, char **argv ) {
         filesize.push_back( atol( s.c_str() ) );
         string::iterator tab = find( s.begin(), s.end(), '\t' );
         if( tab != s.end() )
-          filename.emplace_back( tab + 1, s.end() );
+          filename.push_back( string( tab + 1, s.end() ) );
         else
-          filename.emplace_back( "" );
+          filename.push_back( "" );
       } else
         break;
     }
@@ -2092,10 +2068,10 @@ int main( int argc, char **argv ) {
       printf( "%10ld %s: ", filesize[i], filename[i].c_str() );
 
       // Compare with existing file
-      FILE *f = fopen( filename[i].c_str(), "rbe" );
-      long size = filesize[i];
+      FILE *f = fopen( filename[i].c_str(), "rb" );
+      const long size = filesize[i];
       uncompressed_bytes += size;
-      if( f != nullptr ) {
+      if( f ) {
         bool different = false;
         fsize = size - 513216;
         for( long j = 0; j < size; ++j ) {
@@ -2113,42 +2089,17 @@ int main( int argc, char **argv ) {
 
       // Extract to new file
       else {
-        f = fopen( filename[i].c_str(), "wbe" );
-        if( f == nullptr )
+        f = fopen( filename[i].c_str(), "wb" );
+        if( !f )
           printf( "cannot create, skipping...\n" );
         fsize = size - 513216;
-        if( ( exe != 0 ) && size > 0 )
-          ++size;
         for( long j = 0; j < size; ++j ) {
           int c = e.decode();
-          if( f != nullptr )
+          if( f )
             putc( c, f );
         }
-        if( f != nullptr ) {
+        if( f ) {
           printf( "extracted\n" );
-          if( ( exe != 0 ) && size > 0 ) {
-            char *st0;
-            char *st;
-            int data2write[4] = {0, 0, 0, 0};
-
-            fclose( f );
-            f = fopen( filename[i].c_str(), "rbe" );
-            fseek( f, 0L, SEEK_END );
-            long flen = ftell( f );
-            fseek( f, 0L, 0 );
-
-            if( ( st0 = ( char * ) malloc( CONSTA + 2 * flen + 256 ) ) == NULL )
-              handler();
-            st = st0 + 256 - ( ( long ) st0 & 255 ); // 256-byte-alignment
-            flen = fread( st + CONSTA - 32768, 1, flen, f );
-            fclose( f );
-            f = fopen( filename[i].c_str(), "wbe" );
-
-            if( data2write[0] != 0 )
-              fwrite( ( char * ) data2write[1], 1, data2write[0], f );
-
-            free( st0 );
-          }
           fclose( f );
         }
       }
@@ -2161,23 +2112,23 @@ int main( int argc, char **argv ) {
     // Read file names from command line or input
     if( argc > 2 )
       for( int i = 2; i < argc; ++i )
-        filename.emplace_back( argv[i] );
+        filename.push_back( argv[i] );
     else {
       printf( "Enter names of files to compress, followed by blank line or EOF.\n" );
       while( true ) {
         string s = getline( stdin );
         if( s == "" )
           break;
-
-        filename.push_back( s );
+        else
+          filename.push_back( s );
       }
     }
 
     // Get file sizes
     int i;
     for( i = 0; i < int( filename.size() ); ++i ) {
-      FILE *f = fopen( filename[i].c_str(), "rbe" );
-      if( f == nullptr ) {
+      FILE *f = fopen( filename[i].c_str(), "rb" );
+      if( !f ) {
         printf( "File not found, skipping: %s\n", filename[i].c_str() );
         filesize.push_back( -1 );
       } else {
@@ -2192,8 +2143,8 @@ int main( int argc, char **argv ) {
     }
 
     // Write header
-    archive = fopen( argv[1], "wbe" );
-    if( archive == nullptr ) {
+    archive = fopen( argv[1], "wb" );
+    if( !archive ) {
       printf( "Cannot create archive: %s\n", argv[1] );
       return 1;
     }
@@ -2210,52 +2161,22 @@ int main( int argc, char **argv ) {
     Transformer e( COMPRESS, archive );
     long file_start = ftell( archive );
     for( i = 0; i < int( filename.size() ); ++i ) {
-      long size = filesize[i];
+      const long size = filesize[i];
       if( size >= 0 ) {
         uncompressed_bytes += size;
         printf( "%-23s %10ld -> ", filename[i].c_str(), size );
-        FILE *f = fopen( filename[i].c_str(), "rbe" );
-        fsize = size - 513216;
-
-        if( ( f != nullptr ) && ( exe != 0 ) && size > 0 ) {
-          char *st0;
-          char *st;
-          int data2write[4] = {0, 0, 0, 0};
-          FILE *fw = fopen( "paqar11tmp.tmp", "wbe" );
-
-          fseek( f, 0L, SEEK_END );
-          long flen = ftell( f );
-          fseek( f, 0L, 0 );
-
-          if( ( st0 = ( char * ) malloc( CONSTA + 2 * flen + 256 ) ) == NULL )
-            handler();
-          st = st0 + 256 - ( ( long ) st0 & 255 ); // 256-byte-alignment
-          flen = fread( st + CONSTA - 32768, 1, flen, f );
-
-          size = 0;
-          if( data2write[0] != 0 )
-            size += data2write[0], fwrite( ( char * ) data2write[1], 1, data2write[0], fw );
-          if( data2write[2] != 0 )
-            size += data2write[2], fwrite( ( char * ) data2write[3], 1, data2write[2], fw );
-          free( st0 );
-
-          fclose( fw );
-          fclose( f );
-          f = fopen( "paqar11tmp.tmp", "rbe" );
-        }
-
+        FILE *f = fopen( filename[i].c_str(), "rb" );
         int c;
+        fsize = size - 513216;
         for( long j = 0; j < size; ++j ) {
-          if( f != nullptr )
+          if( f )
             c = getc( f );
           else
             c = 0;
           e.encode( c );
         }
-        if( f != nullptr )
+        if( f )
           fclose( f );
-        if( ( f != nullptr ) && ( exe != 0 ) && size > 0 )
-          remove( "paqar11tmp.tmp" );
         printf( "%ld\n", ftell( archive ) - file_start );
         file_start = ftell( archive );
       }

@@ -1276,7 +1276,7 @@ class RecordModel {
   enum { SIZE = 20 };
   CounterMap3 t0, t1, t3, t4, t5, t6, t7, t8, t9, ta;
   CounterMap2 t2;
-  int r1{2}, r2{3}, r3{2}, r4{3}, c1{0}, c2{0};
+  int r1{ 2 }, r2{ 3 }, r3{ 2 }, r4{ 3 }, c1{ 0 }, c2{ 0 };
 
 public:
   RecordModel() :
@@ -2172,7 +2172,7 @@ int main( int argc, char **argv ) {
         if( f != nullptr ) {
           printf( "extracted\n" );
           if( ( exe != 0 ) && size > 0 ) {
-            int data2write[4] = {0, 0, 0, 0};
+            int data2write[4] = { 0, 0, 0, 0 };
 
             fclose( f );
             f = fopen( filename[i].c_str(), "rbe" );
@@ -2266,7 +2266,7 @@ int main( int argc, char **argv ) {
         fsize = size - 513216;
 
         if( ( f != nullptr ) && ( exe != 0 ) && size > 0 ) {
-          int data2write[4] = {0, 0, 0, 0};
+          int data2write[4] = { 0, 0, 0, 0 };
           FILE *fw = fopen( "paqar11tmp.tmp", "wbe" );
 
           fseek( f, 0L, SEEK_END );

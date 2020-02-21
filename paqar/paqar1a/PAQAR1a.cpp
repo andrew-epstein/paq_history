@@ -1272,18 +1272,11 @@ class RecordModel {
   enum { SIZE = 21 };
   CounterMap3 t0, t1, t3, t4, t5, t6, t7;
   CounterMap2 t2;
-  int r1{2}, r2{3}, c1{0}, c2{0};
+  int r1{ 2 }, r2{ 3 }, c1{ 0 }, c2{ 0 };
 
 public:
   RecordModel() :
-      t0( 17 - MEM ),
-      t1( 19 - MEM ),
-      t2( 20 - MEM ),
-      t3( SIZE ),
-      t4( SIZE ),
-      t5( SIZE ),
-      t6( SIZE ),
-      t7( SIZE ) {}
+      t0( 17 - MEM ), t1( 19 - MEM ), t2( 20 - MEM ), t3( SIZE ), t4( SIZE ), t5( SIZE ), t6( SIZE ), t7( SIZE ) {}
   void model() {
     if( bp == 0 ) {
       int c = ch( 1 );

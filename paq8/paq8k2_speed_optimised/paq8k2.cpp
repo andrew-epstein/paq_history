@@ -380,7 +380,7 @@ public:
   StateTable();
 } nex;
 
-const int StateTable::b[B] = {42, 41, 13, 6, 5}; // x -> max y, y -> max x
+const int StateTable::b[B] = { 42, 41, 13, 6, 5 }; // x -> max y, y -> max x
 U8 StateTable::t[N][N][2];
 
 int StateTable::num_states( int x, int y ) {
@@ -503,9 +503,9 @@ StateTable::StateTable() : ns( 1024 ) {
 
 // return p = 1/(1 + exp(-d)), d scaled by 8 bits, p scaled by 12 bits
 int squash( int d ) {
-  static const int t[33] = {1,    2,    3,    6,    10,   16,   27,   45,   73,   120,  194,
-                            310,  488,  747,  1101, 1546, 2047, 2549, 2994, 3348, 3607, 3785,
-                            3901, 3975, 4022, 4050, 4068, 4079, 4085, 4089, 4092, 4093, 4094};
+  static const int t[33] = { 1,    2,    3,    6,    10,   16,   27,   45,   73,   120,  194,
+                             310,  488,  747,  1101, 1546, 2047, 2549, 2994, 3348, 3607, 3785,
+                             3901, 3975, 4022, 4050, 4068, 4079, 4085, 4089, 4092, 4093, 4094 };
   if( d > 2047 )
     return 4095;
   if( d < -2047 )
@@ -674,7 +674,7 @@ public:
   // predict next bit
   int p() {
 #define bits 7
-    static const int weight[7] = {11, 10, 8, 8, 8, 8, 7};
+    static const int weight[7] = { 11, 10, 8, 8, 8, 8, 7 };
     static APM a[12 * bits], b[12 * bits], c[12 * bits];
     while( nx & 7 )
       tx[nx++] = 0; // pad
@@ -1119,7 +1119,7 @@ int matchModel( Mixer &m ) {
 
 int sparseModel( Mixer &m ) {
   static ContextMap cm( MEM * 2, 40 ), cn( MEM, 7 );
-  const static int filter[4] = {0x0f0f, 0xf0f0, 0x0ff0, 0xf00f};
+  const static int filter[4] = { 0x0f0f, 0xf0f0, 0x0ff0, 0xf00f };
   if( bpos == 0 ) {
     for( int i = 0, j = filter[0]; i < 4; j = filter[++i] ) {
       cm.set( j & c4 & 0x00ffff00 );
@@ -1239,12 +1239,12 @@ void chartModel( Mixer &m, int ismatch ) {
   static ContextMap cm( MEM * 16, 64 ), cn( MEM, 23 );
   if( !bpos ) {
     const int w = c4 & 65535, w0 = c4 & 16777215, w1 = c4 & 255, w2 = c4 << 8 & 65280, w3 = c4 << 8 & 16711680,
-              w4 = c4 << 8 & 4278190080, a[3] = {c4 >> 5 & 460551, c4 >> 2 & 460551, c4 & 197379},
-              b[3] = {c4 >> 23 & 448 | c4 >> 18 & 56 | c4 >> 13 & 7, c4 >> 20 & 448 | c4 >> 15 & 56 | c4 >> 10 & 7,
-                      c4 >> 18 & 48 | c4 >> 12 & 12 | c4 >> 8 & 3},
-              d[3] = {c4 >> 15 & 448 | c4 >> 10 & 56 | c4 >> 5 & 7, c4 >> 12 & 448 | c4 >> 7 & 56 | c4 >> 2 & 7,
-                      c4 >> 10 & 48 | c4 >> 4 & 12 | c4 & 3},
-              c[3] = {c4 & 255, c4 >> 8 & 255, c4 >> 16 & 255};
+              w4 = c4 << 8 & 4278190080, a[3] = { c4 >> 5 & 460551, c4 >> 2 & 460551, c4 & 197379 },
+              b[3] = { c4 >> 23 & 448 | c4 >> 18 & 56 | c4 >> 13 & 7, c4 >> 20 & 448 | c4 >> 15 & 56 | c4 >> 10 & 7,
+                       c4 >> 18 & 48 | c4 >> 12 & 12 | c4 >> 8 & 3 },
+              d[3] = { c4 >> 15 & 448 | c4 >> 10 & 56 | c4 >> 5 & 7, c4 >> 12 & 448 | c4 >> 7 & 56 | c4 >> 2 & 7,
+                       c4 >> 10 & 48 | c4 >> 4 & 12 | c4 & 3 },
+              c[3] = { c4 & 255, c4 >> 8 & 255, c4 >> 16 & 255 };
 
     for( int i = 0, j = 0, f = b[0], e = a[0];
 
@@ -1277,7 +1277,7 @@ void chartModel( Mixer &m, int ismatch ) {
 
     for( int i = 0, s = 0, e = a[0], k = chart[0];
 
-         i<20; s = ++i>> 3, e = a[s],
+         i<20; s = ++i> > 3, e = a[s],
              k = chart[i] ) {                                    //   k   e
       cm.set( k << s );                                          //  111 000
       cm.set( hash( e, k, s ) );                                 //  111 111

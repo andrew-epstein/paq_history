@@ -409,7 +409,7 @@ inline T min( const T &a, const T &b ) {
 //////////////////////// Program Checker /////////////////////
 
 class ProgramChecker {
-  int memused{0};     // bytes allocated by Array<T>
+  int memused{ 0 };   // bytes allocated by Array<T>
   clock_t start_time; // in ticks
 public:
   void alloc( int n ) {
@@ -664,7 +664,7 @@ public:
   StateTable();
 } nex;
 
-const int StateTable::b[B] = {N, 32, 16, 8, 5}; // n0 -> max n1, n1 -> max n0
+const int StateTable::b[B] = { N, 32, 16, 8, 5 }; // n0 -> max n1, n1 -> max n0
 int StateTable::t[N + 1][N + 1][2];
 
 int StateTable::num_states( int x, int y ) {
@@ -786,9 +786,9 @@ StateTable::StateTable() : ns( 1024 ) {
 
 // return p = 1/(1 + exp(-d)), d scaled by 8 bits, p scaled by 12 bits
 int squash( int d ) {
-  static const int t[33] = {1,    2,    3,    6,    10,   16,   27,   45,   73,   120,  194,
-                            310,  488,  747,  1101, 1546, 2047, 2549, 2994, 3348, 3607, 3785,
-                            3901, 3975, 4022, 4050, 4068, 4079, 4085, 4089, 4092, 4093, 4094};
+  static const int t[33] = { 1,    2,    3,    6,    10,   16,   27,   45,   73,   120,  194,
+                             310,  488,  747,  1101, 1546, 2047, 2549, 2994, 3348, 3607, 3785,
+                             3901, 3975, 4022, 4050, 4068, 4079, 4085, 4089, 4092, 4093, 4094 };
   if( d > 2047 )
     return 4095;
   if( d < -2047 )
@@ -1004,7 +1004,7 @@ APM::APM( int n ) : ProbMap( n ) {
 
 // Counter state -> probability * 256
 class StateMap {
-  int cxt{0};
+  int cxt{ 0 };
 
 protected:
   Array<U16> t; // 256 states -> probability * 64K
@@ -2227,7 +2227,7 @@ int contextModel2() {
 // update(y) trains the predictor with the actual bit (0 or 1).
 
 class Predictor {
-  int pr{2048}; // next prediction
+  int pr{ 2048 }; // next prediction
 public:
   Predictor();
   int p() const {
@@ -2339,12 +2339,12 @@ typedef enum { COMPRESS, DECOMPRESS } Mode;
 class Encoder {
 private:
   Predictor predictor;
-  Mode mode;                 // Compress or decompress?
-  FILE *archive;             // Compressed data file
-  U32 x1{0}, x2{0xffffffff}; // Range, initially [0, 1), scaled by 2^32
-  U32 x{0};                  // Last 4 input bytes of archive.
-  U32 bits_to_follow{0};
-  U8 bptr{128}, bout{0}, bptrin{1};
+  Mode mode;                     // Compress or decompress?
+  FILE *archive;                 // Compressed data file
+  U32 x1{ 0 }, x2{ 0xffffffff }; // Range, initially [0, 1), scaled by 2^32
+  U32 x{ 0 };                    // Last 4 input bytes of archive.
+  U32 bits_to_follow{ 0 };
+  U8 bptr{ 128 }, bout{ 0 }, bptrin{ 1 };
   int bin;
 
 public:
@@ -2578,7 +2578,7 @@ int exe_preprocess( FILE *f, FILE *fw, int type ) // 3=compress, 4=decompress
 {
   char *st0;
   char *st;
-  int data2write[4] = {0, 0, 0, 0};
+  int data2write[4] = { 0, 0, 0, 0 };
   int size;
 
   fseek( f, 0L, SEEK_END );

@@ -401,10 +401,7 @@ public:
 };
 
 XWRT_Common::XWRT_Common( int fileBufferSize ) :
-    dictmem( NULL ),
-    detect( false ),
-    dictmem_end( NULL ),
-    fileCorrupted( false ) {
+    dictmem( NULL ), detect( false ), dictmem_end( NULL ), fileCorrupted( false ) {
   if( fileBufferSize < 10 )
     fileBufferSize = 10; // 1 KB
   if( fileBufferSize > 23 )
