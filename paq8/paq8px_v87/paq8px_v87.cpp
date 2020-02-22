@@ -689,38 +689,6 @@ public:
 typedef unsigned int uint;
 typedef unsigned long long qword;
 
-const uint g_PageFlag0 = 0x1000;
-const uint g_PageMask0 = 0x1000 - 1;
-uint g_PageFlag = g_PageFlag0;
-uint g_PageMask = g_PageMask0;
-
-template <class T>
-T *VAlloc( qword size ) {
-  void *r;
-  size *= sizeof( T );
-  qword s = ( size + g_PageMask ) & ( ~qword( g_PageMask ) );
-Retry:
-//printf( "s=%I64X sizeof(size_t)=%i\n", s, sizeof(size_t) );
-#ifndef X64
-  if( s >= ( qword( 1 ) << 32 ) )
-    r = 0;
-  else
-#endif
-    r = VirtualAlloc( 0, s, g_PageFlag, PAGE_READWRITE );
-  //printf( "r=%08X\n", r );
-  if( ( r == 0 ) && ( g_PageMask != g_PageMask0 ) ) {
-    g_PageFlag = g_PageFlag0;
-    g_PageMask = g_PageMask0;
-    s = size;
-    goto Retry;
-  }
-  return ( T * ) r;
-}
-
-template <class T>
-void VFree( T *p ) {
-  VirtualFree( p, 0, MEM_RELEASE );
-}
 //////////////////////////// Array ////////////////////////////
 
 // Array<T> a(n); creates n elements of T initialized to 0 bits.
@@ -792,6 +760,7 @@ void Array<T>::resize( int i ) {
   }
 }
 
+
 template <class T>
 void Array<T>::create( int i ) {
   n = reserved = i;
@@ -804,18 +773,14 @@ void Array<T>::create( int i ) {
   programChecker.alloc( sz );
   char *r;
 
-  if( sz > ( 1 << 24 ) ) {
-    r = ptr = VAlloc<char>( sz );
-  } else {
-    int flag = ( sz >= 16 );
-    ptr = ( char * ) calloc( sz + ( flag ? 15 : 0 ), 1 );
-    if( !ptr )
-      quit( "Out of memory" );
-    r = ptr;
-    if( flag ) {
-      r = ptr + 15;
-      r -= ( r - ( ( char * ) 0 ) ) & 15;
-    }
+  int flag = ( sz >= 16 );
+  ptr = ( char * ) calloc( sz + ( flag ? 15 : 0 ), 1 );
+  if( !ptr )
+    quit( "Out of memory" );
+  r = ptr;
+  if( flag ) {
+    r = ptr + 15;
+    r -= ( r - ( ( char * ) 0 ) ) & 15;
   }
 
   data = ( T * ) r; //ptr;
@@ -825,12 +790,7 @@ template <class T>
 Array<T>::~Array() {
   programChecker.alloc( -n * sizeof( T ) );
   const int sz = n * sizeof( T );
-
-  if( sz > ( 1 << 24 ) ) {
-    VFree( ptr );
-  } else {
-    free( ptr );
-  }
+  free( ptr );
 }
 
 template <class T>
