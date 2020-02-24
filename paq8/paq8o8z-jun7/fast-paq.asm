@@ -24,7 +24,7 @@ SSE2_FLAG equ 26
 OSFXSR equ 9
 ;V86 equ 17
 
-section .text use32 class=CODE
+section .text
 
 global is_CPUID_supported
 align 16

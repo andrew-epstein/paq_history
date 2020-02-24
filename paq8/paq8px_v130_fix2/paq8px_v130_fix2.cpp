@@ -627,6 +627,8 @@ Added gif recompression
 #  include <sys/types.h>
 #  include <dirent.h>
 #  include <errno.h>
+#  include <cstring>
+#  include <cctype>
 #else
 #  ifndef NOMINMAX
 #    define NOMINMAX
@@ -7525,6 +7527,7 @@ public:
   bool Predict( Mixer &m, bool Forced = false, ModelStats *Stats = NULL );
 };
 
+#ifdef WINDOWS
 void exeModel::Train() {
   FileDisk f;
   int i;
@@ -7546,6 +7549,9 @@ void exeModel::Train() {
     memset( &buf[0], 0, buf.size() );
   }
 }
+#else
+void exeModel::Train() {}
+#endif
 
 void exeModel::Update( U8 B, bool Forced ) {
   pState = State;
@@ -8426,6 +8432,7 @@ public:
   int Predict( ModelStats *Stats = NULL );
 };
 
+#ifdef WINDOWS
 void ContextModel::Train() {
   FileDisk f;
   int i;
@@ -8455,6 +8462,9 @@ void ContextModel::Train() {
     }
   }
 }
+#else
+void ContextModel::Train() {}
+#endif
 
 void ContextModel::UpdateContexts( U8 B ) {
   for( int i = 15; i > 0; --i )

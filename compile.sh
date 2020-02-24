@@ -10,7 +10,7 @@ function task() {
 	FILENAME=$(basename "$1")
 	echo "$FILENAME"
 	FILENAME="${FILENAME%.*}"
-	$CXX -Weverything -Wall -Wextra $WARN -flto -fomit-frame-pointer -fno-stack-protector -lz -fno-rtti -std=c++14 -O3 -m64 -march=native -funroll-loops -ftree-vectorize -DUNIX -fdeclspec $1 asm/paq7asm.s -o bin/$FILENAME
+	$CXX -Weverything -Wall -Wextra $WARN -flto -fomit-frame-pointer -fno-stack-protector -lz -fno-rtti -std=c++17 -O3 -m64 -march=native -funroll-loops -ftree-vectorize -DUNIX -fdeclspec $1 asm/paq7asm.s -o bin/$FILENAME
 	#$CXX $WARN -ferror-limit=1 -lz -std=c++14 -O0 -m64 -fdeclspec -DUNIX "$1" asm/paq7asm.s -o "bin/$FILENAME"
 	if [ $? -ne 0 ]; then
 		echo "$1" >> bad.log

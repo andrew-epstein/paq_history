@@ -10,9 +10,6 @@ paq8/paq8px_v128/paq8px_v128.cpp
 paq8/paq8px_v129/paq8px_v129.cpp
 paq8/paq8px_v129_fix1/paq8px_v129_fix1.cpp
 paq8/paq8px_v129_fix2/paq8px_v129_fix2.cpp
-paq8/paq8px_v130/paq8px_v130.cpp
-paq8/paq8px_v130_fix1/paq8px_v130_fix1.cpp
-paq8/paq8px_v130_fix2/paq8px_v130_fix2.cpp
 paq8/paq8pxpreTBL/paq8pxpreTBL.cpp
 paq8/paq8pxpre_lp/paq8pxpre_lp.cpp
 paqar/paqar1c/PAQAR1c.cpp
