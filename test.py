@@ -295,8 +295,7 @@ def worker_main(queue):
 testfiles = get_test_files()
 executables = get_executables()
 the_queue = multiprocessing.Queue()
-the_pool = multiprocessing.Pool(12, worker_main, (the_queue,))
-
+the_pool = multiprocessing.Pool(16, worker_main, (the_queue,))
 
 for executable in executables:
     program_hash = get_hash(executable)
