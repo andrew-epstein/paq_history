@@ -4,17 +4,17 @@
 // 10/01/2006 32 bit encoder modified, Fabio Buffoni
 // jan 16 2006 improved compression, David Scott
 
+#include <cassert>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
-#include <cassert>
 namespace std {} // namespace std
 using namespace std;
 
-typedef unsigned char U8;
-typedef unsigned int U32;
-typedef unsigned long long U64;
+using U8 = unsigned char;
+using U32 = unsigned int;
+using U64 = unsigned long long;
 
 #define LOWEST 0x0000000000000000LL
 #define FIRST_QUARTER 0x4000000000000000LL
@@ -31,10 +31,10 @@ int EOS = 0; /* for terminating compression */
 */
 
 class Predictor {
-  U32 cxt;        // Context: last 0-8 bits with a leading 1
+  U32 cxt{ 1 };   // Context: last 0-8 bits with a leading 1
   U32 ct[256][2]; // 0 and 1 counts in context cxt
 public:
-  Predictor() : cxt( 1 ) {
+  Predictor() {
     memset( ct, 0, sizeof( ct ) );
   }
 
@@ -93,7 +93,7 @@ inline void Encoder::bit_plus_follow( int bit ) {
   for( int notb = bit ^ 1; bits_to_follow > 0; bits_to_follow--, bit = notb ) {
     if( bit != 0 )
       bout |= bptr;
-    if( ( bptr >>= 1 ) == 0u ) {
+    if( ( bptr >>= 1 ) == 0U ) {
       putc( bout, archive );
       bptr = 128;
       bout = 0;
@@ -101,7 +101,7 @@ inline void Encoder::bit_plus_follow( int bit ) {
   }
 }
 inline int Encoder::input_bit( void ) {
-  if( ( bptrin >>= 1 ) == 0u ) {
+  if( ( bptrin >>= 1 ) == 0U ) {
     bin = getc( archive );
     if( bin == EOF ) {
       bin = 0;
@@ -114,7 +114,7 @@ inline int Encoder::input_bit( void ) {
 
 // Constructor
 Encoder::Encoder( Mode m, FILE *f ) :
-    predictor(),
+
     mode( m ),
     archive( f ),
     lower( LOWEST ),
@@ -137,7 +137,8 @@ to P(1) and P(0) as given by the predictor and narrowing to the appropriate
 subrange.  Output leading bytes of the range as they become known. */
 
 inline void Encoder::encode( int y ) {
-  U32 numerator, denominator;
+  U32 numerator;
+  U32 denominator;
   predictor.p( numerator, denominator );
 
   // Update the range. Compute the fraction so that it's exact to 64 bits
@@ -177,7 +178,8 @@ inline void Encoder::encode( int y ) {
 and returning 1 or 0 depending on which subrange the archive point x is in.
 */
 inline int Encoder::decode() {
-  U32 numerator, denominator;
+  U32 numerator;
+  U32 denominator;
   predictor.p( numerator, denominator );
 
   // Update the range. Compute the fraction so that it's exact to 64 bits
@@ -231,7 +233,8 @@ inline int Encoder::decode() {
 
 // Should be called when there is no more to compress
 void Encoder::flush() {
-  U32 numerator, denominator;
+  U32 numerator;
+  U32 denominator;
   predictor.p( numerator, denominator );
 
   // Update the range. Compute the fraction so that it's exact to 64 bits
@@ -270,7 +273,7 @@ void Encoder::flush() {
     bit_plus_follow( 1 );
     bit_plus_follow( 1 );
   }
-  if( bout != 0u )
+  if( bout != 0U )
     putc( bout, archive );
 }
 
@@ -289,10 +292,10 @@ int main( int argc, char **argv ) {
   clock_t start = clock();
 
   // Open files
-  FILE *in = fopen( argv[2], "rb" );
+  FILE *in = fopen( argv[2], "rbe" );
   if( in == nullptr )
     perror( argv[2] ), exit( 1 );
-  FILE *out = fopen( argv[3], "wb" );
+  FILE *out = fopen( argv[3], "wbe" );
   if( out == nullptr )
     perror( argv[3] ), exit( 1 );
   int c;

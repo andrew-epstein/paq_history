@@ -1,5 +1,4 @@
-/*
-PAQAR 1.1 - Experimental version by Alexander Ratushnyak - File archiver and compressor.
+/* PAQAR 1.0 - Experimental version by Alexander Ratushnyak - File archiver and compressor.
 (C) 2004, Matt Mahoney, mmahoney@cs.fit.edu, Alexander Ratushnyak, artest@inbox.ru
           Fabio Buffoni, David Scott, Jason Schmidt, Berto Destasio
 
@@ -25,15 +24,15 @@ end of file.
 
 The -3 is optional, and is used to trade off compression vs. speed
 and memory.  Valid options are -0 to -9.  Higher numbers compress better
-but run slower and use more memory.  -6 is the default, and gives a
+but run slower and use more memory.  -3 is the default, and gives a
 reasonable tradeoff.  Recommended options are:
 
-  -0 to -2 for fast but not very good compression, uses ~8-15 Mb memory
-  -3 for reasonably fast and good compression,
-  -4 better compression but slower,
-  -5 slightly better compression,
-  -6 the default, uses ~230 Mb,
-  -7 to -9 use ~460 Mb, ~920 Mb, ~1840 Mb, about the same speed as -6
+  -0 to -2 for fast (2X over -3) but poor compression, uses 2-6 MB memory
+  -3 for reasonably fast and good compression, uses 18 MB (default)
+  -4 better compression but 3.5X slower, uses 64 MB
+  -5 slightly better compression, 6X slower than -3, uses 154 MB 
+  -6 about like -5, uses 202 MB memory
+  -7 to -9 use 404 MB, 808 MB, 1616 MB, about the same speed as -5
 
 Decompression:  No file names are specified.  The archive must exist.
 If a path is stored, the file is extracted to the appropriate directory,
@@ -50,16 +49,16 @@ create a new archive with just the files you want.
 
 TO COMPILE
 
-gxx -O PAQAR.cpp	DJGPP 2.95.2
-bcc32 -O2 PAQAR.cpp	Borland 5.5.1
-sc -o PAQAR.cpp		Digital Mars 8.35n
+gxx -O PAQAR.cpp        DJGPP 2.95.2
+bcc32 -O2 PAQAR.cpp     Borland 5.5.1
+sc -o PAQAR.cpp         Digital Mars 8.35n
 
 g++ -O produces the fastest executable among free compilers, followed
 by Borland and Mars.  However Intel 8 will produce the fastest and smallest
 Windows executable overall, followed by Microsoft VC++ .net 7.1 /O2 /G7
 
 
-PAQ6 DESCRIPTION    // to be updated for PAQAR
+PAQ6 DESCRIPTION  // to be updated for PAQAR
 
 1. OVERVIEW
 
@@ -457,7 +456,7 @@ input and output, with the output receiving 3/4 of the weight:
 Results on the Calgary corpos are shown below for some top data compressors
 as of Dec. 30, 2003.  Options are set for maximum compression.  When
 possible, the files are all compressed into a single archive.  Run times
-are on a 705 MHz Duron with 256 Mb memory, and include 3 seconds to run
+are on a 705 MHz Duron with 256 MB memory, and include 3 seconds to run
 WRT when applicable.  PAQAR was compiled with DJGPP (g++) 2.95.2 -O.
 
   Original size   Options        3,141,622  Time   Author
@@ -544,7 +543,7 @@ inline int size( const T &t ) {
 // 8-32 bit unsigned types, adjust as appropriate
 typedef unsigned char U8;
 typedef unsigned short U16;
-typedef unsigned int U32;
+typedef uint32_t U32;
 
 #define Top_value U32( 0XFFFFFFFF ) /* Largest code value */
 /* HALF AND QUARTER POINTS IN THE CODE VALUE RANGE. */
@@ -779,7 +778,7 @@ public:
     U8 *p = ( U8 * ) calloc( ( 17 << N ) + 64, 1 );
     if( !p )
       handler();
-    p += 64 - ( ( long ) p & 63 );
+    p += 64 - ( ( int64_t ) p & 63 );
     table = ( HashElement * ) p;
     Tcxt = &( table[0].c[-1] );
   }
@@ -1265,10 +1264,10 @@ occurrence of a byte occuring 4 times in a row equally spaced, e.g.
 the 2 most recent, different record lengths of at least 2. */
 
 class RecordModel {
-  enum { SIZE = 20 };
-  CounterMap3 t0, t1, t3, t4, t5, t6, t7, t8, t9, ta;
+  enum { SIZE = 21 };
+  CounterMap3 t0, t1, t3, t4, t5, t6, t7;
   CounterMap2 t2;
-  int r1, r2, r3, r4, c1, c2;
+  int r1, r2, c1, c2;
 
 public:
   RecordModel() :
@@ -1280,13 +1279,8 @@ public:
       t5( SIZE ),
       t6( SIZE ),
       t7( SIZE ),
-      t8( SIZE ),
-      t9( SIZE ),
-      ta( SIZE ),
       r1( 2 ),
       r2( 3 ),
-      r3( 2 ),
-      r4( 3 ),
       c1( 0 ),
       c2( 0 ) {}
   void model() {
@@ -1310,12 +1304,6 @@ public:
           r1 = d;
           c1 = 0;
         }
-      if( d > 2 ) {
-        if( d == r3 )
-          swap( r3, r4 );
-        if( d != r4 )
-          r3 = d;
-      }
       t0.upd( hash( ch( 1 ), 0 ) );
       t1.upd( hash( ch( 1 ), ch( 2 ), 1 ) );
       t2.upd( hash( ch( 1 ), ch( 2 ), ch( 3 ), 2 ) );
@@ -1324,9 +1312,6 @@ public:
       t5.upd( hash( ch( r2 ), po % r2 ) );
       t6.upd( hash( ch( r1 ), ch( r1 * 2 ), r1 ) );
       t7.upd( hash( ch( 1 ), ch( r1 ), ch( r1 + 1 ), r1 ) );
-      t8.upd( hash( ch( r4 ), ch( r4 * 2 ), r4 ) );
-      t9.upd( hash( ch( 1 ), ch( r4 ), ch( r4 + 1 ), r4 ) );
-      ta.upd( hash( ch( r4 ), r4 ) );
     }
     if( fsize != 0 ) {
       if( tf ) {
@@ -1338,12 +1323,9 @@ public:
         t1.mul( 2 );
         t2.mul( 2 );
       }
-      t8.wri();
-      t9.wri();
-      ta.wri();
-      t4.wri();
     }
     t3.wri();
+    t4.wri();
     t5.wri();
     t6.wri();
     t7.wri();
@@ -1390,7 +1372,7 @@ public:
       t7.upd( hash( ch( 3 ), ch( 4 ), k ) );
       t8.upd( hash( ch( 2 ), ch( 4 ), ch( 6 ), k ) );
       t9.upd( hash( ch( 1 ), ch( 2 ), i, k ) );
-      ta.upd( hash( ch( 1 ), ch( 2 ), j + 64, k ) );
+      ta.upd( hash( ch( 1 ), ch( 2 ), j, k ) );
     }
     t0.wri();
     t1.wri();
@@ -1975,9 +1957,6 @@ public:
   }
 };
 
-#define CONSTA 292 * 1024 + 512
-int exe = 1;
-
 //////////////////////////// main ////////////////////////////
 
 // Read and return a line of input from FILE f (default stdin) up to
@@ -1996,7 +1975,7 @@ string getline( FILE *f = stdin ) {
 int main( int argc, char **argv ) {
   // Check arguments
   if( argc < 2 ) {
-    printf( PROGNAME " v1.1 file compressor/archiver, (C)2004, Matt Mahoney, mmahoney@cs.fit.edu\n"
+    printf( PROGNAME " v1.0 file compressor/archiver, (C)2004, Matt Mahoney, mmahoney@cs.fit.edu\n"
                      "                                        & Alexander Ratushnyak, artest@inbox.ru\n"
                      "This program is free software distributed without warranty under the terms\n"
                      "of the GNU General Public License, see http://www.gnu.org/licenses/gpl.txt\n"
@@ -2008,16 +1987,16 @@ int main( int argc, char **argv ) {
                      "\n"
                      "Compression option  Memory needed to compress/decompress\n"
                      "------------------  ------------------------------------\n"
-                     " -0                  ~8 Mb (fastest)\n"
-                     " -1                 ~12 Mb\n"
-                     " -2                 ~15 Mb\n"
-                     " -3                 ~30 Mb\n"
-                     " -4                 <60 Mb\n"
-                     " -5                <120 Mb\n"
-                     " -6                <230 Mb (default)\n"
-                     " -7                <460 Mb\n"
-                     " -8                <920 Mb\n"
-                     " -9               <1840 Mb (best compression, slowest)\n" );
+                     " -0                  ~5 MB (fastest)\n"
+                     " -1                 ~10 MB\n"
+                     " -2                 ~15 MB\n"
+                     " -3                 ~30 MB\n"
+                     " -4                 <60 MB\n"
+                     " -5                <120 MB\n"
+                     " -6                <240 MB (default)\n"
+                     " -7                <480 MB\n"
+                     " -8                <960 MB\n"
+                     " -9               <1920 MB (best compression, slowest)\n" );
     return 1;
   }
 
@@ -2090,7 +2069,7 @@ int main( int argc, char **argv ) {
 
       // Compare with existing file
       FILE *f = fopen( filename[i].c_str(), "rb" );
-      long size = filesize[i];
+      const long size = filesize[i];
       uncompressed_bytes += size;
       if( f ) {
         bool different = false;
@@ -2114,8 +2093,6 @@ int main( int argc, char **argv ) {
         if( !f )
           printf( "cannot create, skipping...\n" );
         fsize = size - 513216;
-        if( exe && size > 0 )
-          ++size;
         for( long j = 0; j < size; ++j ) {
           int c = e.decode();
           if( f )
@@ -2123,28 +2100,6 @@ int main( int argc, char **argv ) {
         }
         if( f ) {
           printf( "extracted\n" );
-          if( exe && size > 0 ) {
-            char *st0, *st;
-            int data2write[4] = {0, 0, 0, 0};
-
-            fclose( f );
-            f = fopen( filename[i].c_str(), "rb" );
-            fseek( f, 0L, SEEK_END );
-            long flen = ftell( f );
-            fseek( f, 0L, 0 );
-
-            if( ( st0 = ( char * ) malloc( CONSTA + 2 * flen + 256 ) ) == NULL )
-              handler();
-            st = st0 + 256 - ( ( long ) st0 & 255 ); // 256-byte-alignment
-            flen = fread( st + CONSTA - 32768, 1, flen, f );
-            fclose( f );
-            f = fopen( filename[i].c_str(), "wb" );
-
-            if( data2write[0] )
-              fwrite( ( char * ) data2write[1], 1, data2write[0], f );
-
-            free( st0 );
-          }
           fclose( f );
         }
       }
@@ -2206,40 +2161,13 @@ int main( int argc, char **argv ) {
     Transformer e( COMPRESS, archive );
     long file_start = ftell( archive );
     for( i = 0; i < int( filename.size() ); ++i ) {
-      long size = filesize[i];
+      const long size = filesize[i];
       if( size >= 0 ) {
         uncompressed_bytes += size;
         printf( "%-23s %10ld -> ", filename[i].c_str(), size );
         FILE *f = fopen( filename[i].c_str(), "rb" );
-        fsize = size - 513216;
-
-        if( f && exe && size > 0 ) {
-          char *st0, *st;
-          int data2write[4] = {0, 0, 0, 0};
-          FILE *fw = fopen( "paqar11tmp.tmp", "wb" );
-
-          fseek( f, 0L, SEEK_END );
-          long flen = ftell( f );
-          fseek( f, 0L, 0 );
-
-          if( ( st0 = ( char * ) malloc( CONSTA + 2 * flen + 256 ) ) == NULL )
-            handler();
-          st = st0 + 256 - ( ( long ) st0 & 255 ); // 256-byte-alignment
-          flen = fread( st + CONSTA - 32768, 1, flen, f );
-
-          size = 0;
-          if( data2write[0] )
-            size += data2write[0], fwrite( ( char * ) data2write[1], 1, data2write[0], fw );
-          if( data2write[2] )
-            size += data2write[2], fwrite( ( char * ) data2write[3], 1, data2write[2], fw );
-          free( st0 );
-
-          fclose( fw );
-          fclose( f );
-          f = fopen( "paqar11tmp.tmp", "rb" );
-        }
-
         int c;
+        fsize = size - 513216;
         for( long j = 0; j < size; ++j ) {
           if( f )
             c = getc( f );
@@ -2249,8 +2177,6 @@ int main( int argc, char **argv ) {
         }
         if( f )
           fclose( f );
-        if( f && exe && size > 0 )
-          remove( "paqar11tmp.tmp" );
         printf( "%ld\n", ftell( archive ) - file_start );
         file_start = ftell( archive );
       }

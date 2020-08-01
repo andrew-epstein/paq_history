@@ -55,13 +55,13 @@ void alloc( T *&p, int n ) {
 
 class Predictor {
 private:
-  int cxt;             // Context: last 0-8 bits with a leading 1
+  int cxt{ 1 };        // Context: last 0-8 bits with a leading 1
   unsigned int t[512]; // Probability of 1
 
 public:
-  Predictor() : cxt( 1 ) {
-    for( int i = 0; i < 512; i++ )
-      t[i] = 32768;
+  Predictor() {
+    for( unsigned int &i: t )
+      i = 32768;
   }
 
   // Assume a stationary order 0 stream of 9-bit symbols
@@ -318,23 +318,18 @@ private:
 public:
   Encoder( Mode m, FILE *f );
   int decode();         // Uncompress and return bit y
-  void encode( int y ); // Compress bit y
+  void encode( int d ); // Compress bit y
   void flush();         // Call when done compressing
 };
 
 // Initialize
 Encoder::Encoder( Mode m, FILE *f ) :
-    mode( m ),
-    archive( f ),
-    x( 1 << N ),
-    n( static_cast<int>( mode == DECOMPRESS ) ),
-    ins( 0 ),
-    outs( 0 ) {
+    mode( m ), archive( f ), x( 1 << N ), n( static_cast<int>( mode == DECOMPRESS ) ), ins( 0 ), outs( 0 ) {
   if( mode == COMPRESS ) {
     alloc( ins, B );
     alloc( outs, BO );
     for( int i = 1; i < 1 << N; ++i ) {
-      qinv[i * 2 + 1] = qinv[( 2 << N ) - 2 * i] = ( 1ull << ( 32 + N ) ) / i;
+      qinv[i * 2 + 1] = qinv[( 2 << N ) - 2 * i] = ( 1ULL << ( 32 + N ) ) / i;
       ++qinv[i * 2 + 1];
     }
   }
@@ -435,10 +430,10 @@ int main( int argc, char **argv ) {
   clock_t start = clock();
 
   // Open files
-  FILE *in = fopen( argv[2], "rb" );
+  FILE *in = fopen( argv[2], "rbe" );
   if( in == nullptr )
     perror( argv[2] ), exit( 1 );
-  FILE *out = fopen( argv[3], "wb" );
+  FILE *out = fopen( argv[3], "wbe" );
   if( out == nullptr )
     perror( argv[3] ), exit( 1 );
   int c;

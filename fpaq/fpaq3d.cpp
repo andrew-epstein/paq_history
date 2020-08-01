@@ -2,14 +2,14 @@
 // (C) 2002, Matt Mahoney under GPL, http://www.gnu.org/licenses/gpl.txt
 // To compile: g++ -O fpaq3d.cpp
 // 28/12/2006 modified by Nania Francesco Antonio (Italia - Merì (ME))
+#include <cassert>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
-#include <cassert>
 namespace std {} // namespace std
 using namespace std;
-typedef unsigned int U32; // 32 bit type
+using U32 = unsigned int; // 32 bit type
 unsigned long filesize, pos, control, maxsize, scanned, memo;
 unsigned long rc[2], cc[2], r2, r1, conta, sce; // Context: last 0-8 bits with a leading 1
 unsigned char epix, mbit;                       // 0 and 1 state count in context
@@ -239,17 +239,17 @@ int main( int argc, char **argv ) {
       mbit = 30;
       printf( " Memory :  2 Gb\n" );
     }
-    in = fopen( argv[3], "rb" );
+    in = fopen( argv[3], "rbe" );
     if( in == nullptr )
       perror( argv[3] ), exit( 1 );
-    out = fopen( argv[4], "wb" );
+    out = fopen( argv[4], "wbe" );
     if( out == nullptr )
       perror( argv[4] ), exit( 1 );
   } else {
-    in = fopen( argv[2], "rb" );
+    in = fopen( argv[2], "rbe" );
     if( in == nullptr )
       perror( argv[2] ), exit( 1 );
-    out = fopen( argv[3], "wb" );
+    out = fopen( argv[3], "wbe" );
     if( out == nullptr )
       perror( argv[3] ), exit( 1 );
   }

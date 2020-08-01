@@ -1431,70 +1431,70 @@ inline U32 ilog2( U32 x ) {
 
 #if 1 // change to #if 0 to generate this table at run time (4% slower)
 static const U8 State_table[256][4] = {
-    {1, 2, 0, 0},      {3, 5, 1, 0},      {4, 6, 0, 1},      {7, 10, 2, 0},     // 0-3
-    {8, 12, 1, 1},     {9, 13, 1, 1},     {11, 14, 0, 2},    {15, 19, 3, 0},    // 4-7
-    {16, 23, 2, 1},    {17, 24, 2, 1},    {18, 25, 2, 1},    {20, 27, 1, 2},    // 8-11
-    {21, 28, 1, 2},    {22, 29, 1, 2},    {26, 30, 0, 3},    {31, 33, 4, 0},    // 12-15
-    {32, 35, 3, 1},    {32, 35, 3, 1},    {32, 35, 3, 1},    {32, 35, 3, 1},    // 16-19
-    {34, 37, 2, 2},    {34, 37, 2, 2},    {34, 37, 2, 2},    {34, 37, 2, 2},    // 20-23
-    {34, 37, 2, 2},    {34, 37, 2, 2},    {36, 39, 1, 3},    {36, 39, 1, 3},    // 24-27
-    {36, 39, 1, 3},    {36, 39, 1, 3},    {38, 40, 0, 4},    {41, 43, 5, 0},    // 28-31
-    {42, 45, 4, 1},    {42, 45, 4, 1},    {44, 47, 3, 2},    {44, 47, 3, 2},    // 32-35
-    {46, 49, 2, 3},    {46, 49, 2, 3},    {48, 51, 1, 4},    {48, 51, 1, 4},    // 36-39
-    {50, 52, 0, 5},    {53, 43, 6, 0},    {54, 57, 5, 1},    {54, 57, 5, 1},    // 40-43
-    {56, 59, 4, 2},    {56, 59, 4, 2},    {58, 61, 3, 3},    {58, 61, 3, 3},    // 44-47
-    {60, 63, 2, 4},    {60, 63, 2, 4},    {62, 65, 1, 5},    {62, 65, 1, 5},    // 48-51
-    {50, 66, 0, 6},    {67, 55, 7, 0},    {68, 57, 6, 1},    {68, 57, 6, 1},    // 52-55
-    {70, 73, 5, 2},    {70, 73, 5, 2},    {72, 75, 4, 3},    {72, 75, 4, 3},    // 56-59
-    {74, 77, 3, 4},    {74, 77, 3, 4},    {76, 79, 2, 5},    {76, 79, 2, 5},    // 60-63
-    {62, 81, 1, 6},    {62, 81, 1, 6},    {64, 82, 0, 7},    {83, 69, 8, 0},    // 64-67
-    {84, 71, 7, 1},    {84, 71, 7, 1},    {86, 73, 6, 2},    {86, 73, 6, 2},    // 68-71
-    {44, 59, 5, 3},    {44, 59, 5, 3},    {58, 61, 4, 4},    {58, 61, 4, 4},    // 72-75
-    {60, 49, 3, 5},    {60, 49, 3, 5},    {76, 89, 2, 6},    {76, 89, 2, 6},    // 76-79
-    {78, 91, 1, 7},    {78, 91, 1, 7},    {80, 92, 0, 8},    {93, 69, 9, 0},    // 80-83
-    {94, 87, 8, 1},    {94, 87, 8, 1},    {96, 45, 7, 2},    {96, 45, 7, 2},    // 84-87
-    {48, 99, 2, 7},    {48, 99, 2, 7},    {88, 101, 1, 8},   {88, 101, 1, 8},   // 88-91
-    {80, 102, 0, 9},   {103, 69, 10, 0},  {104, 87, 9, 1},   {104, 87, 9, 1},   // 92-95
-    {106, 57, 8, 2},   {106, 57, 8, 2},   {62, 109, 2, 8},   {62, 109, 2, 8},   // 96-99
-    {88, 111, 1, 9},   {88, 111, 1, 9},   {80, 112, 0, 10},  {113, 85, 11, 0},  // 100-103
-    {114, 87, 10, 1},  {114, 87, 10, 1},  {116, 57, 9, 2},   {116, 57, 9, 2},   // 104-107
-    {62, 119, 2, 9},   {62, 119, 2, 9},   {88, 121, 1, 10},  {88, 121, 1, 10},  // 108-111
-    {90, 122, 0, 11},  {123, 85, 12, 0},  {124, 97, 11, 1},  {124, 97, 11, 1},  // 112-115
-    {126, 57, 10, 2},  {126, 57, 10, 2},  {62, 129, 2, 10},  {62, 129, 2, 10},  // 116-119
-    {98, 131, 1, 11},  {98, 131, 1, 11},  {90, 132, 0, 12},  {133, 85, 13, 0},  // 120-123
-    {134, 97, 12, 1},  {134, 97, 12, 1},  {136, 57, 11, 2},  {136, 57, 11, 2},  // 124-127
-    {62, 139, 2, 11},  {62, 139, 2, 11},  {98, 141, 1, 12},  {98, 141, 1, 12},  // 128-131
-    {90, 142, 0, 13},  {143, 95, 14, 0},  {144, 97, 13, 1},  {144, 97, 13, 1},  // 132-135
-    {68, 57, 12, 2},   {68, 57, 12, 2},   {62, 81, 2, 12},   {62, 81, 2, 12},   // 136-139
-    {98, 147, 1, 13},  {98, 147, 1, 13},  {100, 148, 0, 14}, {149, 95, 15, 0},  // 140-143
-    {150, 107, 14, 1}, {150, 107, 14, 1}, {108, 151, 1, 14}, {108, 151, 1, 14}, // 144-147
-    {100, 152, 0, 15}, {153, 95, 16, 0},  {154, 107, 15, 1}, {108, 155, 1, 15}, // 148-151
-    {100, 156, 0, 16}, {157, 95, 17, 0},  {158, 107, 16, 1}, {108, 159, 1, 16}, // 152-155
-    {100, 160, 0, 17}, {161, 105, 18, 0}, {162, 107, 17, 1}, {108, 163, 1, 17}, // 156-159
-    {110, 164, 0, 18}, {165, 105, 19, 0}, {166, 117, 18, 1}, {118, 167, 1, 18}, // 160-163
-    {110, 168, 0, 19}, {169, 105, 20, 0}, {170, 117, 19, 1}, {118, 171, 1, 19}, // 164-167
-    {110, 172, 0, 20}, {173, 105, 21, 0}, {174, 117, 20, 1}, {118, 175, 1, 20}, // 168-171
-    {110, 176, 0, 21}, {177, 105, 22, 0}, {178, 117, 21, 1}, {118, 179, 1, 21}, // 172-175
-    {110, 180, 0, 22}, {181, 115, 23, 0}, {182, 117, 22, 1}, {118, 183, 1, 22}, // 176-179
-    {120, 184, 0, 23}, {185, 115, 24, 0}, {186, 127, 23, 1}, {128, 187, 1, 23}, // 180-183
-    {120, 188, 0, 24}, {189, 115, 25, 0}, {190, 127, 24, 1}, {128, 191, 1, 24}, // 184-187
-    {120, 192, 0, 25}, {193, 115, 26, 0}, {194, 127, 25, 1}, {128, 195, 1, 25}, // 188-191
-    {120, 196, 0, 26}, {197, 115, 27, 0}, {198, 127, 26, 1}, {128, 199, 1, 26}, // 192-195
-    {120, 200, 0, 27}, {201, 115, 28, 0}, {202, 127, 27, 1}, {128, 203, 1, 27}, // 196-199
-    {120, 204, 0, 28}, {205, 115, 29, 0}, {206, 127, 28, 1}, {128, 207, 1, 28}, // 200-203
-    {120, 208, 0, 29}, {209, 125, 30, 0}, {210, 127, 29, 1}, {128, 211, 1, 29}, // 204-207
-    {130, 212, 0, 30}, {213, 125, 31, 0}, {214, 137, 30, 1}, {138, 215, 1, 30}, // 208-211
-    {130, 216, 0, 31}, {217, 125, 32, 0}, {218, 137, 31, 1}, {138, 219, 1, 31}, // 212-215
-    {130, 220, 0, 32}, {221, 125, 33, 0}, {222, 137, 32, 1}, {138, 223, 1, 32}, // 216-219
-    {130, 224, 0, 33}, {225, 125, 34, 0}, {226, 137, 33, 1}, {138, 227, 1, 33}, // 220-223
-    {130, 228, 0, 34}, {229, 125, 35, 0}, {230, 137, 34, 1}, {138, 231, 1, 34}, // 224-227
-    {130, 232, 0, 35}, {233, 125, 36, 0}, {234, 137, 35, 1}, {138, 235, 1, 35}, // 228-231
-    {130, 236, 0, 36}, {237, 125, 37, 0}, {238, 137, 36, 1}, {138, 239, 1, 36}, // 232-235
-    {130, 240, 0, 37}, {241, 125, 38, 0}, {242, 137, 37, 1}, {138, 243, 1, 37}, // 236-239
-    {130, 244, 0, 38}, {245, 135, 39, 0}, {246, 137, 38, 1}, {138, 247, 1, 38}, // 240-243
-    {140, 248, 0, 39}, {249, 135, 40, 0}, {250, 69, 39, 1},  {80, 251, 1, 39},  // 244-247
-    {140, 252, 0, 40}, {249, 135, 41, 0}, {250, 69, 40, 1},  {80, 251, 1, 40},  // 248-251
-    {140, 252, 0, 41}};                                                         // 252, 253-255 are reserved
+    { 1, 2, 0, 0 },      { 3, 5, 1, 0 },      { 4, 6, 0, 1 },      { 7, 10, 2, 0 },     // 0-3
+    { 8, 12, 1, 1 },     { 9, 13, 1, 1 },     { 11, 14, 0, 2 },    { 15, 19, 3, 0 },    // 4-7
+    { 16, 23, 2, 1 },    { 17, 24, 2, 1 },    { 18, 25, 2, 1 },    { 20, 27, 1, 2 },    // 8-11
+    { 21, 28, 1, 2 },    { 22, 29, 1, 2 },    { 26, 30, 0, 3 },    { 31, 33, 4, 0 },    // 12-15
+    { 32, 35, 3, 1 },    { 32, 35, 3, 1 },    { 32, 35, 3, 1 },    { 32, 35, 3, 1 },    // 16-19
+    { 34, 37, 2, 2 },    { 34, 37, 2, 2 },    { 34, 37, 2, 2 },    { 34, 37, 2, 2 },    // 20-23
+    { 34, 37, 2, 2 },    { 34, 37, 2, 2 },    { 36, 39, 1, 3 },    { 36, 39, 1, 3 },    // 24-27
+    { 36, 39, 1, 3 },    { 36, 39, 1, 3 },    { 38, 40, 0, 4 },    { 41, 43, 5, 0 },    // 28-31
+    { 42, 45, 4, 1 },    { 42, 45, 4, 1 },    { 44, 47, 3, 2 },    { 44, 47, 3, 2 },    // 32-35
+    { 46, 49, 2, 3 },    { 46, 49, 2, 3 },    { 48, 51, 1, 4 },    { 48, 51, 1, 4 },    // 36-39
+    { 50, 52, 0, 5 },    { 53, 43, 6, 0 },    { 54, 57, 5, 1 },    { 54, 57, 5, 1 },    // 40-43
+    { 56, 59, 4, 2 },    { 56, 59, 4, 2 },    { 58, 61, 3, 3 },    { 58, 61, 3, 3 },    // 44-47
+    { 60, 63, 2, 4 },    { 60, 63, 2, 4 },    { 62, 65, 1, 5 },    { 62, 65, 1, 5 },    // 48-51
+    { 50, 66, 0, 6 },    { 67, 55, 7, 0 },    { 68, 57, 6, 1 },    { 68, 57, 6, 1 },    // 52-55
+    { 70, 73, 5, 2 },    { 70, 73, 5, 2 },    { 72, 75, 4, 3 },    { 72, 75, 4, 3 },    // 56-59
+    { 74, 77, 3, 4 },    { 74, 77, 3, 4 },    { 76, 79, 2, 5 },    { 76, 79, 2, 5 },    // 60-63
+    { 62, 81, 1, 6 },    { 62, 81, 1, 6 },    { 64, 82, 0, 7 },    { 83, 69, 8, 0 },    // 64-67
+    { 84, 71, 7, 1 },    { 84, 71, 7, 1 },    { 86, 73, 6, 2 },    { 86, 73, 6, 2 },    // 68-71
+    { 44, 59, 5, 3 },    { 44, 59, 5, 3 },    { 58, 61, 4, 4 },    { 58, 61, 4, 4 },    // 72-75
+    { 60, 49, 3, 5 },    { 60, 49, 3, 5 },    { 76, 89, 2, 6 },    { 76, 89, 2, 6 },    // 76-79
+    { 78, 91, 1, 7 },    { 78, 91, 1, 7 },    { 80, 92, 0, 8 },    { 93, 69, 9, 0 },    // 80-83
+    { 94, 87, 8, 1 },    { 94, 87, 8, 1 },    { 96, 45, 7, 2 },    { 96, 45, 7, 2 },    // 84-87
+    { 48, 99, 2, 7 },    { 48, 99, 2, 7 },    { 88, 101, 1, 8 },   { 88, 101, 1, 8 },   // 88-91
+    { 80, 102, 0, 9 },   { 103, 69, 10, 0 },  { 104, 87, 9, 1 },   { 104, 87, 9, 1 },   // 92-95
+    { 106, 57, 8, 2 },   { 106, 57, 8, 2 },   { 62, 109, 2, 8 },   { 62, 109, 2, 8 },   // 96-99
+    { 88, 111, 1, 9 },   { 88, 111, 1, 9 },   { 80, 112, 0, 10 },  { 113, 85, 11, 0 },  // 100-103
+    { 114, 87, 10, 1 },  { 114, 87, 10, 1 },  { 116, 57, 9, 2 },   { 116, 57, 9, 2 },   // 104-107
+    { 62, 119, 2, 9 },   { 62, 119, 2, 9 },   { 88, 121, 1, 10 },  { 88, 121, 1, 10 },  // 108-111
+    { 90, 122, 0, 11 },  { 123, 85, 12, 0 },  { 124, 97, 11, 1 },  { 124, 97, 11, 1 },  // 112-115
+    { 126, 57, 10, 2 },  { 126, 57, 10, 2 },  { 62, 129, 2, 10 },  { 62, 129, 2, 10 },  // 116-119
+    { 98, 131, 1, 11 },  { 98, 131, 1, 11 },  { 90, 132, 0, 12 },  { 133, 85, 13, 0 },  // 120-123
+    { 134, 97, 12, 1 },  { 134, 97, 12, 1 },  { 136, 57, 11, 2 },  { 136, 57, 11, 2 },  // 124-127
+    { 62, 139, 2, 11 },  { 62, 139, 2, 11 },  { 98, 141, 1, 12 },  { 98, 141, 1, 12 },  // 128-131
+    { 90, 142, 0, 13 },  { 143, 95, 14, 0 },  { 144, 97, 13, 1 },  { 144, 97, 13, 1 },  // 132-135
+    { 68, 57, 12, 2 },   { 68, 57, 12, 2 },   { 62, 81, 2, 12 },   { 62, 81, 2, 12 },   // 136-139
+    { 98, 147, 1, 13 },  { 98, 147, 1, 13 },  { 100, 148, 0, 14 }, { 149, 95, 15, 0 },  // 140-143
+    { 150, 107, 14, 1 }, { 150, 107, 14, 1 }, { 108, 151, 1, 14 }, { 108, 151, 1, 14 }, // 144-147
+    { 100, 152, 0, 15 }, { 153, 95, 16, 0 },  { 154, 107, 15, 1 }, { 108, 155, 1, 15 }, // 148-151
+    { 100, 156, 0, 16 }, { 157, 95, 17, 0 },  { 158, 107, 16, 1 }, { 108, 159, 1, 16 }, // 152-155
+    { 100, 160, 0, 17 }, { 161, 105, 18, 0 }, { 162, 107, 17, 1 }, { 108, 163, 1, 17 }, // 156-159
+    { 110, 164, 0, 18 }, { 165, 105, 19, 0 }, { 166, 117, 18, 1 }, { 118, 167, 1, 18 }, // 160-163
+    { 110, 168, 0, 19 }, { 169, 105, 20, 0 }, { 170, 117, 19, 1 }, { 118, 171, 1, 19 }, // 164-167
+    { 110, 172, 0, 20 }, { 173, 105, 21, 0 }, { 174, 117, 20, 1 }, { 118, 175, 1, 20 }, // 168-171
+    { 110, 176, 0, 21 }, { 177, 105, 22, 0 }, { 178, 117, 21, 1 }, { 118, 179, 1, 21 }, // 172-175
+    { 110, 180, 0, 22 }, { 181, 115, 23, 0 }, { 182, 117, 22, 1 }, { 118, 183, 1, 22 }, // 176-179
+    { 120, 184, 0, 23 }, { 185, 115, 24, 0 }, { 186, 127, 23, 1 }, { 128, 187, 1, 23 }, // 180-183
+    { 120, 188, 0, 24 }, { 189, 115, 25, 0 }, { 190, 127, 24, 1 }, { 128, 191, 1, 24 }, // 184-187
+    { 120, 192, 0, 25 }, { 193, 115, 26, 0 }, { 194, 127, 25, 1 }, { 128, 195, 1, 25 }, // 188-191
+    { 120, 196, 0, 26 }, { 197, 115, 27, 0 }, { 198, 127, 26, 1 }, { 128, 199, 1, 26 }, // 192-195
+    { 120, 200, 0, 27 }, { 201, 115, 28, 0 }, { 202, 127, 27, 1 }, { 128, 203, 1, 27 }, // 196-199
+    { 120, 204, 0, 28 }, { 205, 115, 29, 0 }, { 206, 127, 28, 1 }, { 128, 207, 1, 28 }, // 200-203
+    { 120, 208, 0, 29 }, { 209, 125, 30, 0 }, { 210, 127, 29, 1 }, { 128, 211, 1, 29 }, // 204-207
+    { 130, 212, 0, 30 }, { 213, 125, 31, 0 }, { 214, 137, 30, 1 }, { 138, 215, 1, 30 }, // 208-211
+    { 130, 216, 0, 31 }, { 217, 125, 32, 0 }, { 218, 137, 31, 1 }, { 138, 219, 1, 31 }, // 212-215
+    { 130, 220, 0, 32 }, { 221, 125, 33, 0 }, { 222, 137, 32, 1 }, { 138, 223, 1, 32 }, // 216-219
+    { 130, 224, 0, 33 }, { 225, 125, 34, 0 }, { 226, 137, 33, 1 }, { 138, 227, 1, 33 }, // 220-223
+    { 130, 228, 0, 34 }, { 229, 125, 35, 0 }, { 230, 137, 34, 1 }, { 138, 231, 1, 34 }, // 224-227
+    { 130, 232, 0, 35 }, { 233, 125, 36, 0 }, { 234, 137, 35, 1 }, { 138, 235, 1, 35 }, // 228-231
+    { 130, 236, 0, 36 }, { 237, 125, 37, 0 }, { 238, 137, 36, 1 }, { 138, 239, 1, 36 }, // 232-235
+    { 130, 240, 0, 37 }, { 241, 125, 38, 0 }, { 242, 137, 37, 1 }, { 138, 243, 1, 37 }, // 236-239
+    { 130, 244, 0, 38 }, { 245, 135, 39, 0 }, { 246, 137, 38, 1 }, { 138, 247, 1, 38 }, // 240-243
+    { 140, 248, 0, 39 }, { 249, 135, 40, 0 }, { 250, 69, 39, 1 },  { 80, 251, 1, 39 },  // 244-247
+    { 140, 252, 0, 40 }, { 249, 135, 41, 0 }, { 250, 69, 40, 1 },  { 80, 251, 1, 40 },  // 248-251
+    { 140, 252, 0, 41 } };                                                              // 252, 253-255 are reserved
 
 #  define nex( state, sel ) State_table[state][sel]
 
@@ -1518,7 +1518,7 @@ public:
   StateTable();
 } nex;
 
-const int StateTable::b[B] = {42, 41, 13, 6, 5}; // x -> max y, y -> max x
+const int StateTable::b[B] = { 42, 41, 13, 6, 5 }; // x -> max y, y -> max x
 U8 StateTable::t[N][N][2];
 
 int StateTable::num_states( int x, int y ) {
@@ -1643,9 +1643,9 @@ StateTable::StateTable() : ns( 1024 ) {
 
 // return p = 1/(1 + exp(-d)), d scaled by 8 bits, p scaled by 12 bits
 int squash( int d ) {
-  static const int t[33] = {1,    2,    3,    6,    10,   16,   27,   45,   73,   120,  194,
-                            310,  488,  747,  1101, 1546, 2047, 2549, 2994, 3348, 3607, 3785,
-                            3901, 3975, 4022, 4050, 4068, 4079, 4085, 4089, 4092, 4093, 4094};
+  static const int t[33] = { 1,    2,    3,    6,    10,   16,   27,   45,   73,   120,  194,
+                             310,  488,  747,  1101, 1546, 2047, 2549, 2994, 3348, 3607, 3785,
+                             3901, 3975, 4022, 4050, 4068, 4079, 4085, 4089, 4092, 4093, 4094 };
   if( d > 2047 )
     return 4095;
   if( d < -2047 )
@@ -2478,12 +2478,7 @@ private:
 
 public:
   ContextMapB64( const U64 Size, const U32 Count ) :
-      C( Count ),
-      Table( Size ),
-      Contexts( Count ),
-      ByteHistory( Count ),
-      BitState( Count ),
-      HasHistory( Count ) {
+      C( Count ), Table( Size ), Contexts( Count ), ByteHistory( Count ), BitState( Count ), HasHistory( Count ) {
     Maps7b = new StateMap *[C];
     Maps8b = new StateMap *[C];
     Maps12b = new StateMap *[C];
@@ -2613,14 +2608,7 @@ inline U8 *ContextMap2::E::get( U16 ch ) {
 
 // Construct using m bytes of memory for c contexts
 ContextMap2::ContextMap2( int m, int c ) :
-    C( c ),
-    t( m >> 6 ),
-    cp( c ),
-    cp0( c ),
-    cxt( c ),
-    ByteHistory( c ),
-    HasHistory( c ),
-    cn( 0 ) {
+    C( c ), t( m >> 6 ), cp( c ), cp0( c ), cxt( c ), ByteHistory( c ), HasHistory( c ), cn( 0 ) {
   assert( m >= 64 && ( m & ( m - 1 ) ) == 0 ); // power of 2?
   assert( sizeof( E ) == 64 );
   Maps6b = new StateMap *[C];
@@ -3181,90 +3169,90 @@ enum EngWordTypeFlags {
 };
 
 #define NUM_VOWELS 6
-const char Vowels[NUM_VOWELS] = {'a', 'e', 'i', 'o', 'u', 'y'};
+const char Vowels[NUM_VOWELS] = { 'a', 'e', 'i', 'o', 'u', 'y' };
 #define NUM_DOUBLES 9
-const char Doubles[NUM_DOUBLES] = {'b', 'd', 'f', 'g', 'm', 'n', 'p', 'r', 't'};
+const char Doubles[NUM_DOUBLES] = { 'b', 'd', 'f', 'g', 'm', 'n', 'p', 'r', 't' };
 #define NUM_LI_ENDINGS 10
-const char LiEndings[NUM_LI_ENDINGS] = {'c', 'd', 'e', 'g', 'h', 'k', 'm', 'n', 'r', 't'};
+const char LiEndings[NUM_LI_ENDINGS] = { 'c', 'd', 'e', 'g', 'h', 'k', 'm', 'n', 'r', 't' };
 #define NUM_NON_SHORT_CONSONANTS 3
-const char NonShortConsonants[NUM_NON_SHORT_CONSONANTS] = {'w', 'x', 'Y'};
+const char NonShortConsonants[NUM_NON_SHORT_CONSONANTS] = { 'w', 'x', 'Y' };
 #define NUM_SUFFIXES_STEP0 3
-const char *SuffixesStep0[NUM_SUFFIXES_STEP0] = {"'s'", "'s", "'"};
+const char *SuffixesStep0[NUM_SUFFIXES_STEP0] = { "'s'", "'s", "'" };
 #define NUM_SUFFIXES_STEP1b 6
-const char *SuffixesStep1b[NUM_SUFFIXES_STEP1b] = {"eedly", "eed", "ed", "edly", "ing", "ingly"};
+const char *SuffixesStep1b[NUM_SUFFIXES_STEP1b] = { "eedly", "eed", "ed", "edly", "ing", "ingly" };
 const U32 TypesStep1b[NUM_SUFFIXES_STEP1b] = {
-    AdverbOfManner, 0, PastTense, AdverbOfManner | PastTense, PresentParticiple, AdverbOfManner | PresentParticiple};
+    AdverbOfManner, 0, PastTense, AdverbOfManner | PastTense, PresentParticiple, AdverbOfManner | PresentParticiple };
 #define NUM_SUFFIXES_STEP2 22
 const char *( SuffixesStep2[NUM_SUFFIXES_STEP2] )[2] = {
-    {"ization", "ize"}, {"ational", "ate"}, {"ousness", "ous"}, {"iveness", "ive"}, {"fulness", "ful"},
-    {"tional", "tion"}, {"lessli", "less"}, {"biliti", "ble"},  {"entli", "ent"},   {"ation", "ate"},
-    {"alism", "al"},    {"aliti", "al"},    {"fulli", "ful"},   {"ousli", "ous"},   {"iviti", "ive"},
-    {"enci", "ence"},   {"anci", "ance"},   {"abli", "able"},   {"izer", "ize"},    {"ator", "ate"},
-    {"alli", "al"},     {"bli", "ble"}};
-const U32 TypesStep2[NUM_SUFFIXES_STEP2] = {SuffixION,
-                                            SuffixION | SuffixAL,
-                                            SuffixNESS,
-                                            SuffixNESS,
-                                            SuffixNESS,
-                                            SuffixION | SuffixAL,
-                                            AdverbOfManner,
-                                            AdverbOfManner | SuffixITY,
-                                            AdverbOfManner,
-                                            SuffixION,
-                                            0,
-                                            SuffixITY,
-                                            AdverbOfManner,
-                                            AdverbOfManner,
-                                            SuffixITY,
-                                            0,
-                                            0,
-                                            AdverbOfManner,
-                                            0,
-                                            0,
-                                            AdverbOfManner,
-                                            AdverbOfManner};
+    { "ization", "ize" }, { "ational", "ate" }, { "ousness", "ous" }, { "iveness", "ive" }, { "fulness", "ful" },
+    { "tional", "tion" }, { "lessli", "less" }, { "biliti", "ble" },  { "entli", "ent" },   { "ation", "ate" },
+    { "alism", "al" },    { "aliti", "al" },    { "fulli", "ful" },   { "ousli", "ous" },   { "iviti", "ive" },
+    { "enci", "ence" },   { "anci", "ance" },   { "abli", "able" },   { "izer", "ize" },    { "ator", "ate" },
+    { "alli", "al" },     { "bli", "ble" } };
+const U32 TypesStep2[NUM_SUFFIXES_STEP2] = { SuffixION,
+                                             SuffixION | SuffixAL,
+                                             SuffixNESS,
+                                             SuffixNESS,
+                                             SuffixNESS,
+                                             SuffixION | SuffixAL,
+                                             AdverbOfManner,
+                                             AdverbOfManner | SuffixITY,
+                                             AdverbOfManner,
+                                             SuffixION,
+                                             0,
+                                             SuffixITY,
+                                             AdverbOfManner,
+                                             AdverbOfManner,
+                                             SuffixITY,
+                                             0,
+                                             0,
+                                             AdverbOfManner,
+                                             0,
+                                             0,
+                                             AdverbOfManner,
+                                             AdverbOfManner };
 #define NUM_SUFFIXES_STEP3 8
-const char *( SuffixesStep3[NUM_SUFFIXES_STEP3] )[2] = {{"ational", "ate"}, {"tional", "tion"}, {"alize", "al"},
-                                                        {"icate", "ic"},    {"iciti", "ic"},    {"ical", "ic"},
-                                                        {"ful", ""},        {"ness", ""}};
+const char *( SuffixesStep3[NUM_SUFFIXES_STEP3] )[2] = { { "ational", "ate" }, { "tional", "tion" }, { "alize", "al" },
+                                                         { "icate", "ic" },    { "iciti", "ic" },    { "ical", "ic" },
+                                                         { "ful", "" },        { "ness", "" } };
 const U32 TypesStep3[NUM_SUFFIXES_STEP3] = {
-    SuffixION | SuffixAL, SuffixION | SuffixAL, 0, 0, SuffixITY, SuffixAL, AdjectiveFull, SuffixNESS};
+    SuffixION | SuffixAL, SuffixION | SuffixAL, 0, 0, SuffixITY, SuffixAL, AdjectiveFull, SuffixNESS };
 #define NUM_SUFFIXES_STEP4 20
-const char *SuffixesStep4[NUM_SUFFIXES_STEP4] = {"al",  "ance",  "ence", "er",  "ic",   "able", "ible",
-                                                 "ant", "ement", "ment", "ent", "ou",   "ism",  "ate",
-                                                 "iti", "ous",   "ive",  "ize", "sion", "tion"};
+const char *SuffixesStep4[NUM_SUFFIXES_STEP4] = { "al",  "ance",  "ence", "er",  "ic",   "able", "ible",
+                                                  "ant", "ement", "ment", "ent", "ou",   "ism",  "ate",
+                                                  "iti", "ous",   "ive",  "ize", "sion", "tion" };
 const U32 TypesStep4[NUM_SUFFIXES_STEP4] = {
     SuffixAL, SuffixNCE, SuffixNCE, 0, SuffixIC,  SuffixCapable, SuffixCapable, SuffixNT, 0,         0,
-    SuffixNT, 0,         0,         0, SuffixITY, SuffixOUS,     SuffixIVE,     0,        SuffixION, SuffixION};
+    SuffixNT, 0,         0,         0, SuffixITY, SuffixOUS,     SuffixIVE,     0,        SuffixION, SuffixION };
 #define NUM_EXCEPTION_REGION1 3
-const char *ExceptionsRegion1[NUM_EXCEPTION_REGION1] = {"gener", "arsen", "commun"};
+const char *ExceptionsRegion1[NUM_EXCEPTION_REGION1] = { "gener", "arsen", "commun" };
 #define NUM_EXCEPTIONS1 18
 const char *( Exceptions1[NUM_EXCEPTIONS1] )[2] = {
-    {"skis", "ski"},      {"skies", "sky"},     {"dying", "die"},  {"lying", "lie"},   {"tying", "tie"},
-    {"idly", "idle"},     {"gently", "gentle"}, {"ugly", "ugli"},  {"early", "earli"}, {"only", "onli"},
-    {"singly", "singl"},  {"sky", "sky"},       {"news", "news"},  {"howe", "howe"},   {"atlas", "atlas"},
-    {"cosmos", "cosmos"}, {"bias", "bias"},     {"andes", "andes"}};
-const U32 TypesExceptions1[NUM_EXCEPTIONS1] = {Plural,
-                                               Plural,
-                                               PresentParticiple,
-                                               PresentParticiple,
-                                               PresentParticiple,
-                                               AdverbOfManner,
-                                               AdverbOfManner,
-                                               0,
-                                               0,
-                                               0,
-                                               0,
-                                               0,
-                                               0,
-                                               0,
-                                               0,
-                                               0,
-                                               0,
-                                               0};
+    { "skis", "ski" },      { "skies", "sky" },     { "dying", "die" },  { "lying", "lie" },   { "tying", "tie" },
+    { "idly", "idle" },     { "gently", "gentle" }, { "ugly", "ugli" },  { "early", "earli" }, { "only", "onli" },
+    { "singly", "singl" },  { "sky", "sky" },       { "news", "news" },  { "howe", "howe" },   { "atlas", "atlas" },
+    { "cosmos", "cosmos" }, { "bias", "bias" },     { "andes", "andes" } };
+const U32 TypesExceptions1[NUM_EXCEPTIONS1] = { Plural,
+                                                Plural,
+                                                PresentParticiple,
+                                                PresentParticiple,
+                                                PresentParticiple,
+                                                AdverbOfManner,
+                                                AdverbOfManner,
+                                                0,
+                                                0,
+                                                0,
+                                                0,
+                                                0,
+                                                0,
+                                                0,
+                                                0,
+                                                0,
+                                                0,
+                                                0 };
 #define NUM_EXCEPTIONS2 8
-const char *Exceptions2[NUM_EXCEPTIONS2] = {"inning",  "outing",  "canning", "herring",
-                                            "earring", "proceed", "exceed",  "succeed"};
+const char *Exceptions2[NUM_EXCEPTIONS2] = { "inning",  "outing",  "canning", "herring",
+                                             "earring", "proceed", "exceed",  "succeed" };
 
 inline bool CharInArray( const char c, const char a[], const int len ) {
   if( a == NULL )
@@ -3534,7 +3522,7 @@ private:
                       break;
                     }
                     case 'd': {
-                      static const char nAllowed[4] = {'a', 'e', 'i', 'o'};
+                      static const char nAllowed[4] = { 'a', 'e', 'i', 'o' };
                       ( *W ).End += IsVowel( ( *W )( 1 ) ) && ( !CharInArray( ( *W )( 2 ), nAllowed, 4 ) );
                       break;
                     }
@@ -3543,8 +3531,8 @@ private:
                       break;
                     }
                     case 'l': {
-                      static const char Allowed1[10] = {'b', 'c', 'd', 'f', 'g', 'k', 'p', 't', 'y', 'z'};
-                      static const char Allowed2[4] = {'a', 'i', 'o', 'u'};
+                      static const char Allowed1[10] = { 'b', 'c', 'd', 'f', 'g', 'k', 'p', 't', 'y', 'z' };
+                      static const char Allowed2[4] = { 'a', 'i', 'o', 'u' };
                       ( *W ).End += CharInArray( ( *W )( 1 ), Allowed1, 10 )
                                     || ( CharInArray( ( *W )( 1 ), Allowed2, 4 ) && IsConsonant( ( *W )( 2 ) ) );
                       break;
@@ -3558,7 +3546,7 @@ private:
                       break;
                     }
                     case 'g': {
-                      static const char Allowed[7] = {'a', 'd', 'e', 'i', 'l', 'r', 'u'};
+                      static const char Allowed[7] = { 'a', 'd', 'e', 'i', 'l', 'r', 'u' };
                       if( CharInArray( ( *W )( 1 ), Allowed, 7 )
                           || ( ( *W )( 1 ) == 'n'
                                && ( ( *W )( 2 ) == 'e'
@@ -4153,8 +4141,8 @@ struct dBASE {
 void recordModel( Mixer &m, Filetype filetype, ModelStats *Stats = NULL ) {
   static int cpos1[256], cpos2[256], cpos3[256], cpos4[256];
   static int wpos1[0x10000];                      // buf(1..2) -> last position
-  static int rlen[3] = {2, 3, 4};                 // run length and 2 candidates
-  static int rcount[2] = {0, 0};                  // candidate counts
+  static int rlen[3] = { 2, 3, 4 };               // run length and 2 candidates
+  static int rcount[2] = { 0, 0 };                // candidate counts
   static U8 padding = 0;                          // detected padding byte
   static int prevTransition = 0, nTransition = 0; // position of the last padding transition
   static int col = 0, mxCtx = 0;
@@ -4441,8 +4429,8 @@ void im24bitModel( Mixer &m, int info, int alpha = 0, int isPNG = 0 ) {
   static SmallStationaryContextMap scm1( SC ), scm2( SC ), scm3( SC ), scm4( SC ), scm5( SC ), scm6( SC ), scm7( SC ),
       scm8( SC ), scm9( SC * 2 ), scm_fixed( 256 );
   static ContextMap cm( MEM * 4, 45 );
-  static StationaryMap Map[nMaps] = {12, 12, 12, 12, 10, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
-                                     8,  8,  8,  8,  8,  8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 0};
+  static StationaryMap Map[nMaps] = { 12, 12, 12, 12, 10, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+                                      8,  8,  8,  8,  8,  8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 0 };
   static RingBuffer buffer( 0x100000 ); // internal rotating buffer for PNG unfiltered pixel data
   static U8 WWW, WW, W, NWW, NW, N, NE, NEE, NNWW, NNW, NN, NNE, NNEE, NNN; //pixel neighborhood
   static U8 WWp1, Wp1, p1, NWp1, Np1, NEp1, NNp1;
@@ -4452,7 +4440,7 @@ void im24bitModel( Mixer &m, int info, int alpha = 0, int isPNG = 0 ) {
   static int stride = 3;
   static int ctx[2], padding, lastPos = 0, lastWasPNG = 0, filter = 0, x = 0, w = 0, line = 0, R1 = 0, R2 = 0;
   static bool filterOn = false;
-  static int columns[2] = {1, 1}, column[2];
+  static int columns[2] = { 1, 1 }, column[2];
 
   if( bpos == 0 ) {
     if( ( color < 0 ) || ( pos - lastPos != 1 ) ) {
@@ -4627,7 +4615,7 @@ void im24bitModel( Mixer &m, int info, int alpha = 0, int isPNG = 0 ) {
         int residuals[5] = {
             ( ( int8_t ) buf( stride + ( x <= stride ) ) ) + 128, ( ( int8_t ) buf( 1 + ( x < 2 ) ) ) + 128,
             ( ( int8_t ) buf( stride + 1 + ( x <= stride ) ) ) + 128, ( ( int8_t ) buf( 2 + ( x < 3 ) ) ) + 128,
-            ( ( int8_t ) buf( stride + 2 + ( x <= stride ) ) ) + 128};
+            ( ( int8_t ) buf( stride + 2 + ( x <= stride ) ) ) + 128 };
         R1 = ( residuals[1] * residuals[0] ) / max( 1, residuals[2] );
         R2 = ( residuals[3] * residuals[0] ) / max( 1, residuals[4] );
 
@@ -4812,16 +4800,16 @@ void im24bitModel( Mixer &m, int info, int alpha = 0, int isPNG = 0 ) {
 void im8bitModel( Mixer &m, int w, int gray = 0, int isPNG = 0 ) {
   static const int nMaps = 56;
   static ContextMap cm( MEM * 4, 49 );
-  static StationaryMap Map[nMaps] = {12, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
-                                     8,  8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
-                                     8,  8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 0};
+  static StationaryMap Map[nMaps] = { 12, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+                                      8,  8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+                                      8,  8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 0 };
   static RingBuffer buffer( 0x100000 ); // internal rotating buffer for PNG unfiltered pixel data
   static Array<short> jumps( 0x8000 );
   static U8 WWW, WW, W, NWW, NW, N, NE, NEE, NNWW, NNW, NN, NNE, NNEE, NNN; //pixel neighborhood
   static U8 px = 0, res = 0; // current PNG filter prediction, expected residual
   static int ctx, lastPos = 0, lastWasPNG = 0, col = 0, line = 0, x = 0, filter = 0, jump = 0;
   static bool filterOn = false;
-  static int columns[2] = {1, 1}, column[2];
+  static int columns[2] = { 1, 1 }, column[2];
   // Select nearby pixels as context
   if( bpos == 0 ) {
     if( pos != lastPos + 1 ) {
@@ -5389,23 +5377,23 @@ int jpegModel( Mixer &m ) {
   //for parsing Quantization tables
   static int dqt_state = -1, dqt_end = 0, qnum = 0;
 
-  const static U8 zzu[64] = {// zigzag coef -> u,v
-                             0, 1, 0, 0, 1, 2, 3, 2, 1, 0, 0, 1, 2, 3, 4, 5, 4, 3, 2, 1, 0, 0,
-                             1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1, 0, 1, 2, 3, 4, 5, 6, 7, 7,
-                             6, 5, 4, 3, 2, 3, 4, 5, 6, 7, 7, 6, 5, 4, 5, 6, 7, 7, 6, 7};
-  const static U8 zzv[64] = {0, 0, 1, 2, 1, 0, 0, 1, 2, 3, 4, 3, 2, 1, 0, 0, 1, 2, 3, 4, 5, 6,
-                             5, 4, 3, 2, 1, 0, 0, 1, 2, 3, 4, 5, 6, 7, 7, 6, 5, 4, 3, 2, 1, 2,
-                             3, 4, 5, 6, 7, 7, 6, 5, 4, 3, 4, 5, 6, 7, 7, 6, 5, 6, 7, 7};
+  const static U8 zzu[64] = { // zigzag coef -> u,v
+                              0, 1, 0, 0, 1, 2, 3, 2, 1, 0, 0, 1, 2, 3, 4, 5, 4, 3, 2, 1, 0, 0,
+                              1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1, 0, 1, 2, 3, 4, 5, 6, 7, 7,
+                              6, 5, 4, 3, 2, 3, 4, 5, 6, 7, 7, 6, 5, 4, 5, 6, 7, 7, 6, 7 };
+  const static U8 zzv[64] = { 0, 0, 1, 2, 1, 0, 0, 1, 2, 3, 4, 3, 2, 1, 0, 0, 1, 2, 3, 4, 5, 6,
+                              5, 4, 3, 2, 1, 0, 0, 1, 2, 3, 4, 5, 6, 7, 7, 6, 5, 4, 3, 2, 1, 2,
+                              3, 4, 5, 6, 7, 7, 6, 5, 4, 3, 4, 5, 6, 7, 7, 6, 5, 6, 7, 7 };
 
   // Standard Huffman tables (cf. JPEG standard section K.3)
   // IMPORTANT: these are only valid for 8-bit data precision
-  const static U8 bits_dc_luminance[16] = {0, 1, 5, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0};
-  const static U8 values_dc_luminance[12] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+  const static U8 bits_dc_luminance[16] = { 0, 1, 5, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0 };
+  const static U8 values_dc_luminance[12] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
 
-  const static U8 bits_dc_chrominance[16] = {0, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0};
-  const static U8 values_dc_chrominance[12] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+  const static U8 bits_dc_chrominance[16] = { 0, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0 };
+  const static U8 values_dc_chrominance[12] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
 
-  const static U8 bits_ac_luminance[16] = {0, 2, 1, 3, 3, 2, 4, 3, 5, 5, 4, 4, 0, 0, 1, 0x7d};
+  const static U8 bits_ac_luminance[16] = { 0, 2, 1, 3, 3, 2, 4, 3, 5, 5, 4, 4, 0, 0, 1, 0x7d };
   const static U8 values_ac_luminance[162] = {
       0x01, 0x02, 0x03, 0x00, 0x04, 0x11, 0x05, 0x12, 0x21, 0x31, 0x41, 0x06, 0x13, 0x51, 0x61, 0x07, 0x22, 0x71,
       0x14, 0x32, 0x81, 0x91, 0xa1, 0x08, 0x23, 0x42, 0xb1, 0xc1, 0x15, 0x52, 0xd1, 0xf0, 0x24, 0x33, 0x62, 0x72,
@@ -5415,9 +5403,9 @@ int jpegModel( Mixer &m ) {
       0x84, 0x85, 0x86, 0x87, 0x88, 0x89, 0x8a, 0x92, 0x93, 0x94, 0x95, 0x96, 0x97, 0x98, 0x99, 0x9a, 0xa2, 0xa3,
       0xa4, 0xa5, 0xa6, 0xa7, 0xa8, 0xa9, 0xaa, 0xb2, 0xb3, 0xb4, 0xb5, 0xb6, 0xb7, 0xb8, 0xb9, 0xba, 0xc2, 0xc3,
       0xc4, 0xc5, 0xc6, 0xc7, 0xc8, 0xc9, 0xca, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8, 0xd9, 0xda, 0xe1, 0xe2,
-      0xe3, 0xe4, 0xe5, 0xe6, 0xe7, 0xe8, 0xe9, 0xea, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8, 0xf9, 0xfa};
+      0xe3, 0xe4, 0xe5, 0xe6, 0xe7, 0xe8, 0xe9, 0xea, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8, 0xf9, 0xfa };
 
-  const static U8 bits_ac_chrominance[16] = {0, 2, 1, 2, 4, 4, 3, 4, 7, 5, 4, 4, 0, 1, 2, 0x77};
+  const static U8 bits_ac_chrominance[16] = { 0, 2, 1, 2, 4, 4, 3, 4, 7, 5, 4, 4, 0, 1, 2, 0x77 };
   const static U8 values_ac_chrominance[162] = {
       0x00, 0x01, 0x02, 0x03, 0x11, 0x04, 0x05, 0x21, 0x31, 0x06, 0x12, 0x41, 0x51, 0x07, 0x61, 0x71, 0x13, 0x22,
       0x32, 0x81, 0x08, 0x14, 0x42, 0x91, 0xa1, 0xb1, 0xc1, 0x09, 0x23, 0x33, 0x52, 0xf0, 0x15, 0x62, 0x72, 0xd1,
@@ -5427,7 +5415,7 @@ int jpegModel( Mixer &m ) {
       0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88, 0x89, 0x8a, 0x92, 0x93, 0x94, 0x95, 0x96, 0x97, 0x98, 0x99, 0x9a,
       0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7, 0xa8, 0xa9, 0xaa, 0xb2, 0xb3, 0xb4, 0xb5, 0xb6, 0xb7, 0xb8, 0xb9, 0xba,
       0xc2, 0xc3, 0xc4, 0xc5, 0xc6, 0xc7, 0xc8, 0xc9, 0xca, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8, 0xd9, 0xda,
-      0xe2, 0xe3, 0xe4, 0xe5, 0xe6, 0xe7, 0xe8, 0xe9, 0xea, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8, 0xf9, 0xfa};
+      0xe2, 0xe3, 0xe4, 0xe5, 0xe6, 0xe7, 0xe8, 0xe9, 0xea, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8, 0xf9, 0xfa };
 
   if( idx < 0 ) {
     memset( &images[0], 0, sizeof( images ) );
@@ -6128,10 +6116,10 @@ inline int X2( int i ) {
 
 void wavModel( Mixer &m, int info, ModelStats *Stats = NULL ) {
   static int col = 0;
-  static Array<int> pr{3 * 2}; // [3][2]
-  static Array<int> counter{2};
-  static Array<double> F{49 * 49 * 2}; //[49][49][2]
-  static Array<double> L{49 * 49};     //[49][49]
+  static Array<int> pr{ 3 * 2 }; // [3][2]
+  static Array<int> counter{ 2 };
+  static Array<double> F{ 49 * 49 * 2 }; //[49][49][2]
+  static Array<double> L{ 49 * 49 };     //[49][49]
   static const double a = 0.996, a2 = 1.0 / a;
   static const int SC = 0x10000;
   static SmallStationaryContextMap scm1( SC ), scm2( SC ), scm3( SC ), scm4( SC ), scm5( SC ), scm6( SC ), scm7( SC );
@@ -9070,7 +9058,7 @@ Filetype detect( File *in, U64 blocksize, Filetype type, int &info ) {
   int cdi = 0, cda = 0, cdm = 0; // For CD sectors detection
   U32 cdf = 0;
   unsigned char zbuf[256 + 32], zin[1 << 16], zout[1 << 16]; // For ZLIB stream detection
-  int zbufpos = 0, zzippos = -1, histogram[256] = {0};
+  int zbufpos = 0, zzippos = -1, histogram[256] = { 0 };
   int pdfim = 0, pdfimw = 0, pdfimh = 0, pdfimb = 0, pdfgray = 0, pdfimp = 0;
   int b64s = 0, b64i = 0, b64line = 0, b64nl = 0;                                         // For base64 detection
   int gif = 0, gifa = 0, gifi = 0, gifw = 0, gifc = 0, gifb = 0, gifplt = 0, gifgray = 0; // For GIF detection
@@ -10808,8 +10796,8 @@ void compressRecursive( File *in, const U64 blocksize, Encoder &en, char *blstr,
   static const char *typenames[19] = {
       "default", "jpeg", "hdr", "1b-image", "4b-image", "8b-image", "8b-img-grayscale", "24b-image",        "32b-image",
       "audio",   "exe",  "cd",  "zlib",     "base64",   "gif",      "png-8b",           "png-8b-grayscale", "png-24b",
-      "png-32b"};
-  static const char *audiotypes[4] = {"8b mono", "8b stereo", "16b mono", "16b stereo"};
+      "png-32b" };
+  static const char *audiotypes[4] = { "8b mono", "8b stereo", "16b mono", "16b stereo" };
   Filetype type = DEFAULT;
   int blnum = 0, info; // image width or audio type
   U64 begin = in->curpos();

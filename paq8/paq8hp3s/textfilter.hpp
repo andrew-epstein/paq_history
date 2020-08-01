@@ -1892,7 +1892,7 @@ inline int decodeCodeWord_LZ(FILE* file, unsigned char* s,int& c)
     {
       if( !IF_OPTION( OPTION_USE_DICTIONARY )
           && !IF_OPTION(
-                 OPTION_NORMAL_TEXT_FILTER ) ) /////&&  !IF_OPTION(OPTION_RECORD_INTERLEAVING) && !IF_OPTION(OPTION_DNA_QUARTER_BYTE))
+              OPTION_NORMAL_TEXT_FILTER ) ) /////&&  !IF_OPTION(OPTION_RECORD_INTERLEAVING) && !IF_OPTION(OPTION_DNA_QUARTER_BYTE))
         RESET_OPTIONS;
     }
 

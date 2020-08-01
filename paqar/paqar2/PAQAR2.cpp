@@ -523,13 +523,13 @@ Also, give yourself credit in the help message.
 #define PROGNAME "PAQAR"
 #define min( a, b ) ( ( a ) < ( b ) ? ( a ) : ( b ) )
 #define max( a, b ) ( ( a ) > ( b ) ? ( a ) : ( b ) )
+#include <algorithm>
+#include <cassert>
 #include <cctype>
 #include <cmath>
+#include <ctime>
 #include <string>
 #include <vector>
-#include <algorithm>
-#include <ctime>
-#include <cassert>
 #define au 0xffffffff
 #define bu 0x03ffffff
 #define cu 0x01ffffff
@@ -548,9 +548,9 @@ inline int size( const T &t ) {
 }
 
 // 8-32 bit unsigned types, adjust as appropriate
-typedef unsigned char U8;
-typedef unsigned short U16;
-typedef unsigned int U32;
+using U8 = unsigned char;
+using U16 = unsigned short;
+using U32 = unsigned int;
 
 #define Top_value U32( 0XFFFFFFFF ) /* Largest code value */
 /* HALF AND QUARTER POINTS IN THE CODE VALUE RANGE. */
@@ -657,7 +657,7 @@ class Counter {
   static E table[];
 
 public:
-  Counter() {}
+  Counter() = default;
   int get0() {
     return table[state].n0;
   }
@@ -673,7 +673,7 @@ public:
     return c;
   }
   void add( int y ) {
-    if( y ) {
+    if( y != 0 ) {
       if( state < 214 || rnd() <= table[state].p1 )
         state = table[state].s11;
       else
@@ -716,13 +716,13 @@ class Ch {
   U32 lpos[4][256];
 
 public:
-  Ch() {}
+  Ch() = default;
   void init() {
     lon = 1;
     po = bp = 0;
-    N = 1 << ( 16 + MEM + ( MEM > 6 ) );
+    N = 1 << ( 16 + MEM + static_cast<int>( MEM > 6 ) );
     buf = ( U8 * ) calloc( N--, 1 );
-    if( !buf )
+    if( buf == nullptr )
       handler();
     buf[0] = 1;
     memset( lpos, 0, 4096 );
@@ -740,10 +740,10 @@ public:
     ++bp;
     if( ( lon = lon * 2 + y ) > 15 ) {
       lon = 1;
-      if( !( bp &= 7 ) ) {
+      if( ( bp &= 7 ) == 0 ) {
         lpos[++lidx[r] &= 3][r] = po++;
         buf[po & N] = 1;
-        z += ( l8 > 127 );
+        z += static_cast<int>( l8 > 127 );
       }
     }
   }
@@ -753,8 +753,8 @@ public:
   U32 hi() {
     if( bp > 3 )
       return buf[po & N] & 15;
-    else
-      return buf[( po - 1 ) & N] / 16;
+
+    return buf[( po - 1 ) & N] / 16;
   }
 } ch;
 
@@ -788,7 +788,7 @@ class Hashtable {
 public:
   Hashtable( U32 n ) : N( n ) {
     U8 *p = ( U8 * ) calloc( ( 17 << N ) + 64, 1 );
-    if( !p )
+    if( p == nullptr )
       handler();
     p += 64 - ( ( uintptr_t ) p & 63 );
     table = ( HashElement * ) p;
@@ -799,11 +799,12 @@ public:
   }
   void set( U32 h ) {
     short cs = h;
-    U32 lo = ( h >> ( 32 - N ) ) & -16, i = lo;
+    U32 lo = ( h >> ( 32 - N ) ) & -16;
+    U32 i = lo;
     for( ; i < lo + 16; i++ )
       if( *( ( short * ) &table[i].cs[0] ) == cs )
         break;
-      else if( !table[i].c[0].priority() ) {
+      else if( table[i].c[0].priority() == 0 ) {
         *( ( short * ) &table[i].cs[0] ) = cs;
         break;
       }
@@ -920,7 +921,7 @@ public:
     ssep /= 32;
     U32 wt = sse[c][ssep].p() * ( 32 - swt ) + sse[c][ssep + 1].p() * swt;
     if( fsize > 300000 ) {
-      if( exe )
+      if( exe != 0 )
         p = ( wt * 26 / 32 + p * 6 ) / 32;
       else
         p = ( wt / 32 + p ) / 2;
@@ -932,15 +933,15 @@ public:
 
   void upd( int y, U32 d, U32 e ) {
     sse[c][ssep].upd( y );
-    if( swt )
+    if( swt != 0U )
       sse[c][ssep + 1].upd( y );
     U32 s = b0 + b1;
-    U32 sy = y ? b1 : b0;
+    U32 sy = y != 0 ? b1 : b0;
     U32 rn = rnd();
     U32 s1 = ( au / s + ( ( rn >> ( d - 7 ) ) & 127 ) ) / 128 + e * 32;
     U32 syd = ( au * ( 1.0 / sy - 1.0 / s ) + ( rn & 127 ) ) / 128;
-    int m0 = y ? -s1 : syd;
-    int m1 = y ? syd : -s1;
+    int m0 = y != 0 ? -s1 : syd;
+    int m1 = y != 0 ? syd : -s1;
     rn = ( rn >> d ) & 32767;
     {
       U32 *wl = &wt[c][0];
@@ -972,9 +973,9 @@ public:
       m9( 2048 ),
       ma( 2048 ),
       mb( 2048 ) {
-    for( int i = 0; i < 8; i++ )
+    for( auto &i: mxwt )
       for( int j = 0; j < 64; j++ )
-        mxwt[i][j] = 3;
+        i[j] = 3;
   }
 
   void wri( int n0, int n1 ) {
@@ -998,10 +999,10 @@ public:
     c = ch( 1 ) * 8 + c;
     m6.predict( c );
     m7.predict( c );
-    c = ch( 2 ) / 16 + tf * 16 * ( ch( 1 ) / 32 + 8 * ( wlen == clen ) );
+    c = ch( 2 ) / 16 + tf * 16 * ( ch( 1 ) / 32 + 8 * static_cast<int>( wlen == clen ) );
     m0.predict( c );
     m2.predict( c );
-    c = ch( 0 ) * 8 + ( ch( 1 ) / 64 ) * 2 + tf * ( clen > 2 );
+    c = ch( 0 ) * 8 + ( ch( 1 ) / 64 ) * 2 + tf * static_cast<int>( clen > 2 );
     ma.predict( c );
     mb.predict( c );
     c = ch( 1 ) / 32 + 8 * ( ch( 2 ) / 32 ) + ( ch( 3 ) & 192 );
@@ -1030,11 +1031,12 @@ public:
 
   void upd( int y ) {
     if( mp > 0 ) {
-      int i = 0, j = 10;
+      int i = 0;
+      int j = 10;
       if( fsize < 0 ) {
         i = 3, j = 64;
       }
-      if( exe ) {
+      if( exe != 0 ) {
         i = 6, j = 128;
       }
       m0.upd( y, 15, i );
@@ -1050,12 +1052,12 @@ public:
       ma.upd( y, 15, i );
       mb.upd( y, 15, j );
       U32 s = b0 + b1;
-      U32 sy = y ? b1 : b0;
+      U32 sy = y != 0 ? b1 : b0;
       U32 rn = rnd() & 32767;
       U32 s1 = ( au / s + 32 ) / 64;
       U32 syd = ( au / sy - au / s + 32 ) / 64;
-      int m0 = y ? -s1 : syd;
-      int m1 = y ? syd : -s1;
+      int m0 = y != 0 ? -s1 : syd;
+      int m1 = y != 0 ? syd : -s1;
       U32 bp1 = ( bp - 1 ) & 7;
       int mi = 4;
       if( z != 0 && fsize != 0 )
@@ -1106,7 +1108,7 @@ class CounterMap1 {
 
 public:
   CounterMap1( int n ) : N( n + MEM - 10 ) {
-    if( !( t = ( S * ) calloc( 1 << N, 4 ) ) )
+    if( ( t = ( S * ) calloc( 1 << N, 4 ) ) == nullptr )
       handler();
     cxt = t;
   }
@@ -1127,7 +1129,7 @@ public:
     U32 c = 2 * cxt->n;
     if( c > 8 )
       c = c / 2 + 4;
-    if( !( d ^= ch( 0 ) * 2 ) )
+    if( ( d ^= ch( 0 ) * 2 ) == 0U )
       mixer.add( c, 0 );
     else if( d == 1 )
       mixer.add( 0, c );
@@ -1142,8 +1144,8 @@ class CounterMap2 {
 
 public:
   CounterMap2( int n ) : ht2( n + MEM - 10 ) {
-    for( int i = 0; i < 8; i++ )
-      cp[i] = 0;
+    for( auto &i: cp )
+      i = 0;
     cxt = 0;
   }
   // After 8 predictions, update the models with the last input char, ch(1),
@@ -1151,7 +1153,7 @@ public:
   void upd( U32 h ) {
     int c = ch( 1 );
     for( int i = 0; i < 8; i++ )
-      if( cp[i] ) {
+      if( cp[i] != nullptr ) {
         cp[i]->add( ( c >> ( 7 - i ) ) & 1 ), cp[i] = 0;
       }
     ht2.set( cxt = h );
@@ -1229,12 +1231,12 @@ public:
     memset( cxt, 0, 44 );
   }
   void model() {
-    int y = ch( !bp ) & 1;
+    int y = ch( static_cast<int>( static_cast<int>( bp ) == 0 ) ) & 1;
     cp0->add( y );
     cp1->add( y );
-    if( !bp ) {
+    if( bp == 0 ) {
       for( int i = 10; i != 0; i-- )
-        cxt[i] = cxt[i - 1] ^ hash( ch( 1 ), i, tf * ( wlen == i ) );
+        cxt[i] = cxt[i - 1] ^ hash( ch( 1 ), i, tf * static_cast<int>( wlen == i ) );
       t2.upd( cxt[2] );
       t3.upd( cxt[3] );
       t4.upd( cxt[4] );
@@ -1248,10 +1250,10 @@ public:
     cp0 = t0 + ch( 0 );
     cp1 = t0 + 256 + ch( 1 ) * 256 + ch( 0 );
     mixer.wri( cp0->get0(), cp0->get1() );
-    if( tf )
+    if( tf != 0 )
       mixer.mul( 3 );
     mixer.wri( cp1->get0(), cp1->get1() );
-    if( tf )
+    if( tf != 0 )
       mixer.mul( 2 );
     t2.wri();
     t3.wri();
@@ -1289,17 +1291,17 @@ public:
       begin[i] = end[i] = 0;
   }
   void model() {
-    if( !bp ) {
+    if( bp == 0 ) {
       hash[0] = hash[0] * 908754512 + ch( 1 ) + 1;
       hash[1] = hash[1] * 91368434 + ch( 1 ) + 1;
       U32 h = hash[0] >> 11;
-      if( !( h >> 17 ) )
+      if( ( h >> 17 ) == 0U )
         h = hash[1] >> 11;
-      for( int i = 0; i < 4; i++ )
-        if( end[i] && ch( 1 ) == ch[end[i]] )
-          ++end[i];
+      for( unsigned int &i: end )
+        if( ( i != 0U ) && ch( 1 ) == ch[i] )
+          ++i;
       for( int i = 0; i < 4; i++ ) {
-        if( !end[i] ) {
+        if( end[i] == 0U ) {
           int j;
           for( j = 0; j < 4; j++ )
             if( end[j] == ptr[h] )
@@ -1307,10 +1309,10 @@ public:
           if( j < 4 )
             break;
           end[i] = ptr[h];
-          if( end[i] ) {
+          if( end[i] != 0U ) {
             U32 p = po;
             begin[i] = end[i];
-            while( begin[i] && p && begin[i] != p + 1 && ch[begin[i] - 1] == ch[--p] )
+            while( ( begin[i] != 0U ) && ( p != 0U ) && begin[i] != p + 1 && ch[begin[i] - 1] == ch[--p] )
               --begin[i];
           }
           if( end[i] == begin[i] )
@@ -1320,16 +1322,17 @@ public:
       }
       ptr[h] = po;
     }
-    int n0 = 0, n1 = 0;
+    int n0 = 0;
+    int n1 = 0;
     for( int i = 0; i < 4; i++ )
-      if( end[i] ) {
+      if( end[i] != 0U ) {
         U32 d = ( ch[end[i]] + 256 ) >> ( 7 - bp );
         if( ( d >> 1 ) != ch( 0 ) )
           begin[i] = end[i] = 0;
         else {
           U32 wt = end[i] - begin[i];
           wt = min( int( wt * wt / 4 ), 1020 );
-          if( d & 1 )
+          if( ( d & 1 ) != 0U )
             n1 += wt;
           else
             n0 += wt;
@@ -1353,7 +1356,7 @@ class RecordModel {
   enum { SIZE = 20 };
   CounterMap3 t0, t1, t2, tb;
   CounterMap3 t3, t4, t5, t6, t7, t8, t9, ta;
-  int r1, r2, r3, r4, c1, c2;
+  int r1{ 2 }, r2{ 3 }, r3{ 2 }, r4{ 3 }, c1{ 0 }, c2{ 0 };
 
 public:
   RecordModel() :
@@ -1368,15 +1371,9 @@ public:
       t7( SIZE ),
       t8( SIZE ),
       t9( SIZE ),
-      ta( SIZE ),
-      r1( 2 ),
-      r2( 3 ),
-      r3( 2 ),
-      r4( 3 ),
-      c1( 0 ),
-      c2( 0 ) {}
+      ta( SIZE ) {}
   void model() {
-    if( !bp ) {
+    if( bp == 0 ) {
       int c = ch( 1 );
       int d = ch.pos( c, 0 ) - ch.pos( c, 1 );
       if( d > 2 && d == ch.pos( c, 1 ) - ch.pos( c, 2 ) && d == ch.pos( c, 2 ) - ch.pos( c, 3 ) )
@@ -1411,7 +1408,7 @@ public:
       ta.upd( hash( ch( r4 ), r4 ) );
     }
     if( fsize != 0 ) {
-      if( tf ) {
+      if( tf != 0 ) {
         t0.mul( 2 );
         tb.add();
         t1.mul( 2 );
@@ -1456,7 +1453,7 @@ public:
       t9( SIZE ),
       ta( SIZE ) {}
   void model() {
-    if( !bp ) {
+    if( bp == 0 ) {
       int i = min( int( po - ch.pos( ch( 1 ), 1 ) ), 192 ) / 4;
       int j = min( int( po - ch.pos( ch( 2 ), 1 ) ), 192 ) / 4;
       if( j > 8 )
@@ -1497,7 +1494,7 @@ class SparseModel2 {
 public:
   SparseModel2() : t0( SIZE ), t1( SIZE ), t2( SIZE ), t3( SIZE ), t4( SIZE ) {}
   void model() {
-    if( !bp ) {
+    if( bp == 0 ) {
       t0.upd( hash( ch( 1 ), ch( 7 ), ch( 9 ), ch( 13 ) ) );
       t1.upd( hash( ch( 2 ), ch( 5 ), ch( 10 ), ch( 14 ) ) );
       t2.upd( hash( ch( 3 ), ch( 8 ), ch( 12 ), ch( 15 ) ) );
@@ -1525,7 +1522,7 @@ class AnalogModel {
 public:
   AnalogModel() : t0( SIZE ), t1( SIZE ), t2( SIZE ), t3( SIZE ) {}
   void model() {
-    if( !bp ) {
+    if( bp == 0 ) {
       t0.upd( hash( ch( 2 ) / 16, ch( 4 ) / 16, po % 2 ) );
       t1.upd( hash( ch( 4 ) / 4, ( ch( 2 ) - ch( 6 ) ) / 4, ( ch( 4 ) - ch( 8 ) ) / 4 ) );
       t2.upd( hash( ch( 1 ) / 2, ch( 2 ) / 8, ch( 3 ) / 32, 5 ) );
@@ -1579,8 +1576,9 @@ public:
       tv( SIZE ),
       tw( SIZE ) {}
   void model() {
-    if( !bp ) {
-      int i = 0, j = 63;
+    if( bp == 0 ) {
+      int i = 0;
+      int j = 63;
       t0.upd( hash( ch( 1 ), ch( 2 ), ch( 216 ), i++ ) );
       t1.upd( hash( ch( 1 ), ch( 2 ), ch( 217 ), i++ ) );
       t2.upd( hash( ch( 216 ), i++ ) );
@@ -1683,17 +1681,17 @@ public:
     clen = 0;
   }
   void model() {
-    if( !bp ) {
+    if( bp == 0 ) {
       int c = ch( 1 );
       if( c > 32 )
         cxt[0] ^= hash( cxt[0], cxt[0] >> 8, c, clen++ );
-      else if( cxt[0] ) {
+      else if( cxt[0] != 0U ) {
         for( int i = 5; i != 0; i-- )
           cxt[i] = cxt[i - 1];
         cxt[0] = 0;
         clen = 0;
       }
-      if( isalpha( c ) ) {
+      if( isalpha( c ) != 0 ) {
         wxt[0] ^= hash( wxt[0], tolower( c ), wlen++ );
       } else {
         wlen = 0;
@@ -1712,7 +1710,7 @@ public:
       t8.upd( wxt[2] - wxt[0] );
       t9.upd( wxt[3] - wxt[0] );
     }
-    if( tf ) {
+    if( tf != 0 ) {
       t0.mul( 3 );
       t1.mul( 4 );
       t2.mul( 4 );
@@ -1795,7 +1793,7 @@ public:
       ss3[c3][ssep].upd( y );
       ss4[c4][ssep].upd( y );
       ss5[c5][ssep].upd( y );
-      if( wt ) {
+      if( wt != 0U ) {
         ssep++;
         sse[c1][ssep].upd( y );
         ss2[c2][ssep].upd( y );
@@ -1805,7 +1803,7 @@ public:
       }
     }
     ch.upd( y );
-    tf = ch.pos( 0, 0 ) < ch.pos( 32, 3 ) && ch.pos( 255, 0 ) < ch.pos( 32, 3 );
+    tf = static_cast<int>( ch.pos( 0, 0 ) < ch.pos( 32, 3 ) && ch.pos( 255, 0 ) < ch.pos( 32, 3 ) );
     mixer.upd( y );
     charModel.model();
     recordModel.model();
@@ -1823,7 +1821,7 @@ public:
     wt = ssep & 31;
     ssep /= 32;
     c4 = ch( 1 ) * 8 + ch( 2 ) / 32;
-    c1 = ch( 0 ) * 8 + ( ch( 1 ) / 64 ) * 2 + tf * ( wlen == clen );
+    c1 = ch( 0 ) * 8 + ( ch( 1 ) / 64 ) * 2 + tf * static_cast<int>( wlen == clen );
     c2 = l8 * 8 + bp;
     c3 = bp * 256 + ch( 1 ) / 32 + 8 * ( ch( 2 ) / 32 ) + ( ch( 3 ) & 192 );
     c5 = l8 * 8 + ch( 1 ) / 32;
@@ -1832,7 +1830,7 @@ public:
     U32 p3 = ss3[c3][ssep].p() * ( 32 - wt ) + ss3[c3][ssep + 1].p() * wt;
     U32 p4 = ss4[c4][ssep].p() * ( 32 - wt ) + ss4[c4][ssep + 1].p() * wt;
     U32 p5 = ss5[c5][ssep].p() * ( 32 - wt ) + ss5[c5][ssep + 1].p() * wt;
-    if( tf )
+    if( tf != 0 )
       nextp = ( ( 3 * p3 + 6 * p1 + 5 * p2 + 1 * p4 + 1 * p5 ) * 10 / 32 + 8 + nextp * 16 ) / ( 16 * 11 );
     else
       nextp = ( ( 3 * p3 + 3 * p1 + 4 * p2 + 2 * p4 + 2 * p5 ) * 14 / 32 + 7 + nextp * 14 ) / ( 15 * 14 );
@@ -1874,18 +1872,18 @@ public:
 };
 
 void Encoder::bit_plus_follow( int bit ) {
-  if( bit )
+  if( bit != 0 )
     bout |= bptr;
-  if( !( bptr >>= 1 ) ) {
+  if( ( bptr >>= 1 ) == 0U ) {
     putc( bout, archive );
     bptr = 128;
     bout = 0;
   }
   bit ^= 1;
   for( ; bits_to_follow > 0; bits_to_follow-- ) {
-    if( bit )
+    if( bit != 0 )
       bout |= bptr;
-    if( !( bptr >>= 1 ) ) {
+    if( ( bptr >>= 1 ) == 0U ) {
       putc( bout, archive );
       bptr = 128;
       bout = 0;
@@ -1893,18 +1891,18 @@ void Encoder::bit_plus_follow( int bit ) {
   }
 }
 inline int Encoder::input_bit( void ) {
-  if( !( bptrin >>= 1 ) ) {
+  if( ( bptrin >>= 1 ) == 0U ) {
     bin = getc( archive );
     if( bin == EOF )
       bin = 0;
     bptrin = 128;
   }
-  return ( ( bin & bptrin ) != 0 );
+  return static_cast<int>( ( bin & bptrin ) != 0 );
 }
 
 // Constructor
 Encoder::Encoder( Mode m, FILE *f ) :
-    predictor(),
+
     mode( m ),
     archive( f ),
     x1( 0 ),
@@ -1932,7 +1930,9 @@ inline void Encoder::encode( int y ) {
   U32 p = predictor.p() * ( 4096 / PSCALE ); // P(1) * 4K
   assert( p < 4096 );
   const U32 xdiff = x2 - x1;
-  U32 a, b, c;
+  U32 a;
+  U32 b;
+  U32 c;
   U32 xmid; // = x1+p*(x2-x1) multiply without overflow, round down
 
   c = 2 * p + 1;
@@ -1941,7 +1941,7 @@ inline void Encoder::encode( int y ) {
   xmid = x1 + a * c + ( ( c * b ) >> 13 );
 
   // Update the range
-  if( y )
+  if( y != 0 )
     x2 = xmid;
   else
     x1 = xmid + 1;
@@ -1976,7 +1976,9 @@ inline int Encoder::decode() {
   const U32 p = predictor.p() * ( 4096 / PSCALE ); // P(1) * 4K
   assert( p < 4096 );
   const U32 xdiff = x2 - x1;
-  U32 a, b, c;
+  U32 a;
+  U32 b;
+  U32 c;
   U32 xmid; // = x1+p*(x2-x1) multiply without overflow, round down
 
   c = 2 * p + 1;
@@ -2022,7 +2024,7 @@ void Encoder::flush() {
       bit_plus_follow( 0 );
     else
       bit_plus_follow( 1 );
-    if( bout )
+    if( bout != 0U )
       putc( bout, archive );
   }
 }
@@ -2073,7 +2075,7 @@ void te8e9( char *, int, int, int * );
 // first control character except tab.  Skips CR in CR LF.
 string getline( FILE *f = stdin ) {
   int c;
-  string result = "";
+  string result;
   while( ( c = getc( f ) ) != EOF && ( c >= 32 || c == '\t' ) )
     result += char( c );
   if( c == '\r' )
@@ -2112,7 +2114,7 @@ int main( int argc, char **argv ) {
 
   // Read and remove -MEM option
   if( argc > 1 && argv[1][0] == '-' ) {
-    if( isdigit( argv[1][1] ) ) {
+    if( isdigit( argv[1][1] ) != 0 ) {
       MEM = argv[1][1] - '0';
       if( argv[1][2] == 'e' )
         exe = 1;
@@ -2123,13 +2125,14 @@ int main( int argc, char **argv ) {
   }
 
   // File names and sizes from input or archive
-  vector<string> filename;                          // List of names
-  vector<long> filesize;                            // Size or -1 if error
-  int uncompressed_bytes = 0, compressed_bytes = 0; // Input, output sizes
-  FILE *archive = fopen( argv[1], "rb" );
+  vector<string> filename; // List of names
+  vector<long> filesize;   // Size or -1 if error
+  int uncompressed_bytes = 0;
+  int compressed_bytes = 0; // Input, output sizes
+  FILE *archive = fopen( argv[1], "rbe" );
 
   // Extract files
-  if( archive ) {
+  if( archive != nullptr ) {
     if( argc > 2 ) {
       printf( "File %s already exists\n", argv[1] );
       return 1;
@@ -2158,7 +2161,7 @@ int main( int argc, char **argv ) {
           exe = 1;
       }
     }
-    if( exe )
+    if( exe != 0 )
       printf( "Extracting archive " PROGNAME " -%de %s ...\n", MEM, argv[1] );
     else
       printf( "Extracting archive " PROGNAME " -%d %s ...\n", MEM, argv[1] );
@@ -2170,9 +2173,9 @@ int main( int argc, char **argv ) {
         filesize.push_back( atol( s.c_str() ) );
         string::iterator tab = find( s.begin(), s.end(), '\t' );
         if( tab != s.end() )
-          filename.push_back( string( tab + 1, s.end() ) );
+          filename.emplace_back( tab + 1, s.end() );
         else
-          filename.push_back( "" );
+          filename.emplace_back( "" );
       } else
         break;
     }
@@ -2194,10 +2197,10 @@ int main( int argc, char **argv ) {
       printf( "%10ld %s: ", filesize[i], filename[i].c_str() );
 
       // Compare with existing file
-      FILE *f = fopen( filename[i].c_str(), "rb" );
+      FILE *f = fopen( filename[i].c_str(), "rbe" );
       long size = filesize[i];
       uncompressed_bytes += size;
-      if( f ) {
+      if( f != nullptr ) {
         bool different = false;
         fsize = size - 513216;
         for( long j = 0; j < size; ++j ) {
@@ -2215,27 +2218,27 @@ int main( int argc, char **argv ) {
 
       // Extract to new file
       else {
-        f = fopen( filename[i].c_str(), "wb" );
-        if( !f )
+        f = fopen( filename[i].c_str(), "wbe" );
+        if( f == nullptr )
           printf( "cannot create, skipping...\n" );
         fsize = size - 513216;
-        if( exe && size > 0 ) {
+        if( ( exe != 0 ) && size > 0 ) {
           int c = e.decode();
-          if( f )
+          if( f != nullptr )
             putc( c, f );
-          if( c ) {
+          if( c != 0 ) {
             c -= 23;
-            if( ( c < 0 && ( ( c + 8 ) & 1 ) ) || ( c >= 0 && ( ( c + 2 ) & 1 ) ) ) {
+            if( ( c < 0 && ( ( ( c + 8 ) & 1 ) != 0 ) ) || ( c >= 0 && ( ( ( c + 2 ) & 1 ) != 0 ) ) ) {
               int c = e.decode();
-              if( f )
+              if( f != nullptr )
                 putc( c, f );
               int d = e.decode();
-              if( f )
+              if( f != nullptr )
                 putc( d, f );
               d = d * 256 + c;
               for( long j = 0; j < d * 3; ++j ) {
                 int c = e.decode();
-                if( f )
+                if( f != nullptr )
                   putc( c, f );
               }
             }
@@ -2243,16 +2246,16 @@ int main( int argc, char **argv ) {
         }
         for( long j = 0; j < size; ++j ) {
           int c = e.decode();
-          if( f )
+          if( f != nullptr )
             putc( c, f );
         }
-        if( f ) {
+        if( f != nullptr ) {
           printf( "extracted\n" );
-          if( exe && size > 0 ) {
-            int data2write[4] = {0, 0, 0, 0};
+          if( ( exe != 0 ) && size > 0 ) {
+            int data2write[4] = { 0, 0, 0, 0 };
 
             fclose( f );
-            f = fopen( filename[i].c_str(), "rb" );
+            f = fopen( filename[i].c_str(), "rbe" );
             fseek( f, 0L, SEEK_END );
             long flen = ftell( f );
             fseek( f, 0L, 0 );
@@ -2262,11 +2265,11 @@ int main( int argc, char **argv ) {
             st = st0 + 256 - ( ( uintptr_t ) st0 & 255 ); // 256-byte-alignment
             flen = fread( st + CONSTA - 32768, 1, flen, f );
             fclose( f );
-            f = fopen( filename[i].c_str(), "wb" );
+            f = fopen( filename[i].c_str(), "wbe" );
 
-            if( flen )
+            if( flen != 0 )
               te8e9( st, 4, flen, &data2write[0] );
-            if( data2write[0] )
+            if( data2write[0] != 0 )
               fwrite( ( char * ) data2write[1], 1, data2write[0], f );
 
             free( st0 );
@@ -2283,23 +2286,23 @@ int main( int argc, char **argv ) {
     // Read file names from command line or input
     if( argc > 2 )
       for( int i = 2; i < argc; ++i )
-        filename.push_back( argv[i] );
+        filename.emplace_back( argv[i] );
     else {
       printf( "Enter names of files to compress, followed by blank line or EOF.\n" );
       while( true ) {
         string s = getline( stdin );
         if( s == "" )
           break;
-        else
-          filename.push_back( s );
+
+        filename.push_back( s );
       }
     }
 
     // Get file sizes
     int i;
     for( i = 0; i < int( filename.size() ); ++i ) {
-      FILE *f = fopen( filename[i].c_str(), "rb" );
-      if( !f ) {
+      FILE *f = fopen( filename[i].c_str(), "rbe" );
+      if( f == nullptr ) {
         printf( "File not found, skipping: %s\n", filename[i].c_str() );
         filesize.push_back( -1 );
       } else {
@@ -2314,13 +2317,13 @@ int main( int argc, char **argv ) {
     }
 
     // Write header
-    archive = fopen( argv[1], "wb" );
-    if( !archive ) {
+    archive = fopen( argv[1], "wbe" );
+    if( archive == nullptr ) {
       printf( "Cannot create archive: %s\n", argv[1] );
       return 1;
     }
     fprintf( archive, PROGNAME " -%d", MEM );
-    if( exe )
+    if( exe != 0 )
       fprintf( archive, "e" );
     fprintf( archive, "\r\n" );
     for( i = 0; i < int( filename.size() ); ++i ) {
@@ -2339,12 +2342,12 @@ int main( int argc, char **argv ) {
       if( size >= 0 ) {
         uncompressed_bytes += size;
         printf( "%-23s %10ld -> ", filename[i].c_str(), size );
-        FILE *f = fopen( filename[i].c_str(), "rb" );
+        FILE *f = fopen( filename[i].c_str(), "rbe" );
         fsize = size - 513216;
 
-        if( f && exe && size > 0 ) {
-          int data2write[4] = {0, 0, 0, 0};
-          FILE *fw = fopen( "paqar11tmp.tmp", "wb" );
+        if( ( f != nullptr ) && ( exe != 0 ) && size > 0 ) {
+          int data2write[4] = { 0, 0, 0, 0 };
+          FILE *fw = fopen( "paqar11tmp.tmp", "wbe" );
 
           fseek( f, 0L, SEEK_END );
           long flen = ftell( f );
@@ -2355,31 +2358,31 @@ int main( int argc, char **argv ) {
           st = st0 + 256 - ( ( uintptr_t ) st0 & 255 ); // 256-byte-alignment
           flen = fread( st + CONSTA - 32768, 1, flen, f );
 
-          if( flen )
+          if( flen != 0 )
             te8e9( st, 3, flen, &data2write[0] );
           size = 0;
-          if( data2write[0] )
+          if( data2write[0] != 0 )
             size += data2write[0], fwrite( ( char * ) data2write[1], 1, data2write[0], fw );
-          if( data2write[2] )
+          if( data2write[2] != 0 )
             size += data2write[2], fwrite( ( char * ) data2write[3], 1, data2write[2], fw );
           free( st0 );
 
           fclose( fw );
           fclose( f );
-          f = fopen( "paqar11tmp.tmp", "rb" );
+          f = fopen( "paqar11tmp.tmp", "rbe" );
         }
 
         int c;
         for( long j = 0; j < size; ++j ) {
-          if( f )
+          if( f != nullptr )
             c = getc( f );
           else
             c = 0;
           e.encode( c );
         }
-        if( f )
+        if( f != nullptr )
           fclose( f );
-        if( f && exe && size > 0 )
+        if( ( f != nullptr ) && ( exe != 0 ) && size > 0 )
           remove( "paqar11tmp.tmp" );
         printf( "%ld\n", ftell( archive ) - file_start );
         file_start = ftell( archive );

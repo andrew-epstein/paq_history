@@ -166,19 +166,19 @@ To compile (g++ 3.4.5, upx 3.00w):
   upx -qqq lpaq1.exe
 
 */
+#include <ctype.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <math.h>
-#include <ctype.h>
 #define NDEBUG // remove for debugging
 #include <assert.h>
 
 // 8, 16, 32 bit unsigned types (adjust as appropriate)
-typedef unsigned char U8;
-typedef unsigned short U16;
-typedef unsigned int U32;
+using U8 = unsigned char;
+using U16 = unsigned short;
+using U32 = unsigned int;
 
 #define FB_SIZE 8192
 #define TOLIMIT_10 64
@@ -341,7 +341,7 @@ static U8 *buf;        // input buffer
 
 U32 smt[256 * 67], cxt0 = 0, cxt1 = 0, cxt2 = 0, cxt3 = 0, cxt4 = 0, cxt5 = 0, cxtm = 0;
 U8 t0[0x10000];                                                // order 1 cxt -> state
-U8 *t0c1 = t0, *cp[6] = {t0, t0, t0, t0, t0, t0};              // pointer to bit history
+U8 *t0c1 = t0, *cp[6] = { t0, t0, t0, t0, t0, t0 };            // pointer to bit history
 U32 h5 = 0, hh[6], bc4cp0 = 0, pw = 0, c4 = 0, c8 = 0, cc = 0; // last 4, 8, 12 bytes
 int pos = 0;                                                   // number of bytes in buf
 int c1 = 0, c2 = 0;                                            // last two higher 4-bit nibbles
@@ -713,14 +713,16 @@ public:
   inline U32 p1( U32 pr, int cx ) { //, int limit=1023)
     {
       U32 p0 = *tcxt;
-      U32 i = p0 & 1023, pd = p0 >> 12; // count, prediction
+      U32 i = p0 & 1023;
+      U32 pd = p0 >> 12; // count, prediction
       p0 += static_cast<unsigned int>( i < TOLIMIT_2a );
       p0 += ( ( y20 - ( int ) pd ) * dt[i] + 0x380 ) & 0xfffffc00;
       *tcxt = p0;
     }
     pr *= APMw - 1;
     int wt = pr & 0xfff; // interpolation weight of next element
-    U32 *tcx = t + cx * APMw + ( pr >> 12 ), v0;
+    U32 *tcx = t + cx * APMw + ( pr >> 12 );
+    U32 v0;
     v0 = *tcx;
     int v1 = *( tcx + 1 );
     pr = v0 >> 12;
@@ -736,13 +738,15 @@ public:
     assert( cxt >= 0 && cxt < N );
     {
       U32 p0 = *tcxt;
-      U32 i = p0 & 1023, pr = p0 >> 12; // count, prediction
+      U32 i = p0 & 1023;
+      U32 pr = p0 >> 12; // count, prediction
       p0 += static_cast<unsigned int>( i < TOLIMIT_2b );
       p0 += ( ( y20 - ( int ) pr ) * dta[i] + 0x180 ) & 0xfffffc00;
       *tcxt = p0;
     }
     int wt = pr & 0xfff; // interpolation weight of next element
-    U32 *tcx = t + cx * APMw + ( pr >> 12 ), v0;
+    U32 *tcx = t + cx * APMw + ( pr >> 12 );
+    U32 v0;
     v0 = *tcx;
     int v1 = *( tcx + 1 );
     pr = v0 >> 12;
@@ -962,7 +966,9 @@ inline U32 hash3a( U32 i ) {
 
 template <int B>
 inline U8 *HashTable<B>::get1( U32 o, U32 i ) {
-  U8 *p = t + ( i & NB ) * B, *q, f;
+  U8 *p = t + ( i & NB ) * B;
+  U8 *q;
+  U8 f;
   i >>= 27;
   i |= o;
   f = *( p - 1 );
@@ -980,7 +986,10 @@ inline U8 *HashTable<B>::get1( U32 o, U32 i ) {
 
 template <int B>
 inline U8 *HashTable<B>::get3a( U32 o, U32 i ) {
-  U8 *p = t + ( i & NB ) * B, *q, *r, f;
+  U8 *p = t + ( i & NB ) * B;
+  U8 *q;
+  U8 *r;
+  U8 f;
   i >>= 27;
   i |= o;
   f = *( p - 1 );
@@ -1023,7 +1032,10 @@ inline U8 *HashTable<B>::get3a( U32 o, U32 i ) {
 
 template <int B>
 inline U8 *HashTable<B>::get3b( U32 o, U32 i ) {
-  U8 *p = t + ( i & NB ) * B, *q, *r, f;
+  U8 *p = t + ( i & NB ) * B;
+  U8 *q;
+  U8 *r;
+  U8 f;
   i >>= 27;
   i |= o;
   f = *( p - 1 );
@@ -1082,9 +1094,9 @@ int len;           // length of match
 enum { MAXLEN = 62 }; // maximum match length, at most 62
 U32 len2cxt[MAXLEN * 4 + 4], len2order[MAXLEN + 1], len2order7[MAXLEN + 1];
 
-U8 len2cxt0[] = {0,  0,  0,  0,  0,  0,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14,
-                 15, 15, 16, 16, 17, 17, 18, 18, 19, 19, 20, 20, 20, 21, 21, 21, 22, 22, 22, 22, 23,
-                 23, 23, 23, 24, 24, 24, 24, 25, 25, 25, 25, 25, 26, 26, 26, 26, 26, 26, 26, 26, 27};
+U8 len2cxt0[] = { 0,  0,  0,  0,  0,  0,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14,
+                  15, 15, 16, 16, 17, 17, 18, 18, 19, 19, 20, 20, 20, 21, 21, 21, 22, 22, 22, 22, 23,
+                  23, 23, 23, 24, 24, 24, 24, 25, 25, 25, 25, 25, 26, 26, 26, 26, 26, 26, 26, 26, 27 };
 
 #define SEARCH                                                                                                         \
   {                                                                                                                    \
@@ -1118,7 +1130,8 @@ U8 len2cxt0[] = {0,  0,  0,  0,  0,  0,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 
   }
 
 inline void mm_upd() {
-  int l = len, m;
+  int l = len;
+  int m;
 
   // find or extend match
   if( l > MINLEN ) {
@@ -1147,7 +1160,8 @@ no_upd:
 }
 
 inline int mm_p() {
-  int cxt = c0, l = len;
+  int cxt = c0;
+  int l = len;
   if( l > 0 ) {
     int b = buf_match >> bcount;
     if( ( b >> 1 ) == cxt ) {
@@ -1159,11 +1173,11 @@ inline int mm_p() {
     }
     l = 0, len = l;
   }
-  if( *cp[2] != 0u ) {
+  if( *cp[2] != 0U ) {
     l = MI * 8;
-    if( *cp[3] != 0u ) {
+    if( *cp[3] != 0U ) {
       l = 2 * MI * 8;
-      if( *cp[4] != 0u )
+      if( *cp[4] != 0U )
         l = 3 * MI * 8;
     }
   }
@@ -1173,7 +1187,8 @@ mm_e:
 }
 
 inline int mm_p7() {
-  int cxt, l = len;
+  int cxt;
+  int l = len;
   if( l > 0 ) {
     int b = buf_match;
     buf_match = b + 256;
@@ -1184,11 +1199,11 @@ inline int mm_p7() {
     goto mm_e;
   }
   cxt = c0;
-  if( *cp[2] != 0u ) {
+  if( *cp[2] != 0U ) {
     l = MI * 8;
-    if( *cp[3] != 0u ) {
+    if( *cp[3] != 0U ) {
       l = 2 * MI * 8;
-      if( *cp[4] != 0u )
+      if( *cp[4] != 0U )
         l = 3 * MI * 8;
     }
   }
@@ -1342,8 +1357,8 @@ public:
 
         smzr( 2, cxt2, 7 * 256, 10, 1, 0 ) smzr( 3, cxt3, 9 * 256, 11, 1, 0 ) smzr( 4, cxt4, 11 * 256, 10, 1, 0 )
 
-            int len = mm_p(),
-                pr;
+            int len = mm_p();
+    int pr;
     mxr_cxt = add2order + len;
     smp0w( *( t0c1 + c0 ) + 256 );
     pr = m_p + 2047;
@@ -1360,8 +1375,8 @@ public:
 
         smzr( 2, cxt2, 6 * 256, 9, 1, 0 ) smzr( 3, cxt3, 8 * 256, 10, 1, 0 ) smzr( 4, cxt4, 10 * 256, 10, 1, 0 )
 
-            int len = mm_p(),
-                pr;
+            int len = mm_p();
+    int pr;
     mxr_cxt = add2order + len;
     smp0n( *( t0c1 + c0 ) + bc4cp0 );
     pr = m_p + 2047;
@@ -1380,7 +1395,8 @@ public:
     else {
       smzr( 2, cxt2, 6 * 256, 13, 1, 256 ) smzr( 3, cxt3, 8 * 256, 14, 1, 256 ) smzr( 4, cxt4, 10 * 256, 13, 1, 256 )
     }
-    int len = mm_p7(), pr;
+    int len = mm_p7();
+    int pr;
     mxr_cxt = add2order + len;
     smp7w( *( t0c1 + 1 ) + 256 );
     pr = m_p + 2047;
@@ -1402,7 +1418,8 @@ public:
       y2o += 384;
       smzr( 2, cxt2, 6 * 256, 9, 1, 0 ) smzr( 3, cxt3, 8 * 256, 10, 1, 0 ) smzr( 4, cxt4, 10 * 256, 9, 1, 0 )
     }
-    int len = mm_p7(), pr;
+    int len = mm_p7();
+    int pr;
     mxr_cxt = add2order + len;
     smp7n( *( t0c1 + 1 ) + bc4cp0 );
     pr = m_p + 2047;
@@ -1569,7 +1586,8 @@ public:
 
   // Decompress and return one byte
   inline int decompress() {
-    U32 p = pre, x = saved_x;
+    U32 p = pre;
+    U32 x = saved_x;
     eight_bits( dec1, dec2 ) pre = p, saved_x = x;
     int c = c4 & 255;
     return c;
@@ -1585,7 +1603,9 @@ Encoder::Encoder( Mode m, FILE *f ) {
       saved_x = ( saved_x << 8 ) + ( getc( archive ) & 255 );
   }
 
-  int i, c, pi = 0;
+  int i;
+  int c;
+  int pi = 0;
   for( int x = -2047; x <= 2047; ++x ) { // invert squash()
     int i = squash_init( x );
     squash( x ) = i + SQUARD; //rounding,  needed at the end of Predictor::update()
@@ -1606,7 +1626,8 @@ Encoder::Encoder( Mode m, FILE *f ) {
   }
 
   for( i = -4096; i < 4096; ++i ) {
-    int e = i, v;
+    int e = i;
+    int v;
     if( e < 0 )
       e = -e;
     v = 0;
@@ -1656,7 +1677,9 @@ Encoder::Encoder( Mode m, FILE *f ) {
   }
 
   for( i = 1; i <= MAXLEN; i++ ) {
-    int j, k, c = len2cxt0[i];
+    int j;
+    int k;
+    int c = len2cxt0[i];
     k = 0x80000 + ( 0x7ffff * c / 27 );
     c *= 512;
     len2cxt[i * 2] = c;
@@ -1705,8 +1728,17 @@ Encoder::Encoder( Mode m, FILE *f ) {
   for( i = 256 * 13 - 1; i >= 0; --i )
     smt[i] = 0x7ffff;
   {
-    int i, z, o, p1, p2, p3, p4, p5, p6;
-    U8 *p = ( U8 * ) &State_table[0], *q = p + 256 * 6;
+    int i;
+    int z;
+    int o;
+    int p1;
+    int p2;
+    int p3;
+    int p4;
+    int p5;
+    int p6;
+    U8 *p = ( U8 * ) &State_table[0];
+    U8 *q = p + 256 * 6;
     for( i = 0; i < 6; ++i ) {
       U32 *j = &smt[( ( 0x578046 >> ( i * 4 ) ) & 15 ) * 256];
       p1 = p2 = nex( 0, i );
@@ -1775,7 +1807,8 @@ int main( int argc, char **argv ) {
   clock_t start = clock();
 
   // Open input file
-  FILE *in = fopen( argv[2], "rb" ), *out = 0;
+  FILE *in = fopen( argv[2], "rbe" );
+  FILE *out = 0;
   if( in == nullptr )
     perror( argv[2] ), exit( 1 );
 
@@ -1800,7 +1833,7 @@ int main( int argc, char **argv ) {
     }
 
     // Encode header: version 17, memory option, file size
-    out = fopen( argv[3], "wb" );
+    out = fopen( argv[3], "wbe" );
     if( out == nullptr )
       perror( argv[3] ), exit( 1 );
     fprintf( out, "pQ%c%c%ld%ld%ld%ld%c", 17, argv[1][0], size >> 24, size >> 16, size >> 8, size, method );
@@ -1843,7 +1876,7 @@ int main( int argc, char **argv ) {
     method = getc( in );
 
     // Decompress
-    out = fopen( argv[3], "wb" );
+    out = fopen( argv[3], "wbe" );
     if( out == nullptr )
       perror( argv[3] ), exit( 1 );
     Encoder e( DECOMPRESS, in );

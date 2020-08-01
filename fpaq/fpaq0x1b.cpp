@@ -3,15 +3,15 @@
 // 06.10.2006 Modified by Francesco Antonio Nania ( Italia - Sicilia - Merì (ME) )
 // To compile: g++ -O fpaq0.cpp
 
+#include <cassert>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
-#include <cassert>
 namespace std {} // namespace std
 using namespace std;
 
-typedef unsigned int U32; // 32 bit type
+using U32 = unsigned int; // 32 bit type
 U32 rc, r1, r2, r3, rc1, rc2, rc3, buf[16843009], cont, limi, ruc, c;
 unsigned char cbuf[512000];
 int cxt;                           // Context: last 0-8 bits with a leading 1
@@ -224,10 +224,10 @@ int main( int argc, char **argv ) {
   clock_t start = clock();
 
   // Open files
-  FILE *in = fopen( argv[2], "rb" );
+  FILE *in = fopen( argv[2], "rbe" );
   if( in == nullptr )
     perror( argv[2] ), exit( 1 );
-  FILE *out = fopen( argv[3], "wb" );
+  FILE *out = fopen( argv[3], "wbe" );
   if( out == nullptr )
     perror( argv[3] ), exit( 1 );
   limi = 512000;

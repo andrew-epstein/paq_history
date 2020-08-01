@@ -2671,7 +2671,7 @@ void te8e9( char *, int, int, int * );
 int exe_preprocess( FILE *f, FILE *fw, int type ) // 3=compress, 4=decompress
 {
   char *st0, *st;
-  int data2write[4] = {0, 0, 0, 0};
+  int data2write[4] = { 0, 0, 0, 0 };
   int size;
 
   fseek( f, 0L, SEEK_END );

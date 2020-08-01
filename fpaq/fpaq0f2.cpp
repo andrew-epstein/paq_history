@@ -18,9 +18,9 @@ the bit history (last 8 bits) observed in this context.
 #include <assert.h>
 
 // 8, 16, 32 bit unsigned types (adjust as appropriate)
-typedef unsigned char U8;
-typedef unsigned short U16;
-typedef unsigned int U32;
+using U8 = unsigned char;
+using U16 = unsigned short;
+using U32 = unsigned int;
 
 // Create an array p of n elements of type T
 template <class T>
@@ -39,7 +39,7 @@ void alloc( T *&p, int n ) {
 class StateMap {
 protected:
   const int N;        // Number of contexts
-  int cxt;            // Context of last prediction
+  int cxt{ 0 };       // Context of last prediction
   U32 *t;             // cxt -> prediction in high 24 bits, count in low 8 bits
   static int dt[256]; // reciprocal table: i -> 16K/(i+1.5)
 public:
@@ -58,17 +58,18 @@ public:
     assert( cxt >= 0 && cxt < N );
     assert( y == 0 || y == 1 );
     assert( limit >= 0 && limit < 255 );
-    int n = t[cxt] & 255, p = t[cxt] >> 14; // count, prediction
+    int n = t[cxt] & 255;
+    int p = t[cxt] >> 14; // count, prediction
     if( n < limit )
       ++t[cxt];
     t[cxt] += ( ( y << 18 ) - p ) * dt[n] & 0xffffff00;
   }
 };
 
-int StateMap::dt[256] = {0};
+int StateMap::dt[256] = { 0 };
 
 // Initialize assuming low 8 bits of context is a bit history.
-StateMap::StateMap( int n ) : N( n ), cxt( 0 ) {
+StateMap::StateMap( int n ) : N( n ) {
   alloc( t, N );
   for( int i = 0; i < N; ++i ) {
     // Count 1 bits to determine initial probability.
@@ -90,7 +91,7 @@ StateMap::StateMap( int n ) : N( n ), cxt( 0 ) {
 */
 
 class Predictor {
-  int cxt; // Context: 0=not EOF, 1..255=last 0-7 bits with a leading 1
+  int cxt{ 0 }; // Context: 0=not EOF, 1..255=last 0-7 bits with a leading 1
   StateMap sm;
   int state[256];
 
@@ -111,9 +112,9 @@ public:
   }
 };
 
-Predictor::Predictor() : cxt( 0 ), sm( 0x10000 ) {
-  for( int i = 0; i < 0x100; ++i )
-    state[i] = 0x66;
+Predictor::Predictor() : sm( 0x10000 ) {
+  for( int &i: state )
+    i = 0x66;
 }
 
 //////////////////////////// Encoder ////////////////////////////
@@ -237,10 +238,10 @@ int main( int argc, char **argv ) {
   clock_t start = clock();
 
   // Open files
-  FILE *in = fopen( argv[2], "rb" );
+  FILE *in = fopen( argv[2], "rbe" );
   if( in == nullptr )
     perror( argv[2] ), exit( 1 );
-  FILE *out = fopen( argv[3], "wb" );
+  FILE *out = fopen( argv[3], "wbe" );
   if( out == nullptr )
     perror( argv[3] ), exit( 1 );
   int c;

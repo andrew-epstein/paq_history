@@ -215,7 +215,7 @@ void filter_init( fltst *fs, int shift ) {
 }
 
 void encoder_init( encoder *tta, int nch, int byte_size ) {
-  int flt_set[3] = {10, 9, 10};
+  int flt_set[3] = { 10, 9, 10 };
   int i;
 
   for( i = 0; i < nch; i++ ) {

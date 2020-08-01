@@ -475,13 +475,13 @@ dictionary preprocesor like PAQ8B/C/D/E.
 
 #define PROGNAME "paq8h" // Please change this if you change the program.
 
+#include <algorithm>
+#include <ctype.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <math.h>
-#include <ctype.h>
-#include <algorithm>
 #define NDEBUG // remove for debugging (turns on Array bound checks)
 #include <assert.h>
 
@@ -494,9 +494,9 @@ dictionary preprocesor like PAQ8B/C/D/E.
 #endif
 
 // 8, 16, 32 bit unsigned types (adjust as appropriate)
-typedef unsigned char U8;
-typedef unsigned short U16;
-typedef unsigned int U32;
+using U8 = unsigned char;
+using U16 = unsigned short;
+using U32 = unsigned int;
 
 // min, max functions
 #ifndef min
@@ -560,16 +560,16 @@ long size;
 
 // Track time and memory used
 class ProgramChecker {
-  int memused;        // bytes allocated by Array<T> now
+  int memused{ 0 };   // bytes allocated by Array<T> now
   clock_t start_time; // in ticks
 public:
-  int maxmem;           // most bytes allocated ever
+  int maxmem{ 0 };      // most bytes allocated ever
   void alloc( int n ) { // report memory allocated, may be negative
     memused += n;
     if( memused > maxmem )
       maxmem = memused;
   }
-  ProgramChecker() : memused( 0 ), maxmem( 0 ) {
+  ProgramChecker() {
     start_time = clock();
     assert( sizeof( U8 ) == 1 );
     assert( sizeof( U16 ) == 2 );
@@ -631,8 +631,8 @@ public:
   }                             // decrement size
   void push_back( const T &x ); // increment size, append x
 private:
-  Array( const Array & ); // no copy or assignment
-  Array &operator=( const Array & );
+  Array( const Array & ) = delete; // no copy or assignment
+  Array &operator=( const Array & ) = delete;
 };
 
 template <class T, int ALIGN>
@@ -802,10 +802,10 @@ Ilog::Ilog() {
 inline int llog( U32 x ) {
   if( x >= 0x1000000 )
     return 256 + ilog( x >> 16 );
-  else if( x >= 0x10000 )
+  if( x >= 0x10000 )
     return 128 + ilog( x >> 8 );
-  else
-    return ilog( x );
+
+  return ilog( x );
 }
 
 ///////////////////////// state table ////////////////////////
@@ -830,70 +830,70 @@ inline int llog( U32 x ) {
 
 #if 1 // change to #if 0 to generate this table at run time (4% slower)
 static const U8 State_table[256][4] = {
-    {1, 2, 0, 0},      {3, 5, 1, 0},      {4, 6, 0, 1},      {7, 10, 2, 0},     // 0-3
-    {8, 12, 1, 1},     {9, 13, 1, 1},     {11, 14, 0, 2},    {15, 19, 3, 0},    // 4-7
-    {16, 23, 2, 1},    {17, 24, 2, 1},    {18, 25, 2, 1},    {20, 27, 1, 2},    // 8-11
-    {21, 28, 1, 2},    {22, 29, 1, 2},    {26, 30, 0, 3},    {31, 33, 4, 0},    // 12-15
-    {32, 35, 3, 1},    {32, 35, 3, 1},    {32, 35, 3, 1},    {32, 35, 3, 1},    // 16-19
-    {34, 37, 2, 2},    {34, 37, 2, 2},    {34, 37, 2, 2},    {34, 37, 2, 2},    // 20-23
-    {34, 37, 2, 2},    {34, 37, 2, 2},    {36, 39, 1, 3},    {36, 39, 1, 3},    // 24-27
-    {36, 39, 1, 3},    {36, 39, 1, 3},    {38, 40, 0, 4},    {41, 43, 5, 0},    // 28-31
-    {42, 45, 4, 1},    {42, 45, 4, 1},    {44, 47, 3, 2},    {44, 47, 3, 2},    // 32-35
-    {46, 49, 2, 3},    {46, 49, 2, 3},    {48, 51, 1, 4},    {48, 51, 1, 4},    // 36-39
-    {50, 52, 0, 5},    {53, 43, 6, 0},    {54, 57, 5, 1},    {54, 57, 5, 1},    // 40-43
-    {56, 59, 4, 2},    {56, 59, 4, 2},    {58, 61, 3, 3},    {58, 61, 3, 3},    // 44-47
-    {60, 63, 2, 4},    {60, 63, 2, 4},    {62, 65, 1, 5},    {62, 65, 1, 5},    // 48-51
-    {50, 66, 0, 6},    {67, 55, 7, 0},    {68, 57, 6, 1},    {68, 57, 6, 1},    // 52-55
-    {70, 73, 5, 2},    {70, 73, 5, 2},    {72, 75, 4, 3},    {72, 75, 4, 3},    // 56-59
-    {74, 77, 3, 4},    {74, 77, 3, 4},    {76, 79, 2, 5},    {76, 79, 2, 5},    // 60-63
-    {62, 81, 1, 6},    {62, 81, 1, 6},    {64, 82, 0, 7},    {83, 69, 8, 0},    // 64-67
-    {84, 71, 7, 1},    {84, 71, 7, 1},    {86, 73, 6, 2},    {86, 73, 6, 2},    // 68-71
-    {44, 59, 5, 3},    {44, 59, 5, 3},    {58, 61, 4, 4},    {58, 61, 4, 4},    // 72-75
-    {60, 49, 3, 5},    {60, 49, 3, 5},    {76, 89, 2, 6},    {76, 89, 2, 6},    // 76-79
-    {78, 91, 1, 7},    {78, 91, 1, 7},    {80, 92, 0, 8},    {93, 69, 9, 0},    // 80-83
-    {94, 87, 8, 1},    {94, 87, 8, 1},    {96, 45, 7, 2},    {96, 45, 7, 2},    // 84-87
-    {48, 99, 2, 7},    {48, 99, 2, 7},    {88, 101, 1, 8},   {88, 101, 1, 8},   // 88-91
-    {80, 102, 0, 9},   {103, 69, 10, 0},  {104, 87, 9, 1},   {104, 87, 9, 1},   // 92-95
-    {106, 57, 8, 2},   {106, 57, 8, 2},   {62, 109, 2, 8},   {62, 109, 2, 8},   // 96-99
-    {88, 111, 1, 9},   {88, 111, 1, 9},   {80, 112, 0, 10},  {113, 85, 11, 0},  // 100-103
-    {114, 87, 10, 1},  {114, 87, 10, 1},  {116, 57, 9, 2},   {116, 57, 9, 2},   // 104-107
-    {62, 119, 2, 9},   {62, 119, 2, 9},   {88, 121, 1, 10},  {88, 121, 1, 10},  // 108-111
-    {90, 122, 0, 11},  {123, 85, 12, 0},  {124, 97, 11, 1},  {124, 97, 11, 1},  // 112-115
-    {126, 57, 10, 2},  {126, 57, 10, 2},  {62, 129, 2, 10},  {62, 129, 2, 10},  // 116-119
-    {98, 131, 1, 11},  {98, 131, 1, 11},  {90, 132, 0, 12},  {133, 85, 13, 0},  // 120-123
-    {134, 97, 12, 1},  {134, 97, 12, 1},  {136, 57, 11, 2},  {136, 57, 11, 2},  // 124-127
-    {62, 139, 2, 11},  {62, 139, 2, 11},  {98, 141, 1, 12},  {98, 141, 1, 12},  // 128-131
-    {90, 142, 0, 13},  {143, 95, 14, 0},  {144, 97, 13, 1},  {144, 97, 13, 1},  // 132-135
-    {68, 57, 12, 2},   {68, 57, 12, 2},   {62, 81, 2, 12},   {62, 81, 2, 12},   // 136-139
-    {98, 147, 1, 13},  {98, 147, 1, 13},  {100, 148, 0, 14}, {149, 95, 15, 0},  // 140-143
-    {150, 107, 14, 1}, {150, 107, 14, 1}, {108, 151, 1, 14}, {108, 151, 1, 14}, // 144-147
-    {100, 152, 0, 15}, {153, 95, 16, 0},  {154, 107, 15, 1}, {108, 155, 1, 15}, // 148-151
-    {100, 156, 0, 16}, {157, 95, 17, 0},  {158, 107, 16, 1}, {108, 159, 1, 16}, // 152-155
-    {100, 160, 0, 17}, {161, 105, 18, 0}, {162, 107, 17, 1}, {108, 163, 1, 17}, // 156-159
-    {110, 164, 0, 18}, {165, 105, 19, 0}, {166, 117, 18, 1}, {118, 167, 1, 18}, // 160-163
-    {110, 168, 0, 19}, {169, 105, 20, 0}, {170, 117, 19, 1}, {118, 171, 1, 19}, // 164-167
-    {110, 172, 0, 20}, {173, 105, 21, 0}, {174, 117, 20, 1}, {118, 175, 1, 20}, // 168-171
-    {110, 176, 0, 21}, {177, 105, 22, 0}, {178, 117, 21, 1}, {118, 179, 1, 21}, // 172-175
-    {110, 180, 0, 22}, {181, 115, 23, 0}, {182, 117, 22, 1}, {118, 183, 1, 22}, // 176-179
-    {120, 184, 0, 23}, {185, 115, 24, 0}, {186, 127, 23, 1}, {128, 187, 1, 23}, // 180-183
-    {120, 188, 0, 24}, {189, 115, 25, 0}, {190, 127, 24, 1}, {128, 191, 1, 24}, // 184-187
-    {120, 192, 0, 25}, {193, 115, 26, 0}, {194, 127, 25, 1}, {128, 195, 1, 25}, // 188-191
-    {120, 196, 0, 26}, {197, 115, 27, 0}, {198, 127, 26, 1}, {128, 199, 1, 26}, // 192-195
-    {120, 200, 0, 27}, {201, 115, 28, 0}, {202, 127, 27, 1}, {128, 203, 1, 27}, // 196-199
-    {120, 204, 0, 28}, {205, 115, 29, 0}, {206, 127, 28, 1}, {128, 207, 1, 28}, // 200-203
-    {120, 208, 0, 29}, {209, 125, 30, 0}, {210, 127, 29, 1}, {128, 211, 1, 29}, // 204-207
-    {130, 212, 0, 30}, {213, 125, 31, 0}, {214, 137, 30, 1}, {138, 215, 1, 30}, // 208-211
-    {130, 216, 0, 31}, {217, 125, 32, 0}, {218, 137, 31, 1}, {138, 219, 1, 31}, // 212-215
-    {130, 220, 0, 32}, {221, 125, 33, 0}, {222, 137, 32, 1}, {138, 223, 1, 32}, // 216-219
-    {130, 224, 0, 33}, {225, 125, 34, 0}, {226, 137, 33, 1}, {138, 227, 1, 33}, // 220-223
-    {130, 228, 0, 34}, {229, 125, 35, 0}, {230, 137, 34, 1}, {138, 231, 1, 34}, // 224-227
-    {130, 232, 0, 35}, {233, 125, 36, 0}, {234, 137, 35, 1}, {138, 235, 1, 35}, // 228-231
-    {130, 236, 0, 36}, {237, 125, 37, 0}, {238, 137, 36, 1}, {138, 239, 1, 36}, // 232-235
-    {130, 240, 0, 37}, {241, 125, 38, 0}, {242, 137, 37, 1}, {138, 243, 1, 37}, // 236-239
-    {130, 244, 0, 38}, {245, 135, 39, 0}, {246, 137, 38, 1}, {138, 247, 1, 38}, // 240-243
-    {140, 248, 0, 39}, {249, 135, 40, 0}, {250, 69, 39, 1},  {80, 251, 1, 39},  // 244-247
-    {140, 252, 0, 40}, {249, 135, 41, 0}, {250, 69, 40, 1},  {80, 251, 1, 40},  // 248-251
-    {140, 252, 0, 41}};                                                         // 252, 253-255 are reserved
+    { 1, 2, 0, 0 },      { 3, 5, 1, 0 },      { 4, 6, 0, 1 },      { 7, 10, 2, 0 },     // 0-3
+    { 8, 12, 1, 1 },     { 9, 13, 1, 1 },     { 11, 14, 0, 2 },    { 15, 19, 3, 0 },    // 4-7
+    { 16, 23, 2, 1 },    { 17, 24, 2, 1 },    { 18, 25, 2, 1 },    { 20, 27, 1, 2 },    // 8-11
+    { 21, 28, 1, 2 },    { 22, 29, 1, 2 },    { 26, 30, 0, 3 },    { 31, 33, 4, 0 },    // 12-15
+    { 32, 35, 3, 1 },    { 32, 35, 3, 1 },    { 32, 35, 3, 1 },    { 32, 35, 3, 1 },    // 16-19
+    { 34, 37, 2, 2 },    { 34, 37, 2, 2 },    { 34, 37, 2, 2 },    { 34, 37, 2, 2 },    // 20-23
+    { 34, 37, 2, 2 },    { 34, 37, 2, 2 },    { 36, 39, 1, 3 },    { 36, 39, 1, 3 },    // 24-27
+    { 36, 39, 1, 3 },    { 36, 39, 1, 3 },    { 38, 40, 0, 4 },    { 41, 43, 5, 0 },    // 28-31
+    { 42, 45, 4, 1 },    { 42, 45, 4, 1 },    { 44, 47, 3, 2 },    { 44, 47, 3, 2 },    // 32-35
+    { 46, 49, 2, 3 },    { 46, 49, 2, 3 },    { 48, 51, 1, 4 },    { 48, 51, 1, 4 },    // 36-39
+    { 50, 52, 0, 5 },    { 53, 43, 6, 0 },    { 54, 57, 5, 1 },    { 54, 57, 5, 1 },    // 40-43
+    { 56, 59, 4, 2 },    { 56, 59, 4, 2 },    { 58, 61, 3, 3 },    { 58, 61, 3, 3 },    // 44-47
+    { 60, 63, 2, 4 },    { 60, 63, 2, 4 },    { 62, 65, 1, 5 },    { 62, 65, 1, 5 },    // 48-51
+    { 50, 66, 0, 6 },    { 67, 55, 7, 0 },    { 68, 57, 6, 1 },    { 68, 57, 6, 1 },    // 52-55
+    { 70, 73, 5, 2 },    { 70, 73, 5, 2 },    { 72, 75, 4, 3 },    { 72, 75, 4, 3 },    // 56-59
+    { 74, 77, 3, 4 },    { 74, 77, 3, 4 },    { 76, 79, 2, 5 },    { 76, 79, 2, 5 },    // 60-63
+    { 62, 81, 1, 6 },    { 62, 81, 1, 6 },    { 64, 82, 0, 7 },    { 83, 69, 8, 0 },    // 64-67
+    { 84, 71, 7, 1 },    { 84, 71, 7, 1 },    { 86, 73, 6, 2 },    { 86, 73, 6, 2 },    // 68-71
+    { 44, 59, 5, 3 },    { 44, 59, 5, 3 },    { 58, 61, 4, 4 },    { 58, 61, 4, 4 },    // 72-75
+    { 60, 49, 3, 5 },    { 60, 49, 3, 5 },    { 76, 89, 2, 6 },    { 76, 89, 2, 6 },    // 76-79
+    { 78, 91, 1, 7 },    { 78, 91, 1, 7 },    { 80, 92, 0, 8 },    { 93, 69, 9, 0 },    // 80-83
+    { 94, 87, 8, 1 },    { 94, 87, 8, 1 },    { 96, 45, 7, 2 },    { 96, 45, 7, 2 },    // 84-87
+    { 48, 99, 2, 7 },    { 48, 99, 2, 7 },    { 88, 101, 1, 8 },   { 88, 101, 1, 8 },   // 88-91
+    { 80, 102, 0, 9 },   { 103, 69, 10, 0 },  { 104, 87, 9, 1 },   { 104, 87, 9, 1 },   // 92-95
+    { 106, 57, 8, 2 },   { 106, 57, 8, 2 },   { 62, 109, 2, 8 },   { 62, 109, 2, 8 },   // 96-99
+    { 88, 111, 1, 9 },   { 88, 111, 1, 9 },   { 80, 112, 0, 10 },  { 113, 85, 11, 0 },  // 100-103
+    { 114, 87, 10, 1 },  { 114, 87, 10, 1 },  { 116, 57, 9, 2 },   { 116, 57, 9, 2 },   // 104-107
+    { 62, 119, 2, 9 },   { 62, 119, 2, 9 },   { 88, 121, 1, 10 },  { 88, 121, 1, 10 },  // 108-111
+    { 90, 122, 0, 11 },  { 123, 85, 12, 0 },  { 124, 97, 11, 1 },  { 124, 97, 11, 1 },  // 112-115
+    { 126, 57, 10, 2 },  { 126, 57, 10, 2 },  { 62, 129, 2, 10 },  { 62, 129, 2, 10 },  // 116-119
+    { 98, 131, 1, 11 },  { 98, 131, 1, 11 },  { 90, 132, 0, 12 },  { 133, 85, 13, 0 },  // 120-123
+    { 134, 97, 12, 1 },  { 134, 97, 12, 1 },  { 136, 57, 11, 2 },  { 136, 57, 11, 2 },  // 124-127
+    { 62, 139, 2, 11 },  { 62, 139, 2, 11 },  { 98, 141, 1, 12 },  { 98, 141, 1, 12 },  // 128-131
+    { 90, 142, 0, 13 },  { 143, 95, 14, 0 },  { 144, 97, 13, 1 },  { 144, 97, 13, 1 },  // 132-135
+    { 68, 57, 12, 2 },   { 68, 57, 12, 2 },   { 62, 81, 2, 12 },   { 62, 81, 2, 12 },   // 136-139
+    { 98, 147, 1, 13 },  { 98, 147, 1, 13 },  { 100, 148, 0, 14 }, { 149, 95, 15, 0 },  // 140-143
+    { 150, 107, 14, 1 }, { 150, 107, 14, 1 }, { 108, 151, 1, 14 }, { 108, 151, 1, 14 }, // 144-147
+    { 100, 152, 0, 15 }, { 153, 95, 16, 0 },  { 154, 107, 15, 1 }, { 108, 155, 1, 15 }, // 148-151
+    { 100, 156, 0, 16 }, { 157, 95, 17, 0 },  { 158, 107, 16, 1 }, { 108, 159, 1, 16 }, // 152-155
+    { 100, 160, 0, 17 }, { 161, 105, 18, 0 }, { 162, 107, 17, 1 }, { 108, 163, 1, 17 }, // 156-159
+    { 110, 164, 0, 18 }, { 165, 105, 19, 0 }, { 166, 117, 18, 1 }, { 118, 167, 1, 18 }, // 160-163
+    { 110, 168, 0, 19 }, { 169, 105, 20, 0 }, { 170, 117, 19, 1 }, { 118, 171, 1, 19 }, // 164-167
+    { 110, 172, 0, 20 }, { 173, 105, 21, 0 }, { 174, 117, 20, 1 }, { 118, 175, 1, 20 }, // 168-171
+    { 110, 176, 0, 21 }, { 177, 105, 22, 0 }, { 178, 117, 21, 1 }, { 118, 179, 1, 21 }, // 172-175
+    { 110, 180, 0, 22 }, { 181, 115, 23, 0 }, { 182, 117, 22, 1 }, { 118, 183, 1, 22 }, // 176-179
+    { 120, 184, 0, 23 }, { 185, 115, 24, 0 }, { 186, 127, 23, 1 }, { 128, 187, 1, 23 }, // 180-183
+    { 120, 188, 0, 24 }, { 189, 115, 25, 0 }, { 190, 127, 24, 1 }, { 128, 191, 1, 24 }, // 184-187
+    { 120, 192, 0, 25 }, { 193, 115, 26, 0 }, { 194, 127, 25, 1 }, { 128, 195, 1, 25 }, // 188-191
+    { 120, 196, 0, 26 }, { 197, 115, 27, 0 }, { 198, 127, 26, 1 }, { 128, 199, 1, 26 }, // 192-195
+    { 120, 200, 0, 27 }, { 201, 115, 28, 0 }, { 202, 127, 27, 1 }, { 128, 203, 1, 27 }, // 196-199
+    { 120, 204, 0, 28 }, { 205, 115, 29, 0 }, { 206, 127, 28, 1 }, { 128, 207, 1, 28 }, // 200-203
+    { 120, 208, 0, 29 }, { 209, 125, 30, 0 }, { 210, 127, 29, 1 }, { 128, 211, 1, 29 }, // 204-207
+    { 130, 212, 0, 30 }, { 213, 125, 31, 0 }, { 214, 137, 30, 1 }, { 138, 215, 1, 30 }, // 208-211
+    { 130, 216, 0, 31 }, { 217, 125, 32, 0 }, { 218, 137, 31, 1 }, { 138, 219, 1, 31 }, // 212-215
+    { 130, 220, 0, 32 }, { 221, 125, 33, 0 }, { 222, 137, 32, 1 }, { 138, 223, 1, 32 }, // 216-219
+    { 130, 224, 0, 33 }, { 225, 125, 34, 0 }, { 226, 137, 33, 1 }, { 138, 227, 1, 33 }, // 220-223
+    { 130, 228, 0, 34 }, { 229, 125, 35, 0 }, { 230, 137, 34, 1 }, { 138, 231, 1, 34 }, // 224-227
+    { 130, 232, 0, 35 }, { 233, 125, 36, 0 }, { 234, 137, 35, 1 }, { 138, 235, 1, 35 }, // 228-231
+    { 130, 236, 0, 36 }, { 237, 125, 37, 0 }, { 238, 137, 36, 1 }, { 138, 239, 1, 36 }, // 232-235
+    { 130, 240, 0, 37 }, { 241, 125, 38, 0 }, { 242, 137, 37, 1 }, { 138, 243, 1, 37 }, // 236-239
+    { 130, 244, 0, 38 }, { 245, 135, 39, 0 }, { 246, 137, 38, 1 }, { 138, 247, 1, 38 }, // 240-243
+    { 140, 248, 0, 39 }, { 249, 135, 40, 0 }, { 250, 69, 39, 1 },  { 80, 251, 1, 39 },  // 244-247
+    { 140, 252, 0, 40 }, { 249, 135, 41, 0 }, { 250, 69, 40, 1 },  { 80, 251, 1, 40 },  // 248-251
+    { 140, 252, 0, 41 } };                                                              // 252, 253-255 are reserved
 
 #  define nex( state, sel ) State_table[state][sel]
 
@@ -917,7 +917,7 @@ public:
   StateTable();
 } nex;
 
-const int StateTable::b[B] = {42, 41, 13, 6, 5}; // x -> max y, y -> max x
+const int StateTable::b[B] = { 42, 41, 13, 6, 5 }; // x -> max y, y -> max x
 U8 StateTable::t[N][N][2];
 
 int StateTable::num_states( int x, int y ) {
@@ -1042,9 +1042,9 @@ StateTable::StateTable() : ns( 1024 ) {
 
 // return p = 1/(1 + exp(-d)), d scaled by 8 bits, p scaled by 12 bits
 int squash( int d ) {
-  static const int t[33] = {1,    2,    3,    6,    10,   16,   27,   45,   73,   120,  194,
-                            310,  488,  747,  1101, 1546, 2047, 2549, 2994, 3348, 3607, 3785,
-                            3901, 3975, 4022, 4050, 4068, 4079, 4085, 4089, 4092, 4093, 4094};
+  static const int t[33] = { 1,    2,    3,    6,    10,   16,   27,   45,   73,   120,  194,
+                             310,  488,  747,  1101, 1546, 2047, 2549, 2994, 3348, 3607, 3785,
+                             3901, 3975, 4022, 4050, 4068, 4079, 4085, 4089, 4092, 4093, 4094 };
   if( d > 2047 )
     return 4095;
   if( d < -2047 )
@@ -1198,11 +1198,10 @@ public:
         mp->add( dp );
       }
       return mp->p();
-    } else { // S=1 context
-      int z = dot_product( &tx[0], &wx[0], nx );
-      base = squash( ( z * 15 ) >> 13 );
-      return squash( z >> 9 );
-    }
+    } // S=1 context
+    int z = dot_product( &tx[0], &wx[0], nx );
+    base = squash( ( z * 15 ) >> 13 );
+    return squash( z >> 9 );
   }
   ~Mixer();
 };
@@ -1281,8 +1280,8 @@ APM::APM( int n ) : index( 0 ), t( n * 33 ) {
 // Counter state -> probability * 256
 class StateMap {
 protected:
-  int cxt;    // context
-  U16 t[256]; // 256 states -> probability * 64K
+  int cxt{ 0 }; // context
+  U16 t[256];   // 256 states -> probability * 64K
 public:
   StateMap();
   int p( int cx ) {
@@ -1293,7 +1292,7 @@ public:
   }
 };
 
-StateMap::StateMap() : cxt( 0 ) {
+StateMap::StateMap() {
   for( int i = 0; i < 256; ++i ) {
     int n0 = nex( i, 2 );
     int n1 = nex( i, 3 );
@@ -1316,7 +1315,7 @@ inline U32 hash(U32 a, U32 b, U32 c=0xffffffff, U32 d=0xffffffff,
 }
 #else
 inline U32 hash( U32 a, U32 b, U32 c = 0xffffffff ) {
-  U32 h = a * 110002499u + b * 30005491u + c * 50004239u; //+d*70004807u+e*110002499u;
+  U32 h = a * 110002499U + b * 30005491U + c * 50004239U; //+d*70004807u+e*110002499u;
   return h ^ h >> 9 ^ a >> 3 ^ b >> 3 ^ c >> 4;
 }
 #endif
@@ -1470,8 +1469,8 @@ public:
   int p() { // predict next bit
     if( ( cp[1] + 256 ) >> ( 8 - bpos ) == c0 )
       return ( ( cp[1] >> ( 7 - bpos ) & 1 ) * 2 - 1 ) * ilog( cp[0] + 1 ) * mulc;
-    else
-      return 0;
+
+    return 0;
   }
   int mix( Mixer &m ) { // return run length
     m.add( p() );
@@ -1567,7 +1566,7 @@ class ContextMap {
     U8 bh[7][7];               // byte context, 3-bit context -> bit history state
                                // bh[][0] = 1st bit, bh[][1,2] = 2nd bit, bh[][3..6] = 3rd bit
                                // bh[][0] is also a replacement priority, 0 = empty
-    U8 *get( U16 chk, int i ); // Find element (0-6) matching checksum.
+    U8 *get( U16 chk, int j ); // Find element (0-6) matching checksum.
                                // If not found, insert or replace lowest priority (not last).
   };
   Array<E, 64> t;               // bit histories for bits 0-1, 2-4, 5-7
@@ -1595,7 +1594,8 @@ inline U8 *ContextMap::E::get( U16 ch, int j ) {
   ch += j;
   if( chk[last & 15] == ch )
     return &bh[last & 15][0];
-  int b = 0xffff, bi = 0;
+  int b = 0xffff;
+  int bi = 0;
   for( int i = 0; i < 7; ++i ) {
     if( chk[i] == ch )
       return last = last << 4 | i, &bh[i][0];
@@ -1608,14 +1608,7 @@ inline U8 *ContextMap::E::get( U16 ch, int j ) {
 
 // Construct using m bytes of memory for c contexts
 ContextMap::ContextMap( int m, int c ) :
-    C( c ),
-    t( m >> 6 ),
-    Sz( ( m >> 6 ) - 1 ),
-    cp( c ),
-    cp0( c ),
-    cxt( c ),
-    runp( c ),
-    cn( 0 ) {
+    C( c ), t( m >> 6 ), Sz( ( m >> 6 ) - 1 ), cp( c ), cp0( c ), cxt( c ), runp( c ), cn( 0 ) {
   assert( m >= 64 && ( m & m - 1 ) == 0 ); // power of 2?
   assert( sizeof( E ) == 64 );
   sm = new StateMap[C];
@@ -1645,7 +1638,7 @@ int ContextMap::mix1( Mixer &m, int cc, int c1, int y1 ) {
       assert( cpi >= &t[0].bh[0][0] && cpi <= &t[Sz].bh[6][6] );
       assert( ( long( cpi ) & 63 ) >= 15 );
       int ns = nex( *cpi, y1 );
-      if( ns >= 204 && ( ( rnd() << ( ( 452 - ns ) >> 3 ) ) != 0u ) )
+      if( ns >= 204 && ( ( rnd() << ( ( 452 - ns ) >> 3 ) ) != 0U ) )
         ns -= 4; // probabilistic increment
       *cpi = ns;
     }
@@ -1800,19 +1793,25 @@ static U32 col, frstchar = 0, spafdo = 0, spaces = 0, spacecount = 0, words = 0,
 // Model English text (words and columns/end of line)
 
 void wordModel( Mixer &m ) {
-  static U32 word0 = 0, word1 = 0, word2 = 0, word3 = 0, word4 = 0; // hashes
+  static U32 word0 = 0;
+  static U32 word1 = 0;
+  static U32 word2 = 0;
+  static U32 word3 = 0;
+  static U32 word4 = 0; // hashes
   static ContextMap cm( MEM * 64, 46 );
-  static int nl1 = -3, nl = -2; // previous, current newline position
+  static int nl1 = -3;
+  static int nl = -2; // previous, current newline position
   static U32 t1[256];
   static U16 t2[0x10000];
 
   // Update word hashes
   if( bpos == 0 ) {
-    U32 c = b1, f = 0;
+    U32 c = b1;
+    U32 f = 0;
 
-    if( ( spaces & 0x80000000 ) != 0u )
+    if( ( spaces & 0x80000000 ) != 0U )
       --spacecount;
-    if( ( words & 0x80000000 ) != 0u )
+    if( ( words & 0x80000000 ) != 0U )
       --wordcount;
     spaces = spaces * 2;
     words = words * 2;
@@ -1826,7 +1825,7 @@ void wordModel( Mixer &m ) {
         if( c == 10 )
           nl1 = nl, nl = pos - 1;
       }
-      if( word0 != 0u ) {
+      if( word0 != 0U ) {
         word4 = word3 * 43;
         word3 = word2 * 47;
         word2 = word1 * 53;
@@ -1853,7 +1852,7 @@ void wordModel( Mixer &m ) {
     cm.set( h + word1 * 73 + word3 * 61 );
     cm.set( h + word2 * 67 + word3 * 59 );
 
-    if( f != 0u ) {
+    if( f != 0U ) {
       word4 = word3 * 31;
       word3 = word2 * 37;
       word2 = word1 * 41;
@@ -1943,11 +1942,18 @@ void recordModel( Mixer &m ) {
   static int wpos1[0x10000]; // buf(1..2) -> last position
                              ///  static int rlen=2, rlen1=3, rlen2=4;  // run length and 2 candidates
                              ///  static int rcount1=0, rcount2=0;  // candidate counts
-  static ContextMap cm( 32768 / 4, 2 ), cn( 32768 / 2, 5 ), co( 32768, 4 ), cp( 32768 * 2, 3 ), cq( 32768 * 4, 3 );
+  static ContextMap cm( 32768 / 4, 2 );
+  static ContextMap cn( 32768 / 2, 5 );
+  static ContextMap co( 32768, 4 );
+  static ContextMap cp( 32768 * 2, 3 );
+  static ContextMap cq( 32768 * 4, 3 );
 
   // Find record length
   if( bpos == 0 ) {
-    int c = b1, w = ( b2 << 8 ) + c, d = w & 0xf0ff, e = c4 & 0xffffff;
+    int c = b1;
+    int w = ( b2 << 8 ) + c;
+    int d = w & 0xf0ff;
+    int e = c4 & 0xffffff;
 #if 0
     int r=pos-cpos1[c];
     if (r>1 && r==cpos1[c]-cpos2[c]
@@ -2009,9 +2015,16 @@ void recordModel( Mixer &m ) {
 
 void sparseModel( Mixer &m ) {
   static ContextMap cn( MEM * 2, 5 );
-  static SmallStationaryContextMap scm1( 0x20000, 17 ), scm2( 0x20000, 12 ), scm3( 0x20000, 12 ), scm4( 0x20000, 13 ),
-      scm5( 0x10000, 12 ), scm6( 0x20000, 12 ), scm7( 0x2000, 12 ), scm8( 0x8000, 13 ), scm9( 0x1000, 12 ),
-      scma( 0x10000, 16 );
+  static SmallStationaryContextMap scm1( 0x20000, 17 );
+  static SmallStationaryContextMap scm2( 0x20000, 12 );
+  static SmallStationaryContextMap scm3( 0x20000, 12 );
+  static SmallStationaryContextMap scm4( 0x20000, 13 );
+  static SmallStationaryContextMap scm5( 0x10000, 12 );
+  static SmallStationaryContextMap scm6( 0x20000, 12 );
+  static SmallStationaryContextMap scm7( 0x2000, 12 );
+  static SmallStationaryContextMap scm8( 0x8000, 13 );
+  static SmallStationaryContextMap scm9( 0x1000, 12 );
+  static SmallStationaryContextMap scma( 0x10000, 16 );
 
   if( bpos == 0 ) {
     cn.set( words & 0x1ffff );
@@ -2611,10 +2624,10 @@ void indirectModel(Mixer& m) {
 }
 #endif
 
-int primes[] = {0, 257, 251, 241, 239, 233, 229, 227, 223, 211, 199, 197, 193, 191};
-static U32 WRT_mpw[16] = {3, 3, 3, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0}, tri[4] = {0, 4, 3, 7},
-           trj[4] = {0, 6, 6, 12};
-static U32 WRT_mtt[16] = {0, 0, 1, 2, 3, 4, 5, 5, 6, 6, 6, 6, 6, 7, 7, 7};
+int primes[] = { 0, 257, 251, 241, 239, 233, 229, 227, 223, 211, 199, 197, 193, 191 };
+static U32 WRT_mpw[16] = { 3, 3, 3, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0 }, tri[4] = { 0, 4, 3, 7 },
+           trj[4] = { 0, 6, 6, 12 };
+static U32 WRT_mtt[16] = { 0, 0, 1, 2, 3, 4, 5, 5, 6, 6, 6, 6, 6, 7, 7, 7 };
 
 //////////////////////////// contextModel //////////////////////
 
@@ -2624,7 +2637,9 @@ static U32 WRT_mtt[16] = {0, 0, 1, 2, 3, 4, 5, 5, 6, 6, 6, 6, 6, 7, 7, 7};
 
 int contextModel2() {
   static ContextMap cm( MEM * 32, 7 );
-  static RunContextMap rcm7( MEM / 4, 14 ), rcm9( MEM / 4, 18 ), rcm10( MEM / 2, 20 );
+  static RunContextMap rcm7( MEM / 4, 14 );
+  static RunContextMap rcm9( MEM / 4, 18 );
+  static RunContextMap rcm10( MEM / 2, 20 );
   static Mixer m( 456, 128 * ( 16 + 14 + 14 + 12 + 14 + 16 ), 6, 512 );
   static U32 cxt[16]; // order 0-11 contexts
   static Filetype filetype = DEFAULT;
@@ -2673,7 +2688,8 @@ int contextModel2() {
 
   // Normal model
   if( bpos == 0 ) {
-    int i = 0, f2 = buf( 2 );
+    int i = 0;
+    int f2 = buf( 2 );
 
     if( f2 == '.' || f2 == 'O' || f2 == 'M' || f2 == '!' || f2 == ')' || f2 == ( '}' - '{' + 'P' ) ) {
       if( b1 != f2 && buf( 3 ) != f2 )
@@ -2729,7 +2745,9 @@ int contextModel2() {
   //m.tx[420]=0;
   //m.tx[425]=0;
   //m.tx[430]=0;
-  U32 c1 = b1, c2 = b2, c;
+  U32 c1 = b1;
+  U32 c2 = b2;
+  U32 c;
   if( c1 == 9 || c1 == 10 || c1 == 32 )
     c1 = 16;
   if( c2 == 9 || c2 == 10 || c2 == 32 )
@@ -2771,7 +2789,7 @@ int contextModel2() {
 // update(y) trains the predictor with the actual bit (0 or 1).
 
 class Predictor {
-  int pr; // next prediction
+  int pr{ 2048 }; // next prediction
 public:
   Predictor();
   int p() const {
@@ -2781,10 +2799,15 @@ public:
   void update();
 };
 
-Predictor::Predictor() : pr( 2048 ) {}
+Predictor::Predictor() = default;
 
 void Predictor::update() {
-  static APM a1( 256 ), a2( 0x8000 ), a3( 0x8000 ), a4( 0x20000 ), a5( 0x10000 ), a6( 0x10000 );
+  static APM a1( 256 );
+  static APM a2( 0x8000 );
+  static APM a3( 0x8000 );
+  static APM a4( 0x20000 );
+  static APM a5( 0x10000 );
+  static APM a6( 0x10000 );
 
   // Update global context: pos, bpos, c0, c4, buf
   c0 += c0 + y;
@@ -2824,7 +2847,7 @@ void Predictor::update() {
   }
   bpos = ( bpos + 1 ) & 7;
 
-  if( ( fails & 0x00000080 ) != 0u )
+  if( ( fails & 0x00000080 ) != 0U )
     --failcount;
   fails = fails * 2;
   failz = failz * 2;
@@ -2839,11 +2862,14 @@ void Predictor::update() {
   pr = contextModel2();
 
   int rate = 6 + static_cast<int>( pos > 14 * 256 * 1024 ) + static_cast<int>( pos > 28 * 512 * 1024 );
-  int pt, pu = ( a1.p( pr, c0, 3 ) + 7 * pr + 4 ) >> 3, pv, pz = failcount + 1;
+  int pt;
+  int pu = ( a1.p( pr, c0, 3 ) + 7 * pr + 4 ) >> 3;
+  int pv;
+  int pz = failcount + 1;
   pz += tri[( fails >> 5 ) & 3];
   pz += trj[( fails >> 3 ) & 3];
   pz += trj[( fails >> 1 ) & 3];
-  if( ( fails & 1 ) != 0u )
+  if( ( fails & 1 ) != 0U )
     pz += 8;
   pz = pz / 2;
 
@@ -2853,7 +2879,7 @@ void Predictor::update() {
   pt = a3.p( pr, ( c0 * 32 ) ^ ( hash( 19, x5 & 0x80ffff ) & 0x7fff ), rate );
   pz = a6.p( pu, ( c0 * 4 ) ^ ( hash( min( 9, pz ), x5 & 0x80ff ) & 0xffff ), rate );
 
-  if( ( fails & 255 ) != 0u )
+  if( ( fails & 255 ) != 0U )
     pr = ( pt * 6 + pu + pv * 11 + pz * 14 + 16 ) >> 5;
   else
     pr = ( pt * 4 + pu * 5 + pv * 12 + pz * 11 + 16 ) >> 5;
@@ -2943,22 +2969,22 @@ public:
     if( mode == COMPRESS ) {
       assert( alt );
       return getc( alt );
-    } else if( level == 0 )
-      return getc( archive );
-    else {
-      int c = 0;
-      for( int i = 8; i != 0; --i )
-        c += c + code();
-      if( c >= '{' && c < 127 )
-        c += 'P' - '{';
-      else if( c >= 'P' && c < 'T' )
-        c -= 'P' - '{';
-      else if( ( c >= ':' && c <= '?' ) || ( c >= 'J' && c <= 'O' ) )
-        c ^= 0x70;
-      if( c == 'X' || c == '`' )
-        c ^= 'X' ^ '`';
-      return c;
     }
+    if( level == 0 )
+      return getc( archive );
+
+    int c = 0;
+    for( int i = 8; i != 0; --i )
+      c += c + code();
+    if( c >= '{' && c < 127 )
+      c += 'P' - '{';
+    else if( c >= 'P' && c < 'T' )
+      c -= 'P' - '{';
+    else if( ( c >= ':' && c <= '?' ) || ( c >= 'J' && c <= 'O' ) )
+      c ^= 0x70;
+    if( c == 'X' || c == '`' )
+      c ^= 'X' ^ '`';
+    return c;
   }
 
   void flush() {
@@ -3076,7 +3102,7 @@ protected:
 
 public:
   Filter( Encoder *e ) : en( e ), reads( 0 ), tmp( 0 ) {}
-  virtual ~Filter() {}
+  virtual ~Filter() = default;
   void decompress( FILE *f, int n );
   void compare( FILE *f, int n );
   void skip( int n );
@@ -3198,11 +3224,11 @@ public:
   DefaultFilter( Encoder *e ) : Filter( e ) {}
 
 protected:
-  void encode( FILE *f, int n ) { // not executed if filetype is 0
+  void encode( FILE *f, int n ) override { // not executed if filetype is 0
     while( ( n-- ) != 0 )
       putc( getc( f ), tmp );
   }
-  int decode() {
+  int decode() override {
     return read();
   }
 };
@@ -3321,12 +3347,12 @@ public:
     reset();
     WRTd_filter = this;
   }
-  ~TextFilter() {
+  ~TextFilter() override {
     reset();
     tmp = NULL;
   };
-  void encode( FILE *f, int n );
-  int decode();
+  void encode( FILE *f, int n ) override;
+  int decode() override;
   void reset() {
     first = true;
     wrt.WRT_prepare_decoding();
@@ -3351,7 +3377,8 @@ int TextFilter::decode() {
       if( dtmp == nullptr )
         perror( "WRT tmpfile" ), exit( 1 );
 
-      unsigned int size = 0, i;
+      unsigned int size = 0;
+      unsigned int i;
       for( i = 4; i != 0; --i ) {
         int c = read();
         size = size * 256 + c;
@@ -3384,7 +3411,7 @@ Filter *Filter::make( const char *filename, Encoder *e ) {
     filetype = 0;
     const char *ext = strrchr( filename, '.' );
 
-    FILE *file = fopen( filename, "rb" );
+    FILE *file = fopen( filename, "rbe" );
     if( file != nullptr ) {
       if( fgetc( file ) == 'M' && fgetc( file ) == 'Z' )
         filetype = EXE;
@@ -3414,8 +3441,8 @@ Filter *Filter::make( const char *filename, Encoder *e ) {
     ///else
     if( filetype == TEXT || filetype == BINTEXT )
       return new TextFilter( e );
-    else
-      return new DefaultFilter( e );
+
+    return new DefaultFilter( e );
   }
   return NULL;
 }
@@ -3428,7 +3455,8 @@ Filter *Filter::make( const char *filename, Encoder *e ) {
 char *getline( FILE *f = stdin ) {
   const int MAXLINE = 512;
   static char s[MAXLINE];
-  int len = 0, c;
+  int len = 0;
+  int c;
   while( ( c = getc( f ) ) != EOF && c != 26 && c != '\n' && len < MAXLINE - 1 ) {
     if( c != '\r' )
       s[len++] = c;
@@ -3441,7 +3469,7 @@ char *getline( FILE *f = stdin ) {
 
 // Test if files exist and get their sizes, store in archive header
 void store_in_header( FILE *f, char *filename, long &total_size ) {
-  FILE *fi = fopen( filename, "rb" );
+  FILE *fi = fopen( filename, "rbe" );
   if( fi != nullptr ) {
     fseek( fi, 0, SEEK_END ); // get size
     long size = ftell( fi );
@@ -3524,11 +3552,11 @@ int main( int argc, char **argv ) {
   // and ending with \r\n.  The last entry is followed by ^Z
   Mode mode = DECOMPRESS;
 
-  f = fopen( argv[1], "rb" );
+  f = fopen( argv[1], "rbe" );
   if( f == nullptr ) {
     mode = COMPRESS;
 
-    f = fopen( argv[1], "wb" );
+    f = fopen( argv[1], "wbe" );
     if( f == nullptr )
       perror( argv[1] ), exit( 1 );
     fprintf( f, "%s -%c\r\n", PROGNAME, option );
@@ -3557,7 +3585,7 @@ int main( int argc, char **argv ) {
           break;
         filename = argv[i++];
       }
-      filenames.push_back( filename );
+      filenames.emplace_back( filename );
     } // end while
 
     for( i = 0; i < filenames.size(); i++ ) {
@@ -3575,14 +3603,15 @@ int main( int argc, char **argv ) {
 
     fputc( 26, f ); // EOF
     fclose( f );
-    f = fopen( argv[1], "r+b" );
+    f = fopen( argv[1], "r+be" );
     if( f == nullptr )
       perror( argv[1] ), exit( 1 );
   }
 
   // Read existing archive. Two pointers (header and body) track the
   // current filename and current position in the compressed data.
-  long header, body;             // file positions in header, body
+  long header;
+  long body;                     // file positions in header, body
   char *filename = getline( f ); // check header
   if( ( filename == nullptr ) || ( strncmp( filename, PROGNAME " -", strlen( PROGNAME ) + 2 ) != 0 ) )
     fprintf( stderr, "%s: not a " PROGNAME " file\n", argv[1] ), exit( 1 );
@@ -3593,7 +3622,8 @@ int main( int argc, char **argv ) {
   buf.setsize( MEM * 8 );
 
   if( level > 4 ) {
-    FILE *dictfile = fopen( "./to_train_models.dic", "rb" ), *tmpfi = fopen( "./paq8hp_tmp_file.dic", "wb" );
+    FILE *dictfile = fopen( "./to_train_models.dic", "rbe" );
+    FILE *tmpfi = fopen( "./paq8hp_tmp_file.dic", "wbe" );
     filetype = 0;
     Encoder en( COMPRESS, tmpfi );
     en.compress( 0 );
@@ -3644,7 +3674,7 @@ int main( int argc, char **argv ) {
     fseek( f, body, SEEK_SET );
 
     // If file exists in COMPRESS mode, compare, else compress/decompress
-    FILE *fi = fopen( filename, "rb" );
+    FILE *fi = fopen( filename, "rbe" );
     filetype = 0;
     if( mode == COMPRESS ) {
       if( fi == nullptr )
@@ -3659,7 +3689,7 @@ int main( int argc, char **argv ) {
       if( fi != nullptr )
         fp->compare( fi, size );
       else { // extract
-        fi = fopen( filename, "wb" );
+        fi = fopen( filename, "wbe" );
         if( fi != nullptr )
           fp->decompress( fi, size );
         else {

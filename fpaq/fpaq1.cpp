@@ -2,17 +2,17 @@
 // (C) 2006, Matt Mahoney under GPL, http://www.gnu.org/licenses/gpl.txt
 // To compile: g++ -O2 fpaq1.cpp
 
+#include <cassert>
+#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
-#include <cassert>
-#include <cmath>
 namespace std {} // namespace std
 using namespace std;
 
-typedef unsigned int U32; // 32, 64 bit unsigned integer types
-typedef unsigned long long U64;
+using U32 = unsigned int; // 32, 64 bit unsigned integer types
+using U64 = unsigned long long;
 
 //////////////////////////// Predictor /////////////////////////
 
@@ -23,10 +23,10 @@ typedef unsigned long long U64;
 */
 
 class Predictor {
-  int cxt;        // Context: last 0-8 bits with a leading 1
+  int cxt{ 1 };   // Context: last 0-8 bits with a leading 1
   int ct[512][2]; // 0 and 1 counts in context cxt
 public:
-  Predictor() : cxt( 1 ) {
+  Predictor() {
     memset( ct, 0, sizeof( ct ) );
   }
 
@@ -72,12 +72,8 @@ public:
 
 // Constructor
 Encoder::Encoder( Mode m, FILE *f ) :
-    predictor(),
-    mode( m ),
-    archive( f ),
-    low( 0 ),
-    high( 0xffffffffffffffffLL ),
-    x( 0 ) {
+
+    mode( m ), archive( f ), low( 0 ), high( 0xffffffffffffffffLL ), x( 0 ) {
   // In DECOMPRESS mode, initialize x to the first 6 bytes of the archive
   if( mode == DECOMPRESS ) {
     for( int i = 0; i < 8; ++i ) {
@@ -141,10 +137,10 @@ int main( int argc, char **argv ) {
   clock_t start = clock();
 
   // Open files
-  FILE *in = fopen( argv[2], "rb" );
+  FILE *in = fopen( argv[2], "rbe" );
   if( in == nullptr )
     perror( argv[2] ), exit( 1 );
-  FILE *out = fopen( argv[3], "wb" );
+  FILE *out = fopen( argv[3], "wbe" );
   if( out == nullptr )
     perror( argv[3] ), exit( 1 );
   int c;

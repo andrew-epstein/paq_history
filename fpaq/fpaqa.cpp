@@ -57,9 +57,9 @@ void alloc( T *&p, int n ) {
 
 // return p = 1/(1 + exp(-d)), d scaled by 8 bits, p scaled by 12 bits
 int squash( int d ) {
-  static const int t[33] = {1,    2,    3,    6,    10,   16,   27,   45,   73,   120,  194,
-                            310,  488,  747,  1101, 1546, 2047, 2549, 2994, 3348, 3607, 3785,
-                            3901, 3975, 4022, 4050, 4068, 4079, 4085, 4089, 4092, 4093, 4094};
+  static const int t[33] = { 1,    2,    3,    6,    10,   16,   27,   45,   73,   120,  194,
+                             310,  488,  747,  1101, 1546, 2047, 2549, 2994, 3348, 3607, 3785,
+                             3901, 3975, 4022, 4050, 4068, 4079, 4085, 4089, 4092, 4093, 4094 };
   if( d > 2047 )
     return 4095;
   if( d < -2047 )
@@ -103,13 +103,13 @@ Stretch::Stretch() {
 
 class Predictor {
 private:
-  int cxt;             // Context: last 0-8 bits with a leading 1
+  int cxt{ 1 };        // Context: last 0-8 bits with a leading 1
   unsigned int t[512]; // Probability of 1
 
 public:
-  Predictor() : cxt( 1 ) {
-    for( int i = 0; i < 512; i++ )
-      t[i] = 32768;
+  Predictor() {
+    for( unsigned int &i: t )
+      i = 32768;
   }
 
   // Assume a stationary order 0 stream of 9-bit symbols
@@ -415,7 +415,7 @@ private:
   int ch;                          // Input byte (decompression)
 public:
   Encoder( Mode m, FILE *f );
-  void encode( int y ); // Compress bit y
+  void encode( int d ); // Compress bit y
   int decode();         // Uncompress and return bit y
   void flush();         // Call when done compressing
 };
@@ -454,7 +454,8 @@ Encoder::Encoder( Mode m, FILE *f ) : mode( m ), archive( f ), x( 0 ), n( 0 ), e
         int d = i & 1;
         int q = qinv[r] >> ( 12 - N );
         int k = 0;
-        int w = j + ( 1 << N ), x1 = 0;
+        int w = j + ( 1 << N );
+        int x1 = 0;
         while( k < 15 ) {
           assert( q > 0 );
           assert( ( 1 << N ) - q > 0 );
@@ -464,8 +465,8 @@ Encoder::Encoder( Mode m, FILE *f ) : mode( m ), archive( f ), x( 0 ), n( 0 ), e
             x1 = ( ( ( w + 1 ) << N ) - 1 ) / ( ( 1 << N ) - q );
           if( x1 < ( 2 << N ) )
             break;
-          else
-            w >>= 1, ++k;
+
+          w >>= 1, ++k;
         }
         enc[i][j] = k << 12 | x1 - ( 1 << N );
       }
@@ -608,10 +609,10 @@ int main( int argc, char **argv ) {
   clock_t start = clock();
 
   // Open files
-  FILE *in = fopen( argv[2], "rb" );
+  FILE *in = fopen( argv[2], "rbe" );
   if( in == nullptr )
     perror( argv[2] ), exit( 1 );
-  FILE *out = fopen( argv[3], "wb" );
+  FILE *out = fopen( argv[3], "wbe" );
   if( out == nullptr )
     perror( argv[3] ), exit( 1 );
   int c;

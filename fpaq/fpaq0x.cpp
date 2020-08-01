@@ -3,17 +3,17 @@
 // To compile: g++ -O fpaq0.cpp
 // modified 25.09.2006 by Francesco Antonio Nania (Italy - Sicilia - Merì (ME) )
 
+#include <cassert>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
-#include <cassert>
 
 namespace std {} // namespace std
 using namespace std;
 int cxt;                  // Context: last 0-8 bits with a leading 1
 int ct[65536][512][2];    // 0 and 1 counts in context cxt (256MB of memory)
-typedef unsigned int U32; // 32 bit type
+using U32 = unsigned int; // 32 bit type
 
 U32 rc, r1, r2;     //  old two bytes
 U32 x1, x2;         // Range, initially [0, 1), scaled by 2^32
@@ -181,10 +181,10 @@ int main( int argc, char **argv ) {
   clock_t start = clock();
 
   // Open files
-  FILE *in = fopen( argv[2], "rb" );
+  FILE *in = fopen( argv[2], "rbe" );
   if( in == nullptr )
     perror( argv[2] ), exit( 1 );
-  FILE *out = fopen( argv[3], "wb" );
+  FILE *out = fopen( argv[3], "wbe" );
   if( out == nullptr )
     perror( argv[3] ), exit( 1 );
   int c;

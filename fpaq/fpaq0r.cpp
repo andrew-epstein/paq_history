@@ -4,15 +4,15 @@
 // 15 April 2007 -- modified predictor to improve speed, Ilia Muraviev
 // 9 January 2008 -- speed and compression improved, Alexander Ratushnyak
 
+#include <cassert>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
-#include <cassert>
 namespace std {} // namespace std
 using namespace std;
 
-typedef unsigned int U32; // 32 bit type
+using U32 = unsigned int; // 32 bit type
 
 #define PSCALE 13
 
@@ -29,11 +29,11 @@ private:
   int p[256]; // Probability of 1
 
 public:
-  int cxt; // Context: last 0-7 bits with a leading 1
+  int cxt{ 1 }; // Context: last 0-7 bits with a leading 1
 
-  Predictor() : cxt( 1 ) {
-    for( int i = 0; i < 256; i++ )
-      p[i] = 1 << ( PSCALE - 1 );
+  Predictor() {
+    for( int &i: p )
+      i = 1 << ( PSCALE - 1 );
   }
 
   // Assume a stationary order 0 stream of 8-bit symbols
@@ -80,7 +80,7 @@ public:
 };
 
 // Constructor
-Encoder::Encoder( Mode m, FILE *f ) : mode( m ), archive( f ), x1( 0 ), x2( 0xffffffff ), x( 0 ), predictor() {
+Encoder::Encoder( Mode m, FILE *f ) : mode( m ), archive( f ), x1( 0 ), x2( 0xffffffff ), x( 0 ) {
   // In DECOMPRESS mode, initialize x to the first 4 bytes of the archive
   if( mode == DECOMPRESS ) {
     for( int i = 0; i < 4; ++i ) {
@@ -163,10 +163,10 @@ int main( int argc, char **argv ) {
   clock_t start = clock();
 
   // Open files
-  FILE *in = fopen( argv[2], "rb" );
+  FILE *in = fopen( argv[2], "rbe" );
   if( in == nullptr )
     perror( argv[2] ), exit( 1 );
-  FILE *out = fopen( argv[3], "wb" );
+  FILE *out = fopen( argv[3], "wbe" );
   if( out == nullptr )
     perror( argv[3] ), exit( 1 );
   unsigned long len;
@@ -192,7 +192,7 @@ int main( int argc, char **argv ) {
   else {
     fread( &len, sizeof( len ), 1, in );
     Encoder e( DECOMPRESS, in );
-    while( ( len-- ) != 0u ) {
+    while( ( len-- ) != 0U ) {
       int c = 1;
       while( c < 256 )
         c += c + e.decode();

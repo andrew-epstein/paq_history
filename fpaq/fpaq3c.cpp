@@ -2,15 +2,15 @@
 // (C) 2004, Matt Mahoney under GPL, http://www.gnu.org/licenses/gpl.txt
 // To compile: g++ -O fpaq0.cpp
 // 21/12/2006 modified by Nania Francesco Antonio (Italia - Merì (ME))
+#include <cassert>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
-#include <cassert>
 namespace std {} // namespace std
 using namespace std;
 
-typedef unsigned int U32; // 32 bit type
+using U32 = unsigned int; // 32 bit type
 
 unsigned long filesize, pos, control, maxsize, scanned;
 unsigned long rc[2], cc[2];       // Context: last 0-8 bits with a leading 1
@@ -29,8 +29,8 @@ void Pokeb( unsigned char *memory, unsigned char value ) {
 int p() {
   if( epix == 7 )
     return 4096 * ( cuf[cc[1]] + 1 ) / ( cuf[cc[1]] + cuf[cc[0]] + 2 );
-  else
-    return 4096 * ( buf[rc[1]] + 1 ) / ( buf[rc[1]] + buf[rc[0]] + 2 );
+
+  return 4096 * ( buf[rc[1]] + 1 ) / ( buf[rc[1]] + buf[rc[0]] + 2 );
 }
 
 void update( int y ) {
@@ -173,10 +173,10 @@ int main( int argc, char **argv ) {
   clock_t start = clock();
 
   // Open files
-  FILE *in = fopen( argv[2], "rb" );
+  FILE *in = fopen( argv[2], "rbe" );
   if( in == nullptr )
     perror( argv[2] ), exit( 1 );
-  FILE *out = fopen( argv[3], "wb" );
+  FILE *out = fopen( argv[3], "wbe" );
   if( out == nullptr )
     perror( argv[3] ), exit( 1 );
   int c;

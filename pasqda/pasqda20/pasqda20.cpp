@@ -2390,7 +2390,7 @@ int main( int argc, char **argv ) {
 
         if( f ) {
           if( exe && size > 0 ) {
-            int data2write[4] = {0, 0, 0, 0};
+            int data2write[4] = { 0, 0, 0, 0 };
 
             fclose( f );
             f = fopen( filename[i].c_str(), "rb" );
@@ -2519,7 +2519,7 @@ int main( int argc, char **argv ) {
         fsize = size - 513216;
 
         if( f && exe && size > 0 ) {
-          int data2write[4] = {0, 0, 0, 0};
+          int data2write[4] = { 0, 0, 0, 0 };
           FILE *fw = fopen( PAQ_TEMP, "wb" );
 
           fseek( f, 0L, SEEK_END );

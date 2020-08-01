@@ -625,12 +625,12 @@ modifyed bmp detection
 
 #define PROGNAME "paq8p2" // Please change this if you change the program.
 
+#include <ctype.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <math.h>
-#include <ctype.h>
 #define NDEBUG // remove for debugging (turns on Array bound checks)
 #include <assert.h>
 
@@ -650,9 +650,9 @@ modifyed bmp detection
 #endif
 
 // 8, 16, 32 bit unsigned types (adjust as appropriate)
-typedef unsigned char U8;
-typedef unsigned short U16;
-typedef unsigned int U32;
+using U8 = unsigned char;
+using U16 = unsigned short;
+using U32 = unsigned int;
 
 // min, max functions
 #ifndef WINDOWS
@@ -694,8 +694,8 @@ int equals( const char *a, const char *b ) {
 
 // Track time and memory used
 class ProgramChecker {
-  int memused;        // bytes allocated by Array<T> now
-  int maxmem;         // most bytes allocated ever
+  int memused{ 0 };   // bytes allocated by Array<T> now
+  int maxmem{ 0 };    // most bytes allocated ever
   clock_t start_time; // in ticks
 public:
   void alloc( int n ) { // report memory allocated, may be negative
@@ -703,7 +703,7 @@ public:
     if( memused > maxmem )
       maxmem = memused;
   }
-  ProgramChecker() : memused( 0 ), maxmem( 0 ) {
+  ProgramChecker() {
     start_time = clock();
     assert( sizeof( U8 ) == 1 );
     assert( sizeof( U16 ) == 2 );
@@ -765,8 +765,8 @@ public:
   }                             // decrement size
   void push_back( const T &x ); // increment size, append x
 private:
-  Array( const Array & ); // no copy or assignment
-  Array &operator=( const Array & );
+  Array( const Array & ) = delete; // no copy or assignment
+  Array &operator=( const Array & ) = delete;
 };
 
 template <class T, int ALIGN>
@@ -949,10 +949,10 @@ Ilog::Ilog() : t( 65536 ) {
 inline int llog( U32 x ) {
   if( x >= 0x1000000 )
     return 256 + ilog( x >> 16 );
-  else if( x >= 0x10000 )
+  if( x >= 0x10000 )
     return 128 + ilog( x >> 8 );
-  else
-    return ilog( x );
+
+  return ilog( x );
 }
 
 ///////////////////////// state table ////////////////////////
@@ -977,70 +977,70 @@ inline int llog( U32 x ) {
 
 #if 1 // change to #if 0 to generate this table at run time (4% slower)
 static const U8 State_table[256][4] = {
-    {1, 2, 0, 0},      {3, 5, 1, 0},      {4, 6, 0, 1},      {7, 10, 2, 0},     // 0-3
-    {8, 12, 1, 1},     {9, 13, 1, 1},     {11, 14, 0, 2},    {15, 19, 3, 0},    // 4-7
-    {16, 23, 2, 1},    {17, 24, 2, 1},    {18, 25, 2, 1},    {20, 27, 1, 2},    // 8-11
-    {21, 28, 1, 2},    {22, 29, 1, 2},    {26, 30, 0, 3},    {31, 33, 4, 0},    // 12-15
-    {32, 35, 3, 1},    {32, 35, 3, 1},    {32, 35, 3, 1},    {32, 35, 3, 1},    // 16-19
-    {34, 37, 2, 2},    {34, 37, 2, 2},    {34, 37, 2, 2},    {34, 37, 2, 2},    // 20-23
-    {34, 37, 2, 2},    {34, 37, 2, 2},    {36, 39, 1, 3},    {36, 39, 1, 3},    // 24-27
-    {36, 39, 1, 3},    {36, 39, 1, 3},    {38, 40, 0, 4},    {41, 43, 5, 0},    // 28-31
-    {42, 45, 4, 1},    {42, 45, 4, 1},    {44, 47, 3, 2},    {44, 47, 3, 2},    // 32-35
-    {46, 49, 2, 3},    {46, 49, 2, 3},    {48, 51, 1, 4},    {48, 51, 1, 4},    // 36-39
-    {50, 52, 0, 5},    {53, 43, 6, 0},    {54, 57, 5, 1},    {54, 57, 5, 1},    // 40-43
-    {56, 59, 4, 2},    {56, 59, 4, 2},    {58, 61, 3, 3},    {58, 61, 3, 3},    // 44-47
-    {60, 63, 2, 4},    {60, 63, 2, 4},    {62, 65, 1, 5},    {62, 65, 1, 5},    // 48-51
-    {50, 66, 0, 6},    {67, 55, 7, 0},    {68, 57, 6, 1},    {68, 57, 6, 1},    // 52-55
-    {70, 73, 5, 2},    {70, 73, 5, 2},    {72, 75, 4, 3},    {72, 75, 4, 3},    // 56-59
-    {74, 77, 3, 4},    {74, 77, 3, 4},    {76, 79, 2, 5},    {76, 79, 2, 5},    // 60-63
-    {62, 81, 1, 6},    {62, 81, 1, 6},    {64, 82, 0, 7},    {83, 69, 8, 0},    // 64-67
-    {84, 71, 7, 1},    {84, 71, 7, 1},    {86, 73, 6, 2},    {86, 73, 6, 2},    // 68-71
-    {44, 59, 5, 3},    {44, 59, 5, 3},    {58, 61, 4, 4},    {58, 61, 4, 4},    // 72-75
-    {60, 49, 3, 5},    {60, 49, 3, 5},    {76, 89, 2, 6},    {76, 89, 2, 6},    // 76-79
-    {78, 91, 1, 7},    {78, 91, 1, 7},    {80, 92, 0, 8},    {93, 69, 9, 0},    // 80-83
-    {94, 87, 8, 1},    {94, 87, 8, 1},    {96, 45, 7, 2},    {96, 45, 7, 2},    // 84-87
-    {48, 99, 2, 7},    {48, 99, 2, 7},    {88, 101, 1, 8},   {88, 101, 1, 8},   // 88-91
-    {80, 102, 0, 9},   {103, 69, 10, 0},  {104, 87, 9, 1},   {104, 87, 9, 1},   // 92-95
-    {106, 57, 8, 2},   {106, 57, 8, 2},   {62, 109, 2, 8},   {62, 109, 2, 8},   // 96-99
-    {88, 111, 1, 9},   {88, 111, 1, 9},   {80, 112, 0, 10},  {113, 85, 11, 0},  // 100-103
-    {114, 87, 10, 1},  {114, 87, 10, 1},  {116, 57, 9, 2},   {116, 57, 9, 2},   // 104-107
-    {62, 119, 2, 9},   {62, 119, 2, 9},   {88, 121, 1, 10},  {88, 121, 1, 10},  // 108-111
-    {90, 122, 0, 11},  {123, 85, 12, 0},  {124, 97, 11, 1},  {124, 97, 11, 1},  // 112-115
-    {126, 57, 10, 2},  {126, 57, 10, 2},  {62, 129, 2, 10},  {62, 129, 2, 10},  // 116-119
-    {98, 131, 1, 11},  {98, 131, 1, 11},  {90, 132, 0, 12},  {133, 85, 13, 0},  // 120-123
-    {134, 97, 12, 1},  {134, 97, 12, 1},  {136, 57, 11, 2},  {136, 57, 11, 2},  // 124-127
-    {62, 139, 2, 11},  {62, 139, 2, 11},  {98, 141, 1, 12},  {98, 141, 1, 12},  // 128-131
-    {90, 142, 0, 13},  {143, 95, 14, 0},  {144, 97, 13, 1},  {144, 97, 13, 1},  // 132-135
-    {68, 57, 12, 2},   {68, 57, 12, 2},   {62, 81, 2, 12},   {62, 81, 2, 12},   // 136-139
-    {98, 147, 1, 13},  {98, 147, 1, 13},  {100, 148, 0, 14}, {149, 95, 15, 0},  // 140-143
-    {150, 107, 14, 1}, {150, 107, 14, 1}, {108, 151, 1, 14}, {108, 151, 1, 14}, // 144-147
-    {100, 152, 0, 15}, {153, 95, 16, 0},  {154, 107, 15, 1}, {108, 155, 1, 15}, // 148-151
-    {100, 156, 0, 16}, {157, 95, 17, 0},  {158, 107, 16, 1}, {108, 159, 1, 16}, // 152-155
-    {100, 160, 0, 17}, {161, 105, 18, 0}, {162, 107, 17, 1}, {108, 163, 1, 17}, // 156-159
-    {110, 164, 0, 18}, {165, 105, 19, 0}, {166, 117, 18, 1}, {118, 167, 1, 18}, // 160-163
-    {110, 168, 0, 19}, {169, 105, 20, 0}, {170, 117, 19, 1}, {118, 171, 1, 19}, // 164-167
-    {110, 172, 0, 20}, {173, 105, 21, 0}, {174, 117, 20, 1}, {118, 175, 1, 20}, // 168-171
-    {110, 176, 0, 21}, {177, 105, 22, 0}, {178, 117, 21, 1}, {118, 179, 1, 21}, // 172-175
-    {110, 180, 0, 22}, {181, 115, 23, 0}, {182, 117, 22, 1}, {118, 183, 1, 22}, // 176-179
-    {120, 184, 0, 23}, {185, 115, 24, 0}, {186, 127, 23, 1}, {128, 187, 1, 23}, // 180-183
-    {120, 188, 0, 24}, {189, 115, 25, 0}, {190, 127, 24, 1}, {128, 191, 1, 24}, // 184-187
-    {120, 192, 0, 25}, {193, 115, 26, 0}, {194, 127, 25, 1}, {128, 195, 1, 25}, // 188-191
-    {120, 196, 0, 26}, {197, 115, 27, 0}, {198, 127, 26, 1}, {128, 199, 1, 26}, // 192-195
-    {120, 200, 0, 27}, {201, 115, 28, 0}, {202, 127, 27, 1}, {128, 203, 1, 27}, // 196-199
-    {120, 204, 0, 28}, {205, 115, 29, 0}, {206, 127, 28, 1}, {128, 207, 1, 28}, // 200-203
-    {120, 208, 0, 29}, {209, 125, 30, 0}, {210, 127, 29, 1}, {128, 211, 1, 29}, // 204-207
-    {130, 212, 0, 30}, {213, 125, 31, 0}, {214, 137, 30, 1}, {138, 215, 1, 30}, // 208-211
-    {130, 216, 0, 31}, {217, 125, 32, 0}, {218, 137, 31, 1}, {138, 219, 1, 31}, // 212-215
-    {130, 220, 0, 32}, {221, 125, 33, 0}, {222, 137, 32, 1}, {138, 223, 1, 32}, // 216-219
-    {130, 224, 0, 33}, {225, 125, 34, 0}, {226, 137, 33, 1}, {138, 227, 1, 33}, // 220-223
-    {130, 228, 0, 34}, {229, 125, 35, 0}, {230, 137, 34, 1}, {138, 231, 1, 34}, // 224-227
-    {130, 232, 0, 35}, {233, 125, 36, 0}, {234, 137, 35, 1}, {138, 235, 1, 35}, // 228-231
-    {130, 236, 0, 36}, {237, 125, 37, 0}, {238, 137, 36, 1}, {138, 239, 1, 36}, // 232-235
-    {130, 240, 0, 37}, {241, 125, 38, 0}, {242, 137, 37, 1}, {138, 243, 1, 37}, // 236-239
-    {130, 244, 0, 38}, {245, 135, 39, 0}, {246, 137, 38, 1}, {138, 247, 1, 38}, // 240-243
-    {140, 248, 0, 39}, {249, 135, 40, 0}, {250, 69, 39, 1},  {80, 251, 1, 39},  // 244-247
-    {140, 252, 0, 40}, {249, 135, 41, 0}, {250, 69, 40, 1},  {80, 251, 1, 40},  // 248-251
-    {140, 252, 0, 41}};                                                         // 252, 253-255 are reserved
+    { 1, 2, 0, 0 },      { 3, 5, 1, 0 },      { 4, 6, 0, 1 },      { 7, 10, 2, 0 },     // 0-3
+    { 8, 12, 1, 1 },     { 9, 13, 1, 1 },     { 11, 14, 0, 2 },    { 15, 19, 3, 0 },    // 4-7
+    { 16, 23, 2, 1 },    { 17, 24, 2, 1 },    { 18, 25, 2, 1 },    { 20, 27, 1, 2 },    // 8-11
+    { 21, 28, 1, 2 },    { 22, 29, 1, 2 },    { 26, 30, 0, 3 },    { 31, 33, 4, 0 },    // 12-15
+    { 32, 35, 3, 1 },    { 32, 35, 3, 1 },    { 32, 35, 3, 1 },    { 32, 35, 3, 1 },    // 16-19
+    { 34, 37, 2, 2 },    { 34, 37, 2, 2 },    { 34, 37, 2, 2 },    { 34, 37, 2, 2 },    // 20-23
+    { 34, 37, 2, 2 },    { 34, 37, 2, 2 },    { 36, 39, 1, 3 },    { 36, 39, 1, 3 },    // 24-27
+    { 36, 39, 1, 3 },    { 36, 39, 1, 3 },    { 38, 40, 0, 4 },    { 41, 43, 5, 0 },    // 28-31
+    { 42, 45, 4, 1 },    { 42, 45, 4, 1 },    { 44, 47, 3, 2 },    { 44, 47, 3, 2 },    // 32-35
+    { 46, 49, 2, 3 },    { 46, 49, 2, 3 },    { 48, 51, 1, 4 },    { 48, 51, 1, 4 },    // 36-39
+    { 50, 52, 0, 5 },    { 53, 43, 6, 0 },    { 54, 57, 5, 1 },    { 54, 57, 5, 1 },    // 40-43
+    { 56, 59, 4, 2 },    { 56, 59, 4, 2 },    { 58, 61, 3, 3 },    { 58, 61, 3, 3 },    // 44-47
+    { 60, 63, 2, 4 },    { 60, 63, 2, 4 },    { 62, 65, 1, 5 },    { 62, 65, 1, 5 },    // 48-51
+    { 50, 66, 0, 6 },    { 67, 55, 7, 0 },    { 68, 57, 6, 1 },    { 68, 57, 6, 1 },    // 52-55
+    { 70, 73, 5, 2 },    { 70, 73, 5, 2 },    { 72, 75, 4, 3 },    { 72, 75, 4, 3 },    // 56-59
+    { 74, 77, 3, 4 },    { 74, 77, 3, 4 },    { 76, 79, 2, 5 },    { 76, 79, 2, 5 },    // 60-63
+    { 62, 81, 1, 6 },    { 62, 81, 1, 6 },    { 64, 82, 0, 7 },    { 83, 69, 8, 0 },    // 64-67
+    { 84, 71, 7, 1 },    { 84, 71, 7, 1 },    { 86, 73, 6, 2 },    { 86, 73, 6, 2 },    // 68-71
+    { 44, 59, 5, 3 },    { 44, 59, 5, 3 },    { 58, 61, 4, 4 },    { 58, 61, 4, 4 },    // 72-75
+    { 60, 49, 3, 5 },    { 60, 49, 3, 5 },    { 76, 89, 2, 6 },    { 76, 89, 2, 6 },    // 76-79
+    { 78, 91, 1, 7 },    { 78, 91, 1, 7 },    { 80, 92, 0, 8 },    { 93, 69, 9, 0 },    // 80-83
+    { 94, 87, 8, 1 },    { 94, 87, 8, 1 },    { 96, 45, 7, 2 },    { 96, 45, 7, 2 },    // 84-87
+    { 48, 99, 2, 7 },    { 48, 99, 2, 7 },    { 88, 101, 1, 8 },   { 88, 101, 1, 8 },   // 88-91
+    { 80, 102, 0, 9 },   { 103, 69, 10, 0 },  { 104, 87, 9, 1 },   { 104, 87, 9, 1 },   // 92-95
+    { 106, 57, 8, 2 },   { 106, 57, 8, 2 },   { 62, 109, 2, 8 },   { 62, 109, 2, 8 },   // 96-99
+    { 88, 111, 1, 9 },   { 88, 111, 1, 9 },   { 80, 112, 0, 10 },  { 113, 85, 11, 0 },  // 100-103
+    { 114, 87, 10, 1 },  { 114, 87, 10, 1 },  { 116, 57, 9, 2 },   { 116, 57, 9, 2 },   // 104-107
+    { 62, 119, 2, 9 },   { 62, 119, 2, 9 },   { 88, 121, 1, 10 },  { 88, 121, 1, 10 },  // 108-111
+    { 90, 122, 0, 11 },  { 123, 85, 12, 0 },  { 124, 97, 11, 1 },  { 124, 97, 11, 1 },  // 112-115
+    { 126, 57, 10, 2 },  { 126, 57, 10, 2 },  { 62, 129, 2, 10 },  { 62, 129, 2, 10 },  // 116-119
+    { 98, 131, 1, 11 },  { 98, 131, 1, 11 },  { 90, 132, 0, 12 },  { 133, 85, 13, 0 },  // 120-123
+    { 134, 97, 12, 1 },  { 134, 97, 12, 1 },  { 136, 57, 11, 2 },  { 136, 57, 11, 2 },  // 124-127
+    { 62, 139, 2, 11 },  { 62, 139, 2, 11 },  { 98, 141, 1, 12 },  { 98, 141, 1, 12 },  // 128-131
+    { 90, 142, 0, 13 },  { 143, 95, 14, 0 },  { 144, 97, 13, 1 },  { 144, 97, 13, 1 },  // 132-135
+    { 68, 57, 12, 2 },   { 68, 57, 12, 2 },   { 62, 81, 2, 12 },   { 62, 81, 2, 12 },   // 136-139
+    { 98, 147, 1, 13 },  { 98, 147, 1, 13 },  { 100, 148, 0, 14 }, { 149, 95, 15, 0 },  // 140-143
+    { 150, 107, 14, 1 }, { 150, 107, 14, 1 }, { 108, 151, 1, 14 }, { 108, 151, 1, 14 }, // 144-147
+    { 100, 152, 0, 15 }, { 153, 95, 16, 0 },  { 154, 107, 15, 1 }, { 108, 155, 1, 15 }, // 148-151
+    { 100, 156, 0, 16 }, { 157, 95, 17, 0 },  { 158, 107, 16, 1 }, { 108, 159, 1, 16 }, // 152-155
+    { 100, 160, 0, 17 }, { 161, 105, 18, 0 }, { 162, 107, 17, 1 }, { 108, 163, 1, 17 }, // 156-159
+    { 110, 164, 0, 18 }, { 165, 105, 19, 0 }, { 166, 117, 18, 1 }, { 118, 167, 1, 18 }, // 160-163
+    { 110, 168, 0, 19 }, { 169, 105, 20, 0 }, { 170, 117, 19, 1 }, { 118, 171, 1, 19 }, // 164-167
+    { 110, 172, 0, 20 }, { 173, 105, 21, 0 }, { 174, 117, 20, 1 }, { 118, 175, 1, 20 }, // 168-171
+    { 110, 176, 0, 21 }, { 177, 105, 22, 0 }, { 178, 117, 21, 1 }, { 118, 179, 1, 21 }, // 172-175
+    { 110, 180, 0, 22 }, { 181, 115, 23, 0 }, { 182, 117, 22, 1 }, { 118, 183, 1, 22 }, // 176-179
+    { 120, 184, 0, 23 }, { 185, 115, 24, 0 }, { 186, 127, 23, 1 }, { 128, 187, 1, 23 }, // 180-183
+    { 120, 188, 0, 24 }, { 189, 115, 25, 0 }, { 190, 127, 24, 1 }, { 128, 191, 1, 24 }, // 184-187
+    { 120, 192, 0, 25 }, { 193, 115, 26, 0 }, { 194, 127, 25, 1 }, { 128, 195, 1, 25 }, // 188-191
+    { 120, 196, 0, 26 }, { 197, 115, 27, 0 }, { 198, 127, 26, 1 }, { 128, 199, 1, 26 }, // 192-195
+    { 120, 200, 0, 27 }, { 201, 115, 28, 0 }, { 202, 127, 27, 1 }, { 128, 203, 1, 27 }, // 196-199
+    { 120, 204, 0, 28 }, { 205, 115, 29, 0 }, { 206, 127, 28, 1 }, { 128, 207, 1, 28 }, // 200-203
+    { 120, 208, 0, 29 }, { 209, 125, 30, 0 }, { 210, 127, 29, 1 }, { 128, 211, 1, 29 }, // 204-207
+    { 130, 212, 0, 30 }, { 213, 125, 31, 0 }, { 214, 137, 30, 1 }, { 138, 215, 1, 30 }, // 208-211
+    { 130, 216, 0, 31 }, { 217, 125, 32, 0 }, { 218, 137, 31, 1 }, { 138, 219, 1, 31 }, // 212-215
+    { 130, 220, 0, 32 }, { 221, 125, 33, 0 }, { 222, 137, 32, 1 }, { 138, 223, 1, 32 }, // 216-219
+    { 130, 224, 0, 33 }, { 225, 125, 34, 0 }, { 226, 137, 33, 1 }, { 138, 227, 1, 33 }, // 220-223
+    { 130, 228, 0, 34 }, { 229, 125, 35, 0 }, { 230, 137, 34, 1 }, { 138, 231, 1, 34 }, // 224-227
+    { 130, 232, 0, 35 }, { 233, 125, 36, 0 }, { 234, 137, 35, 1 }, { 138, 235, 1, 35 }, // 228-231
+    { 130, 236, 0, 36 }, { 237, 125, 37, 0 }, { 238, 137, 36, 1 }, { 138, 239, 1, 36 }, // 232-235
+    { 130, 240, 0, 37 }, { 241, 125, 38, 0 }, { 242, 137, 37, 1 }, { 138, 243, 1, 37 }, // 236-239
+    { 130, 244, 0, 38 }, { 245, 135, 39, 0 }, { 246, 137, 38, 1 }, { 138, 247, 1, 38 }, // 240-243
+    { 140, 248, 0, 39 }, { 249, 135, 40, 0 }, { 250, 69, 39, 1 },  { 80, 251, 1, 39 },  // 244-247
+    { 140, 252, 0, 40 }, { 249, 135, 41, 0 }, { 250, 69, 40, 1 },  { 80, 251, 1, 40 },  // 248-251
+    { 140, 252, 0, 41 } };                                                              // 252, 253-255 are reserved
 
 #  define nex( state, sel ) State_table[state][sel]
 
@@ -1064,7 +1064,7 @@ public:
   StateTable();
 } nex;
 
-const int StateTable::b[B] = {42, 41, 13, 6, 5}; // x -> max y, y -> max x
+const int StateTable::b[B] = { 42, 41, 13, 6, 5 }; // x -> max y, y -> max x
 U8 StateTable::t[N][N][2];
 
 int StateTable::num_states( int x, int y ) {
@@ -1189,9 +1189,9 @@ StateTable::StateTable() : ns( 1024 ) {
 
 // return p = 1/(1 + exp(-d)), d scaled by 8 bits, p scaled by 12 bits
 int squash( int d ) {
-  static const int t[33] = {1,    2,    3,    6,    10,   16,   27,   45,   73,   120,  194,
-                            310,  488,  747,  1101, 1546, 2047, 2549, 2994, 3348, 3607, 3785,
-                            3901, 3975, 4022, 4050, 4068, 4079, 4085, 4089, 4092, 4093, 4094};
+  static const int t[33] = { 1,    2,    3,    6,    10,   16,   27,   45,   73,   120,  194,
+                             310,  488,  747,  1101, 1546, 2047, 2549, 2994, 3348, 3607, 3785,
+                             3901, 3975, 4022, 4050, 4068, 4079, 4085, 4089, 4092, 4093, 4094 };
   if( d > 2047 )
     return 4095;
   if( d < -2047 )
@@ -1334,9 +1334,8 @@ public:
       }
       mp->set( 0, 1 );
       return mp->p();
-    } else { // S=1 context
-      return pr[0] = squash( dot_product( &tx[0], &wx[0], nx ) >> 8 );
-    }
+    } // S=1 context
+    return pr[0] = squash( dot_product( &tx[0], &wx[0], nx ) >> 8 );
   }
   ~Mixer();
 };
@@ -1418,12 +1417,14 @@ static int dt[1024]; // i -> 16K/(i+3)
 class StateMap {
 protected:
   const int N;  // Number of contexts
-  int cxt;      // Context of last prediction
+  int cxt{ 0 }; // Context of last prediction
   Array<U32> t; // cxt -> prediction in high 22 bits, count in low 10 bits
   inline void update( int limit ) {
     assert( cxt >= 0 && cxt < N );
-    U32 *p = &t[cxt], p0 = p[0];
-    int n = p0 & 1023, pr = p0 >> 10; // count, prediction
+    U32 *p = &t[cxt];
+    U32 p0 = p[0];
+    int n = p0 & 1023;
+    int pr = p0 >> 10; // count, prediction
     if( n < limit )
       ++p0;
     else
@@ -1445,7 +1446,7 @@ public:
   }
 };
 
-StateMap::StateMap( int n ) : N( n ), cxt( 0 ), t( n ) {
+StateMap::StateMap( int n ) : N( n ), t( n ) {
   for( int i = 0; i < N; ++i )
     t[i] = 1 << 31;
 }
@@ -1490,7 +1491,7 @@ APM::APM( int n ) : StateMap( n * 24 ) {
 
 // Hash 2-5 ints.
 inline U32 hash( U32 a, U32 b, U32 c = 0xffffffff, U32 d = 0xffffffff, U32 e = 0xffffffff ) {
-  U32 h = a * 200002979u + b * 30005491u + c * 50004239u + d * 70004807u + e * 110002499u;
+  U32 h = a * 200002979U + b * 30005491U + c * 50004239U + d * 70004807U + e * 110002499U;
   return h ^ h >> 9 ^ a >> 2 ^ b >> 3 ^ c >> 4 ^ d >> 5 ^ e >> 6;
 }
 
@@ -1625,8 +1626,8 @@ public:
   int p() { // predict next bit
     if( ( cp[1] + 256 ) >> ( 8 - bpos ) == c0 )
       return ( ( cp[1] >> ( 7 - bpos ) & 1 ) * 2 - 1 ) * ilog( cp[0] + 1 ) * 8;
-    else
-      return 0;
+
+    return 0;
   }
   int mix( Mixer &m ) { // return run length
     m.add( p() );
@@ -1737,7 +1738,8 @@ public:
 inline U8 *ContextMap::E::get( U16 ch ) {
   if( chk[last & 15] == ch )
     return &bh[last & 15][0];
-  int b = 0xffff, bi = 0;
+  int b = 0xffff;
+  int bi = 0;
   for( int i = 0; i < 7; ++i ) {
     if( chk[i] == ch )
       return last = last << 4 | i, ( U8 * ) &bh[i][0];
@@ -1783,7 +1785,7 @@ int ContextMap::mix1( Mixer &m, int cc, int bp, int c1, int y1 ) {
       assert( cp[i] >= &t[0].bh[0][0] && cp[i] <= &t[t.size() - 1].bh[6][6] );
       assert( ( long( cp[i] ) & 63 ) >= 15 );
       int ns = nex( *cp[i], y1 );
-      if( ns >= 204 && ( ( rnd() << ( ( 452 - ns ) >> 3 ) ) != 0u ) )
+      if( ns >= 204 && ( ( rnd() << ( ( 452 - ns ) >> 3 ) ) != 0U ) )
         ns -= 4; // probabilistic increment
       *cp[i] = ns;
     }
@@ -1924,7 +1926,10 @@ int matchModel( Mixer &m ) {
 // into m.
 
 void picModel( Mixer &m ) {
-  static U32 r0, r1, r2, r3;     // last 4 rows, bit 8 is over current pixel
+  static U32 r0;
+  static U32 r1;
+  static U32 r2;
+  static U32 r3;                 // last 4 rows, bit 8 is over current pixel
   static Array<U8> t( 0x10200 ); // model: cxt -> state
   const int N = 3;               // number of contexts
   static int cxt[N];             // contexts
@@ -1955,16 +1960,22 @@ void picModel( Mixer &m ) {
 static U32 frstchar = 0, spafdo = 0, spaces = 0, spacecount = 0, words = 0, wordcount = 0;
 
 void wordModel( Mixer &m ) {
-  static U32 word0 = 0, word1 = 0, word2 = 0, word3 = 0, word4 = 0, word5 = 0; // hashes
-  static U32 text0 = 0;                                                        // hash stream of letters
+  static U32 word0 = 0;
+  static U32 word1 = 0;
+  static U32 word2 = 0;
+  static U32 word3 = 0;
+  static U32 word4 = 0;
+  static U32 word5 = 0; // hashes
+  static U32 text0 = 0; // hash stream of letters
   static ContextMap cm( MEM * 16, 20 + 3 + 3 + 6 + 1 + 1 + 1 + 1 - 1 );
-  static int nl1 = -3, nl = -2; // previous, current newline position
+  static int nl1 = -3;
+  static int nl = -2; // previous, current newline position
   // Update word hashes
   if( bpos == 0 ) {
     int c = c4 & 255;
-    if( ( spaces & 0x80000000 ) != 0u )
+    if( ( spaces & 0x80000000 ) != 0U )
       --spacecount;
-    if( ( words & 0x80000000 ) != 0u )
+    if( ( words & 0x80000000 ) != 0U )
       --wordcount;
     spaces = spaces * 2;
     words = words * 2;
@@ -1975,7 +1986,7 @@ void wordModel( Mixer &m ) {
       ++words, ++wordcount;
       word0 = word0 * 263 * 32 + c;
       text0 = text0 * 997 * 16 + c;
-    } else if( word0 != 0u ) {
+    } else if( word0 != 0U ) {
       word5 = word4 * 23;
       word4 = word3 * 19;
       word3 = word2 * 17;
@@ -1995,7 +2006,8 @@ void wordModel( Mixer &m ) {
       if( c == 10 )
         nl1 = nl, nl = pos - 1;
     }
-    int col = min( 255, pos - nl ), above = buf[nl1 + col]; // text column context
+    int col = min( 255, pos - nl );
+    int above = buf[nl1 + col]; // text column context
     if( col <= 2 ) {
       if( col == 2 )
         frstchar = min( c, 96 );
@@ -2055,15 +2067,26 @@ void wordModel( Mixer &m ) {
 // that include the distance to the last match.
 
 void recordModel( Mixer &m ) {
-  static int cpos1[256], cpos2[256], cpos3[256], cpos4[256];
-  static int wpos1[0x10000];                 // buf(1..2) -> last position
-  static int rlen = 2, rlen1 = 3, rlen2 = 4; // run length and 2 candidates
-  static int rcount1 = 0, rcount2 = 0;       // candidate counts
-  static ContextMap cm( 32768, 3 ), cn( 32768 / 2, 3 ), co( 32768 * 2, 3 ), cp( MEM, 3 );
+  static int cpos1[256];
+  static int cpos2[256];
+  static int cpos3[256];
+  static int cpos4[256];
+  static int wpos1[0x10000]; // buf(1..2) -> last position
+  static int rlen = 2;
+  static int rlen1 = 3;
+  static int rlen2 = 4; // run length and 2 candidates
+  static int rcount1 = 0;
+  static int rcount2 = 0; // candidate counts
+  static ContextMap cm( 32768, 3 );
+  static ContextMap cn( 32768 / 2, 3 );
+  static ContextMap co( 32768 * 2, 3 );
+  static ContextMap cp( MEM, 3 );
 
   // Find record length
   if( bpos == 0 ) {
-    int w = c4 & 0xffff, c = w & 255, d = w >> 8;
+    int w = c4 & 0xffff;
+    int c = w & 255;
+    int d = w >> 8;
 #if 1
     int r = pos - cpos1[c];
     if( r > 1 && r == cpos1[c] - cpos2[c] && r == cpos2[c] - cpos3[c] && r == cpos3[c] - cpos4[c]
@@ -2155,18 +2178,29 @@ void sparseModel( Mixer &m, int seenbefore, int howmany ) {
     }
 
     int fl = 0;
-    if( ( ( c4 & ( static_cast<unsigned int>( 0xff ) != 0 ) != 0u ) ) ) {
+    if( ( ( c4
+            & static_cast<unsigned int>( static_cast<unsigned int>( static_cast<unsigned int>( 0xff ) != 0 ) != 0U ) ) )
+        != 0U ) {
       if( isalpha( c4 & 0xff ) != 0 )
         fl = 1;
       else if( ispunct( c4 & 0xff ) != 0 )
         fl = 2;
       else if( isspace( c4 & 0xff ) != 0 )
         fl = 3;
-      else if( ( ( c4 & ( static_cast<unsigned int>( 0xff ) == 0xff ) != 0u ) ) )
+      else if( ( ( c4
+                   & static_cast<unsigned int>( static_cast<unsigned int>( static_cast<unsigned int>( 0xff ) == 0xff )
+                                                != 0U ) ) )
+               != 0U )
         fl = 4;
-      else if( ( ( c4 & ( static_cast<unsigned int>( 0xff ) < 16 ) != 0u ) ) )
+      else if( ( ( c4
+                   & static_cast<unsigned int>( static_cast<unsigned int>( static_cast<unsigned int>( 0xff ) < 16 )
+                                                != 0U ) ) )
+               != 0U )
         fl = 5;
-      else if( ( ( c4 & ( static_cast<unsigned int>( 0xff ) < 64 ) != 0u ) ) )
+      else if( ( ( c4
+                   & static_cast<unsigned int>( static_cast<unsigned int>( static_cast<unsigned int>( 0xff ) < 64 )
+                                                != 0U ) ) )
+               != 0U )
         fl = 6;
       else
         fl = 7;
@@ -2186,7 +2220,9 @@ void sparseModel( Mixer &m, int seenbefore, int howmany ) {
 void distanceModel( Mixer &m ) {
   static ContextMap cr( MEM, 3 );
   if( bpos == 0 ) {
-    static int pos00 = 0, pos20 = 0, posnl = 0;
+    static int pos00 = 0;
+    static int pos20 = 0;
+    static int posnl = 0;
     int c = c4 & 0xff;
     if( c == 0x00 )
       pos00 = pos;
@@ -2211,8 +2247,17 @@ inline int sqrbuf( int i ) {
 }
 void model24bit( Mixer &m, int w = 0 ) {
   const int SC = 0x20000;
-  static SmallStationaryContextMap scm1( SC ), scm2( SC ), scm3( SC ), scm4( SC ), scm5( SC ), scm6( SC ), scm7( SC ),
-      scm8( SC ), scm9( SC ), scm10( SC * 2 ), scm11( SC );
+  static SmallStationaryContextMap scm1( SC );
+  static SmallStationaryContextMap scm2( SC );
+  static SmallStationaryContextMap scm3( SC );
+  static SmallStationaryContextMap scm4( SC );
+  static SmallStationaryContextMap scm5( SC );
+  static SmallStationaryContextMap scm6( SC );
+  static SmallStationaryContextMap scm7( SC );
+  static SmallStationaryContextMap scm8( SC );
+  static SmallStationaryContextMap scm9( SC );
+  static SmallStationaryContextMap scm10( SC * 2 );
+  static SmallStationaryContextMap scm11( SC );
   static ContextMap cm( MEM * 4, 10 );
 
   // Select nearby pixels as context
@@ -2303,10 +2348,13 @@ int bmpModel( Mixer &m ) {
       tiff = pos; // Intel format only
     if( pos - tiff == 4 && c4 != 0x08000000 )
       tiff = 0;                                 // 8=normal offset to directory
-    if( ( tiff != 0u ) && pos - tiff == 200 ) { // most of directory should be read by now
+    if( ( tiff != 0U ) && pos - tiff == 200 ) { // most of directory should be read by now
       int dirsize = i2( pos - tiff - 4 );       // number of 12-byte directory entries
       w = 0;
-      int bpp = 0, compression = 0, width = 0, height = 0;
+      int bpp = 0;
+      int compression = 0;
+      int width = 0;
+      int height = 0;
       for( int i = tiff + 6; i < pos - 12 && --dirsize > 0; i += 12 ) {
         int tag = i2( pos - i );        // 256=width, 257==height, 259: 1=no compression
                                         // 277=3 samples/pixel
@@ -2347,13 +2395,14 @@ int bmpModel( Mixer &m ) {
 // Return width in pixels if an image file is detected, else 0.
 
 int ppmModel( Mixer &m ) {
-  static int h = 0;         // height of image in bytes (pixels)
-  static int w = 0, w1 = 0; // width of image in bytes (pixels)
-  static int eoi = 0;       // end of image
-  static int ppm = 0;       // offset of pgm header
-  static int ppm_hdr[3];    // 0 - Width, 1 - Height, 2 - Max value
-  static int ppm_ptr;       // which record in header should be parsed next
-  int isws;                 // is white space
+  static int h = 0; // height of image in bytes (pixels)
+  static int w = 0;
+  static int w1 = 0;     // width of image in bytes (pixels)
+  static int eoi = 0;    // end of image
+  static int ppm = 0;    // offset of pgm header
+  static int ppm_hdr[3]; // 0 - Width, 1 - Height, 2 - Max value
+  static int ppm_ptr;    // which record in header should be parsed next
+  int isws;              // is white space
   char v_buf[32];
   int v_ptr;
   if( ( bpos == 0 ) && ( pos > eoi ) ) {
@@ -2361,8 +2410,9 @@ int ppmModel( Mixer &m ) {
     {
       ppm = pos;
       ppm_ptr = 0;
-      return w = 0;                           // PPM header just detected, not enough info to get header yet
-    } else if( ( ppm != 0 ) && ppm_ptr != 3 ) // PPM detected, let's parse header records
+      return w = 0; // PPM header just detected, not enough info to get header yet
+    }
+    if( ( ppm != 0 ) && ppm_ptr != 3 ) // PPM detected, let's parse header records
     {
       for( int i = ppm; i < pos - 1 && ppm_ptr < 3; i++ ) {
         // Skip white spaces
@@ -2414,8 +2464,14 @@ int ppmModel( Mixer &m ) {
 
 void model8bit( Mixer &m, int w ) {
   const int SC = 0x20000;
-  static SmallStationaryContextMap scm1( SC ), scm2( SC ), scm3( SC ), scm4( SC ), scm5( SC ), scm6( SC * 2 ),
-      scm7( SC ), scm8( SC );
+  static SmallStationaryContextMap scm1( SC );
+  static SmallStationaryContextMap scm2( SC );
+  static SmallStationaryContextMap scm3( SC );
+  static SmallStationaryContextMap scm4( SC );
+  static SmallStationaryContextMap scm5( SC );
+  static SmallStationaryContextMap scm6( SC * 2 );
+  static SmallStationaryContextMap scm7( SC );
+  static SmallStationaryContextMap scm8( SC );
   static ContextMap cm( MEM * 4, 32 + 4 );
 
   // Select nearby pixels as context
@@ -2498,13 +2554,14 @@ void model8bit( Mixer &m, int w ) {
 // Return width in pixels if an image file is detected, else 0.
 
 int pgmModel( Mixer &m ) {
-  static int h = 0;         // height of image in bytes (pixels)
-  static int w = 0, w1 = 0; // width of image in bytes (pixels)
-  static int eoi = 0;       // end of image
-  static int pgm = 0;       // offset of pgm header
-  static int pgm_hdr[3];    // 0 - Width, 1 - Height, 2 - Max value
-  static int pgm_ptr;       // which record in header should be parsed next
-  int isws;                 // is white space
+  static int h = 0; // height of image in bytes (pixels)
+  static int w = 0;
+  static int w1 = 0;     // width of image in bytes (pixels)
+  static int eoi = 0;    // end of image
+  static int pgm = 0;    // offset of pgm header
+  static int pgm_hdr[3]; // 0 - Width, 1 - Height, 2 - Max value
+  static int pgm_ptr;    // which record in header should be parsed next
+  int isws;              // is white space
   char v_buf[32];
   int v_ptr;
   if( ( bpos == 0 ) && ( pos > eoi ) ) {
@@ -2512,8 +2569,9 @@ int pgmModel( Mixer &m ) {
     {
       pgm = pos;
       pgm_ptr = 0;
-      return w = 0;                           // PGM header just detected, not enough info to get header yet
-    } else if( ( pgm != 0 ) && pgm_ptr != 3 ) // PGM detected, let's parse header records
+      return w = 0; // PGM header just detected, not enough info to get header yet
+    }
+    if( ( pgm != 0 ) && pgm_ptr != 3 ) // PGM detected, let's parse header records
     {
       for( int i = pgm; i < pos - 1 && pgm_ptr < 3; i++ ) {
         // Skip white spaces
@@ -2576,7 +2634,8 @@ int bmpModel8( Mixer &m ) {
   static int w = 0;   // width of image in bytes (pixels)
   static int eoi = 0; // end of image
   static int col = 0;
-  static int ibmp = 0, w1 = 0;
+  static int ibmp = 0;
+  static int w1 = 0;
   if( bpos == 0 ) {
     //  8-bit .bmp images               data offset      windows bmp    compression   bpp
     if( buf( 54 ) == 'B' && buf( 53 ) == 'M' && ( i4( 44 ) < 1079 ) && i4( 40 ) == 40 && i4( 24 ) == 0
@@ -2644,7 +2703,10 @@ int rgbModel8( Mixer &m ) {
 // Model for 1 bit image data
 
 void model1bit( Mixer &m, int brow ) {
-  static U32 r0, r1, r2, r3;     // last 4 rows, bit 8 is over current pixel
+  static U32 r0;
+  static U32 r1;
+  static U32 r2;
+  static U32 r3;                 // last 4 rows, bit 8 is over current pixel
   static Array<U8> t( 0x10200 ); // model: cxt -> state
   const int N = 4 + 1 + 1;       // number of contexts
   static int cxt[N];             // contexts
@@ -2681,7 +2743,8 @@ void bmpModel1( Mixer &m ) {
   static int h = 0;   // height of image in bytes (pixels)
   static int w = 0;   // width of image in bytes (pixels)
   static int eoi = 0; // end of image
-  static int ibmp = 0, brow = 0;
+  static int ibmp = 0;
+  static int brow = 0;
   if( bpos == 0 ) {
     //  1-bit .bmp images                data offset      windows bmp    compression   bpp
     if( buf( 54 ) == 'B' && buf( 53 ) == 'M' && ( i4( 44 ) == 0x3e ) && i4( 40 ) == 40 && i4( 24 ) == 0
@@ -2712,13 +2775,14 @@ void bmpModel1( Mixer &m ) {
 // Model a 1-bit color uncompressed .pbm images.
 
 void pbmModel( Mixer &m ) {
-  static int h = 0;         // height of image in bytes (pixels)
-  static int w = 0, w1 = 0; // width of image in bytes (pixels)
-  static int eoi = 0;       // end of image
-  static int pbm = 0;       // offset of pgm header
-  static int pbm_hdr[2];    // 0 - Width, 1 - Height
-  static int pbm_ptr;       // which record in header should be parsed next
-  int isws;                 // is white space
+  static int h = 0; // height of image in bytes (pixels)
+  static int w = 0;
+  static int w1 = 0;     // width of image in bytes (pixels)
+  static int eoi = 0;    // end of image
+  static int pbm = 0;    // offset of pgm header
+  static int pbm_hdr[2]; // 0 - Width, 1 - Height
+  static int pbm_ptr;    // which record in header should be parsed next
+  int isws;              // is white space
   char v_buf[32];
   int v_ptr;
   if( ( bpos == 0 ) && ( pos > eoi ) ) {
@@ -2726,8 +2790,9 @@ void pbmModel( Mixer &m ) {
     {
       pbm = pos;
       pbm_ptr = 0;
-      return;                                 // w = 0; // PBM header just detected, not enough info to get header yet
-    } else if( ( pbm != 0 ) && pbm_ptr != 2 ) // PBM detected, let's parse header records
+      return; // w = 0; // PBM header just detected, not enough info to get header yet
+    }
+    if( ( pbm != 0 ) && pbm_ptr != 2 ) // PBM detected, let's parse header records
     {
       for( int i = pbm; i < pos - 1 && pbm_ptr < 2; i++ ) {
         // Skip white spaces
@@ -2825,13 +2890,15 @@ int jpegModel( Mixer &m ) {
     APP0 = 0xe0,
     COM = 0xfe,
     FF
-  };                                     // Second byte of 2 byte codes
-  static int jpeg = 0;                   // 1 if JPEG is header detected, 2 if image data
-  static int next_jpeg = 0;              // updated with jpeg on next byte boundary
-  static int app;                        // Bytes remaining to skip in APPx or COM field
-  static int sof = 0, sos = 0, data = 0; // pointers to buf
-  static Array<int> ht( 8 );             // pointers to Huffman table headers
-  static int htsize = 0;                 // number of pointers in ht
+  };                        // Second byte of 2 byte codes
+  static int jpeg = 0;      // 1 if JPEG is header detected, 2 if image data
+  static int next_jpeg = 0; // updated with jpeg on next byte boundary
+  static int app;           // Bytes remaining to skip in APPx or COM field
+  static int sof = 0;
+  static int sos = 0;
+  static int data = 0;       // pointers to buf
+  static Array<int> ht( 8 ); // pointers to Huffman table headers
+  static int htsize = 0;     // number of pointers in ht
 
   // Huffman decode state
   static U32 huffcode = 0; // Current Huffman code including extra bits
@@ -2853,42 +2920,57 @@ int jpegModel( Mixer &m ) {
   static Array<U8> hbuf( 2048 ); // Tc*1024+Th*256+hufcode -> RS
 
   // Image state
-  static Array<int> color( 10 );  // block -> component (0-3)
-  static Array<int> pred( 4 );    // component -> last DC value
-  static int dc = 0;              // DC value of the current block
-  static int width = 0;           // Image width in MCU
-  static int row = 0, column = 0; // in MCU (column 0 to width-1)
-  static Buf cbuf( 0x20000 );     // Rotating buffer of coefficients, coded as:
-                                  // DC: level shifted absolute value, low 4 bits discarded, i.e.
-                                  //   [-1023...1024] -> [0...255].
-                                  // AC: as an RS code: a run of R (0-15) zeros followed by an S (0-15)
-                                  //   bit number, or 00 for end of block (in zigzag order).
-                                  //   However if R=0, then the format is ssss11xx where ssss is S,
-                                  //   xx is the first 2 extra bits, and the last 2 bits are 1 (since
-                                  //   this never occurs in a valid RS code).
-  static int cpos = 0;            // position in cbuf
-  static U32 huff1 = 0, huff2 = 0, huff3 = 0, huff4 = 0; // hashes of last codes
-  static int rs1, rs2, rs3, rs4;                         // last 4 RS codes
-  static int ssum = 0, ssum1 = 0, ssum2 = 0, ssum3 = 0;
+  static Array<int> color( 10 ); // block -> component (0-3)
+  static Array<int> pred( 4 );   // component -> last DC value
+  static int dc = 0;             // DC value of the current block
+  static int width = 0;          // Image width in MCU
+  static int row = 0;
+  static int column = 0;      // in MCU (column 0 to width-1)
+  static Buf cbuf( 0x20000 ); // Rotating buffer of coefficients, coded as:
+                              // DC: level shifted absolute value, low 4 bits discarded, i.e.
+                              //   [-1023...1024] -> [0...255].
+                              // AC: as an RS code: a run of R (0-15) zeros followed by an S (0-15)
+                              //   bit number, or 00 for end of block (in zigzag order).
+                              //   However if R=0, then the format is ssss11xx where ssss is S,
+                              //   xx is the first 2 extra bits, and the last 2 bits are 1 (since
+                              //   this never occurs in a valid RS code).
+  static int cpos = 0;        // position in cbuf
+  static U32 huff1 = 0;
+  static U32 huff2 = 0;
+  static U32 huff3 = 0;
+  static U32 huff4 = 0; // hashes of last codes
+  static int rs1;
+  static int rs2;
+  static int rs3;
+  static int rs4; // last 4 RS codes
+  static int ssum = 0;
+  static int ssum1 = 0;
+  static int ssum2 = 0;
+  static int ssum3 = 0;
   // sum of S in RS codes in block and sum of S in first component
 
   static IntBuf cbuf2( 0x20000 );
-  static Array<int> adv_pred( 7 ), sumu( 8 ), sumv( 8 );
+  static Array<int> adv_pred( 7 );
+  static Array<int> sumu( 8 );
+  static Array<int> sumv( 8 );
   static Array<int> ls( 10 ); // block -> distance to previous block
-  static Array<int> lcp( 4 ), zpos( 64 );
+  static Array<int> lcp( 4 );
+  static Array<int> zpos( 64 );
 
   //for parsing Quantization tables
-  static int dqt_state = -1, dqt_end = 0, qnum = 0;
+  static int dqt_state = -1;
+  static int dqt_end = 0;
+  static int qnum = 0;
   static Array<U8> qtab( 256 ); // table
   static Array<int> qmap( 10 ); // block -> table number
 
-  const static U8 zzu[64] = {// zigzag coef -> u,v
-                             0, 1, 0, 0, 1, 2, 3, 2, 1, 0, 0, 1, 2, 3, 4, 5, 4, 3, 2, 1, 0, 0,
-                             1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1, 0, 1, 2, 3, 4, 5, 6, 7, 7,
-                             6, 5, 4, 3, 2, 3, 4, 5, 6, 7, 7, 6, 5, 4, 5, 6, 7, 7, 6, 7};
-  const static U8 zzv[64] = {0, 0, 1, 2, 1, 0, 0, 1, 2, 3, 4, 3, 2, 1, 0, 0, 1, 2, 3, 4, 5, 6,
-                             5, 4, 3, 2, 1, 0, 0, 1, 2, 3, 4, 5, 6, 7, 7, 6, 5, 4, 3, 2, 1, 2,
-                             3, 4, 5, 6, 7, 7, 6, 5, 4, 3, 4, 5, 6, 7, 7, 6, 5, 6, 7, 7};
+  const static U8 zzu[64] = { // zigzag coef -> u,v
+                              0, 1, 0, 0, 1, 2, 3, 2, 1, 0, 0, 1, 2, 3, 4, 5, 4, 3, 2, 1, 0, 0,
+                              1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1, 0, 1, 2, 3, 4, 5, 6, 7, 7,
+                              6, 5, 4, 3, 2, 3, 4, 5, 6, 7, 7, 6, 5, 4, 5, 6, 7, 7, 6, 7 };
+  const static U8 zzv[64] = { 0, 0, 1, 2, 1, 0, 0, 1, 2, 3, 4, 3, 2, 1, 0, 0, 1, 2, 3, 4, 5, 6,
+                              5, 4, 3, 2, 1, 0, 0, 1, 2, 3, 4, 5, 6, 7, 7, 6, 5, 4, 3, 2, 1, 2,
+                              3, 4, 5, 6, 7, 7, 6, 5, 4, 3, 4, 5, 6, 7, 7, 6, 5, 6, 7, 7 };
 
   // Be sure to quit on a byte boundary
   if( bpos == 0 )
@@ -3004,7 +3086,8 @@ int jpegModel( Mixer &m ) {
         int end = p + buf[p - 2] * 256 + buf[p - 1] - 2; // end of Huffman table
         int count = 0;                                   // sanity check
         while( p < end && end < pos && end < p + 2100 && ++count < 10 ) {
-          int tc = buf[p] >> 4, th = buf[p] & 15;
+          int tc = buf[p] >> 4;
+          int th = buf[p] & 15;
           if( tc >= 2 || th >= 4 )
             break;
           jassert( tc >= 0 && tc < 2 && th >= 0 && th < 4 );
@@ -3178,24 +3261,26 @@ int jpegModel( Mixer &m ) {
 
           // UPDATE_ADV_PRED !!!!
           {
-            const int acomp = mcupos >> 6, q = 64 * qmap[acomp];
-            const int zz = mcupos & 63, cpos_dc = cpos - zz;
+            const int acomp = mcupos >> 6;
+            const int q = 64 * qmap[acomp];
+            const int zz = mcupos & 63;
+            const int cpos_dc = cpos - zz;
             if( zz == 0 ) {
               for( int i = 0; i < 8; ++i )
                 sumu[i] = sumv[i] = 0;
               int cpos_dc_ls_acomp = cpos_dc - ls[acomp];
               int cpos_dc_mcusize_width = cpos_dc - mcusize * width;
               for( int i = 0; i < 64; ++i ) {
-                sumu[zzu[i]] += ( ( zzv[i] & 1 ) != 0 ? -1 : 1 ) * ( zzv[i] != 0u ? 16 * ( 16 + zzv[i] ) : 181 )
+                sumu[zzu[i]] += ( ( zzv[i] & 1 ) != 0 ? -1 : 1 ) * ( zzv[i] != 0U ? 16 * ( 16 + zzv[i] ) : 181 )
                                 * ( qtab[q + i] + 1 ) * cbuf2[cpos_dc_mcusize_width + i];
-                sumv[zzv[i]] += ( ( zzu[i] & 1 ) != 0 ? -1 : 1 ) * ( zzu[i] != 0u ? 16 * ( 16 + zzu[i] ) : 181 )
+                sumv[zzv[i]] += ( ( zzu[i] & 1 ) != 0 ? -1 : 1 ) * ( zzu[i] != 0U ? 16 * ( 16 + zzu[i] ) : 181 )
                                 * ( qtab[q + i] + 1 ) * cbuf2[cpos_dc_ls_acomp + i];
               }
             } else {
               sumu[zzu[zz - 1]] -=
-                  ( zzv[zz - 1] != 0u ? 16 * ( 16 + zzv[zz - 1] ) : 181 ) * ( qtab[q + zz - 1] + 1 ) * cbuf2[cpos - 1];
+                  ( zzv[zz - 1] != 0U ? 16 * ( 16 + zzv[zz - 1] ) : 181 ) * ( qtab[q + zz - 1] + 1 ) * cbuf2[cpos - 1];
               sumv[zzv[zz - 1]] -=
-                  ( zzu[zz - 1] != 0u ? 16 * ( 16 + zzu[zz - 1] ) : 181 ) * ( qtab[q + zz - 1] + 1 ) * cbuf2[cpos - 1];
+                  ( zzu[zz - 1] != 0U ? 16 * ( 16 + zzu[zz - 1] ) : 181 ) * ( qtab[q + zz - 1] + 1 ) * cbuf2[cpos - 1];
             }
 
             for( int i = 0; i < 3; ++i )
@@ -3225,7 +3310,8 @@ int jpegModel( Mixer &m ) {
             adv_pred[3] = ( x < 0 ? -1 : +1 ) * ilog( 10 * abs( x ) + 1 ) / 10;
 
             for( int i = 0; i < 4; ++i ) {
-              const int a = ( ( i & 1 ) != 0 ? zzv[zz] : zzu[zz] ), b = ( ( i & 2 ) != 0 ? 2 : 1 );
+              const int a = ( ( i & 1 ) != 0 ? zzv[zz] : zzu[zz] );
+              const int b = ( ( i & 2 ) != 0 ? 2 : 1 );
               if( a < b )
                 x = 255;
               else {
@@ -3263,7 +3349,8 @@ int jpegModel( Mixer &m ) {
   static Array<U8 *> cp( N ); // context pointers
   static StateMap sm[N];
   static Mixer m1( 32, 770, 3 );
-  static APM a1( 0x8000 ), a2( 0x10000 );
+  static APM a1( 0x8000 );
+  static APM a2( 0x10000 );
 
   // Update model
   if( cp[N - 1] != nullptr ) {
@@ -3282,7 +3369,8 @@ int jpegModel( Mixer &m ) {
   if( ++hbcount > 2 || huffbits == 0 )
     hbcount = 0;
   jassert( coef >= 0 && coef < 256 );
-  const int zu = zzu[mcupos & 63], zv = zzv[mcupos & 63];
+  const int zu = zzu[mcupos & 63];
+  const int zv = zzv[mcupos & 63];
   if( hbcount == 0 ) {
     int n = 0;
     cxt[0] = hash( ++n, hc, coef, adv_pred[2], ssum2 >> 6 );
@@ -3376,17 +3464,18 @@ inline int X( int i, int j ) {
   if( wmode == 18 ) {
     if( i <= S )
       return s2( ( i + j ) << 2 );
-    else
-      return s2( ( ( i + j - S ) << 2 ) - 2 );
-  } else if( wmode == 17 )
+
+    return s2( ( ( i + j - S ) << 2 ) - 2 );
+  }
+  if( wmode == 17 )
     return s2( ( i + j ) << 1 );
-  else if( wmode == 10 ) {
+  if( wmode == 10 ) {
     if( i <= S )
       return buf( ( i + j ) << 1 );
-    else
-      return buf( ( ( i + j - S ) << 1 ) - 1 );
-  } else
-    return buf( i + j );
+
+    return buf( ( ( i + j - S ) << 1 ) - 1 );
+  }
+  return buf( i + j );
 }
 
 int wavModel( Mixer &m ) {
@@ -3395,14 +3484,31 @@ int wavModel( Mixer &m ) {
   static int bytes;    // bytes per sample
   static int eof = 0;  // end of wav
   static int s = 0;    // size in bytes
-  static int w, K = 128 >> ( level - 1 );
-  static int pr[4][2], n[2], counter[2];
-  int chn, ch, msb, j, k, l, i = 0;
-  double sum, a = 0.996;
-  double F[49][49][2], L[49][49];
+  static int w;
+  static int K = 128 >> ( level - 1 );
+  static int pr[4][2];
+  static int n[2];
+  static int counter[2];
+  int chn;
+  int ch;
+  int msb;
+  int j;
+  int k;
+  int l;
+  int i = 0;
+  double sum;
+  double a = 0.996;
+  double F[49][49][2];
+  double L[49][49];
   const int SC = 0x20000;
-  static SmallStationaryContextMap scm1( SC ), scm2( SC ), scm3( SC ), scm4( SC ), scm5( SC ), scm6( SC ), scm7( SC ),
-      scm8( SC );
+  static SmallStationaryContextMap scm1( SC );
+  static SmallStationaryContextMap scm2( SC );
+  static SmallStationaryContextMap scm3( SC );
+  static SmallStationaryContextMap scm4( SC );
+  static SmallStationaryContextMap scm5( SC );
+  static SmallStationaryContextMap scm6( SC );
+  static SmallStationaryContextMap scm7( SC );
+  static SmallStationaryContextMap scm8( SC );
   static ContextMap cm( MEM * 4, 10 );
 
   // Detect .wav file header
@@ -3595,7 +3701,8 @@ void indirectModel( Mixer &m ) {
   static U16 t2[0x10000];
 
   if( bpos == 0 ) {
-    U32 d = c4 & 0xffff, c = d & 255;
+    U32 d = c4 & 0xffff;
+    U32 c = d & 255;
     U32 &r1 = t1[d >> 8];
     r1 = r1 << 8 | c;
     U16 &r2 = t2[c4 >> 8 & 0xffff];
@@ -3635,7 +3742,8 @@ struct DMCNode {                 // 12 bytes
 };
 
 void dmcModel( Mixer &m ) {
-  static int top = 0, curr = 0;       // allocated, current node
+  static int top = 0;
+  static int curr = 0;                // allocated, current node
   static Array<DMCNode> t( MEM * 2 ); // state graph
   static StateMap sm;
   static int threshold = 256;
@@ -3723,11 +3831,21 @@ int vcmap( int c ) {
 }
 
 void nestModel( Mixer &m ) {
-  static int ic = 0, bc = 0, pc = 0, vc = 0, qc = 0, lvc = 0, vcmc = 0, llvc = 0, tmc = 0, wc = 0;
+  static int ic = 0;
+  static int bc = 0;
+  static int pc = 0;
+  static int vc = 0;
+  static int qc = 0;
+  static int lvc = 0;
+  static int vcmc = 0;
+  static int llvc = 0;
+  static int tmc = 0;
+  static int wc = 0;
   static ContextMap cm( MEM, 14 - 10 );
   if( bpos == 0 ) {
     int c = c4 & 255;
-    int matched = 1, vv = vcmap( c );
+    int matched = 1;
+    int vv = vcmap( c );
     vc = ( vc << 3 ) | vv;
     if( vv == lvc || vv == llvc )
       tmc += 1;
@@ -3844,15 +3962,18 @@ typedef enum {
   CWAVFILE
 } Filetype;
 const int maxTypes = 17;
-static int typesize[maxTypes] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-static int typecount[maxTypes] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-static const char *typenames[maxTypes] = {"unkn", "jpeg ", "bmp1 ", "bmp4 ", "bmp8 ", "bmp24 ", "tiff ", "pgm ", "rgb ",
-                                          "exe ", "text ", "wav ",  "mrb ",  "utf8 ", "ppm ",   "pbm ",  "cwav"};
+static int typesize[maxTypes] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+static int typecount[maxTypes] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+static const char *typenames[maxTypes] = { "unkn",  "jpeg ", "bmp1 ", "bmp4 ", "bmp8 ", "bmp24 ",
+                                           "tiff ", "pgm ",  "rgb ",  "exe ",  "text ", "wav ",
+                                           "mrb ",  "utf8 ", "ppm ",  "pbm ",  "cwav" };
 // This combines all the context models with a Mixer.
 
 int contextModel2() {
   static ContextMap cm( MEM * 32, 9 );
-  static RunContextMap rcm7( MEM ), rcm9( MEM ), rcm10( MEM );
+  static RunContextMap rcm7( MEM );
+  static RunContextMap rcm9( MEM );
+  static RunContextMap rcm10( MEM );
   static Mixer m( 800, 3088, 7, 128 );
   static U32 cxt[16]; // order 0-11 contexts
   static Filetype filetype = DEFAULT;
@@ -3960,7 +4081,9 @@ int contextModel2() {
         return m.p(); // Image width (bytes) if RGB8 detected, or 0
       break;
     }
-    default: { break; }
+    default: {
+      break;
+    }
   }
   // Normal model
   if( bpos == 0 ) {
@@ -4026,7 +4149,10 @@ int contextModel2() {
   if( order < 0 )
     order = 0;
 
-  U32 c1 = buf( 1 ), c2 = buf( 2 ), c3 = buf( 3 ), c;
+  U32 c1 = buf( 1 );
+  U32 c2 = buf( 2 );
+  U32 c3 = buf( 3 );
+  U32 c;
 
   m.set( c1 + 8, 264 );
   m.set( c0, 256 );
@@ -4056,7 +4182,7 @@ int contextModel2() {
 // update(y) trains the predictor with the actual bit (0 or 1).
 
 class Predictor {
-  int pr; // next prediction
+  int pr{ 2048 }; // next prediction
 public:
   Predictor();
   int p() const {
@@ -4066,10 +4192,16 @@ public:
   void update();
 };
 
-Predictor::Predictor() : pr( 2048 ) {}
+Predictor::Predictor() = default;
 
 void Predictor::update() {
-  static APM1 a( 256 ), a1( 0x10000 ), a2( 0x10000 ), a3( 0x10000 ), a4( 0x10000 ), a5( 0x10000 ), a6( 0x10000 );
+  static APM1 a( 256 );
+  static APM1 a1( 0x10000 );
+  static APM1 a2( 0x10000 );
+  static APM1 a3( 0x10000 );
+  static APM1 a4( 0x10000 );
+  static APM1 a5( 0x10000 );
+  static APM1 a6( 0x10000 );
 
   // Update global context: pos, bpos, c0, c4, buf
   c0 += c0 + y;
@@ -4179,14 +4311,14 @@ public:
     if( mode == COMPRESS ) {
       assert( alt );
       return getc( alt );
-    } else if( level == 0 )
-      return getc( archive );
-    else {
-      int c = 0;
-      for( int i = 0; i < 8; ++i )
-        c += c + code();
-      return c;
     }
+    if( level == 0 )
+      return getc( archive );
+
+    int c = 0;
+    for( int i = 0; i < 8; ++i )
+      c += c + code();
+    return c;
   }
 };
 
@@ -4271,33 +4403,78 @@ U8 GetCWord(FILE *f)
 */
 // Detect EXE or JPEG data
 Filetype detect( FILE *in, int n, Filetype type ) {
-  U32 buf1 = 0, buf0 = 0; // last 8 bytes
+  U32 buf1 = 0;
+  U32 buf0 = 0; // last 8 bytes
   long start = ftell( in );
 
   // For EXE detection
-  Array<int> abspos( 256 ), // CALL/JMP abs. addr. low byte -> last offset
-      relpos( 256 );        // CALL/JMP relative addr. low byte -> last offset
-  int e8e9count = 0;        // number of consecutive CALL/JMPs
-  int e8e9pos = 0;          // offset of first CALL or JMP instruction
-  int e8e9last = 0;         // offset of most recent CALL or JMP
+  Array<int> abspos( 256 );
+  Array<int>         // CALL/JMP abs. addr. low byte -> last offset
+      relpos( 256 ); // CALL/JMP relative addr. low byte -> last offset
+  int e8e9count = 0; // number of consecutive CALL/JMPs
+  int e8e9pos = 0;   // offset of first CALL or JMP instruction
+  int e8e9last = 0;  // offset of most recent CALL or JMP
   // For BMP detection
-  int bmp = 0, bmp2 = 0, bmp0 = 0, bsize = 0, imgbpp = 0, bmpx = 0, bmpy = 0, bmpimgoff = 0, imgcomp = -1;
+  int bmp = 0;
+  int bmp2 = 0;
+  int bmp0 = 0;
+  int bsize = 0;
+  int imgbpp = 0;
+  int bmpx = 0;
+  int bmpy = 0;
+  int bmpimgoff = 0;
+  int imgcomp = -1;
   // For PGM detection                                                    PPM    PBM
-  int pgm = 0, psize = 0, pgmcomment = 0, pgmw = 0, pgmh = 0, pgmsize = 0, pgm_ptr = 0, pgmc = 0, pgm6 = 0, pbm = 0;
+  int pgm = 0;
+  int psize = 0;
+  int pgmcomment = 0;
+  int pgmw = 0;
+  int pgmh = 0;
+  int pgmsize = 0;
+  int pgm_ptr = 0;
+  int pgmc = 0;
+  int pgm6 = 0;
+  int pbm = 0;
   char pgm_buf[32];
   // For JPEG detection
-  int soi = 0, sof = 0, sos = 0, app = 0; // position where found
+  int soi = 0;
+  int sof = 0;
+  int sos = 0;
+  int app = 0; // position where found
   // For .RGB detection
-  int rgbi = 0, rgbSTORAGE = -1, rgbBPC = 0, rgbDIMENSION = 0, rgbZSIZE = 0, rgbXSIZE = 0, rgbYSIZE = 0, rgbsize = 0;
+  int rgbi = 0;
+  int rgbSTORAGE = -1;
+  int rgbBPC = 0;
+  int rgbDIMENSION = 0;
+  int rgbZSIZE = 0;
+  int rgbXSIZE = 0;
+  int rgbYSIZE = 0;
+  int rgbsize = 0;
   // For TEXT
-  int txtStart = 0, txtLen = 0, txtOff = 0, txtPrev2 = -1, txtPrev3 = -1, txtIsUTF8 = -1, txtUTF8b2 = 0, txtUTF8b3 = 0;
+  int txtStart = 0;
+  int txtLen = 0;
+  int txtOff = 0;
+  int txtPrev2 = -1;
+  int txtPrev3 = -1;
+  int txtIsUTF8 = -1;
+  int txtUTF8b2 = 0;
+  int txtUTF8b3 = 0;
   const int txtMinLen = 80; // minimal text to be detected
   // For WAVE
   long wavchunkSize = 0;
-  int wavi = 0, wavsize = 0, wavdatas = 0;
-  int wavChannels = 0, iswavcompressible = 0, wavAudioFormat = 0;
+  int wavi = 0;
+  int wavsize = 0;
+  int wavdatas = 0;
+  int wavChannels = 0;
+  int iswavcompressible = 0;
+  int wavAudioFormat = 0;
   // For MRB detection
-  int mrb = 0, mrb0 = 0, mrbsize = 0, mrbPictureType = 0, mrbPackingMethod = 0, mrbTell = 0;
+  int mrb = 0;
+  int mrb0 = 0;
+  int mrbsize = 0;
+  int mrbPictureType = 0;
+  int mrbPackingMethod = 0;
+  int mrbTell = 0;
 
   for( int i = 0; i < n; ++i ) {
     int c = getc( in );
@@ -4647,7 +4824,8 @@ Filetype detect( FILE *in, int n, Filetype type ) {
         if( wavdatas == 0 || ( wavsize < ( wavdatas + 0x24 ) ) )
           wavi = wavdatas = wavsize = 0;
       }
-      if( static_cast<int>( ( ( wavsize ) ) == 0 == 0 ) && static_cast<int>( ( ( wavdatas ) ) == 0 == 0 ) ) {
+      if( ( static_cast<int>( static_cast<int>( ( ( wavsize ) ) == 0 ) == 0 ) != 0 )
+          && ( static_cast<int>( static_cast<int>( ( ( wavdatas ) ) == 0 ) == 0 ) != 0 ) ) {
         if( type == WAVFILE || type == CWAVFILE )
           return fseek( in, start + wavsize + 8, SEEK_SET ), DEFAULT;
         if( iswavcompressible == 0 )
@@ -4735,8 +4913,8 @@ Filetype detect( FILE *in, int n, Filetype type ) {
 
         if( txtIsUTF8 == 1 )
           return fseek( in, start + txtOff, SEEK_SET ), TXTUTF8;
-        else
-          return fseek( in, start + txtOff, SEEK_SET ), TEXT;
+
+        return fseek( in, start + txtOff, SEEK_SET ), TEXT;
       }
     }
   }
@@ -4749,8 +4927,8 @@ Filetype detect( FILE *in, int n, Filetype type ) {
 
       if( txtIsUTF8 == 1 )
         return fseek( in, start + txtOff, SEEK_SET ), TXTUTF8;
-      else
-        return fseek( in, start + txtOff, SEEK_SET ), TEXT;
+
+      return fseek( in, start + txtOff, SEEK_SET ), TEXT;
     }
   }
 
@@ -4853,11 +5031,12 @@ void encode_exe( FILE *in, FILE *out, int len, int begin ) {
 }
 
 int decode_exe( Encoder &en ) {
-  const int BLOCK = 0x10000;    // block size
-  static int offset = 0, q = 0; // decode state: file offset, queue size
-  static int size = 0;          // where to stop coding
-  static int begin = 0;         // offset in file
-  static U8 c[5];               // queue of last 5 bytes, c[0] at front
+  const int BLOCK = 0x10000; // block size
+  static int offset = 0;
+  static int q = 0;     // decode state: file offset, queue size
+  static int size = 0;  // where to stop coding
+  static int begin = 0; // offset in file
+  static U8 c[5];       // queue of last 5 bytes, c[0] at front
 
   // Read size from first 4 bytes, MSB first
   while( offset == size && q == 0 ) {
@@ -5003,7 +5182,7 @@ void printStatus( int n ) {
 void compress( const char *filename, long filesize, Encoder &en ) {
   assert( en.getMode() == COMPRESS );
   assert( filename && filename[0] );
-  FILE *f = fopen( filename, "rb" );
+  FILE *f = fopen( filename, "rbe" );
   if( f == nullptr )
     perror( filename ), quit();
   long start = en.size();
@@ -5025,7 +5204,8 @@ void compress( const char *filename, long filesize, Encoder &en ) {
   en.setFile( tmp );
   fseek( f, savepos, SEEK_SET );
   long j;
-  int c1 = 0, c2 = 0;
+  int c1 = 0;
+  int c2 = 0;
   for( j = 0; j < filesize; ++j )
     if( ( c1 = decode( en ) ) != ( c2 = getc( f ) ) )
       break;
@@ -5082,7 +5262,7 @@ void decompress( const char *filename, long filesize, Encoder &en ) {
   assert( filename && filename[0] );
 
   // Test if output file exists.  If so, then compare.
-  FILE *f = fopen( filename, "rb" );
+  FILE *f = fopen( filename, "rbe" );
   if( f != nullptr ) {
     printf( "Comparing %s %ld -> ", filename, filesize );
     bool found = false; // mismatch?
@@ -5104,7 +5284,7 @@ void decompress( const char *filename, long filesize, Encoder &en ) {
 
   // Create file
   else {
-    f = fopen( filename, "wb" );
+    f = fopen( filename, "wbe" );
     if( f == nullptr ) { // Try creating directories in path and try again
       String path( filename );
       for( int i = 0; path[i] != 0; ++i ) {
@@ -5116,7 +5296,7 @@ void decompress( const char *filename, long filesize, Encoder &en ) {
           path[i] = savechar;
         }
       }
-      f = fopen( filename, "wb" );
+      f = fopen( filename, "wbe" );
     }
 
     // Decompress
@@ -5150,7 +5330,8 @@ void decompress( const char *filename, long filesize, Encoder &en ) {
 
 const char *getline( FILE *f = stdin ) {
   static String s;
-  int len = 0, c;
+  int len = 0;
+  int c;
   while( ( c = getc( f ) ) != EOF && c != 26 && c != '\n' ) {
     if( len >= s.size() )
       s.resize( len * 2 + 1 );
@@ -5162,8 +5343,8 @@ const char *getline( FILE *f = stdin ) {
   s[len] = 0;
   if( c == EOF || c == 26 )
     return 0;
-  else
-    return s.c_str();
+
+  return s.c_str();
 }
 
 // int expand(String& archive, String& s, const char* fname, int base) {
@@ -5179,7 +5360,7 @@ const char *getline( FILE *f = stdin ) {
 // Same as expand() except fname is an ordinary file
 int putsize( String &archive, String &s, const char *fname, int base ) {
   int result = 0;
-  FILE *f = fopen( fname, "rb" );
+  FILE *f = fopen( fname, "rbe" );
   if( f != nullptr ) {
     fseek( f, 0, SEEK_END );
     long len = ftell( f );
@@ -5345,7 +5526,7 @@ int main( int argc, char **argv ) {
     // Compress: write archive header, get file names and sizes
     String filenames;
     if( mode == COMPRESS ) {
-      logfile = fopen( "logfile.log", "wb+" );
+      logfile = fopen( "logfile.log", "wb+e" );
       if( logfile == nullptr )
         perror( "Cant open logfile\n" ), quit();
       // Expand filenames to read later.  Write their base names and sizes
@@ -5379,7 +5560,7 @@ int main( int argc, char **argv ) {
       //      archive=fopen(archiveName.c_str(), "rb");
       //      if (archive)
       //        printf("%s already exists\n", archiveName.c_str()), quit();
-      archive = fopen( archiveName.c_str(), "wb+" );
+      archive = fopen( archiveName.c_str(), "wb+e" );
       if( archive == nullptr )
         perror( archiveName.c_str() ), quit();
       fprintf( archive, PROGNAME " -%d\r\n%s\x1A", level, header_string.c_str() );
@@ -5407,7 +5588,7 @@ int main( int argc, char **argv ) {
 
     // Decompress: open archive for reading and store file names and sizes
     if( mode == DECOMPRESS ) {
-      archive = fopen( archiveName.c_str(), "rb+" );
+      archive = fopen( archiveName.c_str(), "rb+e" );
       if( archive == nullptr )
         perror( archiveName.c_str() ), quit();
 

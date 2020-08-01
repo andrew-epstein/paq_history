@@ -382,19 +382,19 @@ which computes 8 elements at a time, is not any faster).
 
 #define PROGNAME "PAQ7" // Please change this if you change the program.
 
+#include <ctype.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <math.h>
-#include <ctype.h>
 #define NDEBUG // uncomment for debugging (turns on Array bound checks)
 #include <assert.h>
 
 // 8, 16, and 32 bit unsigned types (adjust as appropriate)
-typedef unsigned char U8;
-typedef unsigned short U16;
-typedef unsigned int U32;
+using U8 = unsigned char;
+using U16 = unsigned short;
+using U32 = unsigned int;
 
 // min, max functions
 template <class T>
@@ -409,13 +409,13 @@ inline T min( const T &a, const T &b ) {
 //////////////////////// Program Checker /////////////////////
 
 class ProgramChecker {
-  int memused;        // bytes allocated by Array<T>
+  int memused{ 0 };   // bytes allocated by Array<T>
   clock_t start_time; // in ticks
 public:
   void alloc( int n ) {
     memused += n;
   } // report memory allocated
-  ProgramChecker() : memused( 0 ) {
+  ProgramChecker() {
     start_time = clock();
     assert( sizeof( U8 ) == 1 );
     assert( sizeof( U16 ) == 2 );
@@ -464,8 +464,8 @@ public:
   }
 
 private:
-  Array( const Array & ); // no copy or assignment
-  Array &operator=( const Array & );
+  Array( const Array & ) = delete; // no copy or assignment
+  Array &operator=( const Array & ) = delete;
 };
 
 template <class T>
@@ -542,10 +542,10 @@ Ilog::Ilog() : t( 65536 ) {
 inline int llog( U32 x ) {
   if( x >= 0x1000000 )
     return 256 + ilog( x >> 16 );
-  else if( x >= 0x10000 )
+  if( x >= 0x10000 )
     return 128 + ilog( x >> 8 );
-  else
-    return ilog( x );
+
+  return ilog( x );
 }
 
 ///////////////////////// state table ////////////////////////
@@ -580,9 +580,9 @@ inline int llog( U32 x ) {
 //   go to (8,0) instead.
 
 // State -> last bit: 1 = last bit is 0, 2 = last bit is 1, 0=unknown
-static const U8 LB[256] = {0, 2, 1, 2, 0, 1, 2, 2, 1, 1, 2, 2, 2, 1, 2, 1, 0, 0, 1, 1, 2, 2, 0, 0, 1, 1, 2, 2,
-                           0, 0, 0, 1, 1, 2, 2, 0, 0, 0, 0, 1, 1, 2, 2, 0, 1, 0, 2, 0, 1, 1, 2, 2, 1, 1, 1, 2,
-                           2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 0, 1, 1, 2, 2, 0, 1};
+static const U8 LB[256] = { 0, 2, 1, 2, 0, 1, 2, 2, 1, 1, 2, 2, 2, 1, 2, 1, 0, 0, 1, 1, 2, 2, 0, 0, 1, 1, 2, 2,
+                            0, 0, 0, 1, 1, 2, 2, 0, 0, 0, 0, 1, 1, 2, 2, 0, 1, 0, 2, 0, 1, 1, 2, 2, 1, 1, 1, 2,
+                            2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 0, 1, 1, 2, 2, 0, 1 };
 
 #if 0
 static const U8 State_table[1024]={
@@ -658,7 +658,7 @@ public:
   StateTable();
 } nex;
 
-const int StateTable::b[B] = {N, 32, 16, 8, 5}; // n0 -> max n1, n1 -> max n0
+const int StateTable::b[B] = { N, 32, 16, 8, 5 }; // n0 -> max n1, n1 -> max n0
 int StateTable::t[N + 1][N + 1][2];
 
 int StateTable::num_states( int x, int y ) {
@@ -780,9 +780,9 @@ StateTable::StateTable() : ns( 1024 ) {
 
 // return p = 1/(1 + exp(-d)), d scaled by 8 bits, p scaled by 12 bits
 int squash( int d ) {
-  static const int t[33] = {1,    2,    3,    6,    10,   16,   27,   45,   73,   120,  194,
-                            310,  488,  747,  1101, 1546, 2047, 2549, 2994, 3348, 3607, 3785,
-                            3901, 3975, 4022, 4050, 4068, 4079, 4085, 4089, 4092, 4093, 4094};
+  static const int t[33] = { 1,    2,    3,    6,    10,   16,   27,   45,   73,   120,  194,
+                             310,  488,  747,  1101, 1546, 2047, 2549, 2994, 3348, 3607, 3785,
+                             3901, 3975, 4022, 4050, 4068, 4079, 4085, 4089, 4092, 4093, 4094 };
   if( d > 2047 )
     return 4095;
   if( d < -2047 )
@@ -920,9 +920,8 @@ public:
       }
       mp->set( 0, 1 );
       return mp->p();
-    } else { // S=1 context
-      return pr[0] = squash( dot_product( &tx[0], &wx[0], nx ) >> 8 );
-    }
+    } // S=1 context
+    return pr[0] = squash( dot_product( &tx[0], &wx[0], nx ) >> 8 );
   }
 };
 
@@ -999,12 +998,12 @@ APM::APM( int n ) : ProbMap( n ) {
 
 // Counter state -> probability * 256
 class StateMap {
-  int cxt;
+  int cxt{ 0 };
 
 protected:
   Array<U16> t; // 256 states -> probability * 64K
 public:
-  StateMap() : cxt( 0 ), t( 256 ) {
+  StateMap() : t( 256 ) {
     for( int i = 0; i < 256; ++i )
       t[i] = 65536 * ( nex( i, 3 ) + 1 ) / ( nex( i, 2 ) + nex( i, 3 ) + 2 );
   }
@@ -1019,7 +1018,7 @@ public:
 
 // Hash 2-5 ints.
 inline U32 hash( U32 a, U32 b, U32 c = ~0, U32 d = ~0, U32 e = ~0 ) {
-  U32 h = a * 200002979u + b * 30005491u + c * 50004239u + d * 70004807u + e * 110002499u;
+  U32 h = a * 200002979U + b * 30005491U + c * 50004239U + d * 70004807U + e * 110002499U;
   return h ^ h >> 9 ^ a >> 2 ^ b >> 3 ^ c >> 4 ^ d >> 5 ^ e >> 6;
 }
 
@@ -1057,15 +1056,16 @@ public:
   U8 *operator[]( U32 i ) {
     int chk = ( i >> 24 ^ i >> 12 ^ i ) & 255;
     i &= n;
-    int bi = i, b = 1024; // best replacement so far
+    int bi = i;
+    int b = 1024; // best replacement so far
     U8 *p;
     for( int j = 0; j < M; ++j ) {
       p = &t[( i ^ j ) * B];
       if( p[0] == chk )
         return p; // match
-      else if( p[1] == 0 )
+      if( p[1] == 0 )
         return p[0] = chk, p; // empty
-      else if( p[1] < b )
+      if( p[1] < b )
         b = p[1], bi = i ^ j; // best replacement so far
     }
     ++replaced;
@@ -1151,8 +1151,8 @@ public:
     int p0 = 255 - p1;
     m.add( p1 - p0 );
     m.add( st * static_cast<int>( static_cast<int>( static_cast<int>( n1 ) == 0 - static_cast<int>( n0 ) ) == 0 ) );
-    m.add( ( ( p0 & ( static_cast<int>( -static_cast<int>( n1 ) ) == 0 ) ) )
-           - ( ( p1 & ( static_cast<int>( -static_cast<int>( n0 ) ) == 0 ) ) ) );
+    m.add( ( ( p0 & static_cast<int>( static_cast<int>( -static_cast<int>( n1 ) ) == 0 ) ) )
+           - ( ( p1 & static_cast<int>( static_cast<int>( -static_cast<int>( n0 ) ) == 0 ) ) ) );
     m.add( ( -static_cast<int>( LB[s] == 1 ) & p1 ) - ( -static_cast<int>( LB[s] == 2 ) & p0 ) );
     return static_cast<int>( s > 0 );
   }
@@ -1190,8 +1190,8 @@ public:
     int p0 = 255 - p1;
     m.add( p1 - p0 );
     m.add( st * static_cast<int>( static_cast<int>( static_cast<int>( n1 ) == 0 - static_cast<int>( n0 ) ) == 0 ) );
-    m.add( ( ( p0 & ( static_cast<int>( -static_cast<int>( n1 ) ) == 0 ) ) )
-           - ( ( p1 & ( static_cast<int>( -static_cast<int>( n0 ) ) == 0 ) ) ) );
+    m.add( ( ( p0 & static_cast<int>( static_cast<int>( -static_cast<int>( n1 ) ) == 0 ) ) )
+           - ( ( p1 & static_cast<int>( static_cast<int>( -static_cast<int>( n0 ) ) == 0 ) ) ) );
     m.add( ( -static_cast<int>( LB[s] == 1 ) & p1 ) - ( -static_cast<int>( LB[s] == 2 ) & p0 ) );
     return static_cast<int>( s > 0 );
   }
@@ -1218,8 +1218,8 @@ public:
   int p() { // predict next bit
     if( ( cp[1] + 256 ) >> ( 8 - bpos ) == c0 )
       return ( ( cp[1] >> ( 7 - bpos ) & 1 ) * 2 - 1 ) * ilog( cp[0] + 1 ) * 8;
-    else
-      return 0;
+
+    return 0;
   }
   int mix( Mixer &m ) { // return run length
     m.add( p() );
@@ -1343,15 +1343,18 @@ int matchModel( Mixer &m ) {
 // into m.
 
 void picModel( Mixer &m ) {
-  static U32 r0, r1, r2, r3;     // last 5 rows, bit 8 is over current pixel
+  static U32 r0;
+  static U32 r1;
+  static U32 r2;
+  static U32 r3;                 // last 5 rows, bit 8 is over current pixel
   static Array<U8> t( 0x10200 ); // model: cxt -> state
   const int N = 3;               // number of contexts
   static int cxt[N];             // contexts
   static StateMap sm[N];
 
   // update the model
-  for( int i = 0; i < N; ++i )
-    t[cxt[i]] = nex01( t[cxt[i]], y );
+  for( int i: cxt )
+    t[i] = nex01( t[i], y );
 
   // update the contexts (pixels surrounding the predicted one)
   r0 += r0 + y;
@@ -1372,12 +1375,26 @@ void picModel( Mixer &m ) {
 // Model English text (words and columns/end of line)
 
 void wordModel( Mixer &m ) {
-  static U32 word0 = 0, word1 = 0, word2 = 0, word3 = 0, word4 = 0; // hashes
-  static ContextMap cm1( MEM * 4 ), cm2( MEM * 4 ), cm3( MEM * 8 ), cm4( MEM * 8 ), cm5( MEM * 8 ), cm6( MEM * 8 ),
-      cm7( MEM * 8 ), cm8( MEM * 8 ), wcm( MEM * 8 );
-  static NonstationaryContextMap lcm1( MEM ), lcm2( MEM ), lcm3( MEM );
+  static U32 word0 = 0;
+  static U32 word1 = 0;
+  static U32 word2 = 0;
+  static U32 word3 = 0;
+  static U32 word4 = 0; // hashes
+  static ContextMap cm1( MEM * 4 );
+  static ContextMap cm2( MEM * 4 );
+  static ContextMap cm3( MEM * 8 );
+  static ContextMap cm4( MEM * 8 );
+  static ContextMap cm5( MEM * 8 );
+  static ContextMap cm6( MEM * 8 );
+  static ContextMap cm7( MEM * 8 );
+  static ContextMap cm8( MEM * 8 );
+  static ContextMap wcm( MEM * 8 );
+  static NonstationaryContextMap lcm1( MEM );
+  static NonstationaryContextMap lcm2( MEM );
+  static NonstationaryContextMap lcm3( MEM );
   static Array<int> wpos( MEM ); // last position of word
-  static int nl1 = -3, nl = -2;  // previous, current newline position
+  static int nl1 = -3;
+  static int nl = -2; // previous, current newline position
 
   // Update word hashes
   if( bpos == 0 ) {
@@ -1386,7 +1403,7 @@ void wordModel( Mixer &m ) {
       c += 'a' - 'A';
     if( ( c >= 'a' && c <= 'z' ) || c > 127 )
       word0 ^= hash( word0, c );
-    else if( word0 != 0u ) {
+    else if( word0 != 0U ) {
       word4 = word3;
       word3 = word2;
       word2 = word1;
@@ -1396,7 +1413,8 @@ void wordModel( Mixer &m ) {
     if( c == 10 )
       nl1 = nl, nl = pos - 1;
     int i = 0;
-    int col = min( 255, pos - nl ), above = buf[nl1 + col]; // text column context
+    int col = min( 255, pos - nl );
+    int above = buf[nl1 + col]; // text column context
     U32 h = hash( ++i, word0, buf( 1 ) );
     int w = h & wpos.size() - 1;
     cm1.set( h );
@@ -1438,12 +1456,18 @@ void wordModel( Mixer &m ) {
 
 void recordModel( Mixer &m ) {
   const int MAXRUN = 1024;
-  static Array<U8> run( MAXRUN );               // candidate record lengths
-  static Array<int> cpos1( 256 ), cpos2( 256 ); // buf(1) -> last 2 positions
-  static Array<int> wpos1( 0x10000 );           // last position of order 2 context
-  static Array<int> wpos3( MEM );               // last position of order 3 hash
-  static int rlen = 2;                          // current, previous run length
-  static ContextMap cm1( MEM ), cm2( MEM ), cm3( MEM ), cm4( MEM ), cm5( MEM ), cm6( MEM );
+  static Array<U8> run( MAXRUN ); // candidate record lengths
+  static Array<int> cpos1( 256 );
+  static Array<int> cpos2( 256 );     // buf(1) -> last 2 positions
+  static Array<int> wpos1( 0x10000 ); // last position of order 2 context
+  static Array<int> wpos3( MEM );     // last position of order 3 hash
+  static int rlen = 2;                // current, previous run length
+  static ContextMap cm1( MEM );
+  static ContextMap cm2( MEM );
+  static ContextMap cm3( MEM );
+  static ContextMap cm4( MEM );
+  static ContextMap cm5( MEM );
+  static ContextMap cm6( MEM );
 
   // Find record length
   if( bpos == 0 ) {
@@ -1484,10 +1508,22 @@ void recordModel( Mixer &m ) {
 // Model order 1-2 contexts with gaps.
 
 void sparseModel( Mixer &m ) {
-  static ContextMap cm13( MEM / 4 ), cm14( MEM / 4 ), cm15( MEM / 4 ), cm16( MEM / 4 ), cm23( MEM / 4 ),
-      cm24( MEM / 4 ), cm36( MEM / 4 ), cm48( MEM / 4 );
-  static SmallContextMap scm1( 0x20000 ), scm2( 0x20000 ), scm3( 0x20000 ), scm4( 0x20000 ), scm5( 0x20000 ),
-      scm6( 0x20000 ), scm7( 0x20000 ), scm8( 0x20000 );
+  static ContextMap cm13( MEM / 4 );
+  static ContextMap cm14( MEM / 4 );
+  static ContextMap cm15( MEM / 4 );
+  static ContextMap cm16( MEM / 4 );
+  static ContextMap cm23( MEM / 4 );
+  static ContextMap cm24( MEM / 4 );
+  static ContextMap cm36( MEM / 4 );
+  static ContextMap cm48( MEM / 4 );
+  static SmallContextMap scm1( 0x20000 );
+  static SmallContextMap scm2( 0x20000 );
+  static SmallContextMap scm3( 0x20000 );
+  static SmallContextMap scm4( 0x20000 );
+  static SmallContextMap scm5( 0x20000 );
+  static SmallContextMap scm6( 0x20000 );
+  static SmallContextMap scm7( 0x20000 );
+  static SmallContextMap scm8( 0x20000 );
   if( bpos == 0 ) {
     int i = 0;
     cm13.set( hash( ++i, buf( 1 ), buf( 3 ) ) );
@@ -1546,13 +1582,25 @@ inline int sqrbuf( int i ) {
 }
 
 int bmpModel( Mixer &m ) {
-  static int width = 0, w = 0; // width of image in pixels, bytes
-  static int eoi = 0;          // end of image
-  static U32 tiff = 0;         // offset of tif header
+  static int width = 0;
+  static int w = 0;    // width of image in pixels, bytes
+  static int eoi = 0;  // end of image
+  static U32 tiff = 0; // offset of tif header
   const int SC = 0x20000;
-  static SmallStationaryContextMap scm1( SC ), scm2( SC ), scm3( SC ), scm4( SC ), scm5( SC ), scm6( SC * 2 );
-  static ContextMap cm1( MEM / 2 ), cm2( MEM / 2 ), cm3( MEM / 2 ), cm4( MEM / 2 ), cm5( MEM / 2 ), cm6( 0x40000 ),
-      cm7( 0x40000 ), cm8( MEM / 2 );
+  static SmallStationaryContextMap scm1( SC );
+  static SmallStationaryContextMap scm2( SC );
+  static SmallStationaryContextMap scm3( SC );
+  static SmallStationaryContextMap scm4( SC );
+  static SmallStationaryContextMap scm5( SC );
+  static SmallStationaryContextMap scm6( SC * 2 );
+  static ContextMap cm1( MEM / 2 );
+  static ContextMap cm2( MEM / 2 );
+  static ContextMap cm3( MEM / 2 );
+  static ContextMap cm4( MEM / 2 );
+  static ContextMap cm5( MEM / 2 );
+  static ContextMap cm6( 0x40000 );
+  static ContextMap cm7( 0x40000 );
+  static ContextMap cm8( MEM / 2 );
 
   // Detect .bmp file header (24 bit color, not compressed)
   if( ( bpos == 0 ) && pos >= eoi && buf( 54 ) == 'B' && buf( 53 ) == 'M' && i4( 44 ) == 54 && i4( 40 ) == 40
@@ -1575,10 +1623,12 @@ int bmpModel( Mixer &m ) {
       tiff = pos; // Intel format only
     if( pos - tiff == 4 && c4 != 0x08000000 )
       tiff = 0;                                 // 8=normal offset to directory
-    if( ( tiff != 0u ) && pos - tiff == 200 ) { // most of directory should be read by now
+    if( ( tiff != 0U ) && pos - tiff == 200 ) { // most of directory should be read by now
       int dirsize = i2( pos - tiff - 4 );       // number of 12-byte directory entries
       width = w = 0;
-      int bpp = 0, compression = 0, height = 0;
+      int bpp = 0;
+      int compression = 0;
+      int height = 0;
       for( int i = tiff + 6; i < pos - 12 && --dirsize > 0; i += 12 ) {
         int tag = i2( pos - i );        // 256=width, 257==height, 259: 1=no compression
                                         // 277=3 samples/pixel
@@ -1700,13 +1750,15 @@ int jpegModel( Mixer &m ) {
     APP0 = 0xe0,
     COM = 0xfe,
     FF
-  };                                     // Second byte of 2 byte codes
-  static int jpeg = 0;                   // 1 if JPEG is detected
-  static int next_jpeg = 0;              // updated with jpeg on next byte boundary
-  static int app;                        // Bytes remaining to skip in APPx or COM field
-  static int sof = 0, sos = 0, data = 0; // pointers to buf
-  static Array<int> ht( 8 );             // pointers to Huffman table headers
-  static int htsize = 0;                 // number of pointers in ht
+  };                        // Second byte of 2 byte codes
+  static int jpeg = 0;      // 1 if JPEG is detected
+  static int next_jpeg = 0; // updated with jpeg on next byte boundary
+  static int app;           // Bytes remaining to skip in APPx or COM field
+  static int sof = 0;
+  static int sos = 0;
+  static int data = 0;       // pointers to buf
+  static Array<int> ht( 8 ); // pointers to Huffman table headers
+  static int htsize = 0;     // number of pointers in ht
 
   // Huffman decode state
   static U32 huffcode = 0; // Current Huffman code including extra bits
@@ -1727,23 +1779,34 @@ int jpegModel( Mixer &m ) {
   static int hufsel[2][10];     // DC/AC, mcupos/64 -> huf decode table
 
   // Image state
-  static Array<int> color( 10 );  // block -> component (0-3)
-  static Array<int> pred( 4 );    // component -> last DC value
-  static int dc = 0;              // DC value of the current block
-  static int width = 0;           // Image width in MCU
-  static int row = 0, column = 0; // in MCU (column 0 to width-1)
-  static Buf cbuf( 0x20000 );     // Rotating buffer of coefficients, coded as:
-                                  // DC: level shifted absolute value, low 4 bits discarded, i.e.
-                                  //   [-1023...1024] -> [0...255].
-                                  // AC: as an RS code: a run of R (0-15) zeros followed by an S (0-15)
-                                  //   bit number, or 00 for end of block (in zigzag order).
-                                  //   However if R=0, then the format is ssss11xx where ssss is S,
-                                  //   xx is the first 2 extra bits, and the last 2 bits are 1 (since
-                                  //   this never occurs in a valid RS code).
-  static int cpos = 0;            // position in cbuf
-  static U32 huff1 = 0, huff2 = 0, huff3 = 0, huff4 = 0; // hashes of last codes
-  static int rs1, rs2, rs3, rs4;                         // last 4 RS codes
-  static int ssum = 0, ssum1 = 0, ssum2 = 0, ssum3 = 0, ssum4 = 0;
+  static Array<int> color( 10 ); // block -> component (0-3)
+  static Array<int> pred( 4 );   // component -> last DC value
+  static int dc = 0;             // DC value of the current block
+  static int width = 0;          // Image width in MCU
+  static int row = 0;
+  static int column = 0;      // in MCU (column 0 to width-1)
+  static Buf cbuf( 0x20000 ); // Rotating buffer of coefficients, coded as:
+                              // DC: level shifted absolute value, low 4 bits discarded, i.e.
+                              //   [-1023...1024] -> [0...255].
+                              // AC: as an RS code: a run of R (0-15) zeros followed by an S (0-15)
+                              //   bit number, or 00 for end of block (in zigzag order).
+                              //   However if R=0, then the format is ssss11xx where ssss is S,
+                              //   xx is the first 2 extra bits, and the last 2 bits are 1 (since
+                              //   this never occurs in a valid RS code).
+  static int cpos = 0;        // position in cbuf
+  static U32 huff1 = 0;
+  static U32 huff2 = 0;
+  static U32 huff3 = 0;
+  static U32 huff4 = 0; // hashes of last codes
+  static int rs1;
+  static int rs2;
+  static int rs3;
+  static int rs4; // last 4 RS codes
+  static int ssum = 0;
+  static int ssum1 = 0;
+  static int ssum2 = 0;
+  static int ssum3 = 0;
+  static int ssum4 = 0;
   // sum of S in RS codes in block and last 4 values
 
   // Be sure to quit on a byte boundary
@@ -1841,7 +1904,8 @@ int jpegModel( Mixer &m ) {
         int end = p + buf[p - 2] * 256 + buf[p - 1] - 2; // end of Huffman table
         int count = 0;                                   // sanity check
         while( p < end && end < pos && end < p + 2100 && ++count < 10 ) {
-          int tc = buf[p] >> 4, th = buf[p] & 15;
+          int tc = buf[p] >> 4;
+          int th = buf[p] & 15;
           if( tc >= 2 || th >= 4 )
             break;
           jassert( tc >= 0 && tc < 2 && th >= 0 && th < 4 );
@@ -2000,7 +2064,8 @@ int jpegModel( Mixer &m ) {
   static Array<U8 *> cp( N ); // context pointers
   static StateMap sm[N];
   static Mixer m1( N + 1, 800, 4 );
-  static APM a1( 1024 ), a2( 0x10000 );
+  static APM a1( 1024 );
+  static APM a2( 0x10000 );
 
   // Update model
   if( cp[N - 1] != nullptr ) {
@@ -2017,7 +2082,8 @@ int jpegModel( Mixer &m ) {
   const int coef = ( mcupos & 63 ) | color[mcupos >> 6] << 6;
   jassert( coef >= 0 && coef < 256 );
   if( hbcount == 0 ) {
-    const int mpos = ( mcupos >> 4 | ( static_cast<int>( static_cast<int>( ( mcupos & -64 ) ) ) == 0 << 7 ) );
+    const int mpos =
+        ( mcupos >> 4 | static_cast<int>( static_cast<int>( static_cast<int>( ( mcupos & -64 ) ) ) == 0 << 7 ) );
     int n = 0;
     cxt[0] = hash( ++n, hc, mcupos >> 2, min( 3, mcupos & 63 ) );
     cxt[1] = hash( ++n, hc, mpos >> 4, cbuf[cpos - mcusize] );
@@ -2063,9 +2129,18 @@ int jpegModel( Mixer &m ) {
 // This combines all the context models with a Mixer.
 
 int contextModel2() {
-  static SmallContextMap cm0( 0x200 ), cm1( 0x20000 );
-  static ContextMap cm2( MEM ), cm3( MEM ), cm4( MEM ), cm5( MEM * 2 ), cm6( MEM * 2 ), cm7( MEM * 2 ), cm8( MEM * 2 );
-  static RunContextMap rcm7( MEM ), rcm9( MEM ), rcm10( MEM );
+  static SmallContextMap cm0( 0x200 );
+  static SmallContextMap cm1( 0x20000 );
+  static ContextMap cm2( MEM );
+  static ContextMap cm3( MEM );
+  static ContextMap cm4( MEM );
+  static ContextMap cm5( MEM * 2 );
+  static ContextMap cm6( MEM * 2 );
+  static ContextMap cm7( MEM * 2 );
+  static ContextMap cm8( MEM * 2 );
+  static RunContextMap rcm7( MEM );
+  static RunContextMap rcm9( MEM );
+  static RunContextMap rcm10( MEM );
   static Mixer m( 512, 1024, 4 );
 
   m.update();
@@ -2078,12 +2153,14 @@ int contextModel2() {
   if( ismatch > 400 ) {          // Model long matches directly
     m.set( 0, 8 );
     return m.p();
-  } else if( isjpeg != 0 ) {
+  }
+  if( isjpeg != 0 ) {
     m.set( 1, 8 );
     m.set( c0, 256 );
     m.set( buf( 1 ), 256 );
     return m.p();
-  } else if( isbmp != 0 ) {
+  }
+  if( isbmp != 0 ) {
     static int col = 0;
     if( ++col >= 24 )
       col = 0;
@@ -2145,7 +2222,7 @@ int contextModel2() {
 // update(y) trains the predictor with the actual bit (0 or 1).
 
 class Predictor {
-  int pr; // next prediction
+  int pr{ 2048 }; // next prediction
 public:
   Predictor();
   int p() const {
@@ -2155,10 +2232,13 @@ public:
   void upd();
 };
 
-Predictor::Predictor() : pr( 2048 ) {}
+Predictor::Predictor() = default;
 
 void Predictor::upd() {
-  static APM a1( 256 ), a2( 0x10000 ), a3( 0x10000 ), a4( 0x10000 );
+  static APM a1( 256 );
+  static APM a2( 0x10000 );
+  static APM a3( 0x10000 );
+  static APM a4( 0x10000 );
 
   // Update global context: pos, bpos, c0, c4, buf, nibble
   c0 += c0 + y;
@@ -2184,13 +2264,13 @@ void Predictor::upd() {
 #define CREATION_DATE "11.01.2006"
 #define PROGNAME_FULLLINE LONG_PROGNAME " by M.Mahoney+A.Ratushnyak+P.Skibinski," CREATION_DATE
 #define PAQ_TEMP "pasqda_tmp.tmp"
+#include <algorithm>
+#include <cassert>
 #include <cctype>
 #include <cmath>
+#include <ctime>
 #include <string>
 #include <vector>
-#include <algorithm>
-#include <ctime>
-#include <cassert>
 #define FILE_BIB 111261
 #define FILE_BOOK1 768771
 #define FILE_BOOK2 610856
@@ -2254,20 +2334,20 @@ typedef enum { COMPRESS, DECOMPRESS } Mode;
 class Encoder {
 private:
   Predictor predictor;
-  Mode mode;     // Compress or decompress?
-  FILE *archive; // Compressed data file
-  U32 x1, x2;    // Range, initially [0, 1), scaled by 2^32
-  U32 x;         // Last 4 input bytes of archive.
+  Mode mode;                     // Compress or decompress?
+  FILE *archive;                 // Compressed data file
+  U32 x1{ 0 }, x2{ 0xffffffff }; // Range, initially [0, 1), scaled by 2^32
+  U32 x{ 0 };                    // Last 4 input bytes of archive.
   int LPS;
-  U32 bits_to_follow;
-  U8 bptr, bout, bptrin;
+  U32 bits_to_follow{ 0 };
+  U8 bptr{ 128 }, bout{ 0 }, bptrin{ 1 };
   int bin;
 
 public:
   Encoder();
   ~Encoder();
   void start( Mode m, FILE *f );
-  void encode( int y ); // Compress bit y
+  void encode( int z ); // Compress bit y
   int decode();         // Uncompress and return bit y
   void flush();         // Call when done compressing
   void bit_plus_follow( int bit );
@@ -2277,7 +2357,7 @@ public:
 void Encoder::bit_plus_follow( int bit ) {
   if( bit != 0 )
     bout |= bptr;
-  if( ( bptr >>= 1 ) == 0u ) {
+  if( ( bptr >>= 1 ) == 0U ) {
     putc( bout, archive );
     bptr = 128;
     bout = 0;
@@ -2286,7 +2366,7 @@ void Encoder::bit_plus_follow( int bit ) {
   for( ; bits_to_follow > 0; bits_to_follow-- ) {
     if( bit != 0 )
       bout |= bptr;
-    if( ( bptr >>= 1 ) == 0u ) {
+    if( ( bptr >>= 1 ) == 0U ) {
       putc( bout, archive );
       bptr = 128;
       bout = 0;
@@ -2294,7 +2374,7 @@ void Encoder::bit_plus_follow( int bit ) {
   }
 }
 inline int Encoder::input_bit( void ) {
-  if( ( bptrin >>= 1 ) == 0u ) {
+  if( ( bptrin >>= 1 ) == 0U ) {
     bin = getc( archive );
     if( bin == EOF )
       bin = 0;
@@ -2304,9 +2384,10 @@ inline int Encoder::input_bit( void ) {
 }
 
 // Constructor
-Encoder::Encoder() : x1( 0 ), x2( 0xffffffff ), x( 0 ), bits_to_follow( 0 ), bptr( 128 ), bout( 0 ), bptrin( 1 ) {}
+Encoder::Encoder() = default;
 
-Encoder::~Encoder(){};
+Encoder::~Encoder() = default;
+;
 
 void Encoder::start( Mode m, FILE *f ) {
   mode = m;
@@ -2330,7 +2411,9 @@ inline void Encoder::encode( int z ) {
   U32 p = predictor.p(); // P(1) * 4K
   assert( p < 4096 );
   const U32 xdiff = x2 - x1;
-  U32 a, b, c;
+  U32 a;
+  U32 b;
+  U32 c;
   U32 xmid; // = x1+p*(x2-x1) multiply without overflow, round down
 
   y = z;
@@ -2375,7 +2458,9 @@ inline int Encoder::decode() {
   const U32 p = predictor.p(); // P(1) * 4K
   assert( p < 4096 );
   const U32 xdiff = x2 - x1;
-  U32 a, b, c;
+  U32 a;
+  U32 b;
+  U32 c;
   U32 xmid; // = x1+p*(x2-x1) multiply without overflow, round down
 
   c = 2 * p + 1;
@@ -2422,7 +2507,7 @@ void Encoder::flush() {
       bit_plus_follow( 0 );
     else
       bit_plus_follow( 1 );
-    if( bout != 0u )
+    if( bout != 0U )
       putc( bout, archive );
   }
 }
@@ -2445,7 +2530,8 @@ class Transformer {
   Encoder e;
 
 public:
-  Transformer(){};
+  Transformer() = default;
+  ;
   void start( Mode mode, FILE *f ) {
     e.start( mode, f );
   };
@@ -2472,7 +2558,7 @@ public:
 // first control character except tab.  Skips CR in CR LF.
 string getline( FILE *f = stdin ) {
   int c;
-  string result = "";
+  string result;
   while( ( c = getc( f ) ) != EOF && ( c >= 32 || c == '\t' ) )
     result += char( c );
   if( c == '\r' )
@@ -2486,8 +2572,9 @@ void te8e9( char *, int, int, int * );
 }
 int exe_preprocess( FILE *f, FILE *fw, int type ) // 3=compress, 4=decompress
 {
-  char *st0, *st;
-  int data2write[4] = {0, 0, 0, 0};
+  char *st0;
+  char *st;
+  int data2write[4] = { 0, 0, 0, 0 };
   int size;
 
   fseek( f, 0L, SEEK_END );
@@ -2601,10 +2688,11 @@ int main( int argc, char **argv ) {
   }
 
   // File names and sizes from input or archive
-  vector<string> filename;                          // List of names
-  vector<long> filesize;                            // Size or -1 if error
-  int uncompressed_bytes = 0, compressed_bytes = 0; // Input, output sizes
-  FILE *archive = fopen( argv[1], "rb" );
+  vector<string> filename; // List of names
+  vector<long> filesize;   // Size or -1 if error
+  int uncompressed_bytes = 0;
+  int compressed_bytes = 0; // Input, output sizes
+  FILE *archive = fopen( argv[1], "rbe" );
 
   // Extract files
   if( archive != nullptr ) {
@@ -2665,9 +2753,9 @@ int main( int argc, char **argv ) {
         filesize.push_back( atol( s.c_str() ) );
         string::iterator tab = find( s.begin(), s.end(), '\t' );
         if( tab != s.end() )
-          filename.push_back( string( tab + 1, s.end() ) );
+          filename.emplace_back( tab + 1, s.end() );
         else
-          filename.push_back( "" );
+          filename.emplace_back( "" );
       } else
         break;
     }
@@ -2693,11 +2781,13 @@ int main( int argc, char **argv ) {
       printf( "%10ld %s: ", filesize[i], filename[i].c_str() );
 
       // Compare with existing file
-      FILE *f = fopen( filename[i].c_str(), "rb" );
+      FILE *f = fopen( filename[i].c_str(), "rbe" );
       long size = filesize[i];
       uncompressed_bytes += size;
 
-      int b, c, d;
+      int b;
+      int c;
+      int d;
       b = c = d = -1;
 
       if( f != nullptr ) {
@@ -2706,7 +2796,7 @@ int main( int argc, char **argv ) {
       }
       // Extract to new file
       else {
-        f = fopen( filename[i].c_str(), "wb" );
+        f = fopen( filename[i].c_str(), "wbe" );
         if( f == nullptr )
           printf( "cannot create, skipping...\n" );
 
@@ -2740,8 +2830,8 @@ int main( int argc, char **argv ) {
         if( f != nullptr ) {
           if( ( exe != 0 ) && size >= 3 ) {
             fclose( f );
-            f = fopen( filename[i].c_str(), "rb" );
-            FILE *fw = fopen( PAQ_TEMP, "wb" );
+            f = fopen( filename[i].c_str(), "rbe" );
+            FILE *fw = fopen( PAQ_TEMP, "wbe" );
             if( ( f == nullptr ) || ( fw == nullptr ) )
               handler();
 
@@ -2768,15 +2858,15 @@ int main( int argc, char **argv ) {
     // Read file names from command line or input
     if( argc > 2 )
       for( int i = 2; i < argc; ++i )
-        filename.push_back( argv[i] );
+        filename.emplace_back( argv[i] );
     else {
       printf( "Enter names of files to compress, followed by blank line or EOF.\n" );
       while( true ) {
         string s = getline( stdin );
         if( s == "" )
           break;
-        else
-          filename.push_back( s );
+
+        filename.push_back( s );
       }
     }
 
@@ -2791,7 +2881,7 @@ int main( int argc, char **argv ) {
 
     // Get file sizes
     for( i = 0; i < int( filename.size() ); ++i ) {
-      FILE *f = fopen( filename[i].c_str(), "rb" );
+      FILE *f = fopen( filename[i].c_str(), "rbe" );
       if( f == nullptr ) {
         printf( "File not found, skipping: %s\n", filename[i].c_str() );
       } else {
@@ -2825,7 +2915,7 @@ int main( int argc, char **argv ) {
     }
 
     // Write header
-    archive = fopen( argv[1], "wb" );
+    archive = fopen( argv[1], "wbe" );
     if( archive == nullptr ) {
       printf( "Cannot create archive: %s\n", argv[1] );
       return 1;
@@ -2864,13 +2954,13 @@ int main( int argc, char **argv ) {
       if( size >= 0 ) {
         uncompressed_bytes += size;
         printf( "%-23s %10ld -> ", filenames[i].c_str(), size );
-        FILE *f = fopen( filenames[i].c_str(), "rb" );
+        FILE *f = fopen( filenames[i].c_str(), "rbe" );
 
         fsize = size;
         setWeight();
 
         if( ( f != nullptr ) && ( exe != 0 ) && size >= 3 ) {
-          FILE *fw = fopen( PAQ_TEMP, "wb" );
+          FILE *fw = fopen( PAQ_TEMP, "wbe" );
           if( fw == nullptr )
             handler();
 
@@ -2879,7 +2969,7 @@ int main( int argc, char **argv ) {
           fclose( fw );
           fclose( f );
 
-          f = fopen( PAQ_TEMP, "rb" );
+          f = fopen( PAQ_TEMP, "rbe" );
 
           int b = getc( f );
           e->encode( b );

@@ -164,19 +164,19 @@ To compile (g++ 3.4.5, upx 3.00w):
   upx -qqq lpaq1.exe
 
 */
+#include <ctype.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <math.h>
-#include <ctype.h>
 #define NDEBUG // remove for debugging
 #include <assert.h>
 
 // 8, 16, 32 bit unsigned types (adjust as appropriate)
-typedef unsigned char U8;
-typedef unsigned short U16;
-typedef unsigned int U32;
+using U8 = unsigned char;
+using U16 = unsigned short;
+using U32 = unsigned int;
 
 #ifdef WIKI
 #  define FB_SIZE 8192
@@ -240,7 +240,8 @@ U32 mem_usage = 0;
 inline void E8E9_encode( U8 *p, int i ) {
   for( ; i > 0; ++p, --i ) {
     if( ( *p & 0xfe ) == 0xe8 && ( *( p + 4 ) == 0 || *( p + 4 ) == 0xff ) ) {
-      int f = *( U32 * ) ( p + 1 ), a = ( f + ( fb_done + p - &file_buf[0] ) ) << 7;
+      int f = *( U32 * ) ( p + 1 );
+      int a = ( f + ( fb_done + p - &file_buf[0] ) ) << 7;
       *( U32 * ) ( p + 1 ) = a >> 7; // This is NOT big-endian-compatible
     }
   }
@@ -249,7 +250,8 @@ inline void E8E9_encode( U8 *p, int i ) {
 inline void E8E9_decode( U8 *p, int i ) {
   for( ; i > 0; --p, --i ) {
     if( ( *p & 0xfe ) == 0xe8 && ( *( p + 4 ) == 0 || *( p + 4 ) == 0xff ) ) {
-      int f = *( U32 * ) ( p + 1 ), a = ( f - ( fb_done + p - &file_buf[0] ) ) << 7;
+      int f = *( U32 * ) ( p + 1 );
+      int a = ( f - ( fb_done + p - &file_buf[0] ) ) << 7;
       *( U32 * ) ( p + 1 ) = a >> 7; // This is NOT big-endian-compatible
     }
   }
@@ -268,7 +270,7 @@ inline int do_getc() {
   fb_stop = fb_len - FB_SIZE;
   if( fb_stop == &file_buf[4] ) {
     fb_len = fb_stop + fread( &file_buf[4], 1, FB_SIZE, uncompressed );
-    if( ExeFlag != 0u )
+    if( ExeFlag != 0U )
       E8E9_encode( fb_pos, fb_len - 8 - fb_pos );
     fb_stop = fb_len;
     if( fb_stop > &file_buf[FB_SIZE] )
@@ -279,7 +281,7 @@ inline int do_getc() {
 
 inline void do_putc( U8 c ) {
   if( fb_pos >= fb_stop ) {
-    if( ExeFlag != 0u )
+    if( ExeFlag != 0U )
       E8E9_decode( &file_buf[FB_SIZE - 1 - 4], FB_SIZE - 4 );
     fwrite( &file_buf[0], 1, FB_SIZE, uncompressed );
 
@@ -291,7 +293,7 @@ inline void do_putc( U8 c ) {
 
 inline void do_putc_end() {
   int LEN = fb_pos - &file_buf[0];
-  if( ExeFlag != 0u )
+  if( ExeFlag != 0U )
     E8E9_decode( &file_buf[LEN - 1 - 4], LEN - 4 );
   fwrite( &file_buf[0], 1, LEN, uncompressed );
 }
@@ -496,7 +498,8 @@ public:
     assert( cx >= 0 && cx < N );
     assert( cxt >= 0 && cxt < N );
     U32 p0 = *t_cxt;
-    U32 i = p0 & 1023, pr = p0 >> 12; // count, prediction
+    U32 i = p0 & 1023;
+    U32 pr = p0 >> 12; // count, prediction
     p0 += static_cast<unsigned int>( i < TOLIMIT_1a );
     p0 += ( ( y20 - ( int ) pr ) * dt[i] ) & 0xfffffc00;
     *t_cxt = p0;
@@ -508,7 +511,8 @@ public:
     assert( cx >= 0 && cx < N );
     assert( cxt >= 0 && cxt < N );
     U32 p0 = *t_cxt;
-    U32 i = p0 & 1023, pr = p0 >> 12; // count, prediction
+    U32 i = p0 & 1023;
+    U32 pr = p0 >> 12; // count, prediction
     p0 += static_cast<unsigned int>( i < TOLIMIT_1b );
     p0 += ( ( y20 - ( int ) pr ) * dt[i] ) & 0xfffffc00;
     *t_cxt = p0;
@@ -520,7 +524,8 @@ public:
     assert( cx >= 0 && cx < N );
     assert( cxt >= 0 && cxt < N );
     U32 p0 = *t_cxt;
-    U32 i = p0 & 1023, pr = p0 >> 12; // count, prediction
+    U32 i = p0 & 1023;
+    U32 pr = p0 >> 12; // count, prediction
     p0 += static_cast<unsigned int>( i < 400 );
     p0 += ( ( y20 - ( int ) pr ) * dt[i] ) & 0xfffffc00;
     *t_cxt = p0;
@@ -558,8 +563,10 @@ public:
     assert( cx >= 0 && cx < N / 24 );
     assert( cxt >= 0 && cxt < N );
     {
-      U32 *p = &t[cxt], p0 = p[0];
-      U32 i = p0 & 1023, pr = p0 >> 12; // count, prediction
+      U32 *p = &t[cxt];
+      U32 p0 = p[0];
+      U32 i = p0 & 1023;
+      U32 pr = p0 >> 12; // count, prediction
       p0 += static_cast<unsigned int>( i < TOLIMIT_2a );
       p0 += ( ( y20 - ( int ) pr ) * dta[i] + 0x200 ) & 0xfffffc00;
       p[0] = p0;
@@ -576,8 +583,10 @@ public:
     assert( cx >= 0 && cx < N / 24 );
     assert( cxt >= 0 && cxt < N );
     {
-      U32 *p = &t[cxt], p0 = p[0];
-      U32 i = p0 & 1023, pr = p0 >> 12; // count, prediction
+      U32 *p = &t[cxt];
+      U32 p0 = p[0];
+      U32 i = p0 & 1023;
+      U32 pr = p0 >> 12; // count, prediction
       p0 += static_cast<unsigned int>( i < TOLIMIT_2b );
       p0 += ( ( y20 - ( int ) pr ) * dta[i] + 0x200 ) & 0xfffffc00;
       p[0] = p0;
@@ -789,7 +798,9 @@ inline U32 hash0( U32 i ) {
 
 template <int B>
 inline U8 *HashTable<B>::get( U32 i ) {
-  U8 *p = t + ( i * B & NB ), *q, *r;
+  U8 *p = t + ( i * B & NB );
+  U8 *q;
+  U8 *r;
   i >>= 24;
   U8 c = i;
   if( *( p - 1 ) == c )
@@ -932,7 +943,8 @@ void MatchModel::upd() {
       ++len;
   } else {
     if( pos >= MAXLEN ) {
-      U8 *p1 = buf + pos - 1, *p;
+      U8 *p1 = buf + pos - 1;
+      U8 *p;
       SEARCH2( h1 )
       if( len < 3 )
         SEARCH2( h2 )
@@ -994,8 +1006,8 @@ int MatchModel::p() {
 
 int MEM = 0; // Global memory usage = 3*MEM bytes (1<<20 .. 1<<29)
 
-U8 t0[0x10000];                                   // order 1 cxt -> state
-U8 *t0c1 = t0, *cp[6] = {t0, t0, t0, t0, t0, t0}; // pointer to bit history
+U8 t0[0x10000];                                     // order 1 cxt -> state
+U8 *t0c1 = t0, *cp[6] = { t0, t0, t0, t0, t0, t0 }; // pointer to bit history
 U32 h[6], pw = 0, c8 = 0, cc = 0, prevfail = 0;
 U8 fails = 0;
 StateMap sm[6];
@@ -1119,7 +1131,8 @@ public:
     m_update( y );
 
     // predict
-    int len = mm.p(), pr;
+    int len = mm.p();
+    int pr;
     if( len == 0 )
       len = ( static_cast<int>( *cp[1] != 0 ) + static_cast<int>( *cp[2] != 0 ) + static_cast<int>( *cp[3] != 0 )
               + static_cast<int>( *cp[4] != 0 ) )
@@ -1345,7 +1358,8 @@ Encoder::Encoder( Mode m, FILE *f ) :
       x = ( x << 8 ) + ( getc( archive ) & 255 );
   }
 
-  int i, pi = 0;
+  int i;
+  int pi = 0;
   for( int x = -2047; x <= 2047; ++x ) { // invert squash()
     int i = squash_init( x );
     squash( x ) = i + SQUARD; //rounding,  needed at the end of Predictor::update()
@@ -1373,7 +1387,8 @@ Encoder::Encoder( Mode m, FILE *f ) :
 #endif
 
   for( i = -4096; i < 4096; ++i ) {
-    int e = i, v = 0;
+    int e = i;
+    int v = 0;
     if( e < 0 )
       e = -e;
     if( e > 1024 )
@@ -1427,7 +1442,8 @@ int main( int argc, char **argv ) {
   clock_t start = clock();
 
   // Open input file
-  FILE *in = fopen( argv[2], "rb" ), *out = 0;
+  FILE *in = fopen( argv[2], "rbe" );
+  FILE *out = 0;
   if( in == nullptr )
     perror( argv[2] ), exit( 1 );
 
@@ -1444,7 +1460,8 @@ int main( int argc, char **argv ) {
 
     uncompressed = in;
     { // a better data detection algorithm will be here in future
-      int i = fread( file_buf, 1, FB_SIZE + 4, in ), k = 0;
+      int i = fread( file_buf, 1, FB_SIZE + 4, in );
+      int k = 0;
       fb_len = &file_buf[i];
       fb_stop = fb_len;
       if( fb_stop > &file_buf[FB_SIZE] )
@@ -1462,7 +1479,7 @@ int main( int argc, char **argv ) {
     }
 
     // Encode header: version 6, memory option, file size
-    out = fopen( argv[3], "wb" );
+    out = fopen( argv[3], "wbe" );
     if( out == nullptr )
       perror( argv[3] ), exit( 1 );
     fprintf( out, "pQ%c%c%ld%ld%ld%ld", 6, argv[1][0], size >> 24, size >> 16, size >> 8, size );
@@ -1505,15 +1522,18 @@ int main( int argc, char **argv ) {
       quit( "Bad file size" );
 
     // Decompress
-    out = fopen( argv[3], "wb" );
+    out = fopen( argv[3], "wbe" );
     if( out == nullptr )
       perror( argv[3] ), exit( 1 );
     Encoder e( DECOMPRESS, in );
 
     uncompressed = out;
     { // this is because we don't save TextFlag in the compressed file
-      U8 *p = &file_buf[0], c;
-      long s = FB_SIZE + 4, ss, k = 0;
+      U8 *p = &file_buf[0];
+      U8 c;
+      long s = FB_SIZE + 4;
+      long ss;
+      long k = 0;
       if( s > size )
         s = size;
       size -= s;

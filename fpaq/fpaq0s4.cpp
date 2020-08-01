@@ -4,16 +4,16 @@
 // 10/01/2006 32 bit encoder modified, Fabio Buffoni
 // jan 16 2006 improved compression, David Scott
 // 11/10/2006 modified encoder (o0+o1+o2)+LZ+PPM ,(fast) Nania Francesco Antonio (Italy)
+#include <cassert>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
-#include <cassert>
 namespace std {} // namespace std
 using namespace std;
 
-typedef unsigned char U8;
-typedef unsigned int U32; // 32 bit type
+using U8 = unsigned char;
+using U32 = unsigned int; // 32 bit type
 
 #define Top_value U32( 0XFFFFFFFF ) /* Largest code value */
 /* HALF AND QUARTER POINTS IN THE CODE VALUE RANGE. */
@@ -121,7 +121,7 @@ inline void Encoder::bit_plus_follow( int bit ) {
   for( int notb = bit ^ 1; bits_to_follow > 0; bits_to_follow--, bit = notb ) {
     if( bit != 0 )
       bout |= bptr;
-    if( ( bptr >>= 1 ) == 0u ) {
+    if( ( bptr >>= 1 ) == 0U ) {
       putc( bout, archive );
       bptr = 128;
       bout = 0;
@@ -129,7 +129,7 @@ inline void Encoder::bit_plus_follow( int bit ) {
   }
 }
 inline int Encoder::input_bit( void ) {
-  if( ( bptrin >>= 1 ) == 0u ) {
+  if( ( bptrin >>= 1 ) == 0U ) {
     bin = getc( archive );
     if( bin == EOF ) {
       bin = 0;
@@ -285,7 +285,7 @@ void Encoder::flush() {
     bit_plus_follow( 1 );
     bit_plus_follow( 1 );
   }
-  if( bout != 0u )
+  if( bout != 0U )
     putc( bout, archive );
 }
 
@@ -303,10 +303,10 @@ int main( int argc, char **argv ) {
   clock_t start = clock();
 
   // Open files
-  FILE *in = fopen( argv[2], "rb" );
+  FILE *in = fopen( argv[2], "rbe" );
   if( in == nullptr )
     perror( argv[2] ), exit( 1 );
-  FILE *out = fopen( argv[3], "wb" );
+  FILE *out = fopen( argv[3], "wbe" );
   if( out == nullptr )
     perror( argv[3] ), exit( 1 );
   int c;
