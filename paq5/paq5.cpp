@@ -442,6 +442,7 @@ Also, give yourself credit in the help message.
 
 #define hash ___hash // To avoid Digital MARS name collision
 #include <cstdio>
+#include <cstring>
 #include <cstdlib>
 #include <cctype>
 #include <cmath>

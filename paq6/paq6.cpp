@@ -558,6 +558,7 @@ Also, give yourself credit in the help message.
 #define PROGNAME "PAQ6" // Please change this if you change the program
 
 #define hash ___hash // To avoid Digital MARS name collision
+#include <cstring>
 #include <cstdio>
 #include <cstdlib>
 #include <cctype>
