@@ -637,6 +637,7 @@ Added gif recompression
 #include <sys/stat.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <time.h>
 #include <math.h>
@@ -988,7 +989,7 @@ public:
   virtual void create( const char *filename ) = 0;
   virtual void close() = 0;
   virtual int getc() = 0;
-  virtual void putc( U8 c ) = 0;
+  virtual void putc( U8 c ) = delete;
   void append( const char *s ) {
     for( int i = 0; s[i]; i++ )
       putc( s[i] );

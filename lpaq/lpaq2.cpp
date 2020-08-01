@@ -170,6 +170,7 @@ To compile (g++ 3.4.5, upx 3.00w):
 #include <time.h>
 #define NDEBUG // remove for debugging
 #include <assert.h>
+#include <cstdint>
 
 // 8, 16, 32 bit unsigned types (adjust as appropriate)
 using U8 = unsigned char;

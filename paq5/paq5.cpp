@@ -441,6 +441,9 @@ Also, give yourself credit in the help message.
 #define PROGNAME "PAQ5" // Please change this if you change the program
 
 #define hash ___hash // To avoid Digital MARS name collision
+#include <cstdio>
+#include <cstring>
+#include <cstdlib>
 #include <algorithm>
 #include <cassert>
 #include <cctype>
