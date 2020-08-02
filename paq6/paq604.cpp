@@ -563,6 +563,7 @@ Also, give yourself credit in the help message.
 #define PROGNAME "PAQ604" // Please change this if you change the program
 
 #define hash ___hash // To avoid Digital MARS name collision
+#include <cstring>
 #include "bit_bytm.cpp"
 #include <algorithm>
 #include <cassert>
@@ -579,6 +580,8 @@ Also, give yourself credit in the help message.
 using std::string;
 using std::swap;
 using std::vector;
+using std::min;
+using std::max;
 
 const int PSCALE = 4096; // Integer scale for representing probabilities
 int MEM = 3;             // Use about 6 MB * 2^MEM bytes of memory

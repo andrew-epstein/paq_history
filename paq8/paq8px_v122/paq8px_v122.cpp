@@ -639,6 +639,7 @@ Added gif recompression
 #include <time.h>
 #include <math.h>
 #include <ctype.h>
+#include <cstdint>
 
 #include <zlib.h>
 

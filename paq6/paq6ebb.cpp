@@ -571,6 +571,7 @@ Also, give yourself credit in the help message.
 #include <new>
 #include <string>
 #include <vector>
+#include <cstring>
 #undef hash
 using std::string;
 using std::swap;

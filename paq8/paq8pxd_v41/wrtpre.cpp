@@ -94,9 +94,9 @@ U8 *dictlen = NULL;
 int wrtnum = 0;
 //-------
 #define PUTC( c )                                                                                                      \
-  { XWRT_fileout->putc( c ); }
+  { XWRT_fileout->putChar( c ); }
 #define GETC( c )                                                                                                      \
-  { c = XWRT_file->getc(); }
+  { c = XWRT_file->getChar(); }
 size_t fread_fast( U8 *dst, int len, File *file );
 size_t fwrite_fast( U8 *dst, int len, File *file );
 
@@ -1129,7 +1129,7 @@ XWRT_Encoder::~XWRT_Encoder() {}
     last_last_c = last_c;                                                                                              \
     last_c = last_c_bak;                                                                                               \
                                                                                                                        \
-    c = XWRT_file->getc();                                                                                             \
+    c = XWRT_file->getChar();                                                                                             \
     filelento++;                                                                                                       \
     last_c_bak = c;                                                                                                    \
   }

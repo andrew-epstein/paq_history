@@ -4596,6 +4596,7 @@ public:
   int p( Mixer &m, int val1 = 0, int val2 = 0 ) {
     m.add( stretch( 4096 - ppmd_12_256_1.ppmd_Predict( 4096, x.y ) ) );
     m.add( stretch( 4096 - ppmd_6_32_1.ppmd_Predict( 4096, x.y ) ) );
+    return 0;
   }
   ~ppmdModel1() {}
 };

@@ -1,7 +1,11 @@
 
 //////////////////////////// ppmdModel //////////////////////////
 
+#ifndef UNIX
 #define NOINLINE __declspec(noinline)
+#else
+	#define NOINLINE __attribute__((noinline))
+#endif
 template <class T> T Min( T x, T y ) { return (x<y) ? x : y; }
 template <class T> T Max( T x, T y ) { return (x>y) ? x : y; }
 

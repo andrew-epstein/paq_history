@@ -1,6 +1,8 @@
 // Detect.hpp - part of Word Replacing Transformation by P.Skibinski
 
+#ifndef UNIX
 #include <windows.h>
+#endif
 
 int langSum;
 

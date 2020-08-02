@@ -561,6 +561,7 @@ Also, give yourself credit in the help message.
 #define PROGNAME "PAQ6" // Please change this if you change the program
 
 #define hash ___hash // To avoid Digital MARS name collision
+#include <cstring>
 #include <algorithm>
 #include <cassert>
 #include <cctype>
@@ -1257,7 +1258,7 @@ void Mixer::update( int y ) {
 
     for( int i = 0; i <= n; ++i ) {
       int dw = int( bc0[i] * m0 + bc1[i] * m1 + rn ) >> 8;
-      wt[c][i] = min( 65535, max( 1, int( wt[c][i] + dw ) ) );
+      wt[c][i] = std::min( 65535, std::max( 1, int( wt[c][i] + dw ) ) );
     }
   }
   n = -1;
@@ -1765,7 +1766,7 @@ inline void SparseModel::model() {
     t4.update( hash( ch( 2 ), ch( 3 ) ) );
     t5.update( hash( ch( 2 ), ch( 4 ) ) );
     t6.update( hash( ch( 3 ), ch( 4 ) ) );
-    const int g = min( 255, int( ch.pos() - ch.pos( ch( 1 ), 2 ) ) ); // gap to prior ch1
+    const int g = std::min( 255, int( ch.pos() - ch.pos( ch( 1 ), 2 ) ) ); // gap to prior ch1
     t7.update( hash( ch( 1 ), g ) );
     t8.update( hash( ch( 1 ), ch( 2 ), g ) );
   }

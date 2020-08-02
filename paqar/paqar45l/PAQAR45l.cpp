@@ -543,8 +543,7 @@ Also, give yourself credit in the help message.
 #define CREATION_DATE "12.2.2006"
 #define PROGNAME_FULLLINE LONG_PROGNAME " by M.Mahoney+A.Ratushnyak+P.Skibinski, " CREATION_DATE
 #define PAQ_TEMP "paqar4_tmp.tmp"
-#define min( a, b ) ( ( a ) < ( b ) ? ( a ) : ( b ) )
-#define max( a, b ) ( ( a ) > ( b ) ? ( a ) : ( b ) )
+#include <cstring>
 #include <algorithm>
 #include <cassert>
 #include <cctype>
@@ -574,6 +573,8 @@ int o_w, o_i, o_j, ow;
 using std::string;
 using std::swap;
 using std::vector;
+using std::min;
+using std::max;
 
 #define PSCALE 4096 /* Integer scale for representing probabilities */
 int MEM = 5, fnu = 0, exe = 0;

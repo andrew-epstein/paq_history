@@ -180,6 +180,7 @@ To compile (g++ 3.4.5, upx 3.00w):
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <cstdint>
 #define NDEBUG // remove for debugging
 #include <assert.h>
 

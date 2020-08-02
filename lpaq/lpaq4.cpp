@@ -176,6 +176,7 @@ To compile (g++ 3.4.5, upx 3.00w):
 #  define ORDER6_MASK 0xffff
 #endif
 
+#include <cstdint>
 #include <ctype.h>
 #include <math.h>
 #include <stdio.h>
