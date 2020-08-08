@@ -482,6 +482,8 @@ dictionary preprocesor like PAQ8B/C/D/E.
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <string>
+#include <vector>
 using std::string;
 using std::swap;
 using std::vector;

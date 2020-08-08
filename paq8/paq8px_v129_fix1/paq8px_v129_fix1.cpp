@@ -639,7 +639,7 @@ Added gif recompression
 #include <time.h>
 #include <math.h>
 #include <ctype.h>
-
+#include <cstdint>
 #include <zlib.h>
 
 #if defined( __x86_64 ) || defined( _M_X64 )
@@ -986,10 +986,10 @@ public:
   virtual void create( const char *filename ) = 0;
   virtual void close() = 0;
   virtual int getc() = 0;
-  virtual void putc( U8 c ) = 0;
+  virtual void putChar( U8 c ) = 0;
   void append( const char *s ) {
     for( int i = 0; s[i]; i++ )
-      putc( s[i] );
+      putChar( s[i] );
   }
   virtual U64 blockread( U8 *ptr, U64 count ) = 0;
   virtual U64 blockwrite( U8 *ptr, U64 count ) = 0;
@@ -997,10 +997,10 @@ public:
     return ( getc() << 24 ) | ( getc() << 16 ) | ( getc() << 8 ) | ( getc() );
   }
   void put32( U32 x ) {
-    putc( ( x >> 24 ) & 255 );
-    putc( ( x >> 16 ) & 255 );
-    putc( ( x >> 8 ) & 255 );
-    putc( x & 255 );
+    putChar( ( x >> 24 ) & 255 );
+    putChar( ( x >> 16 ) & 255 );
+    putChar( ( x >> 8 ) & 255 );
+    putChar( x & 255 );
   }
   virtual void setpos( U64 newpos ) = 0;
   virtual void setend() = 0;
@@ -1047,7 +1047,7 @@ public:
   int getc() {
     return fgetc( file );
   }
-  void putc( U8 c ) {
+  void putChar( U8 c ) {
     fputc( c, file );
   }
   U64 blockread( U8 *ptr, U64 count ) {
@@ -1142,7 +1142,7 @@ public:
     } else
       return ( *file_on_disk ).getc();
   }
-  void putc( U8 c ) {
+  void putChar( U8 c ) {
     if( content_in_ram ) {
       if( filepos < MAX_RAM_FOR_TMP_CONTENT ) {
         if( filepos == filesize ) {
@@ -1155,7 +1155,7 @@ public:
       } else
         ram_to_disk();
     }
-    ( *file_on_disk ).putc( c );
+    ( *file_on_disk ).putChar( c );
   }
   U64 blockread( U8 *ptr, U64 count ) {
     if( content_in_ram ) {
@@ -8420,7 +8420,7 @@ private:
     predictor.update();
     while( ( ( x1 ^ x2 ) & 0xff000000 ) == 0 ) { // pass equal leading bytes of range
       if( mode == COMPRESS )
-        archive->putc( x2 >> 24 );
+        archive->putChar( x2 >> 24 );
       x1 <<= 8;
       x2 = ( x2 << 8 ) + 255;
       if( mode == DECOMPRESS )
@@ -8446,7 +8446,7 @@ public:
   void compress( int c ) {
     assert( mode == COMPRESS );
     if( level == 0 )
-      archive->putc( c );
+      archive->putChar( c );
     else
       for( int i = 7; i >= 0; --i )
         code( ( c >> i ) & 1 );
@@ -8499,7 +8499,7 @@ Encoder::Encoder( Mode m, File *f ) : mode( m ), archive( f ), x1( 0 ), x2( 0xff
 
 void Encoder::flush() {
   if( mode == COMPRESS && level > 0 )
-    archive->putc( x1 >> 24 ); // Flush first unequal byte of range
+    archive->putChar( x1 >> 24 ); // Flush first unequal byte of range
 }
 
 /////////////////////////// Filters /////////////////////////////////
@@ -9527,8 +9527,8 @@ void encode_cd( File *in, File *out, U64 size, int info ) {
   U8 blk[BLOCK];
   U64 blockresidual = size % BLOCK;
   assert( blockresidual < 65536 );
-  out->putc( ( blockresidual >> 8 ) & 255 );
-  out->putc( blockresidual & 255 );
+  out->putChar( ( blockresidual >> 8 ) & 255 );
+  out->putChar( blockresidual & 255 );
   for( U64 offset = 0; offset < size; offset += BLOCK ) {
     if( offset + BLOCK > size ) {
       in->blockread( &blk[0], size - offset );
@@ -9599,12 +9599,12 @@ void encode_bmp( File *in, File *out, U64 len, int width ) {
       b = in->getc();
       g = in->getc();
       r = in->getc();
-      out->putc( g );
-      out->putc( skipRGB ? r : g - r );
-      out->putc( skipRGB ? b : g - b );
+      out->putChar( g );
+      out->putChar( skipRGB ? r : g - r );
+      out->putChar( skipRGB ? b : g - b );
     }
     for( int j = 0; j < width % 3; j++ )
-      out->putc( in->getc() );
+      out->putChar( in->getc() );
   }
 }
 
@@ -9617,9 +9617,9 @@ U64 decode_bmp( Encoder &en, U64 size, int width, File *out, FMode mode, U64 &di
       g = en.decompress();
       r = en.decompress();
       if( mode == FDECOMPRESS ) {
-        out->putc( skipRGB ? r : b - r );
-        out->putc( b );
-        out->putc( skipRGB ? g : b - g );
+        out->putChar( skipRGB ? r : b - r );
+        out->putChar( b );
+        out->putChar( skipRGB ? g : b - g );
         if( !j && !( i & 0xf ) )
           en.print_status();
       } else if( mode == FCOMPARE ) {
@@ -9634,7 +9634,7 @@ U64 decode_bmp( Encoder &en, U64 size, int width, File *out, FMode mode, U64 &di
     }
     for( int j = 0; j < width % 3; j++ ) {
       if( mode == FDECOMPRESS ) {
-        out->putc( en.decompress() );
+        out->putChar( en.decompress() );
       } else if( mode == FCOMPARE ) {
         if( en.decompress() != out->getc() && !diffFound )
           diffFound = p + j + 1;
@@ -9653,13 +9653,13 @@ void encode_im32( File *in, File *out, U64 len, int width ) {
       g = in->getc();
       r = in->getc();
       a = in->getc();
-      out->putc( g );
-      out->putc( skipRGB ? r : g - r );
-      out->putc( skipRGB ? b : g - b );
-      out->putc( a );
+      out->putChar( g );
+      out->putChar( skipRGB ? r : g - r );
+      out->putChar( skipRGB ? b : g - b );
+      out->putChar( a );
     }
     for( int j = 0; j < width % 4; j++ )
-      out->putc( in->getc() );
+      out->putChar( in->getc() );
   }
 }
 
@@ -9673,10 +9673,10 @@ U64 decode_im32( Encoder &en, U64 size, int width, File *out, FMode mode, U64 &d
     for( int j = 0; j < width / 4; j++ ) {
       b = en.decompress(), g = en.decompress(), r = en.decompress(), a = en.decompress();
       if( mode == FDECOMPRESS ) {
-        out->putc( skipRGB ? r : b - r );
-        out->putc( b );
-        out->putc( skipRGB ? g : b - g );
-        out->putc( a );
+        out->putChar( skipRGB ? r : b - r );
+        out->putChar( b );
+        out->putChar( skipRGB ? g : b - g );
+        out->putChar( a );
         if( !j && !( i & 0xf ) )
           en.print_status();
       } else if( mode == FCOMPARE ) {
@@ -9693,7 +9693,7 @@ U64 decode_im32( Encoder &en, U64 size, int width, File *out, FMode mode, U64 &d
     }
     for( int j = 0; j < width % 4; j++ ) {
       if( mode == FDECOMPRESS ) {
-        out->putc( en.decompress() );
+        out->putChar( en.decompress() );
       } else if( mode == FCOMPARE ) {
         if( en.decompress() != out->getc() && !diffFound )
           diffFound = p + j + 1;
@@ -9770,7 +9770,7 @@ U64 decode_exe( Encoder &en, U64 size, File *out, FMode mode, U64 &diffFound ) {
       c[0] = a >> 24;
     }
     if( mode == FDECOMPRESS )
-      out->putc( c[5] );
+      out->putChar( c[5] );
     else if( mode == FCOMPARE && c[5] != out->getc() && !diffFound )
       diffFound = offset - 6 + 1;
     if( mode == FDECOMPRESS && !( offset & 0xfff ) )
@@ -9946,16 +9946,16 @@ int encode_zlib( File *in, File *out, U64 len, int &hdrsize ) {
   MTF.MoveToFront( index );
 
   // Step 3 - write parameters, differences and precompressed (inflated) data
-  out->putc( diffCount[index] );
-  out->putc( window );
-  out->putc( index );
+  out->putChar( diffCount[index] );
+  out->putChar( window );
+  out->putChar( index );
   for( int i = 0; i <= diffCount[index]; i++ ) {
     const int v = i == diffCount[index] ? int( len - diffPos[index * LIMIT + i] )
                                         : int( diffPos[index * LIMIT + i + 1] - diffPos[index * LIMIT + i] ) - 1;
     out->put32( v );
   }
   for( int i = 0; i < diffCount[index]; i++ )
-    out->putc( diffByte[index * LIMIT + i + 1] );
+    out->putChar( diffByte[index * LIMIT + i + 1] );
 
   in->setpos( pos );
   main_strm.zalloc = Z_NULL;
@@ -10045,7 +10045,7 @@ int decode_zlib( File *in, U64 size, File *out, FMode mode, U64 &diffFound ) {
   }
   while( diffIndex <= diffCount ) {
     if( mode == FDECOMPRESS )
-      out->putc( diffByte[diffIndex] );
+      out->putChar( diffByte[diffIndex] );
     else if( mode == FCOMPARE )
       if( diffByte[diffIndex] != out->getc() && !diffFound )
         diffFound = recpos + 1;
@@ -10205,12 +10205,12 @@ int encode_gif( File *in, File *out, U64 len, int &hdrsize ) {
   U64 beginin = in->curpos(), beginout = out->curpos();
   Array<U8, 1> output( 4096 );
   hdrsize = 6;
-  out->putc( hdrsize >> 8 );
-  out->putc( hdrsize & 255 );
-  out->putc( bsize );
-  out->putc( clearpos >> 8 );
-  out->putc( clearpos & 255 );
-  out->putc( codesize );
+  out->putChar( hdrsize >> 8 );
+  out->putChar( hdrsize & 255 );
+  out->putChar( bsize );
+  out->putChar( clearpos >> 8 );
+  out->putChar( clearpos & 255 );
+  out->putChar( codesize );
   for( int phase = 0; phase < 2; phase++ ) {
     in->setpos( beginin );
     int bits = codesize + 1, shift = 0, buffer = 0;
@@ -10255,7 +10255,7 @@ int encode_gif( File *in, File *out, U64 len, int &hdrsize ) {
               diffpos += size;
             if( code == maxcode + 1 ) {
               if( phase == 1 )
-                out->putc( j );
+                out->putChar( j );
               else
                 diffpos++;
             }
@@ -10290,11 +10290,11 @@ int encode_gif( File *in, File *out, U64 len, int &hdrsize ) {
   }
   diffpos = ( int ) out->curpos();
   out->setpos( beginout );
-  out->putc( hdrsize >> 8 );
-  out->putc( hdrsize & 255 );
-  out->putc( 255 - bsize );
-  out->putc( ( clearpos >> 8 ) & 255 );
-  out->putc( clearpos & 255 );
+  out->putChar( hdrsize >> 8 );
+  out->putChar( hdrsize & 255 );
+  out->putChar( 255 - bsize );
+  out->putChar( ( clearpos >> 8 ) & 255 );
+  out->putChar( clearpos & 255 );
   out->setpos( diffpos );
   return in->curpos() - beginin == len - 1;
 }
@@ -10350,7 +10350,7 @@ int decode_gif( File *in, U64 size, File *out, FMode mode, U64 &diffFound ) {
   size -= 6 + diffcount * 4;
   int last = in->getc(), total = ( int ) size + 1, outsize = 1;
   if( mode == FDECOMPRESS )
-    out->putc( codesize );
+    out->putChar( codesize );
   else if( mode == FCOMPARE )
     if( codesize != out->getc() && !diffFound )
       diffFound = 1;
@@ -10389,7 +10389,7 @@ int decode_gif( File *in, U64 size, File *out, FMode mode, U64 &diffFound ) {
   if( blocksize > 0 )
     gif_write_block( blocksize );
   if( mode == FDECOMPRESS )
-    out->putc( 0 );
+    out->putChar( 0 );
   else if( mode == FCOMPARE )
     if( 0 != out->getc() && !diffFound )
       diffFound = outsize + 1;
@@ -10623,7 +10623,7 @@ U64 decompressRecursive( File *out, U64 blocksize, Encoder &en, FMode mode, int 
         if( !( j & 0xfff ) )
           en.print_status();
         if( mode == FDECOMPRESS )
-          out->putc( en.decompress() );
+          out->putChar( en.decompress() );
         else if( mode == FCOMPARE ) {
           if( en.decompress() != out->getc() && !diffFound ) {
             mode = FDISCARD;
@@ -10914,8 +10914,8 @@ int main( int argc, char **argv ) {
       archive = new FileDisk();
       archive->create( archiveName.c_str() );
       archive->append( PROGNAME );
-      archive->putc( 0 );
-      archive->putc( level | ( trainEXE << 4 ) | ( trainTXT << 5 ) | ( adaptive << 6 ) | ( skipRGB << 7 ) );
+      archive->putChar( 0 );
+      archive->putChar( level | ( trainEXE << 4 ) | ( trainTXT << 5 ) | ( adaptive << 6 ) | ( skipRGB << 7 ) );
       printf( "Creating archive %s with %d file(s)...\n", archiveName.c_str(), files );
     }
 

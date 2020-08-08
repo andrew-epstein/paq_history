@@ -472,14 +472,14 @@ Replaced 'inline' by 'static' so that the compiler can inline code where possibl
 #define PROGNAME "paq8h" // Please change this if you change the program.
 
 #include <algorithm>
-#include <ctype.h>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#define NDEBUG // remove for debugging (turns on Array bound checks)
-#include <assert.h>
+#include <cctype>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <ctime>
+//#define NDEBUG // remove for debugging (turns on Array bound checks)
+#include <cassert>
 
 #ifndef DEFAULT_OPTION
 #  define DEFAULT_OPTION 4
@@ -506,11 +506,11 @@ using uint32 = unsigned int;   ///<       unsigned 32 bits integer
 using std::max;
 
 #if defined( __GNUC__ )
-static void quit( const sint8 * ) __attribute__( ( noreturn ) );
+static void quit( const sint8 *  /*message*/) __attribute__( ( noreturn ) );
 #endif // __GNUC__
 
 // Error handler: print message if any, and exit
-static void quit( const char *message = 0 ) {
+static void quit( const char *message = nullptr ) {
   throw message;
 }
 
@@ -538,7 +538,7 @@ long size;
 #define OPTION_ADD_SYMBOLS_A_Z 32768
 #define OPTION_ADD_SYMBOLS_MISC 65536
 #define OPTION_SPACE_AFTER_CC_FLAG 131072
-#define IF_OPTION( option ) ( ( preprocFlag & option ) != 0 )
+#define IF_OPTION( option ) ( ( preprocFlag & (option) ) != 0 )
 
 //////////////////////// Program Checker /////////////////////
 
@@ -550,16 +550,17 @@ public:
   int maxmem{ 0 };      // most bytes allocated ever
   void alloc( int n ) { // report memory allocated, may be negative
     memused += n;
-    if( memused > maxmem )
+    if( memused > maxmem ) {
       maxmem = memused;
+}
   }
   ProgramChecker() {
     start_time = clock();
-    assert( sizeof( uint8 ) == 1 );
-    assert( sizeof( uint16 ) == 2 );
-    assert( sizeof( uint32 ) == 4 );
-    assert( sizeof( short ) == 2 );
-    assert( sizeof( int ) == 4 );
+    static_assert( sizeof( uint8 ) == 1 , "");
+    static_assert( sizeof( uint16 ) == 2 , "");
+    static_assert( sizeof( uint32 ) == 4 , "");
+    static_assert( sizeof( short ) == 2 , "");
+    static_assert( sizeof( int ) == 4 , "");
   }
   void print() const { // print time and memory used
     printf( "Time %1.2f sec, used %d bytes of memory\n", double( clock() - start_time ) / CLOCKS_PER_SEC, maxmem );
@@ -581,9 +582,9 @@ public:
 template <class T, int ALIGN = 0>
 class Array {
 private:
-  int n;                // user size
-  int reserved;         // actual size
-  char *ptr;            // allocated memory, zeroed
+  int n{};                // user size
+  int reserved{};         // actual size
+  char *ptr{};            // allocated memory, zeroed
   T *data;              // start of n elements of aligned data
   void create( int i ); // create with size i
 public:
@@ -593,15 +594,17 @@ public:
   virtual ~Array();
   T &operator[]( int i ) {
 #ifndef NDEBUG
-    if( i < 0 || i >= n )
+    if( i < 0 || i >= n ) {
       fprintf( stderr, "%d out of bounds %d\n", i, n ), quit();
+}
 #endif
     return data[i];
   }
   const T &operator[]( int i ) const {
 #ifndef NDEBUG
-    if( i < 0 || i >= n )
+    if( i < 0 || i >= n ) {
       fprintf( stderr, "%d out of bounds %d\n", i, n ), quit();
+}
 #endif
     return data[i];
   }
@@ -610,8 +613,9 @@ public:
   }
   void resize( int i ); // change size to i
   void pop_back() {
-    if( n > 0 )
+    if( n > 0 ) {
       --n;
+}
   }                             // decrement size
   void push_back( const T &x ); // increment size, append x
 private:
@@ -640,15 +644,16 @@ template <class T, int ALIGN>
 void Array<T, ALIGN>::create( int i ) {
   n = reserved = i;
   if( i <= 0 ) {
-    data = 0;
-    ptr = 0;
+    data = nullptr;
+    ptr = nullptr;
     return;
   }
   const int sz = ALIGN + n * sizeof( T );
   programChecker.alloc( sz );
   ptr = ( char * ) calloc( sz, 1 );
-  if( ptr == nullptr )
+  if( ptr == nullptr ) {
     quit( "Out of memory" );
+}
   data = ( ALIGN != 0 ? ( T * ) ( ptr + ALIGN - ( ( ( long ) ptr ) & ( ALIGN - 1 ) ) ) : ( T * ) ptr );
   assert( ( char * ) data >= ptr && ( char * ) data <= ptr + ALIGN );
 }
@@ -686,11 +691,12 @@ public:
   void operator+=( const char *s ) {
     assert( s );
     pop_back();
-    while( *s != 0 )
+    while( *s != 0 ) {
       push_back( *s++ );
+}
     push_back( 0 );
   }
-  String( const char *s = "" ) : Array<char>( 1 ) {
+  explicit String( const char *s = "" ) : Array<char>( 1 ) {
     ( *this ) += s;
   }
 };
@@ -699,15 +705,16 @@ public:
 
 // 32-bit pseudo random number generator
 static class Random {
-  uint32 table[64];
+  uint32 table[64]{};
   sint32 i;
 
 public:
   Random() {
     table[0] = 123456789;
     table[1] = 987654321;
-    for( int j = 0; j < 62; j++ )
+    for( int j = 0; j < 62; j++ ) {
       table[j + 2] = table[j + 1] * 11 + table[j] * 23 / 16;
+}
     i = 0;
   }
   uint32 operator()() {
@@ -728,10 +735,11 @@ class Buf {
   Array<uint8> b;
 
 public:
-  Buf( int i = 0 ) : b( i ) {}
+  explicit Buf( int i = 0 ) : b( i ) {}
   void setsize( int i ) {
-    if( i == 0 )
+    if( i == 0 ) {
       return;
+}
     assert( i > 0 && ( i & ( i - 1 ) ) == 0 );
     b.resize( i );
   }
@@ -764,7 +772,7 @@ static Buf buf; // Rotating input queue set by Predictor
 
 // ilog(x) = round(log2(x) * 16), 0 <= x < 64K
 static class Ilog {
-  uint8 t[65536];
+  uint8 t[65536]{};
 
 public:
   // Compute lookup table by numerical integration of 1/x
@@ -782,10 +790,12 @@ public:
 
 // llog(x) accepts 32 bits
 int llog( uint32 x ) {
-  if( x >= 0x1000000 )
+  if( x >= 0x1000000 ) {
     return 256 + ilog( x >> 16 );
-  if( x >= 0x10000 )
+}
+  if( x >= 0x10000 ) {
     return 128 + ilog( x >> 8 );
+}
 
   return ilog( x );
 }
@@ -1027,10 +1037,12 @@ static int squash( int d ) {
   static const int t[33] = { 1,    2,    3,    6,    10,   16,   27,   45,   73,   120,  194,
                              310,  488,  747,  1101, 1546, 2047, 2549, 2994, 3348, 3607, 3785,
                              3901, 3975, 4022, 4050, 4068, 4079, 4085, 4089, 4092, 4093, 4094 };
-  if( d > 2047 )
+  if( d > 2047 ) {
     return 4095;
-  if( d < -2047 )
+}
+  if( d < -2047 ) {
     return 0;
+}
   int w = d & 127;
   d = ( d >> 7 ) + 16;
   return ( t[d] * ( 128 - w ) + t[( d + 1 )] * w + 64 ) >> 7;
@@ -1042,15 +1054,16 @@ static int squash( int d ) {
 // d has range -2047 to 2047 representing -8 to 8.  p has range 0 to 4095.
 
 static class Stretch {
-  short t[4096];
+  short t[4096]{};
 
 public:
   Stretch() {
     int pi = 0;
     for( int x = -2047; x <= 2047; ++x ) { // invert squash()
       int i = squash( x );
-      for( int j = pi; j <= i; ++j )
+      for( int j = pi; j <= i; ++j ) {
         t[j] = x;
+}
       pi = i + 1;
     }
     t[4095] = 2047;
@@ -1095,14 +1108,14 @@ public:
  * Vector product a*b of n signed words, returning signed integer scaled down by 8 bits.
  * n is rounded up to a multiple of 8.
  */
-static sint32 dot_product( const sint16 *const t, const sint16 *const w, sint32 n );
+static sint32 dot_product( const sint16 *t, const sint16 *w, sint32 n );
 
 /**
  * Train n neural network weights w[n] on inputs t[n] and err.
  * w[i] += ((t[i]*2*err)+(1<<16))>>17 bounded to +- 32K.
  * n is rounded up to a multiple of 8.
  */
-static void train( const sint16 *const t, sint16 *const w, sint32 n, const sint32 e );
+static void train( const sint16 *t, sint16 *w, sint32 n, sint32 e );
 
 #if defined( __SSE2__ ) // faster
 #  include <emmintrin.h>
@@ -1132,8 +1145,8 @@ static void train( const sint16 *const t, sint16 *const w, sint32 n, const sint3
       tmp = _mm_adds_epi16( tmp, one );  //                                     ((t[n] * 2 * err) >> 16) + 1
       tmp = _mm_srai_epi16( tmp, 1 );    //                                      (((t[n] * 2 * err) >> 16) + 1) >> 1
       tmp = _mm_adds_epi16( tmp,
-                            *( __m128i * ) &w[n] ); //                    ((((t[n] * 2 * err) >> 16) + 1) >> 1) + w[n]
-      *( __m128i * ) &w[n] =
+                            *reinterpret_cast< __m128i *>(&w[n]) ); //                    ((((t[n] * 2 * err) >> 16) + 1) >> 1) + w[n]
+      *reinterpret_cast< __m128i *>(&w[n]) =
           tmp; //                                          save the new eight weights, bounded to +- 32K
     }
   }
@@ -1235,17 +1248,20 @@ public:
       ncxt( 0 ),
       base( 0 ),
       pr( S ),
-      mp( 0 ),
+      mp( nullptr ),
       tx( N ),
       nx( 0 ) {
     assert( n > 0 && N > 0 && ( N & 7 ) == 0 && M > 0 );
     int i;
-    for( i = 0; i < S; ++i )
+    for( i = 0; i < S; ++i ) {
       pr[i] = 2048;
-    for( i = 0; i < N * M; ++i )
+}
+    for( i = 0; i < N * M; ++i ) {
       wx[i] = w;
-    if( S > 1 )
+}
+    if( S > 1 ) {
       mp = new Mixer( S, 1, 1, 0x7fff );
+}
   }
   virtual ~Mixer() {
     delete mp;
@@ -1290,8 +1306,9 @@ public:
 
   // predict next bit
   int p() {
-    while( ( nx & 7 ) != 0 )
+    while( ( nx & 7 ) != 0 ) {
       tx[nx++] = 0;       // pad
+}
     if( mp != nullptr ) { // combine outputs
       mp->update2();
       for( int i = 0; i < ncxt; ++i ) {
@@ -1324,14 +1341,16 @@ class APM {
   Array<uint16> t; // [N][33]:  p, context -> p
 public:
   // maps p, cxt -> p initially
-  APM( int n ) : index( 0 ), t( n * 33 ) {
-    for( int j = 0; j < 33; ++j )
+  explicit APM( int n ) : index( 0 ), t( n * 33 ) {
+    for( int j = 0; j < 33; ++j ) {
       t[j] = squash( ( j - 16 ) * 128 ) * 16;
-    for( int i = 33; i < n * 33; ++i )
+}
+    for( int i = 33; i < n * 33; ++i ) {
       t[i] = t[i - 33];
+}
   }
   int p( int pr = 2048, int cxt = 0, int rate = 8 ) {
-    assert( pr >= 0 && pr < 4096 && cxt >= 0 && cxt < N && rate > 0 && rate < 32 );
+    //assert( pr >= 0 && pr < 4096 && cxt >= 0 && cxt < N && rate > 0 && rate < 32 );
     pr = stretch( pr );
     int g = ( y << 16 ) + ( y << rate ) - y * 2;
     t[index] += ( g - t[index] ) >> rate;
@@ -1354,21 +1373,23 @@ public:
 class StateMap {
 protected:
   int cxt{ 0 };  // context
-  uint16 t[256]; // 256 states -> probability * 64K
+  uint16 t[256]{}; // 256 states -> probability * 64K
 public:
   StateMap() {
     for( int i = 0; i < 256; ++i ) {
       int n0 = nex( i, 2 );
       int n1 = nex( i, 3 );
-      if( n0 == 0 )
+      if( n0 == 0 ) {
         n1 *= 128;
-      if( n1 == 0 )
+}
+      if( n1 == 0 ) {
         n0 *= 128;
+}
       t[i] = 65536 * ( n1 + 1 ) / ( n0 + n1 + 2 );
     }
   }
   int p( int cx ) {
-    assert( cx >= 0 && cx < t.size() );
+    //assert( cx >= 0 && cx < t.size() );
     int q = t[cxt];
     t[cxt] = q + ( ( sm_add_y - q ) >> sm_shft );
     return t[cxt = cx] >> 4;
@@ -1409,7 +1430,7 @@ class BH {
   Array<uint8, 64> t; // elements
   uint32 n;           // size-1
 public:
-  BH( int i ) : t( i * B ), n( i - 1 ) {
+  explicit BH( int i ) : t( i * B ), n( i - 1 ) {
     assert( B >= 2 && i > 0 && ( i & ( i - 1 ) ) == 0 ); // size a power of 2?
   }
   uint8 *operator[]( uint32 i );
@@ -1424,14 +1445,16 @@ uint8 *BH<B>::operator[]( uint32 i ) {
   for( j = 0; j < M; ++j ) {
     p += B;
     if( p[2] == 0 ) {
-      *( uint16 * ) p = chk;
+      *reinterpret_cast< uint16 *>(p) = chk;
       break;
     }
-    if( *( uint16 * ) p == chk )
+    if( *reinterpret_cast< uint16 *>(p) == chk ) {
       break; // found
+}
   }
-  if( j == 0 )
+  if( j == 0 ) {
     return p; // front
+}
 #if 0
   static uint8 tmp[B];  // element to move to front
   if (j==M) {
@@ -1447,13 +1470,15 @@ uint8 *BH<B>::operator[]( uint32 i ) {
 #else
   if( j == M ) {
     --j;
-    if( /*M>2&&*/ p[2] > p[-2] )
+    if( /*M>2&&*/ p[2] > p[-2] ) {
       --j;
-  } else
-    chk = *( int * ) p;
+}
+  } else {
+    chk = *reinterpret_cast< int *>(p);
+}
   p = &t[i * 4];
   memmove( p + 4, p, j * 4 );
-  *( int * ) p = chk;
+  *reinterpret_cast< int *>(p) = chk;
 #endif
   return p;
 }
@@ -1522,15 +1547,17 @@ public:
     cp = t[0] + 2;
   }
   void set( uint32 cx ) { // update count
-    if( cp[0] == 0 || cp[1] != b1 )
+    if( cp[0] == 0 || cp[1] != b1 ) {
       cp[0] = 1, cp[1] = b1;
-    else if( cp[0] < 255 )
+    } else if( cp[0] < 255 ) {
       ++cp[0];
+}
     cp = t[cx] + 2;
   }
   int p() { // predict next bit
-    if( ( cp[1] + 256 ) >> ( 8 - bpos ) == c0 )
+    if( ( cp[1] + 256 ) >> ( 8 - bpos ) == c0 ) {
       return ( ( cp[1] >> ( 7 - bpos ) & 1 ) * 2 - 1 ) * ilog( cp[0] + 1 ) * mulc;
+}
 
     return 0;
   }
@@ -1550,8 +1577,9 @@ class SmallStationaryContextMap {
 public:
   SmallStationaryContextMap( int m, int c ) : t( m / 2 ), cxt( 0 ), mulc( c ) {
     assert( ( m / 2 & m / 2 - 1 ) == 0 ); // power of 2?
-    for( int i = 0; i < t.size(); ++i )
+    for( int i = 0; i < t.size(); ++i ) {
       t[i] = 32768;
+}
     cp = &t[0];
   }
   void set( uint32 cx ) {
@@ -1559,10 +1587,11 @@ public:
   }
   void mix( Mixer &m /*, int rate=7*/ ) {
 #if 1
-    if( pos < 4000000 )
+    if( pos < 4000000 ) {
       *cp += ( ( y << 16 ) - *cp + ( 1 << 8 ) ) >> 9;
-    else
+    } else {
       *cp += ( ( y << 16 ) - *cp + ( 1 << 9 ) ) >> 10;
+}
 #else
     int q = *cp;
     if( y )
@@ -1648,7 +1677,7 @@ public:
   ContextMap( int m, int c ) :
       C( c = 1 ), Sz( ( m >> 6 ) - 1 ), t( m >> 6 ), cp( c ), cp0( c ), cxt( c ), runp( c ), cn( 0 ) {
     assert( m >= 64 && ( m & m - 1 ) == 0 ); // power of 2?
-    assert( sizeof( E ) == 64 );
+    static_assert( sizeof( E ) == 64 , "");
     sm = new StateMap[C];
     for( int i = 0; i < C; ++i ) {
       cp0[i] = cp[i] = &t[0].bh[0][0];
@@ -1664,18 +1693,21 @@ public:
 // Find or create hash element matching checksum ch
 uint8 *ContextMap::E::get( uint16 ch, int j ) {
   ch += j;
-  if( chk[last & 15] == ch )
+  if( chk[last & 15] == ch ) {
     return &bh[last & 15][0];
+}
   int b = 0xffff;
   int bi = 0;
   for( int i = 0; i < 7; ++i ) {
-    if( chk[i] == ch )
+    if( chk[i] == ch ) {
       return last = last << 4 | i, &bh[i][0];
+}
     int pri = bh[i][0];
-    if( ( last & 15 ) != i && last >> 4 != i && pri < b )
+    if( ( last & 15 ) != i && last >> 4 != i && pri < b ) {
       b = pri, bi = i;
+}
   }
-  return last = 0xf0 | bi, chk[bi] = ch, ( uint8 * ) memset( &bh[bi][0], 0, 7 );
+  return last = 0xf0 | bi, chk[bi] = ch, static_cast< uint8 *>(memset( &bh[bi][0], 0, 7 ));
 }
 
 // Set the i'th context to cx
@@ -1698,19 +1730,20 @@ int ContextMap::mix1( Mixer &m, int cc, int c1, int y1 ) {
       assert( cpi >= &t[0].bh[0][0] && cpi <= &t[Sz].bh[6][6] );
       assert( ( long( cpi ) & 63 ) >= 15 );
       int ns = nex( *cpi, y1 );
-      if( ns >= 204 && ( ( rnd() << ( ( 452 - ns ) >> 3 ) ) != 0U ) )
+      if( ns >= 204 && ( ( rnd() << ( ( 452 - ns ) >> 3 ) ) != 0U ) ) {
         ns -= 4; // probabilistic increment
+}
       *cpi = ns;
     }
 
     // Update context pointers
-    if( bpos > 1 && runp[i][0] == 0 )
-      cpi = 0;
-    else if( bpos == 1 || bpos == 3 || bpos == 6 )
+    if( bpos > 1 && runp[i][0] == 0 ) {
+      cpi = nullptr;
+    } else if( bpos == 1 || bpos == 3 || bpos == 6 ) {
       cpi = cp0[i] + 1 + ( cc & 1 );
-    else if( bpos == 4 || bpos == 7 )
+    } else if( bpos == 4 || bpos == 7 ) {
       cpi = cp0[i] + 3 + ( cc & 3 );
-    else {
+    } else {
       cp0[i] = cpi = t[cxt[i] + cc & Sz].get( cxt[i] >> 16, i );
 
       // Update pending bit histories for bits 2-7
@@ -1730,12 +1763,13 @@ int ContextMap::mix1( Mixer &m, int cc, int c1, int y1 ) {
 
         uint8 c0 = runp[i][0];
         // Update run count of previous context
-        if( c0 == 0 ) // new context
+        if( c0 == 0 ) { // new context
           c0 = 2, runp[i][1] = c1;
-        else if( runp[i][1] != c1 ) // different byte in context
+        } else if( runp[i][1] != c1 ) { // different byte in context
           c0 = 1, runp[i][1] = c1;
-        else if( c0 < 254 ) // same byte in context
+        } else if( c0 < 254 ) { // same byte in context
           c0 += 2;
+}
         runp[i][0] = c0;
         runp[i] = cpi + 3;
       }
@@ -1746,20 +1780,23 @@ int ContextMap::mix1( Mixer &m, int cc, int c1, int y1 ) {
     if( ( runp[i][1] + 256 ) >> ( 8 - bpos ) == cc ) {
       int b = ( runp[i][1] >> ( 7 - bpos ) & 1 ) * 2 - 1; // predicted bit + for 1, - for 0
       int c = ilog( rc + 1 );
-      if( ( rc & 1 ) != 0 )
+      if( ( rc & 1 ) != 0 ) {
         c = ( c * 15 ) / 4;
-      else
+      } else {
         c *= 13;
+}
       m.add( b * c );
-    } else
+    } else {
       m.add( 0 );
+}
 
     // predict from bit context
     result += mix2( m, cpi != nullptr ? *cpi : 0, sm[i] );
     cp[i] = cpi;
   }
-  if( bpos == 7 )
+  if( bpos == 7 ) {
     cn = 0;
+}
   return result;
 }
 
@@ -1782,13 +1819,15 @@ static int matchModel( Mixer &m ) {
 
   if( bpos == 0 ) {
     h = h * 887 * 8 + b1 + 1 & t.size() - 1; // update context hash
-    if( len != 0 )
+    if( len != 0 ) {
       ++len, ++ptr;
-    else { // find match
+    } else { // find match
       ptr = t[h];
-      if( ( ptr != 0 ) && pos - ptr < buf.size() )
-        while( buf( len + 1 ) == buf[ptr - len - 1] && len < MAXLEN )
+      if( ( ptr != 0 ) && pos - ptr < buf.size() ) {
+        while( buf( len + 1 ) == buf[ptr - len - 1] && len < MAXLEN ) {
           ++len;
+}
+}
     }
     t[h] = pos; // update hash table
     result = len;
@@ -1796,16 +1835,19 @@ static int matchModel( Mixer &m ) {
   }
 
   // predict
-  if( len > MAXLEN )
+  if( len > MAXLEN ) {
     len = MAXLEN;
+}
   int sgn;
   if( ( len != 0 ) && b1 == buf[ptr - 1] && c0 == ( buf[ptr] + 256 ) >> ( 8 - bpos ) ) {
-    if( ( buf[ptr] >> ( 7 - bpos ) & 1 ) != 0 )
+    if( ( buf[ptr] >> ( 7 - bpos ) & 1 ) != 0 ) {
       sgn = 8;
-    else
+    } else {
       sgn = -8;
-  } else
+}
+  } else {
     sgn = len = 0;
+}
   m.add( sgn * ilog( len ) );
   m.add( sgn * 8 * MIN( len, 32 ) );
   return result;
@@ -1835,10 +1877,12 @@ static void wordModel( Mixer &m ) {
     uint32 c = b1;
     uint32 f = 0;
 
-    if( ( spaces & 0x80000000 ) != 0U )
+    if( ( spaces & 0x80000000 ) != 0U ) {
       --spacecount;
-    if( ( words & 0x80000000 ) != 0U )
+}
+    if( ( words & 0x80000000 ) != 0U ) {
       --wordcount;
+}
     spaces = spaces * 2;
     words = words * 2;
 
@@ -1848,8 +1892,9 @@ static void wordModel( Mixer &m ) {
     } else {
       if( c == 32 || c == 10 ) {
         ++spaces, ++spacecount;
-        if( c == 10 )
+        if( c == 10 ) {
           nl1 = nl, nl = pos - 1;
+}
       }
       if( word0 != 0U ) {
         word4 = word3 * 43;
@@ -1857,9 +1902,9 @@ static void wordModel( Mixer &m ) {
         word2 = word1 * 53;
         word1 = word0 * 83;
         word0 = 0;
-        if( c == '.' || c == 'O' || c == ( '}' - '{' + 'P' ) )
+        if( c == '.' || c == 'O' || c == ( '}' - '{' + 'P' ) ) {
           f = 1, spafdo = 0;
-        else {
+        } else {
           ++spafdo;
           spafdo = MIN( 63, spafdo );
         }
@@ -1890,14 +1935,16 @@ static void wordModel( Mixer &m ) {
 
     col = MIN( 31, pos - nl );
     if( col <= 2 ) {
-      if( col == 2 )
+      if( col == 2 ) {
         frstchar = MIN( c, 96 );
-      else
+      } else {
         frstchar = 0;
+}
     }
     if( frstchar == '[' && c == 32 ) {
-      if( b3 == ']' || b4 == ']' )
+      if( b3 == ']' || b4 == ']' ) {
         frstchar = 96;
+}
     }
     cm.set( frstchar << 11 | c );
 
@@ -2085,8 +2132,9 @@ static int contextModel2() {
   // Parse filetype and size
   if( bpos == 0 ) {
     --size;
-    if( size == -1 )
-      filetype = ( Filetype ) b1;
+    if( size == -1 ) {
+      filetype = static_cast< Filetype>(b1);
+}
     if( size == -5 ) {
       size = c4;
     }
@@ -2104,15 +2152,18 @@ static int contextModel2() {
     int f2 = buf( 2 );
 
     if( f2 == '.' || f2 == 'O' || f2 == 'M' || f2 == '!' || f2 == ')' || f2 == ( '}' - '{' + 'P' ) ) {
-      if( b1 != f2 && buf( 3 ) != f2 )
+      if( b1 != f2 && buf( 3 ) != f2 ) {
         i = 13, x4 = x4 * 256 + f2;
+}
     }
 
-    for( ; i > 0; --i ) // update order 0-11 context hashes
+    for( ; i > 0; --i ) { // update order 0-11 context hashes
       cxt[i] = cxt[i - 1] * primes[i];
+}
 
-    for( i = 13; i > 0; --i ) // update order 0-11 context hashes
+    for( i = 13; i > 0; --i ) { // update order 0-11 context hashes
       cxt[i] = cxt[i - 1] * primes[i] + b1;
+}
 
     cm.set( cxt[3] );
     cm.set( cxt[4] );
@@ -2133,17 +2184,21 @@ static int contextModel2() {
   rcm10.mix( m );
   int qq = m.nx;
   order = cm.mix( m ) - 1;
-  if( order < 0 )
+  if( order < 0 ) {
     order = 0;
+}
   int zz = ( m.nx - qq ) / 7;
 
   m.nx = qq + zz * 3;
-  for( qq = zz * 2; qq != 0; --qq )
+  for( qq = zz * 2; qq != 0; --qq ) {
     m.mul( 5 );
-  for( qq = zz; qq != 0; --qq )
+}
+  for( qq = zz; qq != 0; --qq ) {
     m.mul( 6 );
-  for( qq = zz; qq != 0; --qq )
+}
+  for( qq = zz; qq != 0; --qq ) {
     m.mul( 9 );
+}
 
   if( level >= 4 ) {
     wordModel( m );
@@ -2154,10 +2209,12 @@ static int contextModel2() {
   uint32 c1 = b1;
   uint32 c2 = b2;
   uint32 c;
-  if( c1 == 9 || c1 == 10 || c1 == 32 )
+  if( c1 == 9 || c1 == 10 || c1 == 32 ) {
     c1 = 16;
-  if( c2 == 9 || c2 == 10 || c2 == 32 )
+}
+  if( c2 == 9 || c2 == 10 || c2 == 32 ) {
     c2 = 16;
+}
 
   m.set( 256 * order + ( w4 & 240 ) + ( c2 >> 4 ), 256 * 7 );
 
@@ -2169,11 +2226,13 @@ static int contextModel2() {
 
   if( bpos != 0 ) {
     c = c0 << ( 8 - bpos );
-    if( bpos == 1 )
+    if( bpos == 1 ) {
       c += b3 / 2;
+}
     c = ( MIN( bpos, 5 ) ) * 256 + ( tt & 63 ) + ( c & 192 );
-  } else
+  } else {
     c = ( words & 12 ) * 16 + ( tt & 63 );
+}
   m.set( c, 1536 );
 
   c = bpos;
@@ -2221,16 +2280,19 @@ void Predictor::update() {
     buf[pos++] = c0;
     c0 -= 256;
     if( pos <= 1024 * 1024 ) {
-      if( pos == 1024 * 1024 )
+      if( pos == 1024 * 1024 ) {
         sm_shft = 9, sm_add = 65535 + 511;
-      if( pos == 512 * 1024 )
+}
+      if( pos == 512 * 1024 ) {
         sm_shft = 8, sm_add = 65535 + 255;
+}
       sm_add_y = sm_add & ( -y );
     }
     int i = WRT_mpw[c0 >> 4];
     w4 = w4 * 4 + i;
-    if( b1 == 12 )
+    if( b1 == 12 ) {
       i = 2;
+}
     w5 = w5 * 4 + i;
     b8 = b7, b7 = b6, b6 = b5, b5 = b4, b4 = b3;
     b3 = b2;
@@ -2238,31 +2300,38 @@ void Predictor::update() {
     b1 = c0;
     if( c0 == '.' || c0 == 'O' || c0 == 'M' || c0 == '!' || c0 == ')' || c0 == ( '}' - '{' + 'P' ) ) {
       w5 = ( w5 << 8 ) | 0x3ff, x5 = ( x5 << 8 ) + c0, f4 = ( f4 & 0xfffffff0 ) + 2;
-      if( c0 != '!' && c0 != 'O' )
+      if( c0 != '!' && c0 != 'O' ) {
         w4 |= 12;
-      if( c0 != '!' )
+}
+      if( c0 != '!' ) {
         b2 = '.', tt = ( tt & 0xfffffff8 ) + 1;
+}
     }
     c4 = ( c4 << 8 ) + c0;
     x5 = ( x5 << 8 ) + c0;
-    if( c0 == 32 )
+    if( c0 == 32 ) {
       --c0;
+}
     f4 = f4 * 16 + ( c0 >> 4 );
     tt = tt * 8 + WRT_mtt[c0 >> 4];
     c0 = 1;
   }
   bpos = ( bpos + 1 ) & 7;
 
-  if( ( fails & 0x00000080 ) != 0U )
+  if( ( fails & 0x00000080 ) != 0U ) {
     --failcount;
+}
   fails = fails * 2;
   failz = failz * 2;
-  if( y != 0 )
+  if( y != 0 ) {
     pr ^= 4095;
-  if( pr >= 1820 )
+}
+  if( pr >= 1820 ) {
     ++fails, ++failcount;
-  if( pr >= 848 )
+}
+  if( pr >= 848 ) {
     ++failz;
+}
 
   // Filter the context model with APMs
   pr = contextModel2();
@@ -2275,8 +2344,9 @@ void Predictor::update() {
   pz += tri[( fails >> 5 ) & 3];
   pz += trj[( fails >> 3 ) & 3];
   pz += trj[( fails >> 1 ) & 3];
-  if( ( fails & 1 ) != 0U )
+  if( ( fails & 1 ) != 0U ) {
     pz += 8;
+}
   pz = pz / 2;
 
   pu = a4.p( pu, ( c0 * 2 ) ^ ( hash( b1, ( x5 >> 8 ) & 255, ( x5 >> 16 ) & 0x80ff ) & 0x1ffff ), rate );
@@ -2285,10 +2355,11 @@ void Predictor::update() {
   pt = a3.p( pr, ( c0 * 32 ) ^ ( hash( 19, x5 & 0x80ffff ) & 0x7fff ), rate );
   pz = a6.p( pu, ( c0 * 4 ) ^ ( hash( MIN( 9, pz ), x5 & 0x80ff ) & 0xffff ), rate );
 
-  if( ( fails & 255 ) != 0U )
+  if( ( fails & 255 ) != 0U ) {
     pr = ( pt * 6 + pu + pv * 11 + pz * 14 + 16 ) >> 5;
-  else
+  } else {
     pr = ( pt * 4 + pu * 5 + pv * 12 + pz * 11 + 16 ) >> 5;
+}
 }
 
 //////////////////////////// Encoder ////////////////////////////
@@ -2327,20 +2398,23 @@ private:
     p += static_cast<int>( p < 2048 );
     uint32 xmid = x1 + ( ( x2 - x1 ) >> 12 ) * p + ( ( x2 - x1 & 0xfff ) * p >> 12 );
     assert( xmid >= x1 && xmid < x2 );
-    if( mode == DECOMPRESS )
+    if( mode == DECOMPRESS ) {
       y = static_cast<int>( x <= xmid );
-    else
+    } else {
       y = i;
+}
     y != 0 ? ( x2 = xmid, p = sm_add ) : ( x1 = xmid + 1, p = 0 );
     sm_add_y = p;
     predictor.update();
     while( ( ( x1 ^ x2 ) & 0xff000000 ) == 0 ) { // pass equal leading bytes of range
-      if( mode == COMPRESS )
+      if( mode == COMPRESS ) {
         putc( x2 >> 24, archive );
+}
       x1 <<= 8;
       x2 = ( x2 << 8 ) + 255;
-      if( mode == DECOMPRESS )
+      if( mode == DECOMPRESS ) {
         x = ( x << 8 ) + ( getc( archive ) & 255 ); // EOF is OK
+}
     }
     return y;
   }
@@ -2355,16 +2429,19 @@ public:
       putc( c, archive );
       return;
     }
-    if( c >= '{' && c < 127 )
+    if( c >= '{' && c < 127 ) {
       c += 'P' - '{';
-    else if( c >= 'P' && c < 'T' )
+    } else if( c >= 'P' && c < 'T' ) {
       c -= 'P' - '{';
-    else if( ( c >= ':' && c <= '?' ) || ( c >= 'J' && c <= 'O' ) )
+    } else if( ( c >= ':' && c <= '?' ) || ( c >= 'J' && c <= 'O' ) ) {
       c ^= 0x70;
-    if( c == 'X' || c == '`' )
+}
+    if( c == 'X' || c == '`' ) {
       c ^= 'X' ^ '`';
-    for( int i = 7; i >= 0; --i )
+}
+    for( int i = 7; i >= 0; --i ) {
       code( ( c >> i ) & 1 );
+}
   }
 
   // Decompress and return one byte
@@ -2373,33 +2450,39 @@ public:
       assert( alt );
       return getc( alt );
     }
-    if( level == 0 )
+    if( level == 0 ) {
       return getc( archive );
+}
 
     int c = 0;
-    for( int i = 8; i != 0; --i )
+    for( int i = 8; i != 0; --i ) {
       c += c + code();
-    if( c >= '{' && c < 127 )
+}
+    if( c >= '{' && c < 127 ) {
       c += 'P' - '{';
-    else if( c >= 'P' && c < 'T' )
+    } else if( c >= 'P' && c < 'T' ) {
       c -= 'P' - '{';
-    else if( ( c >= ':' && c <= '?' ) || ( c >= 'J' && c <= 'O' ) )
+    } else if( ( c >= ':' && c <= '?' ) || ( c >= 'J' && c <= 'O' ) ) {
       c ^= 0x70;
-    if( c == 'X' || c == '`' )
+}
+    if( c == 'X' || c == '`' ) {
       c ^= 'X' ^ '`';
+}
     return c;
   }
 
   void flush() {
-    if( mode == COMPRESS && level > 0 )
+    if( mode == COMPRESS && level > 0 ) {
       putc( x1 >> 24, archive ); // Flush first unequal byte of range
+}
   }
 };
 
-Encoder::Encoder( Mode m, FILE *f ) : mode( m ), archive( f ), x1( 0 ), x2( 0xffffffff ), x( 0 ), alt( 0 ) {
+Encoder::Encoder( Mode m, FILE *f ) : mode( m ), archive( f ), x1( 0 ), x2( 0xffffffff ), x( 0 ), alt( nullptr ) {
   if( level > 0 && mode == DECOMPRESS ) { // x = first 4 bytes of archive
-    for( int i = 4; i != 0; --i )
+    for( int i = 4; i != 0; --i ) {
       x = ( x << 8 ) + ( getc( archive ) & 255 );
+}
   }
 }
 
@@ -2496,15 +2579,16 @@ protected:
   FILE *tmp;                                 // temporary file
   virtual void encode( FILE *f, int n ) = 0; // user suplied
   virtual int decode() = 0;                  // user supplied
-  Filter( const Filter * );                  // copying not allowed
+  explicit Filter( const Filter * );                  // copying not allowed
   Filter &operator=( const Filter & );       // assignment not allowed
   static void printStatus( int n ) {         // print progress
-    if( n > 0 && ( ( n & 0x3fff ) == 0 ) )
+    if( n > 0 && ( ( n & 0x3fff ) == 0 ) ) {
       printf( "%10d \b\b\b\b\b\b\b\b\b\b\b", n ), fflush( stdout );
+}
   }
 
 public:
-  Filter( Encoder *e ) : en( e ), tmp( 0 ), reads( 0 ) {}
+  explicit Filter( Encoder *e ) : en( e ), tmp( nullptr ), reads( 0 ) {}
   virtual ~Filter() = default;
   void decompress( FILE *f, int n );
   void compare( FILE *f, int n );
@@ -2536,10 +2620,11 @@ void Filter::compare( FILE *f, int n ) {
       found = true;
     }
   }
-  if( !found && getc( f ) != EOF )
+  if( !found && getc( f ) != EOF ) {
     printf( "file is longer\n" );
-  else if( !found )
+  } else if( !found ) {
     printf( "identical  \n" );
+}
 }
 
 void Filter::skip( int n ) {
@@ -2564,8 +2649,9 @@ void Filter::compress( FILE *f, int n ) {
 
   // Try transform
   tmp = tmpfile();
-  if( tmp == nullptr )
+  if( tmp == nullptr ) {
     perror( "tmpfile" ), exit( 1 );
+}
   encode( f, n );
 
   // Test transform.  decode() should produce copy of input and read
@@ -2586,8 +2672,9 @@ void Filter::compress( FILE *f, int n ) {
     }
   }
 
-  if( !found && tmpn != reads )
+  if( !found && tmpn != reads ) {
     printf( "filter %d reads %d/%d bytes, skipping\n", filetype, reads, tmpn );
+}
   if( found || tmpn != reads ) { // bug in Filter, code untransformed
     rewind( f );
     filetype = 0;
@@ -2602,10 +2689,11 @@ void Filter::compress( FILE *f, int n ) {
     rewind( tmp );
     ///if (filetype==EXE) printf("-> %d (x86) ", tmpn);
     ///else
-    if( filetype == TEXT )
+    if( filetype == TEXT ) {
       printf( "-> %d (text) ", tmpn );
-    else if( filetype == BINTEXT )
+    } else if( filetype == BINTEXT ) {
       printf( "-> %d (binary+text) ", tmpn );
+}
 
     int t = filetype;
     filetype = 0;
@@ -2624,12 +2712,13 @@ void Filter::compress( FILE *f, int n ) {
 // DefaultFilter does no translation (for testing)
 class DefaultFilter : public Filter {
 public:
-  DefaultFilter( Encoder *e ) : Filter( e ) {}
+  explicit DefaultFilter( Encoder *e ) : Filter( e ) {}
 
 protected:
   void encode( FILE *f, int n ) override { // not executed if filetype is 0
-    while( ( n-- ) != 0 )
+    while( ( n-- ) != 0 ) {
       putc( getc( f ), tmp );
+}
   }
   int decode() override {
     return read();
@@ -2648,10 +2737,10 @@ WRT wrt;
 class TextFilter : public Filter {
 private:
   FILE *dtmp;
-  bool first;
+  bool first{};
 
 public:
-  TextFilter( Encoder *e ) : Filter( e ), dtmp( NULL ) {
+  explicit TextFilter( Encoder *e ) : Filter( e ), dtmp( NULL ) {
     reset();
     WRTd_filter = this;
   }
@@ -2664,8 +2753,9 @@ public:
   void reset() {
     first = true;
     wrt.WRT_prepare_decoding();
-    if( dtmp != nullptr )
+    if( dtmp != nullptr ) {
       fclose( dtmp );
+}
   };
 };
 
@@ -2678,12 +2768,14 @@ int TextFilter::decode() {
   if( first ) {
     first = false;
     if( tmp == nullptr ) {
-      if( dtmp != nullptr )
+      if( dtmp != nullptr ) {
         fclose( dtmp );
+}
 
       dtmp = tmpfile();
-      if( dtmp == nullptr )
+      if( dtmp == nullptr ) {
         perror( "WRT tmpfile" ), exit( 1 );
+}
 
       unsigned int size = 0;
       unsigned int i;
@@ -2721,9 +2813,9 @@ Filter *Filter::make( const char *filename, Encoder *e ) {
 
     FILE *file = fopen( filename, "rbe" );
     if( file != nullptr ) {
-      if( fgetc( file ) == 'M' && fgetc( file ) == 'Z' )
+      if( fgetc( file ) == 'M' && fgetc( file ) == 'Z' ) {
         filetype = EXE;
-      else
+      } else
       ///if (!ext || (!equals(ext, ".dbf") && !equals(ext, ".mdb") && !equals(ext, ".tar")
       ///	&& !equals(ext, ".c") && !equals(ext, ".cpp") && !equals(ext, ".h")
       ///	&& !equals(ext, ".hpp") && !equals(ext, ".ps") && !equals(ext, ".hlp")
@@ -2734,10 +2826,11 @@ Filter *Filter::make( const char *filename, Encoder *e ) {
         int recordLen;                                   // unused in PAQ
         if( wrt.WRT_getFileType( file, recordLen ) > 0 ) // 0 = binary or not known
         {
-          if( IF_OPTION( OPTION_NORMAL_TEXT_FILTER ) )
+          if( IF_OPTION( OPTION_NORMAL_TEXT_FILTER ) ) {
             filetype = TEXT;
-          else
+          } else {
             filetype = BINTEXT;
+}
         }
       }
       fclose( file );
@@ -2747,8 +2840,9 @@ Filter *Filter::make( const char *filename, Encoder *e ) {
     ///if (filetype==EXE)
     ///return new ExeFilter(e);
     ///else
-    if( filetype == TEXT || filetype == BINTEXT )
+    if( filetype == TEXT || filetype == BINTEXT ) {
       return new TextFilter( e );
+}
 
     return new DefaultFilter( e );
   }
@@ -2766,12 +2860,14 @@ static char *getline( FILE *f = stdin ) {
   int len = 0;
   int c;
   while( ( c = getc( f ) ) != EOF && c != 26 && c != '\n' && len < MAXLINE - 1 ) {
-    if( c != '\r' )
+    if( c != '\r' ) {
       s[len++] = c;
+}
   }
   s[len] = 0;
-  if( c == EOF || c == 26 )
-    return 0;
+  if( c == EOF || c == 26 ) {
+    return nullptr;
+}
   return s;
 }
 
@@ -2836,13 +2932,16 @@ int main( int argc, char **argv ) {
 
   // Get option
   int option = '4';
-  if( argv[1][0] == '-' )
+  if( argv[1][0] == '-' ) {
     option = argv[1][1], ++argv, --argc;
+}
 #ifndef SHORTEN_CODE
-  if( option < 32 )
+  if( option < 32 ) {
     option = 32;
-  if( option < '0' || option > '9' )
+}
+  if( option < '0' || option > '9' ) {
     fprintf( stderr, "Bad option -%c (use -0 to -9)\n", option ), exit( 1 );
+}
 #endif
 
   // Test for archive.  If none, create one and write a header.
@@ -2856,14 +2955,16 @@ int main( int argc, char **argv ) {
     mode = COMPRESS;
 
     f = fopen( argv[1], "wbe" );
-    if( f == nullptr )
+    if( f == nullptr ) {
       perror( argv[1] ), exit( 1 );
+}
     fprintf( f, "%s -%c\r\n", PROGNAME, option );
 
     // Get filenames
 #ifndef SHORTEN_CODE
-    if( argc == 2 )
+    if( argc == 2 ) {
       printf( "Enter names of files to compress, followed by blank line\n" );
+}
 #endif
     int i = 2;
     std::multimap<int, std::string> filetypes;
@@ -2875,13 +2976,15 @@ int main( int argc, char **argv ) {
 #ifndef SHORTEN_CODE
       if( argc == 2 ) {
         filename = getline();
-        if( ( filename == nullptr ) || ( filename[0] == 0 ) )
+        if( ( filename == nullptr ) || ( filename[0] == 0 ) ) {
           break;
+}
       } else
 #endif
       {
-        if( i == argc )
+        if( i == argc ) {
           break;
+}
         filename = argv[i++];
       }
       filenames.emplace_back( filename );
@@ -2897,14 +3000,16 @@ int main( int argc, char **argv ) {
       filetypes.insert( p );
     }
 
-    for( it = filetypes.begin(); it != filetypes.end(); it++ ) // multimap is sorted by filetype
-      store_in_header( f, ( char * ) it->second.c_str(), total_size );
+    for( it = filetypes.begin(); it != filetypes.end(); it++ ) { // multimap is sorted by filetype
+      store_in_header( f, const_cast< char *>(it->second.c_str()), total_size );
+}
 
     fputc( 26, f ); // EOF
     fclose( f );
     f = fopen( argv[1], "r+be" );
-    if( f == nullptr )
+    if( f == nullptr ) {
       perror( argv[1] ), exit( 1 );
+}
   }
 
   // Read existing archive. Two pointers (header and body) track the
@@ -2912,12 +3017,14 @@ int main( int argc, char **argv ) {
   long header;
   long body;                     // file positions in header, body
   char *filename = getline( f ); // check header
-  if( ( filename == nullptr ) || ( strncmp( filename, PROGNAME " -", strlen( PROGNAME ) + 2 ) != 0 ) )
+  if( ( filename == nullptr ) || ( strncmp( filename, PROGNAME " -", strlen( PROGNAME ) + 2 ) != 0 ) ) {
     fprintf( stderr, "%s: not a " PROGNAME " file\n", argv[1] ), exit( 1 );
+}
   option = filename[strlen( filename ) - 1];
   level = option - '0';
-  if( level < 0 || level > 9 )
+  if( level < 0 || level > 9 ) {
     level = DEFAULT_OPTION;
+}
 
   {
     buf.setsize( MEM * 8 );
@@ -2926,8 +3033,9 @@ int main( int argc, char **argv ) {
     filetype = 0;
     Encoder en( COMPRESS, tmpfi );
     en.compress( 0 );
-    for( int i = 0; i < 465211; ++i )
+    for( int i = 0; i < 465211; ++i ) {
       en.compress( getc( dictfile ) );
+}
     en.flush();
     fclose( tmpfi );
   }
@@ -2935,14 +3043,16 @@ int main( int argc, char **argv ) {
   header = ftell( f );
 
   // Initialize encoder at end of header
-  if( mode == COMPRESS )
+  if( mode == COMPRESS ) {
     fseek( f, 0, SEEK_END );
-  else { // body starts after ^Z in file
+  } else { // body starts after ^Z in file
     int c;
-    while( ( c = getc( f ) ) != EOF && c != 26 )
+    while( ( c = getc( f ) ) != EOF && c != 26 ) {
       ;
-    if( c != 26 )
+}
+    if( c != 26 ) {
       fprintf( stderr, "Archive %s is incomplete\n", argv[1] ), exit( 1 );
+}
   }
   Encoder en( mode, f );
   body = ftell( f );
@@ -2952,23 +3062,27 @@ int main( int argc, char **argv ) {
   total_size = 0;
   for( ;; ) {
     fseek( f, header, SEEK_SET );
-    if( ( filename = getline( f ) ) == 0 )
+    if( ( filename = getline( f ) ) == nullptr ) {
       break;
+}
     size = atol( filename ); // parse size and filename, separated by tab
     total_size += size;
-    while( ( *filename != 0 ) && *filename != '\t' )
+    while( ( *filename != 0 ) && *filename != '\t' ) {
       ++filename;
-    if( *filename == '\t' )
+}
+    if( *filename == '\t' ) {
       ++filename;
+}
     printf( "%ld\t%s: ", size, filename );
-    fsize = ( int ) size;
+    fsize = static_cast< int>(size);
     /*   if (mode==DECOMPRESS && ++filenum<argc  // doesn't work with sorting depend on type of file
     && strcmp(argv[filenum], filename)) {
     printf(" -> %s", argv[filenum]);
     filename=argv[filenum];
     } */
-    if( size < 0 || total_size < 0 )
+    if( size < 0 || total_size < 0 ) {
       break;
+}
     header = ftell( f );
     fseek( f, body, SEEK_SET );
 
@@ -2976,30 +3090,32 @@ int main( int argc, char **argv ) {
     FILE *fi = fopen( filename, "rbe" );
     filetype = 0;
     if( mode == COMPRESS ) {
-      if( fi == nullptr )
+      if( fi == nullptr ) {
         perror( filename ), exit( 1 );
+}
       Filter *fp = Filter::make( filename, &en ); // sets filetype
       fp->compress( fi, size );
       printf( " -> %4ld   \n", ftell( f ) - body );
       delete fp;
     } else { // DECOMPRESS, first byte determines filter type
       filetype = en.decompress();
-      Filter *fp = Filter::make( 0, &en );
-      if( fi != nullptr )
+      Filter *fp = Filter::make( nullptr, &en );
+      if( fi != nullptr ) {
         fp->compare( fi, size );
-      else { // extract
+      } else { // extract
         fi = fopen( filename, "wbe" );
-        if( fi != nullptr )
+        if( fi != nullptr ) {
           fp->decompress( fi, size );
-        else {
+        } else {
           perror( filename );
           fp->skip( size );
         }
       }
       delete fp;
     }
-    if( fi != nullptr )
+    if( fi != nullptr ) {
       fclose( fi );
+}
     body = ftell( f );
   }
   fseek( f, body, SEEK_SET );
@@ -3007,17 +3123,19 @@ int main( int argc, char **argv ) {
 
   // Print stats
   if( f != nullptr ) {
-    if( mode == DECOMPRESS && filenum < argc - 1 )
+    if( mode == DECOMPRESS && filenum < argc - 1 ) {
       printf( "No more files to extract\n" );
+}
     long compressed_size = ftell( f );
-    if( mode == COMPRESS )
+    if( mode == COMPRESS ) {
       printf( "%ld -> %ld", total_size, compressed_size );
-    else
+    } else {
       printf( "%ld -> %ld", compressed_size, total_size );
+}
     start_time = clock() - start_time;
     if( compressed_size > 0 && total_size > 0 && start_time > 0 ) {
       printf( " (%1.4f bpc) in %1.2f sec (%1.3f KB/sec), %d Kb\n", 8.0 * compressed_size / total_size,
-              ( double ) start_time / CLOCKS_PER_SEC, 0.001 * total_size * CLOCKS_PER_SEC / start_time,
+              static_cast< double>(start_time) / CLOCKS_PER_SEC, 0.001 * total_size * CLOCKS_PER_SEC / start_time,
               programChecker.maxmem / 1024 );
     }
   }

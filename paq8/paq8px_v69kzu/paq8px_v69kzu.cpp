@@ -2051,19 +2051,10 @@ int rlenl[rlencount]; //len
 int rlenc[rlencount]; //count
 //set len table
 void recordmodelrlen() {
-  for( int i = 0; i < ( rlencount + 1 ); ++i )
+  for( int i = 0; i < ( rlencount ); ++i )
     rlenl[i] = i + 2;
 }
 void recordmodelreset() {
-#if 0
-printf("\n"); 
-    printf("Dynamic record model with len upto %d \n",rlencount ); 
-    printf("Len\tFinal count\n"); 
-        for (int j=0; j<rlencount; ++j){
-            if (rlenc[j]>0)  printf("%d\t%d\n", j+2, rlenc[j]);                 
-        }
-        printf("\n");
-#endif
   for( int i = 0; i < ( rlencount + 1 ); ++i )
     rlenc[i] = 0;
 }

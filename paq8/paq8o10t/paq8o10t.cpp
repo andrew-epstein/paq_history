@@ -5167,7 +5167,7 @@ int main( int argc, char **argv ) {
     }
     fclose( archive );
     programChecker.print();
-    for( int j = 0; j < 15; ++j ) {
+    for( int j = 0; j < 14; ++j ) {
       if( typesize[j] != 0 )
         printf( "%s %d\n", typenames[j], typesize[j] );
     }
